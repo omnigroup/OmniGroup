@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,6 +10,8 @@
 #import <OmniUI/OUIAppController.h>
 
 RCS_ID("$Id$");
+
+NS_ASSUME_NONNULL_BEGIN
 
 #define STANDARD_ROW_HEIGHT 44.0
 
@@ -41,12 +43,12 @@ RCS_ID("$Id$");
     _valueField.delegate = nil;
 }
 
-- (NSString *)value;
+- (nullable NSString *)value;
 {
     return self.valueField.text;
 }
 
-- (void)setValue:(NSString *)value;
+- (void)setValue:(nullable NSString *)value;
 {
     self.valueField.text = value;
 }
@@ -75,7 +77,7 @@ RCS_ID("$Id$");
     }
 }
 
-- (NSString *)valuePlaceholder;
+- (nullable NSString *)valuePlaceholder;
 {
     return nil;
 }
@@ -196,3 +198,6 @@ RCS_ID("$Id$");
 }
 
 @end
+
+NS_ASSUME_NONNULL_END
+

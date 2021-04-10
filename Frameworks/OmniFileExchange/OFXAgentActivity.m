@@ -1,4 +1,4 @@
-// Copyright 2013-2014,2017 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,6 +13,8 @@
 #import <OmniFoundation/OFBackgroundActivity.h>
 
 RCS_ID("$Id$")
+
+NSNotificationName const OFXAgentActivityActivityForAccountDidChangeNotification = @"OFXAgentActivityActivityForAccountDidChangeNotification";
 
 @interface OFXAgentActivity ()
 @property(nonatomic,readwrite) BOOL isActive;
@@ -42,8 +44,7 @@ static unsigned AccountContext;
     _agent = agent;
     _accountUUIDToActivity = [NSMutableDictionary new];
     
-    [_agent addObserver:self forKeyPath:OFValidateKeyPath(_agent, runningAccounts) options:0 context:&AgentContext];
-    [_agent addObserver:self forKeyPath:OFValidateKeyPath(_agent, failedAccounts) options:0 context:&AgentContext];
+    [_agent addObserver:self forKeyPath:OFValidateKeyPath(_agent, accountsSnapshot) options:0 context:&AgentContext];
     [self _updateAccounts];
     
     return self;
@@ -51,8 +52,7 @@ static unsigned AccountContext;
 
 - (void)dealloc;
 {
-    [_agent removeObserver:self forKeyPath:OFValidateKeyPath(_agent, runningAccounts) context:&AgentContext];
-    [_agent removeObserver:self forKeyPath:OFValidateKeyPath(_agent, failedAccounts) context:&AgentContext];
+    [_agent removeObserver:self forKeyPath:OFValidateKeyPath(_agent, accountsSnapshot) context:&AgentContext];
 
     [_accountUUIDToActivity enumerateKeysAndObjectsUsingBlock:^(NSString *uuid, OFXAccountActivity *accountActivity, BOOL *stop) {
         _stopObservingAccountActivity(self, accountActivity);
@@ -136,20 +136,23 @@ static void _stopObservingAccountActivity(OFXAgentActivity *self, OFXAccountActi
 
             _startObservingAccountActivity(self, activity);
             [_accountUUIDToActivity setObject:activity forKey:account.uuid];
+            [[NSNotificationCenter defaultCenter] postNotificationName:OFXAgentActivityActivityForAccountDidChangeNotification object:account];
             additionsOrRemovals = YES;
         }
     };
     
-    for (OFXServerAccount *account in _agent.runningAccounts) {
+    OFXServerAccountsSnapshot *accountsSnapshot = _agent.accountsSnapshot;
+    for (OFXServerAccount *account in accountsSnapshot.runningAccounts) {
         handleAccount(account, YES);
     }
-    for (OFXServerAccount *account in _agent.failedAccounts) {
+    for (OFXServerAccount *account in accountsSnapshot.failedAccounts) {
         handleAccount(account, NO);
     }
     
     [remainingAccountUUIDToActivity enumerateKeysAndObjectsUsingBlock:^(NSString *uuid, OFXAccountActivity *activity, BOOL *stop) {
         _stopObservingAccountActivity(self, activity);
         [_accountUUIDToActivity removeObjectForKey:uuid];
+        [[NSNotificationCenter defaultCenter] postNotificationName:OFXAgentActivityActivityForAccountDidChangeNotification object:activity.account];
         additionsOrRemovals = YES;
     }];
     

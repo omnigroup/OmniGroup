@@ -1,4 +1,4 @@
-// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -31,8 +31,6 @@ NSString * const OUIDocumentPickerItemViewPreviewsDidLoadNotification = @"OUIDoc
 
 @interface OUIDocumentPickerItemView () <UIDragInteractionDelegate>
 - (void)_loadOrDeferLoadingPreviewsForViewsStartingAtIndex:(NSUInteger)index;
-@property (nonatomic, strong) NSArray *cachedCustomAccessibilityActions;
-@property (nonatomic, strong) NSTimer *hackyTimerToGetRenamingToWorkWithProKeyboard;
 @end
 
 @interface OUIDocumentPickerPreviewViewContainer : UIView
@@ -99,7 +97,6 @@ NSString * const OUIDocumentPickerItemViewPreviewsDidLoadNotification = @"OUIDoc
 
     OUIDocumentPickerItemViewDraggingState _draggingState;
 
-    UITextField *_editingNameTextField;
     BOOL _deleting;
     BOOL _selected;
     BOOL _deferLoadingPreviews;
@@ -111,7 +108,6 @@ static id _commonInit(OUIDocumentPickerItemView *self)
     if (!self.metadataView) {
         [self createSubviews];
     }
-    [self.metadataView addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(metaDataTapped:)]];
     [self applyToViewTree:^OUIViewVisitorResult(UIView *view) {
         if (view != self) {
             view.translatesAutoresizingMaskIntoConstraints = NO;
@@ -128,22 +124,13 @@ static id _commonInit(OUIDocumentPickerItemView *self)
     self.contentView.userInteractionEnabled = NO;
     OUIDocumentPreviewViewSetNormalBorder(self->_hairlineBorderView);
     self->_hairlineBorderView.userInteractionEnabled = NO;
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_keyboardWillShow) name:UIKeyboardWillShowNotification object:nil];
 
     [self _updateRasterizesLayer];
     
-    [self _setupAccessibilityActions];
-
     UIDragInteraction *dragInteraction = [[UIDragInteraction alloc] initWithDelegate:self];
     [self addInteraction:dragInteraction];
 
     return self;
-}
-
-- (void)metaDataTapped:(id)sender
-{
-    [self startRenaming];
 }
 
 - (id)initWithFrame:(CGRect)frame;
@@ -185,7 +172,6 @@ static id _commonInit(OUIDocumentPickerItemView *self)
 - (void)dealloc;
 {
     [self stopObservingItem:_item];
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillShowNotification object:nil];
 }
 
 @synthesize item = _item;
@@ -537,44 +523,6 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
     self.item = nil;
 }
 
-- (void)startRenaming;
-{
-    if ([self.metadataView isEditing]) {
-        return;
-    }
-
-    [self detachMetaDataView];
-    [self.superview setNeedsLayout];
-    [self.superview layoutIfNeeded];  // without forcing layout, the becomeFirstResponder call will crash
-
-    OBASSERT(_editingNameTextField == nil);
-    _editingNameTextField = [self.metadataView startEditingName];
-
-    [_editingNameTextField addTarget:self action:@selector(_nameTextFieldEndedEditing:) forControlEvents:UIControlEventEditingDidEnd];
-
-    [self _updateRasterizesLayer];
-
-    _metadataView.showsImage = NO;
-
-    [UIView performWithoutAnimation:^{
-        [_metadataView setNeedsLayout];
-        [_metadataView layoutIfNeeded];
-    }];
-
-    self.hackyTimerToGetRenamingToWorkWithProKeyboard = [NSTimer timerWithTimeInterval:0.1
-                                                                                target:self
-                                                                              selector:@selector(hackyTimerForProKeyboardFired)
-                                                                              userInfo:nil
-                                                                               repeats:NO];
-
-    [[NSRunLoop mainRunLoop] addTimer:self.hackyTimerToGetRenamingToWorkWithProKeyboard forMode:NSRunLoopCommonModes];
-}
-
-- (UITextField *)editingNameTextField;
-{
-    return _editingNameTextField;
-}
-
 - (NSSet *)previewedItems;
 {
     OBRequestConcreteImplementation(self, _cmd);
@@ -765,10 +713,6 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
 
 - (NSString *)accessibilityValue
 {
-    if (_editingNameTextField) {
-        return NSLocalizedStringFromTableInBundle(@"Is editing", @"OmniUIDocument", OMNI_BUNDLE, @"doc picker title label editing accessibility value");
-    }
-    
     ODSItem *fileItem = (ODSItem *)self.item;
     OBASSERT(!fileItem || [fileItem isKindOfClass:[ODSItem class]]);
     
@@ -811,42 +755,12 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
     return UIAccessibilityTraitNone;
 }
 
-- (NSArray *)accessibilityCustomActions
-{
-    // return the correct editing action based on the nameTextFields editing state.
-    if (! _editingNameTextField) {
-        return @[[self.cachedCustomAccessibilityActions firstObject]];
-    }
-    
-    return @[[self.cachedCustomAccessibilityActions lastObject]];
-}
-
-- (void)_setupAccessibilityActions
-{
-    NSString *editNameString = NSLocalizedStringFromTableInBundle(@"Edit name", @"OmniUIDocument", OMNI_BUNDLE, @"doc picker custom accessibility action name");
-    UIAccessibilityCustomAction *editName = [[UIAccessibilityCustomAction alloc] initWithName:editNameString target:self selector:@selector(_accessibilityHandleNameEditAction:)];
-    
-    NSString *clearNameString = NSLocalizedStringFromTableInBundle(@"Clear name field", @"OmniUIDocument", OMNI_BUNDLE, @"doc picker custom accessibility action name");
-    UIAccessibilityCustomAction *clearName = [[UIAccessibilityCustomAction alloc] initWithName:clearNameString target:self selector:@selector(_accessibilityHandleNameEditAction:)];
-    
-    _cachedCustomAccessibilityActions = @[editName, clearName];
-}
-
-- (BOOL)_accessibilityHandleNameEditAction:(UIAccessibilityCustomAction *)action;
-{
-    if (! _editingNameTextField) {
-        [self startRenaming];
-    } else {
-        _metadataView.name = nil;
-    }
-    
-    return YES;
-}
-
 #pragma mark - UIDragInteractionDelegate
 
 - (NSArray<UIDragItem *> *)_itemsForDragSession:(id<UIDragSession>)session;
 {
+    OBFinishPorting;
+#if 0
     ODSItem *item = self.item;
     if (![item isKindOfClass:[ODSFileItem class]])
         return @[];
@@ -862,6 +776,7 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
     UIDragItem *dragItem = [[UIDragItem alloc] initWithItemProvider:itemProvider];
     dragItem.localObject = item;
     return @[dragItem];
+#endif
 }
 
 - (NSArray<UIDragItem *> *)dragInteraction:(UIDragInteraction *)interaction itemsForBeginningSession:(id<UIDragSession>)session;
@@ -885,53 +800,8 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
 
 - (void)_updateRasterizesLayer;
 {
-    // Turn off rasterization while editing ... later we'll probably want to turn it off when we have a progress bar too.
-    BOOL shouldRasterize = (_editingNameTextField == nil);
-    
-    self.layer.shouldRasterize = shouldRasterize;
+    self.layer.shouldRasterize = YES;
     self.layer.rasterizationScale = [[UIScreen mainScreen] scale];
-}
-
-- (void)hackyTimerForProKeyboardFired
-{
-    // the keyboard hasn't yet started to appear, so we're going to assume it won't appear at all and we'd better do the animation now.
-    // this is necessary because when there is an onscreen keyboard, we want to animate alongside its appearance.  but we don't want to fail to perform the animation if no onscreen keyboard will appear.  And the keyboardWillShow message comes through after the didBeginEditing message, so we can't just start the animation from didBeginEditing.
-    [self _keyboardWillShow];
-}
-
-- (void)_keyboardWillShow
-{
-    if (_editingNameTextField) {
-        [self.hackyTimerToGetRenamingToWorkWithProKeyboard invalidate];
-        self.hackyTimerToGetRenamingToWorkWithProKeyboard = nil;
-        id target = [self targetForAction:@selector(documentPickerItemNameStartedEditing:) withSender:self];
-        OBASSERT(target);
-        [target documentPickerItemNameStartedEditing:self];
-    }
-}
-
-- (void)_nameTextFieldEndedEditing:(UITextField *)sender;
-{
-    OBPRECONDITION(_editingNameTextField != nil);
-
-    [_editingNameTextField removeTarget:self action:@selector(_nameTextFieldEndedEditing:) forControlEvents:UIControlEventEditingDidEnd];
-    _editingNameTextField = nil;
-
-    [self _updateRasterizesLayer];
-    
-    _metadataView.showsImage = YES;
-    
-    [UIView performWithoutAnimation:^{
-        [_metadataView didEndEditing];
-        [_metadataView.superview.superview setNeedsLayout];
-        [_metadataView.superview setNeedsLayout];
-        [_metadataView setNeedsLayout];
-        [_metadataView layoutIfNeeded];
-    }];
-
-    id target = [self targetForAction:@selector(documentPickerItemNameEndedEditing:withName:) withSender:self];
-    OBASSERT(target);
-    [target documentPickerItemNameEndedEditing:self withName:sender.text];
 }
 
 - (void)_nameChanged;
@@ -1019,7 +889,7 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
 - (void)_updateMetadataInteraction;
 {
     ODSScope *itemScope = _item.scope;
-    if (self.isReadOnly || !_item.isValid || itemScope == nil || ![itemScope canRenameDocuments]) {
+    if (self.isReadOnly || !_item.isValid || itemScope == nil) {
         _metadataView.userInteractionEnabled = NO;
         return;
     }

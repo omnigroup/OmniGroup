@@ -721,7 +721,7 @@ static NSString *_getText(OUIInspectorTextWell *self, NSString *text, TextType *
             if (font)
                 _setAttr(attrString, NSFontAttributeName, font);
             
-            UIColor *textColor = textType == TextTypePlaceholder ? self.disabledTextColor : [self textColor];
+            UIColor *textColor = textType == TextTypePlaceholder ? self.disabledTextColor : [OUIInspector valueTextColor];
             _setAttr(attrString, NSForegroundColorAttributeName, textColor);
             
             // Right align and tail truncate the text

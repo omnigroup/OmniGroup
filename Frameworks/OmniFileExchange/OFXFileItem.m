@@ -1,4 +1,4 @@
-// Copyright 2013-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -1392,15 +1392,10 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, ODAVConn
             if (hasLocalEdit)
                 return NO;
             return [coordinator removeItemAtURL:newURL error:outWriteItemError byAccessor:^BOOL(NSURL *newURL2, NSError **outError) {
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-                // On iOS, we have to handle our own trash
-                if (![ODSScope trashItemAtURL:newURL2 resultingItemURL:NULL error:outError])
+                if (![[NSFileManager defaultManager] trashItemAtURL:newURL2 resultingItemURL:NULL error:outError]) {
+                    OBASSERT_NOT_REACHED("The item will likely be resurrected"); // TJW: This failed previously on iOS for me with a permission error.
                     return NO;
-#else
-                // On Mac, we can use the system trash
-                if (![[NSFileManager defaultManager] trashItemAtURL:newURL2 resultingItemURL:NULL error:outError])
-                    return NO;
-#endif
+                }
                 TRACE_SIGNAL(OFXFileItem.incoming_delete.removed_local_document);
                 OFXNoteContentDeleted(self, newURL2);
                 return YES;

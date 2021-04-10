@@ -1,4 +1,4 @@
-// Copyright 2013-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,14 +21,16 @@
 
 RCS_ID("$Id$")
 
+NS_ASSUME_NONNULL_BEGIN
+
 static NSString * const RemoteBaseURLKey = @"remoteBaseURL";
 static NSString * const DisplayNameKey = @"displayName";
-#if OFX_MAC_STYLE_ACCOUNT
+
 static NSString * const LastKnownDislpayNameKey = @"lastKnownDisplayName";
 static NSString * const LocalDocumentsBookmarkDataKey = @"localDocumentsBookmarkData";
-#else
-static NSString * const NicknameKey = @"nickname";
-#endif
+
+static NSString * const UnmigratedNicknameKey = @"nickname";
+
 static NSString * const UsageModeKey = @"usageMode";
 static NSString * const CredentialServiceIdentifierKey = @"credentialServiceIdentifier";
 static NSString * const HasBeenPreparedForRemovalKey = @"hasBeenPreparedForRemoval";
@@ -38,13 +40,9 @@ NSString * const OFXAccountPropertListKey = @"propertyList";
 static const NSUInteger ServerAccountPropertyListVersion = 1;
 
 @interface OFXServerAccount ()
-@property(nonatomic,readwrite,strong) NSError *lastError;
-#if OFX_MAC_STYLE_ACCOUNT
+@property(nullable,nonatomic,readwrite,strong) NSError *lastError;
 @property(nonatomic,copy) NSString *lastKnownDisplayName;
-#endif
 @end
-
-#if OFX_MAC_STYLE_ACCOUNT
 
 static OFDeclareDebugLogLevel(OFXBookmarkDebug);
 #define DEBUG_BOOKMARK(level, format, ...) do { \
@@ -55,7 +53,7 @@ static OFDeclareDebugLogLevel(OFXBookmarkDebug);
 // When running unit tests on Mac OS X 10.9, we cannot use app-scoped bookmarks. This worked in 10.8, but under 10.9 we get a generic 'cannot open' error. We don't just check -[NSProcessInfo isSandboxed] since we archive the "bookmark" in a plist. We don't want to handle archiving/unarchiving different styles of bookmarks between sandboxed/non-sandboxed.
 static BOOL CannotUseAppScopedBookmarks(void)
 {
-    return [OFController isRunningUnitTests];
+    return OFIsRunningUnitTests();
 }
 
 static NSData *bookmarkDataWithURL(NSURL *url, NSError **outError)
@@ -65,10 +63,19 @@ static NSData *bookmarkDataWithURL(NSURL *url, NSError **outError)
         assert(data); // otherwise we need to fill out the outError
         return data;
     }
-    return [url bookmarkDataWithOptions:NSURLBookmarkCreationWithSecurityScope includingResourceValuesForKeys:nil relativeToURL:nil/*app scoped*/ error:outError];
+
+#if OMNI_BUILDING_FOR_MAC
+    NSURLBookmarkCreationOptions options = NSURLBookmarkCreationWithSecurityScope;
+#elif OMNI_BUILDING_FOR_IOS
+    NSURLBookmarkCreationOptions options = 0;
+#else
+#error Unknown platform
+#endif
+
+    return [url bookmarkDataWithOptions:options includingResourceValuesForKeys:nil relativeToURL:nil/*app scoped*/ error:outError];
 }
 
-static NSURL *URLWithBookmarkData(NSData *data, BOOL *outStale, NSError **outError)
+static NSURL * _Nullable URLWithBookmarkData(NSData *data, BOOL *outStale, NSError **outError)
 {
     if (CannotUseAppScopedBookmarks()) {
         NSString *urlString = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
@@ -76,25 +83,55 @@ static NSURL *URLWithBookmarkData(NSData *data, BOOL *outStale, NSError **outErr
         assert(url); // otherwise we need to fill out the outError
         return url;
     }
-    NSURL *url = [NSURL URLByResolvingBookmarkData:data options:NSURLBookmarkResolutionWithoutUI|NSURLBookmarkResolutionWithSecurityScope relativeToURL:nil/*app-scoped*/ bookmarkDataIsStale:outStale error:outError];
+
+#if OMNI_BUILDING_FOR_MAC
+    NSURLBookmarkResolutionOptions options = NSURLBookmarkResolutionWithSecurityScope;
+#elif OMNI_BUILDING_FOR_IOS
+    NSURLBookmarkResolutionOptions options = 0;
+#else
+#error Unknown platform
+#endif
+
+    NSURL *url = [NSURL URLByResolvingBookmarkData:data options:NSURLBookmarkResolutionWithoutUI|options relativeToURL:nil/*app-scoped*/ bookmarkDataIsStale:outStale error:outError];
     if (!url)
         return nil;
     
     return url;
 }
+
+static BOOL StartAccessing(NSURL *url)
+{
+#if OMNI_BUILDING_FOR_IOS
+    // On iOS, this isn't necessary since our local documents folder is in our container. Also *sometimes* this works and sometimes it fails for reasons that aren't clear.
+    return YES;
+#else
+    return [url startAccessingSecurityScopedResource];
 #endif
+}
+#define startAccessingSecurityScopedResource Use_StartAccessing_Wrapper
+
+static void StopAccessing(NSURL *url)
+{
+#if OMNI_BUILDING_FOR_IOS
+    // Nothing, since we didn't call -startAccessingSecurityScopedResource above
+#else
+    [url stopAccessingSecurityScopedResource];
+#endif
+}
+#define stopAccessingSecurityScopedResource Use_StopAccessing_Wrapper
 
 @implementation OFXServerAccount
 {
-#if OFX_MAC_STYLE_ACCOUNT
     // We access these from the account agent queue, but set them up on the main queue (at least currently). We avoid races where we'd temporarily have a nil _accessedLocalDocumentsBookmarkURL via @synchronized in the 'resolve' method and the lookup method. All other access is required to by on the main thread (other than initializers, since no one can be asking yet there).
     NSData *_localDocumentsBookmarkData; // The archived bookmark, which is what we store in our archived plist.
     NSURL *_localDocumentsBookmarkURL; // The security scoped bookmark (with the ?applesecurityscope=BAG_OF_HEX needed to gain access).
     NSURL *_accessedLocalDocumentsBookmarkURL; // The result of -startAccessingSecurityScopedResource.
     NSString *_lastKnownDisplayName;
-#else
-    // We just store the local documents URL directly. This gets set once and never changed, so no locking is needed.
-    NSURL *_localDocumentsURL;
+
+#if !OFX_MAC_STYLE_ACCOUNT
+    // For unmigrated iOS accounts, where the per-account Documents directory was stored in the container's ~/Library/Application/Support/OmniPresence/<random-id>/Documents.
+    NSURL *_unmigratedLocalDocumentsURL;
+    NSString *_unmigratedNickname;
 #endif
 }
 
@@ -237,10 +274,9 @@ static BOOL _validateLocalFileSystem(NSURL *url, NSError **outError)
 
     NSArray *syncAccounts = [[registry validCloudSyncAccounts] copy];
     for (OFXServerAccount *account in syncAccounts) {
-#if OFX_MAC_STYLE_ACCOUNT
         if (![account resolveLocalDocumentsURL:NULL])
             continue;
-#endif
+
         if (OFURLContainsURL(account.localDocumentsURL, documentsURL)) {
             NSString *description = NSLocalizedStringFromTableInBundle(@"Local documents folder cannot be used.", @"OmniFileExchange", OMNI_BUNDLE, @"error description");
             NSString *reason = NSLocalizedStringFromTableInBundle(@"Another account is syncing to this folder already.", @"OmniFileExchange", OMNI_BUNDLE, @"error description");
@@ -252,7 +288,7 @@ static BOOL _validateLocalFileSystem(NSURL *url, NSError **outError)
     return YES;
 }
 
-+ (NSURL *)signinURLFromWebDAVString:(NSString *)webdavString;
++ (nullable NSURL *)signinURLFromWebDAVString:(NSString *)webdavString;
 {
     NSURL *url = [NSURL URLWithString:webdavString];
 
@@ -274,7 +310,7 @@ static BOOL _validateLocalFileSystem(NSURL *url, NSError **outError)
     return url;
 }
 
-+ (NSString *)suggestedDisplayNameForAccountType:(OFXServerAccountType *)accountType url:(NSURL *)url username:(NSString *)username excludingAccount:(OFXServerAccount *)excludeAccount;
++ (NSString *)suggestedDisplayNameForAccountType:(OFXServerAccountType *)accountType url:(NSURL *)url username:(nullable NSString *)username excludingAccount:(nullable OFXServerAccount *)excludeAccount;
 {
     OFXServerAccountRegistry *registry = [OFXServerAccountRegistry defaultAccountRegistry];
     NSMutableArray <OFXServerAccount *> *similarAccounts = [NSMutableArray array];
@@ -331,7 +367,7 @@ static BOOL _validateLocalFileSystem(NSURL *url, NSError **outError)
 
 #if !OFX_MAC_STYLE_ACCOUNT
 
-+ (NSURL *)_localDocumentsArea:(NSError **)outError;
++ (nullable NSURL *)_localDocumentsArea:(NSError **)outError;
 {
     static NSURL *localDocumentsArea = nil;
     static NSError *localDocumentsError = nil;
@@ -359,21 +395,35 @@ static BOOL _validateLocalFileSystem(NSURL *url, NSError **outError)
 }
 
 // Returns a URL that is appropriate for use as the localDocumentsURL of a newly added account on iOS.
-+ (NSURL *)generateLocalDocumentsURLForNewAccount:(NSError **)outError;
+// Now that we store OmniPresence accounts in the ~/Documents folder this is a user-visible URL.
++ (nullable NSURL *)generateLocalDocumentsURLForNewAccountWithName:(nullable NSString *)nickname error:(NSError **)outError;
 {
-    NSURL *localDocumentsArea = [self _localDocumentsArea:outError];
-    if (!localDocumentsArea)
+    NSURL *documentsDirectoryURL = [[NSFileManager defaultManager] URLForDirectory:NSDocumentDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:YES error:outError];
+    if (!documentsDirectoryURL) {
         return nil;
+    }
     
-    // Add a per-account random ID.
-    NSURL *documentsURL = [localDocumentsArea URLByAppendingPathComponent:OFXMLCreateID() isDirectory:YES];
+    if (OFIsEmptyString(nickname)) {
+        nickname = @"OmniPresence";
+    }
+    nickname = [nickname stringByReplacingOccurrencesOfString:@"/" withString:@"-"];
     
-    // Currently has to end in "Documents" for ODSScopeCacheKeyForURL().
-    documentsURL = [documentsURL URLByAppendingPathComponent:@"Documents" isDirectory:YES];
+    NSURL *accountDirectoryURL = [documentsDirectoryURL URLByAppendingPathComponent:nickname];
+    NSString *path = [[NSFileManager defaultManager] uniqueFilenameFromName:[[accountDirectoryURL absoluteURL] path] allowOriginal:YES create:NO error:outError];
+    if (!path) {
+        return nil;
+    }
     
-    return documentsURL;
+    // We need to create the directory (passing create:NO above since that would make a flat file).
+    NSURL *result = [NSURL fileURLWithPath:path isDirectory:YES];
+    if (![[NSFileManager defaultManager] createDirectoryAtURL:result withIntermediateDirectories:YES attributes:nil error:outError]) {
+        return nil;
+    }
+    
+    return result;
 }
 
+// At least one thing this method does (more checking history might be needed), is to deal with new installs of the app getting a new UUID for the container data. We archive the full URL and need to adjust it to the new location on an app upgrade.
 + (NSURL *)_fixLocalDocumentsURL:(NSURL *)documentsURL;
 {
     NSURL *localDocumentsArea = [self _localDocumentsArea:NULL];
@@ -390,38 +440,50 @@ static BOOL _validateLocalFileSystem(NSURL *url, NSError **outError)
     return fixedDocumentsURL;
 }
 
-+ (void)deleteGeneratedLocalDocumentsURL:(NSURL *)documentsURL completionHandler:(void (^)(NSError *errorOrNil))completionHandler;
+// This should only be called for non-migrated accounts. For migrated accounts, the documents folder is user visible and we treat it like we do on the Mac (in the iOS interface code we trash it).
++ (void)deleteGeneratedLocalDocumentsURL:(NSURL *)documentsURL accountRequiredMigration:(BOOL)accountRequiredMigration completionHandler:(void (^ _Nullable)(NSError * _Nullable errorOrNil))completionHandler;
 {
-    __autoreleasing NSError *error;
-    NSURL *localDocumentsArea = [self _localDocumentsArea:&error];
-    if (!localDocumentsArea) {
-        if (completionHandler)
-            completionHandler(error);
-        return;
-    }
-    
-    if (![[documentsURL lastPathComponent] isEqual:@"Documents"]) {
-        NSLog(@"Refusing to delete local documents URL %@ because it doesn't end in \"Documents\".", documentsURL);
-        if (completionHandler) {
-            error = nil;
-            OFXError(&error, OFXAccountLocalDocumentsDirectoryInvalidForDeletion, @"Error attempting to delete local account documentts", @"The passed in URL doesn't end in \"Documents\"");
-            completionHandler(error);
-        }
-        return;
-    }
-    
-    documentsURL = [documentsURL URLByDeletingLastPathComponent]; // Remove 'Documents', leaving the per-account random ID
+    DEBUG_ACCOUNT_REMOVAL(1, @"Removing generated local documents directory at %@.", documentsURL);
+    DEBUG_ACCOUNT_REMOVAL(1, @"  accountRequiredMigration is %d", accountRequiredMigration);
 
-    if (![[documentsURL URLByDeletingLastPathComponent] isEqual:localDocumentsArea]) {
-        NSLog(@"Refusing to delete local documents URL %@ because it isn't in the local documents area %@.", documentsURL, localDocumentsArea);
-        if (completionHandler) {
-            error = nil;
-            OFXError(&error, OFXAccountLocalDocumentsDirectoryInvalidForDeletion, @"Error attempting to delete local account documentts", @"The passed in URL is not inside the local documents area.");
-            completionHandler(error);
+    if (accountRequiredMigration) {
+        // In this case, check that this is a documents folder in the expected spot in the Library/Application Support folder.
+
+        __autoreleasing NSError *error;
+        NSURL *localDocumentsArea = [self _localDocumentsArea:&error];
+        if (!localDocumentsArea) {
+            if (completionHandler)
+                completionHandler(error);
+            return;
         }
-        return;
+        
+        if (![[documentsURL lastPathComponent] isEqual:@"Documents"]) {
+            NSLog(@"Refusing to delete local documents URL %@ because it doesn't end in \"Documents\".", documentsURL);
+            if (completionHandler) {
+                error = nil;
+                OFXError(&error, OFXAccountLocalDocumentsDirectoryInvalidForDeletion, @"Error attempting to delete local account documentts", @"The passed in URL doesn't end in \"Documents\"");
+                completionHandler(error);
+            }
+            return;
+        }
+        
+        documentsURL = [documentsURL URLByDeletingLastPathComponent]; // Remove 'Documents', leaving the per-account random ID
+        
+        if (![[documentsURL URLByDeletingLastPathComponent] isEqual:localDocumentsArea]) {
+            NSLog(@"Refusing to delete local documents URL %@ because it isn't in the local documents area %@.", documentsURL, localDocumentsArea);
+            if (completionHandler) {
+                error = nil;
+                OFXError(&error, OFXAccountLocalDocumentsDirectoryInvalidForDeletion, @"Error attempting to delete local account documentts", @"The passed in URL is not inside the local documents area.");
+                completionHandler(error);
+            }
+            return;
+        }
+    } else {
+        // Otherwise, this should be a folder inside the user's local documents folder.
     }
     
+    DEBUG_ACCOUNT_REMOVAL(1, @"Removing documents at URL %@", documentsURL);
+
     // Looks good! Go ahead and do the deletion. We need to do this with file coordination since there might still be documents open in some edge conditions. For example, on iOS a preview might be being generated, in which case the document will be open (and it will not accommodate deletion until that is done).
     // We can't block the main queue here or we'll deadlock, so this needs to be done on a background queue.
     
@@ -465,7 +527,7 @@ static BOOL _validateLocalFileSystem(NSURL *url, NSError **outError)
     return nil;
 }
 
-- initWithType:(OFXServerAccountType *)type usageMode:(OFXServerAccountUsageMode)usageMode remoteBaseURL:(NSURL *)remoteBaseURL localDocumentsURL:(NSURL *)localDocumentsURL error:(NSError **)outError;
+- (nullable instancetype)initWithType:(OFXServerAccountType *)type usageMode:(OFXServerAccountUsageMode)usageMode remoteBaseURL:(NSURL *)remoteBaseURL localDocumentsURL:(NSURL *)localDocumentsURL error:(NSError **)outError;
 {
     OBPRECONDITION(type);
     OBPRECONDITION(remoteBaseURL);
@@ -484,7 +546,6 @@ static BOOL _validateLocalFileSystem(NSURL *url, NSError **outError)
     _type = type;
     _remoteBaseURL = [[remoteBaseURL absoluteURL] copy];
     
-#if OFX_MAC_STYLE_ACCOUNT
     __autoreleasing NSError *bookmarkError;
     
     _localDocumentsBookmarkData = bookmarkDataWithURL(localDocumentsURL, &bookmarkError);
@@ -504,39 +565,32 @@ static BOOL _validateLocalFileSystem(NSURL *url, NSError **outError)
             *outError = resolveError;
         return nil;
     }
-#else
-    _localDocumentsURL = [[localDocumentsURL absoluteURL] copy];
-    _nickname = nil;
-#endif
-    
+
     _usageMode = usageMode;
     
     OBASSERT_IF(_usageMode == OFXServerAccountUsageModeCloudSync, [[self.localDocumentsURL absoluteString] hasSuffix:@"/"]);
     return self;
 }
 
-#if OFX_MAC_STYLE_ACCOUNT
 - (void)dealloc;
 {
     if (_localDocumentsBookmarkURL) {
         DEBUG_BOOKMARK(1, @"Stopping security scoped access of %@", _localDocumentsBookmarkURL);
-        [_localDocumentsBookmarkURL stopAccessingSecurityScopedResource];
+        StopAccessing(_localDocumentsBookmarkURL);
         _localDocumentsBookmarkURL = nil;
     }
 }
-#endif
 
 + (NSSet *)keyPathsForValuesAffectingDisplayName;
 {
     // uuid, type, and remoteBaseURL not included since they can't change.
     return [NSSet setWithObjects:
-#if OFX_MAC_STYLE_ACCOUNT
-            LastKnownDislpayNameKey, // On Mac, the display name is derived from the local folder name
-#else
-            // On iOS, the display name is derived from the nickname
-            NicknameKey,
-            RemoteBaseURLKey,
-#endif
+            LastKnownDislpayNameKey, // The display name is derived from the local folder name
+
+            // On unmigrated accounts on iOS, the display name is derived from the nickname
+            UnmigratedNicknameKey,
+
+            RemoteBaseURLKey, // TODO: Comment above says this can't change, but this was included in previous iOS builds.
             nil];
 }
 
@@ -550,20 +604,23 @@ static BOOL _validateLocalFileSystem(NSURL *url, NSError **outError)
 
 - (NSString *)displayName;
 {
-#if OFX_MAC_STYLE_ACCOUNT
     OBPRECONDITION([NSThread isMainThread], "Not synchronizing here, but this should only be called for UI on the main thread.");
+    
+#if !OFX_MAC_STYLE_ACCOUNT
+    // Older iOS accounts had an editable nickname.
+    if (self.requiresMigration) {
+        if (OFIsEmptyString(_unmigratedNickname)) {
+            NSURLCredential *credential = OFReadCredentialsForServiceIdentifier(self.credentialServiceIdentifier, NULL);
+            return [OFXServerAccount suggestedDisplayNameForAccountType:_type url:self.remoteBaseURL username:credential.user excludingAccount:self];
+        } else {
+            return _unmigratedNickname;
+        }
+    }
+#endif
     
     // On Mac, the display name is derived from the local folder name.
     OBASSERT(_lastKnownDisplayName, "Should have resolved the local documents URL once");
     return _lastKnownDisplayName;
-#else
-    // On iOS, the nickname is an editable property of the account
-    if (![NSString isEmptyString:_nickname])
-        return _nickname;
-
-    NSURLCredential *credential = OFReadCredentialsForServiceIdentifier(self.credentialServiceIdentifier, NULL);
-    return [OFXServerAccount suggestedDisplayNameForAccountType:_type url:self.remoteBaseURL username:credential.user excludingAccount:self];
-#endif
 }
 
 - (NSString *)importTitle;
@@ -581,8 +638,6 @@ static BOOL _validateLocalFileSystem(NSURL *url, NSError **outError)
     return [_type accountDetailsStringForAccount:self];
 }
 
-#if OFX_MAC_STYLE_ACCOUNT
-
 - (BOOL)_resolveLocalDocumentsURL:(NSError **)outError; // Decodes the bookmark and attempts to start accessing the security scoped bookmark
 {
     // Does NOT early out if _accessedLocalDocumentsBookmarkURL != nil. This happens when we shut down an account agent and restart it due to the local documents directory moving.
@@ -599,7 +654,7 @@ static BOOL _validateLocalFileSystem(NSURL *url, NSError **outError)
     if (_localDocumentsBookmarkURL) {
         DEBUG_BOOKMARK(1, @"Stopping security scoped access of %@", _localDocumentsBookmarkURL);
         DEBUG_BOOKMARK(3, @"from:\n%@", OFCopySymbolicBacktrace());
-        [_localDocumentsBookmarkURL stopAccessingSecurityScopedResource];
+        StopAccessing(_localDocumentsBookmarkURL);
         _localDocumentsBookmarkURL = nil;
         _accessedLocalDocumentsBookmarkURL = nil;
     }
@@ -619,13 +674,13 @@ static BOOL _validateLocalFileSystem(NSURL *url, NSError **outError)
     DEBUG_BOOKMARK(1, @"Starting security scoped access of %@", _localDocumentsBookmarkURL);
     DEBUG_BOOKMARK(3, @"from:\n%@", OFCopySymbolicBacktrace());
     
-    if (![_localDocumentsBookmarkURL startAccessingSecurityScopedResource]) {
+    if (!StartAccessing(_localDocumentsBookmarkURL)) {
         OFXError(outError, OFXCannotResolveLocalDocumentsURL,
                  ERROR_DESCRIPTION,
                  NSLocalizedStringFromTableInBundle(@"Could not access synchronized documents folder.", @"OmniFileExchange", OMNI_BUNDLE, @"error reason"));
         return NO;
     }
-
+    
     // The security scoped bookmark has file://path/?applesecurityscope=BAG_OF_HEX
     // Use whatever the bookmark said, but strip the query.
     _accessedLocalDocumentsBookmarkURL = [[NSURL fileURLWithPath:[[_localDocumentsBookmarkURL absoluteURL] path]] URLByStandardizingPath];
@@ -657,6 +712,10 @@ static BOOL _validateLocalFileSystem(NSURL *url, NSError **outError)
 
 - (BOOL)resolveLocalDocumentsURL:(NSError **)outError; // Decodes the bookmark and attempts to start accessing the security scoped bookmark
 {
+#if !OFX_MAC_STYLE_ACCOUNT
+    OBPRECONDITION(self.requiresMigration == NO, "An account that isn't migrated doesn't have a local documents bookmark to resolve yet");
+#endif
+    
     __autoreleasing NSError *resolveError;
     BOOL success;
     
@@ -680,11 +739,63 @@ static BOOL _validateLocalFileSystem(NSURL *url, NSError **outError)
         DEBUG_BOOKMARK(1, @"Clearing local documents URL");
         [self willChangeValueForKey:OFValidateKeyPath(self, localDocumentsURL)];
         _accessedLocalDocumentsBookmarkURL = nil;
-        [_localDocumentsBookmarkURL stopAccessingSecurityScopedResource];
+        StopAccessing(_localDocumentsBookmarkURL);
         _localDocumentsBookmarkURL = nil;
         _localDocumentsBookmarkData = nil;
         [self didChangeValueForKey:OFValidateKeyPath(self, localDocumentsURL)];
     }
+}
+
+#if !OFX_MAC_STYLE_ACCOUNT
+@synthesize nickname = _unmigratedNickname;
+
+- (BOOL)requiresMigration;
+{
+    return _unmigratedLocalDocumentsURL != nil;
+}
+
+- (BOOL)didMigrateToLocalDocumentsURL:(NSURL *)updatedDocumentsURL error:(NSError **)outError;
+{
+    OBPRECONDITION(_unmigratedLocalDocumentsURL);
+    OBPRECONDITION(_accessedLocalDocumentsBookmarkURL == nil);
+    OBPRECONDITION(_localDocumentsBookmarkURL == nil);
+    OBPRECONDITION(_localDocumentsBookmarkData == nil);
+
+    DEBUG_BOOKMARK(1, @"Did migrate to local documents URL %@", updatedDocumentsURL);
+
+    // Speculatively fill out the bookmark
+    __autoreleasing NSError *bookmarkError;
+    _localDocumentsBookmarkData = bookmarkDataWithURL(updatedDocumentsURL, &bookmarkError);
+    if (!_localDocumentsBookmarkData) {
+        DEBUG_BOOKMARK(0, @"Error creating bookmark data for %@: %@", updatedDocumentsURL, bookmarkError);
+        if (outError) {
+            *outError = bookmarkError;
+        }
+        return NO;
+    }
+    
+     __autoreleasing NSError *resolveError;
+    if (![self _resolveLocalDocumentsURL:&resolveError]) {
+        _localDocumentsBookmarkData = nil; // Clear the bookmark data that didn't work.
+        
+        DEBUG_BOOKMARK(0, @"Error resolving new migrated bookmark: %@", resolveError);
+        if (outError) {
+            *outError = resolveError;
+        }
+        return NO;
+    }
+
+    // This is a hack to let OFXServerAccountRegistry know that it needs to move the whole metadata directory for this account.
+    _didMigrate = YES;
+    
+    // We've migrated! Tell the account registry to save us -- clearing this will make us stop inserting a "localDocumentsURL" key in the dictionary (but this isn't one of the keys in +keyPathsForValuesAffectingPropertyList
+    [self willChangeValueForKey:OFValidateKeyPath(self, propertyList)];
+    _unmigratedLocalDocumentsURL = nil;
+    [self didChangeValueForKey:OFValidateKeyPath(self, propertyList)];
+    
+    _didMigrate = NO;
+    
+    return YES;
 }
 
 #endif
@@ -692,17 +803,26 @@ static BOOL _validateLocalFileSystem(NSURL *url, NSError **outError)
 - (NSURL *)localDocumentsURL;
 {
     assert(_usageMode == OFXServerAccountUsageModeCloudSync); // We shouldn't be calling this for non-syncing accounts
-#if OFX_MAC_STYLE_ACCOUNT
+
     NSURL *localDocumentsURL;
     @synchronized(self) {
-        localDocumentsURL = _accessedLocalDocumentsBookmarkURL;
+#if !OFX_MAC_STYLE_ACCOUNT
+        if (_unmigratedLocalDocumentsURL != nil) {
+            // We are still syncing from with the local documents stored in the application library.
+            localDocumentsURL = _unmigratedLocalDocumentsURL;
+            OBASSERT(_accessedLocalDocumentsBookmarkURL == nil);
+        }
+        else
+#endif
+        {
+            localDocumentsURL = _accessedLocalDocumentsBookmarkURL;
+#if !OFX_MAC_STYLE_ACCOUNT
+            OBASSERT(_unmigratedLocalDocumentsURL == nil);
+#endif
+        }
     }
     assert(localDocumentsURL); // Must have called -resolveLocalDocumentsURL:.
     return localDocumentsURL;
-#else
-    OBPRECONDITION(_localDocumentsURL);
-    return _localDocumentsURL;
-#endif
 }
 
 - (void)prepareForRemoval;
@@ -714,18 +834,20 @@ static BOOL _validateLocalFileSystem(NSURL *url, NSError **outError)
         return;
     }
 
+    DEBUG_ACCOUNT_REMOVAL(1, @"prepareForRemoval");
+    
     // We don't currently remove the credentials here. There might be WebDAV operations going on (which should be stopped ASAP), but there is no point provoking weird error conditions. We want to shut down cleanly.
     [self willChangeValueForKey:HasBeenPreparedForRemovalKey];
     _hasBeenPreparedForRemoval = YES;
     [self didChangeValueForKey:HasBeenPreparedForRemovalKey];
 }
 
-- (void)reportError:(NSError *)error;
+- (void)reportError:(nullable NSError *)error;
 {
     [self reportError:error format:nil];
 }
 
-- (void)reportError:(NSError *)error format:(NSString *)format, ...;
+- (void)reportError:(nullable NSError *)error format:(nullable NSString *)format, ...;
 {
     if ([error causedByUserCancelling])
         return;
@@ -761,7 +883,7 @@ static BOOL _validateLocalFileSystem(NSURL *url, NSError **outError)
 
 #pragma mark - Private
 
-- _initWithUUID:(NSString *)uuid propertyList:(NSDictionary *)propertyList error:(NSError **)outError;
+- (nullable instancetype)_initWithUUID:(NSString *)uuid propertyList:(NSDictionary *)propertyList error:(NSError **)outError;
 {
     OBPRECONDITION(![NSString isEmptyString:uuid]);
     OBPRECONDITION([propertyList isKindOfClass:[NSDictionary class]]);
@@ -797,21 +919,27 @@ static BOOL _validateLocalFileSystem(NSURL *url, NSError **outError)
         return nil;
     }
 
-#if OFX_MAC_STYLE_ACCOUNT
     // In this case, the app-scoped bookmark is the 'truth', but we'd like it to be the same was what we wrote in the plist
     // We don't treat errors in unarchiving this as fatal -- the user can reconnect to the account by picking another folder.
     _localDocumentsBookmarkData = [propertyList[@"localDocumentsBookmark"] copy];
-    DEBUG_BOOKMARK(1, @"Loaded bookmark data of %@", _localDocumentsBookmarkData);
-#else
-    // TODO: Not currently required but probably should be.
-    URLString = propertyList[@"localDocumentsURL"];
-    if (URLString)
-        _localDocumentsURL = [[NSURL alloc] initWithString:URLString];
-    else
-        _localDocumentsURL = nil;
-    
-    _localDocumentsURL = [OFXServerAccount _fixLocalDocumentsURL:_localDocumentsURL];
+    if (_localDocumentsBookmarkData) {
+        DEBUG_BOOKMARK(1, @"Loaded bookmark data of %@", _localDocumentsBookmarkData);
+    } else {
+#if !OFX_MAC_STYLE_ACCOUNT
+        // TODO: Not currently required but probably should be.
+        URLString = propertyList[@"localDocumentsURL"];
+        DEBUG_BOOKMARK(1, @"Unmigrated local URL loaded %@", URLString);
+
+        if (URLString) {
+            _unmigratedLocalDocumentsURL = [[NSURL alloc] initWithString:URLString];
+            _unmigratedLocalDocumentsURL = [OFXServerAccount _fixLocalDocumentsURL:_unmigratedLocalDocumentsURL];
+        } else {
+            _unmigratedLocalDocumentsURL = nil;
+        }
+
+        DEBUG_BOOKMARK(1, @"Unmigrated local URL adjusted to %@", _unmigratedLocalDocumentsURL);
 #endif
+    }
 
     [self _takeValuesFromPropertyList:propertyList];
     
@@ -835,13 +963,13 @@ static BOOL _validateLocalFileSystem(NSURL *url, NSError **outError)
         _usageMode = OFXServerAccountUsageModeImportExport;
     }
 
-#if OFX_MAC_STYLE_ACCOUNT
     OBASSERT(_lastKnownDisplayName == nil, @"should not have resolved the local documents URL yet");
     _lastKnownDisplayName = [propertyList[@"displayName"] copy];
-#else
-    _nickname = [propertyList[@"displayName"] copy];
-#endif
 
+#if !OFX_MAC_STYLE_ACCOUNT
+    _unmigratedNickname = [propertyList[UnmigratedNicknameKey] copy];
+#endif
+    
     _credentialServiceIdentifier = [propertyList[@"serviceIdentifier"] copy];
     
     _hasBeenPreparedForRemoval = [propertyList[@"removed"] boolValue];
@@ -851,15 +979,12 @@ static BOOL _validateLocalFileSystem(NSURL *url, NSError **outError)
 {
     // uuid, type, and remoteBaseURL not included since they can't change.
     return [NSSet setWithObjects:
-#if OFX_MAC_STYLE_ACCOUNT
-            // On Mac, the whole local documents folder can be renamed or moved using the Finder.
+            // The whole local documents folder can be renamed or moved using the Finder/Files.
             LastKnownDislpayNameKey,
             
             // This can get reset when our bookmark is flagged as 'stale'.
             LocalDocumentsBookmarkDataKey,
-#else
-            NicknameKey, // On iOS, the nickname can be changed by the user
-#endif
+
             UsageModeKey, CredentialServiceIdentifierKey, HasBeenPreparedForRemovalKey, nil];
 }
 
@@ -877,16 +1002,19 @@ static BOOL _validateLocalFileSystem(NSURL *url, NSError **outError)
     if (_remoteBaseURL)
         [plist setObject:[_remoteBaseURL absoluteString] forKey:@"remoteBaseURL"];
     
-#if OFX_MAC_STYLE_ACCOUNT
     if (_localDocumentsBookmarkData)
         [plist setObject:_localDocumentsBookmarkData forKey:@"localDocumentsBookmark"];
+    
     if (_lastKnownDisplayName)
         [plist setObject:_lastKnownDisplayName forKey:@"displayName"];
-#else
-    if (_localDocumentsURL)
-        [plist setObject:[_localDocumentsURL absoluteString] forKey:@"localDocumentsURL"];
-    if (_nickname)
-        [plist setObject:_nickname forKey:@"displayName"];
+    
+#if !OFX_MAC_STYLE_ACCOUNT
+    if (_unmigratedNickname) {
+        [plist setObject:_unmigratedNickname forKey:UnmigratedNicknameKey];
+    }
+    if (_unmigratedLocalDocumentsURL) {
+        [plist setObject:[_unmigratedLocalDocumentsURL absoluteString] forKey:@"localDocumentsURL"];
+    }
 #endif
 
     switch (_usageMode) {
@@ -900,8 +1028,10 @@ static BOOL _validateLocalFileSystem(NSURL *url, NSError **outError)
     if (_credentialServiceIdentifier)
         [plist setObject:_credentialServiceIdentifier forKey:@"serviceIdentifier"];
 
-    if (_hasBeenPreparedForRemoval)
+    if (_hasBeenPreparedForRemoval) {
+        DEBUG_ACCOUNT_REMOVAL(1, @"Recording `removed=YES` in account property list");
         plist[@"removed"] = @YES;
+    }
     
     return plist;
 }
@@ -937,3 +1067,6 @@ static BOOL _validateLocalFileSystem(NSURL *url, NSError **outError)
 NSString * const OFXAccountTransfersNeededNotification = @"OFXAccountTransfersNeededNotification";
 NSString * const OFXAccountTransfersNeededDescriptionKey = @"OFXAccountTransfersNeededDescription";
 #endif
+
+NS_ASSUME_NONNULL_END
+

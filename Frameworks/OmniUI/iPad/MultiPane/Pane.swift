@@ -272,4 +272,24 @@ extension UIViewController {
         }
         return isVisible
     }
+    
+    public var deepestAncestor: UIViewController {
+        var ancestor = self
+        while let parent = ancestor.parent {
+            ancestor = parent
+        }
+        return ancestor
+    }
+    
+    public func isOrHasAncestor(_ possibleAncestor: UIViewController) -> Bool {
+        guard possibleAncestor != self else { return true }
+        var ancestor = self
+        while let parent = ancestor.parent {
+            if possibleAncestor == parent {
+                return true
+            }
+            ancestor = parent
+        }
+        return false
+    }
 }

@@ -9,7 +9,6 @@
 #import <OmniFileExchange/OFXAccountClientParameters.h>
 #import <OmniFileExchange/OFXAgent.h>
 #import <OmniFileExchange/OFXAgentActivity.h>
-#import <OmniFileExchange/OFXDocumentStoreScope.h>
 #import <OmniFileExchange/OFXErrors.h>
 #import <OmniFileExchange/OFXFeatures.h>
 #import <OmniFileExchange/OFXFileMetadata.h>

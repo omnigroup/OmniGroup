@@ -14,5 +14,4 @@ OB_HIDDEN extern NSString * const OUIDocumentPreviewsUpdatedForFileItemNotificat
 @interface OUIDocument (/*Internal*/)
 - (void)_willBeRenamedLocally;
 - (void)_writePreviewsIfNeeded:(BOOL)onlyIfNeeded fileEdit:(OFFileEdit *)fileEdit withCompletionHandler:(void (^)(void))completionHandler;
-- (void)_manualSync:(id)sender;
 @end

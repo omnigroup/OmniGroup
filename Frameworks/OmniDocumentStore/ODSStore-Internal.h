@@ -11,8 +11,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ODSStore ()
 - (void)_fileItem:(ODSFileItem *)fileItem willMoveToURL:(NSURL *)newURL;
-- (void)_fileItemEdit:(ODSFileItemEdit *)fileItemEdit willCopyToURL:(NSURL *)newURL;
-- (void)_fileItemEdit:(ODSFileItemEdit *)fileItemEdit finishedCopyToURL:(NSURL *)destinationURL withFileItemEdit:(ODSFileItemEdit *)destinationFileItemEditOrNil;
 - (void)_willRemoveFileItems:(NSArray <ODSFileItem *> *)fileItems;
 @end
 

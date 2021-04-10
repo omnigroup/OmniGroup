@@ -26,7 +26,7 @@ typedef NS_ENUM(NSUInteger, OFCompletionMatchingOptions) {
     OFCompletionMatchingOptionDiacriticInsensitive     = (1 << 1),
 };
 
-extern OFCompletionMatchingOptions OFCompletionMatchingDefaultOptions;
+extern const OFCompletionMatchingOptions OFCompletionMatchingDefaultOptions;
 
 
 @interface OFCompletionMatch : NSObject

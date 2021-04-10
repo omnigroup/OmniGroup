@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,16 +26,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation OUIMenuOption
 
-+ (instancetype)optionWithFirstResponderSelector:(SEL)selector title:(NSString *)title image:(nullable UIImage *)image NS_EXTENSION_UNAVAILABLE_IOS("");
++ (instancetype)optionWithTarget:(id)target selector:(SEL)selector title:(NSString *)title image:(nullable UIImage *)image NS_EXTENSION_UNAVAILABLE_IOS("");
 {
-    OUIMenuOptionAction action = ^(OUIMenuInvocation *invocation){
-        // Try the first responder and then the app delegate.
+    __block __weak id actionTarget = target;
+    OUIMenuOptionAction action = ^(OUIMenuInvocation *invocation) {
         UIApplication *app = [UIApplication sharedApplication];
-        if ([app sendAction:selector to:nil from:self forEvent:nil])
+        if ([app sendAction:selector to:actionTarget from:invocation forEvent:nil])
             return;
-        if ([app sendAction:selector to:app.delegate from:self forEvent:nil])
-            return;
-        
+
         NSLog(@"No target found for menu action %@", NSStringFromSelector(selector));
     };
     

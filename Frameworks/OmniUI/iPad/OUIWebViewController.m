@@ -128,10 +128,22 @@ static NSString * const InvalidScheme = @"x-invalid";
     }
 }
 
-- (void)setURL:(NSURL *)aURL;
+- (void)setURL:(NSURL *)URL;
 {
-    NSURLRequest *request = [[NSURLRequest alloc] initWithURL:aURL];
-    [self.webView loadRequest:request];
+    if ([URL isFileURL]) {
+        NSURL *bundleDirectory = NSBundle.mainBundle.bundleURL;
+        NSURL *directory = [URL URLByDeletingLastPathComponent];
+
+        if ([directory.path hasPrefix:bundleDirectory.path]) {
+            directory = bundleDirectory;
+        }
+
+        [self.webView loadFileURL:URL allowingReadAccessToURL:directory];
+    } else {
+        NSURLRequest *request = [[NSURLRequest alloc] initWithURL:URL];
+        [self.webView loadRequest:request];
+    }
+    
     [self _updateBarButtonItems];
     [self startSpinner];
 }

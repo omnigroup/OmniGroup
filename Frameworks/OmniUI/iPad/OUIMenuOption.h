@@ -27,7 +27,7 @@ typedef BOOL (^OUIMenuOptionValidatorAction)(OUIMenuOption *option);
 
 @interface OUIMenuOption : NSObject
 
-+ (instancetype)optionWithFirstResponderSelector:(SEL)selector title:(NSString *)title image:(nullable UIImage *)image;
++ (instancetype)optionWithTarget:(id)target selector:(SEL)selector title:(NSString *)title image:(nullable UIImage *)image NS_EXTENSION_UNAVAILABLE_IOS(""); // The sender will be an OUIMenuInvocation
 
 + (instancetype)optionWithTitle:(NSString *)title image:(nullable UIImage *)image action:(nullable OUIMenuOptionAction)action;
 + (instancetype)optionWithTitle:(NSString *)title action:(nullable OUIMenuOptionAction)action;

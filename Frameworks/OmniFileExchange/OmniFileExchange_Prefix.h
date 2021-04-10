@@ -65,4 +65,10 @@ OB_HIDDEN extern NSInteger OFXActivityDebug;
         NSLog(@"ACTIVITY %@: " format, [self shortDescription], ## __VA_ARGS__); \
     } while (0)
 
+OB_HIDDEN extern NSInteger OFXAccountRemovalDebug;
+#define DEBUG_ACCOUNT_REMOVAL(level, format, ...) do { \
+    if (OFXAccountRemovalDebug >= (level)) \
+        NSLog(@"ACCOUNT REMOVAL %@: " format, [self shortDescription], ## __VA_ARGS__); \
+    } while (0)
+
 #import "OFXTrace.h"

@@ -102,7 +102,7 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
 
 + (UIColor *)disabledLabelTextColor;
 {
-    return [UIColor colorWithHue:kOUIInspectorLabelTextColor.h saturation:kOUIInspectorLabelTextColor.s brightness:kOUIInspectorLabelTextColor.v alpha:kOUIInspectorLabelDisabledTextColorAlphaScale * kOUIInspectorLabelTextColor.a];
+    return [UIColor tertiaryLabelColor];
 }
 
 + (UIColor *)labelTextColor;
@@ -122,7 +122,7 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
 
 + (UIColor *)indirectValueTextColor;
 {
-    return [UIColor systemGrayColor];
+    return [UIColor secondaryLabelColor];
 }
 
 - init;

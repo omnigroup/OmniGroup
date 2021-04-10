@@ -9,12 +9,8 @@
 
 @interface OmniUIDocumentAppearance : OAAppearance
 
-@property (readonly) CGFloat documentPickerLocationRowHeight;
-@property (readonly) CGFloat documentPickerAddAccountRowHeight;
-
-@property (readonly) CGFloat documentPickerHomeScreenAnimationDuration;
-@property (readonly) CGFloat documentPickerHomeScreenAnimationBounceFactor;
-@property (readonly) NSString *documentPickerHomeScreenItemCountSeparator;
+@property (readonly) CGFloat serverAccountRowHeight;
+@property (readonly) CGFloat serverAccountAddRowHeight;
 
 @property (readonly) UIColor *documentPickerTintColorAgainstBackground;
 

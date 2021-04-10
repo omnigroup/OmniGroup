@@ -1,4 +1,4 @@
-// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -111,7 +111,6 @@ static NSString *_customLocalDocumentsDisplayName;
         return nil;
     
     _directoryURL = [directoryURL copy];
-    _isTrash = (scopeType == ODSLocalDirectoryScopeTrash);
     _isTemplate = (scopeType == ODSLocalDirectoryScopeTemplate);
     
     _filePresenterQueue = [[NSOperationQueue alloc] init];
@@ -124,9 +123,6 @@ static NSString *_customLocalDocumentsDisplayName;
 #endif
     
     [self _scanItemsWithCompletionHandler:nil];
-
-    if (_isTrash)
-        [ODSScope setTrashScope:self];
 
     return self;
 }
@@ -160,71 +156,9 @@ static NSString *_customLocalDocumentsDisplayName;
     OBPRECONDITION([items all:^BOOL(ODSItem *item) { return item.scope == self; }]);
     OBPRECONDITION([NSThread isMainThread]); // Synchronize with updating of fileItems, and this is the queue we'll invoke the completion handler on.
     
-    // capture scope
-    completionHandler = [completionHandler copy];
-    
-    if (!_isTrash) {
-        ODSScope *trashScope = self.documentStore.trashScope;
-        if (trashScope != nil) {
-            [trashScope takeItems:items toFolder:trashScope.rootFolder ignoringFileItems:nil completionHandler:^(NSSet *movedFileItems, NSArray *errorsOrNil) {
-                completionHandler(movedFileItems, errorsOrNil);
-            }];
-            return;
-        }
-    }
-
-    NSArray *deletions;
-    {
-        NSMutableArray *collectingDeletions = [NSMutableArray new];
-        for (ODSItem *item in items) {
-            [item eachFile:^(ODSFileItem *file) {
-                [collectingDeletions addObject:[[ODSFileItemDeletion alloc] initWithFileItem:file]];
-            }];
-        }
-        deletions = [collectingDeletions copy];
-    }
-    DEBUG_STORE(@"Deletions %@", [deletions valueForKey:@"shortDescription"]);
-    
-    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-        NSArray *fileItems = [deletions arrayByPerformingBlock:^(ODSFileItemDeletion *deletion){ return deletion.fileItem; }];
-        [self.documentStore _willRemoveFileItems:fileItems];
-    }];
-    
-    [self performAsynchronousFileAccessUsingBlock:^{
-        // Passing nil for the presenter so that we get our normal deletion notification via file coordination.
-        NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:nil];
-        
-        NSMutableSet *deletedFileItems = [NSMutableSet new];
-        NSMutableArray *errors = [NSMutableArray new];
-        
-        for (ODSFileItemDeletion *deletion in deletions) {
-            __autoreleasing NSError *error = nil;
-            BOOL success = [coordinator removeItemAtURL:deletion.sourceFileURL error:&error byAccessor:^BOOL(NSURL *newURL, NSError **outError){
-                DEBUG_STORE(@"  coordinator issued URL to delete %@", newURL);
-                
-                __autoreleasing NSError *deleteError = nil;
-                if (![[NSFileManager defaultManager] removeItemAtURL:newURL error:&deleteError]) {
-                    NSLog(@"Error deleting %@: %@", [newURL absoluteString], [deleteError toPropertyList]);
-                    if (outError)
-                        *outError = deleteError;
-                    return NO;
-                }
-                
-                return YES;
-            }];
-            
-            if (success)
-                [deletedFileItems addObject:deletion.fileItem];
-            else
-                [errors addObject:error];
-        }
-        
-        if (completionHandler) {
-            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-                completionHandler(deletedFileItems, errors);
-            }];
-        }
-    }];
+    // UIDocumentBrowserViewController will handle deletion
+    NSError *error = [NSError errorWithDomain:NSCocoaErrorDomain code:NSUserCancelledError userInfo:nil];
+    completionHandler(nil, @[error]);
 }
 
 - (void)wasAddedToDocumentStore;
@@ -324,9 +258,7 @@ static NSString *_customLocalDocumentsDisplayName;
 
 - (NSInteger)documentScopeGroupRank;
 {
-    if (_isTrash)
-        return 999;
-    else if (_isTemplate)
+    if (_isTemplate)
         return 998;
     else
         return -1;
@@ -334,9 +266,7 @@ static NSString *_customLocalDocumentsDisplayName;
 
 - (NSString *)identifier;
 {
-    if (_isTrash)
-        return @"trash";
-    else if (_isTemplate)
+    if (_isTemplate)
         return @"template";
     else
         return @"local";
@@ -344,9 +274,7 @@ static NSString *_customLocalDocumentsDisplayName;
 
 - (NSString *)displayName;
 {
-    if (_isTrash)
-        return NSLocalizedStringFromTableInBundle(@"Trash", @"OmniDocumentStore", OMNI_BUNDLE, @"Document store scope display name");
-    else if (_isTemplate)
+    if (_isTemplate)
         return NSLocalizedStringFromTableInBundle(@"Built-in", @"OmniDocumentStore", OMNI_BUNDLE, @"Document store scope display name");
     else
         return ODSLocalDirectoryScope.localDocumentsDisplayName;
@@ -475,14 +403,6 @@ static void _updateFlag(ODSFileItem *fileItem, NSString *bindingKey, BOOL value)
                 NSURL *fileURL = fileEdit.originalFileURL;
 
                 if (!fileItem) {
-                    NSString *fileType = OFUTIForFileExtensionPreferringNative([fileURL pathExtension], @(fileEdit.directory));
-
-                    if (![self.documentStore canViewFileTypeWithIdentifier:fileType]) {
-                        // Can't open a file of this type, so don't make a fileItem for it.
-                        // We used to outright delete it, but that seems poor form in the age of iOS 11 Files access.
-                        return;
-                    }
-
                     fileItem = [self makeFileItemForURL:fileURL isDirectory:fileEdit.directory fileEdit:fileEdit userModificationDate:userModificationDate];
                     if (!fileItem) {
                         OBASSERT_NOT_REACHED("Failed to make a file item!");

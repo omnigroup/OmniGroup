@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -106,6 +106,8 @@ RCS_ID("$Id$");
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath;
 {
+    OBFinishPortingWithNote("<bug:///176698> (Frameworks-iOS Unassigned: OBFinishPorting: -restoreSampleDocuments: in OUIDocumentAppController)");
+#if 0
     ODAVFileInfo *fileInfo = self.files[indexPath.row];
     
     [self dismissViewControllerAnimated:YES completion:^{
@@ -120,6 +122,7 @@ RCS_ID("$Id$");
             [scope addDocumentInFolder:scope.rootFolder baseName:localizedBaseName fromURL:fileInfo.originalURL option:ODSStoreAddByCopyingSourceToAvailableDestinationURL completionHandler:nil];
         }
     }];
+#endif
 }
 
 @end

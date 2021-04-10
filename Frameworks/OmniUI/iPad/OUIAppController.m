@@ -20,19 +20,19 @@
 #import <OmniFoundation/OFPreference.h>
 #import <OmniFoundation/OFVersionNumber.h>
 #import <OmniUI/OUIAppController+SpecialURLHandling.h>
+#import <OmniUI/OUIAppControllerSceneHelper.h>
+#import <OmniUI/OUIAttentionSeekingButton.h>
 #import <OmniUI/OUIBarButtonItem.h>
 #import <OmniUI/OUIChangePreferenceURLCommand.h>
 #import <OmniUI/OUIDebugURLCommand.h>
 #import <OmniUI/OUIHelpURLCommand.h>
 #import <OmniUI/OUIKeyboardNotifier.h>
-#import <OmniUI/OUIPurchaseURLCommand.h>
-#import <OmniUI/OUISendFeedbackURLCommand.h>
 #import <OmniUI/OUIMenuController.h>
 #import <OmniUI/OUIMenuOption.h>
+#import <OmniUI/OUIPurchaseURLCommand.h>
+#import <OmniUI/OUISendFeedbackURLCommand.h>
 #import <OmniUI/UIView-OUIExtensions.h>
 #import <OmniUI/UIViewController-OUIExtensions.h>
-#import <OmniUI/OUIAttentionSeekingButton.h>
-
 #import <sys/sysctl.h>
 
 #import "OUIChangeAppIconURLCommand.h"
@@ -47,31 +47,18 @@ NSString * const PreviouslyShownURLsKey = @"OSU_previously_shown_URLs";
 NSNotificationName const OUIAttentionSeekingNotification = @"OUIAttentionSeekingNotification";
 NSString * const OUIAttentionSeekingForNewsKey = @"OUIAttentionSeekingForNewsKey";
 
-@interface UIApplication (NewsletterExtensions)
-@property (nonatomic, readonly) NSArray<NSURLQueryItem *> *signUpForOmniNewsletterQueryItems;
-@end
-
-
 @interface OUIAppController ()
 @property(strong, nonatomic) NSTimer *timerForSnapshots;
-@property(strong, nonatomic) NSMapTable *appMenuUnderlyingButtonsMappedToAssociatedBarButtonItems;
-
-// Radar 37952455: Regression: Spurious "implementing unavailable method" warning when subclassing
-- (BOOL)webViewControllerShouldClose:(OUIWebViewController *)webViewController NS_EXTENSION_UNAVAILABLE_IOS("");
-
 @end
 
 @implementation OUIAppController
 {
-    UIWindow *_window;
-
     NSMutableArray *_launchActions;
-    OUIMenuController *_appMenuController;
     NSOperationQueue *_backgroundPromptQueue;
 }
 
 static NSString *_defaultReportErrorActionTitle;
-static void (^_defaultReportErrorActionBlock)(NSError *error);
+static void (^_defaultReportErrorActionBlock)(UIViewController *viewController, NSError *error);
 
 
 BOOL OUIShouldLogPerformanceMetrics = NO;
@@ -194,32 +181,10 @@ static void __iOS7B5CleanConsoleOutput(void)
 + (void)registerDefaultReportErrorAction NS_EXTENSION_UNAVAILABLE_IOS("Cannot register the default report error action from extensions as it uses API which extensions can't use");
 {
     _defaultReportErrorActionTitle = NSLocalizedStringFromTableInBundle(@"Report Error", @"OmniUI", OMNI_BUNDLE, @"When displaying a generic error, this is the option to report the error.");
-    _defaultReportErrorActionBlock = ^(NSError *error) {
+    _defaultReportErrorActionBlock = ^(UIViewController *viewController, NSError *error) {
         NSString *body = [NSString stringWithFormat:@"\n%@\n\n%@\n", [OUIAppController.controller fullReleaseString], [error toPropertyList]];
-        [OUIAppController.controller sendFeedbackWithSubject:[NSString stringWithFormat:@"Error encountered: %@", [error localizedDescription]] body:body];
+        [OUIAppController.sharedController sendFeedbackWithSubject:[NSString stringWithFormat:@"Error encountered: %@", [error localizedDescription]] body:body inScene:viewController.view.window.windowScene];
     };
-}
-
-
-// UIApplicationDelegate has an @optional window property.
-@synthesize window = _window;
-
-- (id)init NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based solutions where available instead.");
-{
-    if (!(self = [super init])) {
-        return nil;
-    }
-    
-    Class myClass = [self class];
-    [myClass registerCommandClass:[OUIChangeAppIconURLCommand class] forSpecialURLPath:@"/change-app-icon"];
-    [myClass registerCommandClass:[OUIChangePreferenceURLCommand class] forSpecialURLPath:@"/change-preference"];
-    [myClass registerCommandClass:[OUIDebugURLCommand class] forSpecialURLPath:@"/debug"];
-    [myClass registerCommandClass:[OUIHelpURLCommand class] forSpecialURLPath:@"/help"];
-    [myClass registerCommandClass:[OUIPurchaseURLCommand class] forSpecialURLPath:@"/purchase"];
-    [myClass registerCommandClass:[OUISendFeedbackURLCommand class] forSpecialURLPath:@"/send-feedback"];
-    [myClass registerDefaultReportErrorAction];
-    
-    return self;
 }
 
 + (NSString *)applicationName;
@@ -255,6 +220,8 @@ static void __iOS7B5CleanConsoleOutput(void)
 {
     return nil;
 }
+
+NSString * const OUIHelpBookNameKey = @"OUIHelpBookName";
 
 + (nullable NSString *)helpTitle;
 {
@@ -298,7 +265,7 @@ static void __iOS7B5CleanConsoleOutput(void)
     return NO;
 }
 
-+ (void)openURL:(NSURL*)url options:(NSDictionary<NSString *, id> *)options completionHandler:(void (^ __nullable)(BOOL success))completion NS_AVAILABLE_IOS(10_0) NS_EXTENSION_UNAVAILABLE_IOS("");
++ (void)openURL:(NSURL*)url options:(NSDictionary<NSString *, id> *)options completionHandler:(void (^ __nullable)(BOOL success))completion NS_EXTENSION_UNAVAILABLE_IOS("") NS_DEPRECATED_IOS(13_0, 13_0, "The singleton app controller cannot know the correct presentation source in a multi-scene context.");
 {
     UIApplication *sharedApplication = [UIApplication sharedApplication];
     NSString *scheme = [[url scheme] lowercaseString];
@@ -351,15 +318,36 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
 // Very basic.
 + (void)presentError:(NSError *)error;
 {
-    UIViewController *viewController = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
-    OBASSERT(viewController.presentedViewController == nil, "Error presentation is unlikely to work; the +presentError:fromViewController: method is preferred.");
-    [self presentError:error fromViewController:viewController file:NULL line:0];
+    UIWindow *window = [self windowForScene:nil options:OUIWindowForSceneOptionsAllowCascadingLookup];
+    UIViewController *viewController = window.rootViewController;
+
+    if (viewController == nil) {
+        OBASSERT_NOT_REACHED("Couldn't find suitable scene for error alert presentation.");
+        NSLog(@"Couldn't present error alert: %@", error);
+    } else {
+        [self presentError:error fromViewController:viewController file:NULL line:0];
+    }
 }
 
 + (void)presentError:(NSError *)error fromViewController:(UIViewController *)viewController;
 {
     OBASSERT(viewController.presentedViewController == nil);
     [self presentError:error fromViewController:viewController file:NULL line:0];
+}
+
+// Prefer passing a scene; will attempt to pick a sensible scene when nil
++ (void)presentError:(NSError *)error inScene:(nullable UIScene *)scene file:(const char * _Nullable)file line:(int)line;
+{
+    OUIWindowForSceneOptions options = (scene == nil) ? OUIWindowForSceneOptionsNone : OUIWindowForSceneOptionsAllowCascadingLookup;
+    UIWindow *window = [self windowForScene:scene options:options];
+    UIViewController *rootViewController = window.rootViewController;
+    
+    if (rootViewController == nil) {
+        OBASSERT_NOT_REACHED("Couldn't find suitable scene for error presentation.");
+        NSLog(@"Couldn't present error: %@", error);
+    } else {
+        [self presentAlert:error fromViewController:rootViewController file:file line:line];
+    }
 }
 
 + (void)presentError:(NSError *)error fromViewController:(UIViewController *)viewController cancelButtonTitle:(NSString *)cancelButtonTitle optionalActionTitle:(nullable NSString *)optionalActionTitle optionalAction:(void (^ __nullable)(UIAlertAction *action))optionalAction;
@@ -416,7 +404,7 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
     void (^optionalAction)(UIAlertAction *action);
     if (_defaultReportErrorActionBlock != NULL && [self shouldOfferToReportError:error]) {
         optionalAction = ^(UIAlertAction * __nonnull action) {
-            _defaultReportErrorActionBlock(error);
+            _defaultReportErrorActionBlock(viewController, error);
         };
     }
 
@@ -433,14 +421,146 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
     [self _presentError:error fromViewController:viewController file:file line:line cancelButtonTitle:NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniUI", OMNI_BUNDLE, @"button title")];
 }
 
+// Prefer passing a scene; will attempt to pick a sensible scene when nil
++ (void)presentAlert:(NSError *)error inScene:(nullable UIScene *)scene file:(const char * _Nullable)file line:(int)line;  // 'OK' instead of 'Cancel' for the button title
+{
+    OUIWindowForSceneOptions options = (scene == nil) ? OUIWindowForSceneOptionsNone : OUIWindowForSceneOptionsAllowCascadingLookup;
+    UIWindow *window = [self windowForScene:scene options:options];
+    UIViewController *rootViewController = window.rootViewController;
+
+    if (rootViewController == nil) {
+        OBASSERT_NOT_REACHED("Couldn't find suitable scene for error alert presentation.");
+        NSLog(@"Couldn't present error alert: %@", error);
+    } else {
+        [self presentAlert:error fromViewController:rootViewController file:file line:line];
+    }
+}
+
 + (void)presentAlert:(NSError *)error file:(const char * _Nullable)file line:(int)line;  // 'OK' instead of 'Cancel' for the button title
 {
-    [self _presentError:error fromViewController:[[[[UIApplication sharedApplication] delegate] window] rootViewController] file:file line:line cancelButtonTitle:NSLocalizedStringFromTableInBundle(@"OK", @"OmniUI", OMNI_BUNDLE, @"button title")];
+    UIWindow *window = [self windowForScene:nil options:OUIWindowForSceneOptionsAllowCascadingLookup];
+    UIViewController *viewController = window.rootViewController;
+
+    if (viewController == nil) {
+        OBASSERT_NOT_REACHED("Couldn't find suitable scene for error alert presentation.");
+        NSLog(@"Couldn't present error alert: %@", error);
+    } else {
+        [self _presentError:error fromViewController:viewController file:file line:line cancelButtonTitle:NSLocalizedStringFromTableInBundle(@"OK", @"OmniUI", OMNI_BUNDLE, @"button title")];
+    }
 }
 
 + (void)presentAlert:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char * _Nullable)file line:(int)line;  // 'OK' instead of 'Cancel' for the button title
 {
     [self _presentError:error fromViewController:viewController file:file line:line cancelButtonTitle:NSLocalizedStringFromTableInBundle(@"OK", @"OmniUI", OMNI_BUNDLE, @"button title")];
+}
+
+- (id)init NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based solutions where available instead.");
+{
+    if (!(self = [super init])) {
+        return nil;
+    }
+    
+    Class myClass = [self class];
+    [myClass registerCommandClass:[OUIChangeAppIconURLCommand class] forSpecialURLPath:@"/change-app-icon"];
+    [myClass registerCommandClass:[OUIChangePreferenceURLCommand class] forSpecialURLPath:@"/change-preference"];
+    [myClass registerCommandClass:[OUIDebugURLCommand class] forSpecialURLPath:@"/debug"];
+    [myClass registerCommandClass:[OUIHelpURLCommand class] forSpecialURLPath:@"/help"];
+    [myClass registerCommandClass:[OUIPurchaseURLCommand class] forSpecialURLPath:@"/purchase"];
+    [myClass registerCommandClass:[OUISendFeedbackURLCommand class] forSpecialURLPath:@"/send-feedback"];
+    [myClass registerDefaultReportErrorAction];
+    
+    return self;
+}
+
+#if 1 && defined(DEBUG_correia)
+    #define WINDOW_DEPRECATION_ASSERTIONS_ON 1
+#else
+    #define WINDOW_DEPRECATION_ASSERTIONS_ON 0
+#endif
+
+- (UIWindow *)window;
+{
+#if WINDOW_DEPRECATION_ASSERTIONS_ON
+    OBASSERT_NOT_REACHED("The `window` property is deprecated.");
+#endif
+
+    return nil;
+}
+
+- (void)setWindow:(UIWindow *)window;
+{
+#if WINDOW_DEPRECATION_ASSERTIONS_ON
+    OBASSERT_NOT_REACHED("The `window` property is deprecated.");
+#endif
+}
+
++ (nullable UIWindow *)windowForScene:(nullable UIScene *)scene options:(OUIWindowForSceneOptions)options;
+{
+    BOOL allowCascadingLookup = (options & OUIWindowForSceneOptionsAllowCascadingLookup) != 0;
+    UIScene *resolvedScene = scene;
+
+    // First try to find a scene for the key window
+    if (resolvedScene == nil && allowCascadingLookup) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        resolvedScene = [UIApplication sharedApplication].keyWindow.windowScene;
+#pragma clang diagnostic pop
+    }
+    
+    if (resolvedScene == nil && allowCascadingLookup) {
+        for (UIScene *connectedScene in UIApplication.sharedApplication.connectedScenes) {
+            if (![connectedScene isKindOfClass:[UIWindowScene class]]) {
+                continue;
+            }
+            
+            UIWindowScene *windowScene = OB_CHECKED_CAST(UIWindowScene, connectedScene);
+            switch (windowScene.activationState) {
+                case UISceneActivationStateForegroundActive: {
+                    resolvedScene = windowScene;
+                    break;
+                }
+
+                case UISceneActivationStateForegroundInactive: {
+                    if ((options & OUIWindowForSceneOptionsRequireForegroundActiveScene) == 0) {
+                        resolvedScene = windowScene;
+                    }
+                    break;
+                }
+
+                case UISceneActivationStateBackground: {
+                    if ((options & OUIWindowForSceneOptionsRequireForegroundScene) == 0) {
+                        resolvedScene = windowScene;
+                    }
+                    break;
+                }
+
+                case UISceneActivationStateUnattached: {
+                    break;
+                }
+            }
+            
+            if (resolvedScene != nil) {
+                break;
+            }
+        }
+    }
+
+    UIWindow *window = nil;
+
+    if (resolvedScene != nil && [resolvedScene isKindOfClass:[UIWindowScene class]]) {
+        UIWindowScene *windowScene = OB_CHECKED_CAST(UIWindowScene, resolvedScene);
+        id delegate = windowScene.delegate;
+        if (delegate != nil && [delegate conformsToProtocol:@protocol(UIWindowSceneDelegate)]) {
+            id <UIWindowSceneDelegate> windowSceneDelegate = delegate;
+            window = windowSceneDelegate.window;
+        }
+        
+        if (window == nil) {
+            window = windowScene.windows.firstObject;
+        }
+    }
+
+    return window;
 }
 
 - (void)resetKeychain;
@@ -462,14 +582,70 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
     }
 }
 
-- (BOOL)hasOnlineHelp;
+- (NSURL *)helpForwardURL;
 {
-    return [self _onlineHelpURL] != nil;
+    NSURLComponents *components = [[NSURLComponents alloc] init];
+    components.scheme = @"https";
+    components.host = @"www.omnigroup.com";
+
+    NSString *path = @"/forward/documentation/html";
+
+    // Deliberately use the app bundle, not OMNI_BUNDLE – we want to redirect to the running app's documentation
+    path = [path stringByAppendingPathComponent:[[NSBundle mainBundle] bundleIdentifier]];
+
+    // Only use language codes we localize into, and when all else fails, fall back to English
+    NSString *languageCode = [[[NSBundle mainBundle] preferredLocalizations] firstObject] ?: @"en";
+    path = [path stringByAppendingPathComponent:languageCode];
+
+    // Clean the version string through OFVersionNumber so that it doesn't include "private test" or other suffixes
+    NSString *versionString = OB_CHECKED_CAST(NSString, [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"]);
+    OFVersionNumber *versionNumber = [[OFVersionNumber alloc] initWithVersionString:versionString];
+    path = [path stringByAppendingPathComponent:[versionNumber cleanVersionString]];
+
+    components.path = path;
+    NSString *helpEdition = [[self class] helpEdition];
+    if (helpEdition != nil) {
+        components.queryItems = @[
+            [NSURLQueryItem queryItemWithName:@"edition" value:helpEdition],
+        ];
+    }
+    return [components URL];
 }
 
-- (void)showOnlineHelp:(id)sender NS_EXTENSION_UNAVAILABLE_IOS("");
+- (NSURL *)onlineHelpURL;
 {
-    [self _showOnlineHelp:sender];
+    NSBundle *mainBundle = [NSBundle mainBundle];
+    NSString *helpBookName = [mainBundle objectForInfoDictionaryKey:OUIHelpBookNameKey];
+    if ([NSString isEmptyString:helpBookName])
+        return nil;
+
+    NSString *helpBookFolder = [mainBundle objectForInfoDictionaryKey:@"OUIHelpBookFolder"];
+    if (helpBookFolder == nil) {
+        return [self helpForwardURL];
+    }
+
+    NSString *helpEdition = [[self class] helpEdition];
+    if (helpEdition != nil) {
+        helpBookFolder = [helpBookFolder stringByAppendingPathComponent:helpEdition];
+    }
+
+    NSURL *helpIndexURL = [mainBundle URLForResource:@"index" withExtension:@"html" subdirectory:helpBookFolder];
+
+    if (helpIndexURL == nil) {
+        helpIndexURL = [mainBundle URLForResource:@"contents" withExtension:@"html" subdirectory:helpBookFolder];
+    }
+
+    if (helpIndexURL == nil) {
+        helpIndexURL = [mainBundle URLForResource:@"top" withExtension:@"html" subdirectory:helpBookFolder];
+    }
+
+    OBASSERT(helpIndexURL != nil);
+    return helpIndexURL;
+}
+
+- (BOOL)hasOnlineHelp;
+{
+    return [self onlineHelpURL] != nil;
 }
 
 - (void)setShouldPostponeLaunchActions:(BOOL)shouldPostpone;
@@ -503,9 +679,13 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
 
 - (UIResponder *)defaultFirstResponder;
 {
-    return self.window.rootViewController;
-}
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 
+    return [UIApplication sharedApplication].keyWindow;
+
+#pragma clang diagnostic pop
+}
 
 #pragma mark - Subclass responsibility
 
@@ -602,7 +782,7 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
     return [self _feedbackURLWithSubject:[self _defaultFeedbackSubject] body:nil];
 }
 
-- (void)sendFeedbackWithSubject:(NSString * _Nullable)subject body:(NSString * _Nullable)body;
+- (void)sendFeedbackWithSubject:(NSString * _Nullable)subject body:(NSString * _Nullable)body inScene:(nullable UIScene *)scene;
 {
     // May need to allow the app delegate to provide this conditionally later (OmniFocus has a retail build, for example)
     NSString *feedbackAddress = [self _feedbackAddress];
@@ -624,7 +804,14 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
     if (body != nil && ![NSString isEmptyString:body])
         [controller setMessageBody:body isHTML:NO];
     
-    [self sendMailTo:[NSArray arrayWithObject:feedbackAddress] withComposeController:controller];
+    [self sendMailTo:[NSArray arrayWithObject:feedbackAddress] withComposeController:controller inScene:scene];
+}
+
+- (void)signUpForOmniNewsletterFromViewController:(UIViewController *)viewController NS_EXTENSION_UNAVAILABLE_IOS("Extensions cannot sign up for the Omni newsletter");
+{
+    OUIAppControllerSceneHelper *helper = [[OUIAppControllerSceneHelper alloc] init];
+    helper.window = viewController.view.window;
+    [helper signUpForOmniNewsletter:nil];
 }
 
 - (MFMailComposeViewController *)mailComposeController {
@@ -637,13 +824,60 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
     return controller;
 }
 
-- (void)sendMailTo:(NSArray<NSString *> *)recipients withComposeController:(MFMailComposeViewController *)mailComposeController {
-    [mailComposeController setToRecipients:recipients];
-    UIViewController *viewControllerToPresentFrom = self.window.rootViewController;
+- (void)sendMailTo:(NSArray<NSString *> *)recipients withComposeController:(MFMailComposeViewController *)mailComposeController inScene:(nullable UIScene *)scene;
+{
+    UIWindow *window = [[self class] windowForScene:scene options:OUIWindowForSceneOptionsAllowCascadingLookup];
+
+    UIViewController *viewControllerToPresentFrom = window.rootViewController;
     while (viewControllerToPresentFrom.presentedViewController != nil) {
         viewControllerToPresentFrom = viewControllerToPresentFrom.presentedViewController;
     }
+
+    [mailComposeController setToRecipients:recipients];
     [viewControllerToPresentFrom presentViewController:mailComposeController animated:YES completion:nil];
+}
+
+- (UIImage *)appMenuImage;
+{
+    NSString *imageName = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"OUIAppMenuImage"];
+    if ([NSString isEmptyString:imageName])
+        imageName = @"OUIAppMenu.png";
+    return menuImage(imageName);
+}
+
+- (UIImage *)aboutMenuImage;
+{
+    return menuImage(@"OUIMenuItemAbout.png");
+}
+
+- (UIImage *)helpMenuImage;
+{
+    return menuImage(@"OUIMenuItemHelp.png");
+}
+
+- (UIImage *)sendFeedbackMenuImage;
+{
+    return menuImage(@"OUIMenuItemSendFeedback.png");
+}
+
+- (UIImage *)newsletterMenuImage;
+{
+    return menuImage(@"OUIMenuItemNewsletter.png");
+}
+
+- (UIImage *)announcementMenuImage;
+{
+    return menuImage(@"OUIMenuItemAnnouncement.png");
+}
+
+- (UIImage *)announcementBadgedMenuImage;
+{
+    return menuImage(@"OUIMenuItemAnnouncement-Badged.png");
+}
+
+- (UIImage *)releaseNotesMenuImage;
+{
+    return menuImage(@"OUIMenuItemReleaseNotes.png");
 }
 
 - (UIImage *)settingsMenuImage;
@@ -683,13 +917,13 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
     return NO;
 }
 
-- (UIImage *)exportBarButtonItemImageInHostViewController:(UIViewController *)hostViewController;
+- (UIImage *)exportBarButtonItemImageInViewController:(UIViewController *)viewController;
 {
     NSString *imageName = @"OUIExport";
 
     if (self.useCompactBarButtonItemsIfApplicable) {
-        BOOL isHorizontallyCompact = hostViewController.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassCompact;
-        BOOL isVerticallyCompact = hostViewController.traitCollection.verticalSizeClass == UIUserInterfaceSizeClassCompact;
+        BOOL isHorizontallyCompact = viewController.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassCompact;
+        BOOL isVerticallyCompact = viewController.traitCollection.verticalSizeClass == UIUserInterfaceSizeClassCompact;
         if (isHorizontallyCompact || isVerticallyCompact) {
             imageName = @"OUIExport-Compact";
         }
@@ -764,164 +998,7 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
     };
 }
 
-- (UIBarButtonItem *)newAppMenuBarButtonItem;
-{
-    
-    BOOL needsAttentionDot = [self newsWantsAttention];
-    
-    NSString *imageName = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"OUIAppMenuImage"];
-    if ([NSString isEmptyString:imageName])
-        imageName = @"OUIAppMenu";
-    UIImage *normalImage = menuImage(imageName);
-    
-    imageName = [imageName stringByAppendingString:@"-Badged"];
-    UIImage *attentionImage = menuImage(imageName);
-    
-    OUIAttentionSeekingButton *button = [[OUIAttentionSeekingButton alloc] initForAttentionKey:OUIAttentionSeekingForNewsKey normalImage:normalImage attentionSeekingImage:attentionImage dotOrigin:CGPointMake(15, 0)];
-    [button addTarget:self action:@selector(_showAppMenu:) forControlEvents:UIControlEventTouchUpInside];
-    
-    UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithCustomView:button];
-    
-    if (needsAttentionDot) {
-        button.seekingAttention = YES;
-    }
-    
-    item.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Help and Settings", @"OmniUI", OMNI_BUNDLE, @"Help and Settings toolbar item accessibility label.");
-    
-    if (!self.appMenuUnderlyingButtonsMappedToAssociatedBarButtonItems) {
-        self.appMenuUnderlyingButtonsMappedToAssociatedBarButtonItems = [NSMapTable weakToWeakObjectsMapTable];
-    }
-    [self.appMenuUnderlyingButtonsMappedToAssociatedBarButtonItems setObject:item forKey:button];
-    
-    return item;
-}
-
-- (UIBarButtonItem *)barButtonItemForSender:(id)sender
-{
-    UIBarButtonItem *item = [self.appMenuUnderlyingButtonsMappedToAssociatedBarButtonItems objectForKey:sender];
-    return item;
-}
-
 #pragma mark App menu actions
-- (void)dismissAppMenuIfVisible:(UINavigationController *)navigationController;
-{
-    if (navigationController.presentedViewController != nil && navigationController.presentedViewController == _appMenuController) {
-        [navigationController dismissViewControllerAnimated:NO completion:^{
-        }];
-    }
-}
-
-- (void)_showAppMenu:(id)sender NS_EXTENSION_UNAVAILABLE_IOS("");
-{
-    if ([self.window.rootViewController presentedViewController]) {
-        return;
-    }
-    if (!_appMenuController)
-        _appMenuController = [[OUIMenuController alloc] init];
-    
-    _appMenuController.topOptions = [self _appMenuTopOptions];
-    
-    _appMenuController.tintColor = UIColor.blackColor; // The icons are many colors for iOS 11 flavor, so menu text looks better untinted.
-    _appMenuController.menuOptionBackgroundColor = UIColor.whiteColor; // White menu option backgrounds
-    _appMenuController.menuBackgroundColor = UIColor.systemGroupedBackgroundColor; // Gray separator and scroll-bounce region
-    
-    [_appMenuController setSizesToOptionWidth:YES];
-    
-    UIBarButtonItem *appropriatePresenter = nil;
-    if ([sender isKindOfClass:[UIBarButtonItem class]])
-    {
-        appropriatePresenter = sender;
-    } else {
-        appropriatePresenter = [self barButtonItemForSender:sender];
-    }
-    OBASSERT(appropriatePresenter != nil);
-    OBASSERT([appropriatePresenter isKindOfClass:[UIBarButtonItem class]]); // ...or we shouldn't be passing it as the bar item in the next call
-    
-    _appMenuController.title = [OUIAppController applicationName];
-    _appMenuController.alwaysShowsNavigationBar = YES;
-    
-    _appMenuController.popoverPresentationController.barButtonItem = appropriatePresenter;
-    [self.window.rootViewController presentViewController:_appMenuController animated:YES completion:nil];
-}
-
-- (IBAction)sendFeedback:(id)sender NS_EXTENSION_UNAVAILABLE_IOS("");
-{
-    [self sendFeedbackWithSubject:[self _defaultFeedbackSubject] body:nil];
-}
-
-- (IBAction)signUpForOmniNewsletter:(id)sender NS_EXTENSION_UNAVAILABLE_IOS("");
-{
-    NSArray *queryItems = nil;
-    
-    // Omni apps provide additional parameters
-    if ([[UIApplication sharedApplication] respondsToSelector:@selector(signUpForOmniNewsletterQueryItems)]) {
-        queryItems = [UIApplication sharedApplication].signUpForOmniNewsletterQueryItems;
-    }
-    
-    NSString *urlString = @"https://www.omnigroup.com/forward/letters/";
-    NSURLComponents *urlComponents = [NSURLComponents componentsWithString:urlString];
-    urlComponents.queryItems = queryItems;
-    
-    NSURL *signUpURL = urlComponents.URL;
-    [[UIApplication sharedApplication] openURL:signUpURL options:@{} completionHandler:nil];
-}
-
-- (nullable OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(nullable NSString *)title NS_EXTENSION_UNAVAILABLE_IOS("")
-{
-    return [self showWebViewWithURL:url title:title modalPresentationStyle:UIModalPresentationFullScreen modalTransitionStyle:UIModalTransitionStyleCrossDissolve animated:YES navigationBarHidden:NO];
-}
-
-- (nullable OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(nullable NSString *)title modalPresentationStyle:(UIModalPresentationStyle)presentationStyle modalTransitionStyle:(UIModalTransitionStyle)transitionStyle animated:(BOOL)animated NS_EXTENSION_UNAVAILABLE_IOS("")
-{
-    return [self showWebViewWithURL:url title:title modalPresentationStyle:presentationStyle modalTransitionStyle:transitionStyle animated:animated navigationBarHidden:NO];
-}
-
-- (nullable OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(nullable NSString *)title modalPresentationStyle:(UIModalPresentationStyle)presentationStyle modalTransitionStyle:(UIModalTransitionStyle)transitionStyle animated:(BOOL)animated navigationBarHidden:(BOOL)navigationBarHidden NS_EXTENSION_UNAVAILABLE_IOS("")
-{
-    return [self showWebViewWithURL:url title:title modalPresentationStyle:presentationStyle modalTransitionStyle:UIModalTransitionStyleCoverVertical animated:animated navigationBarHidden:navigationBarHidden withDoneButton:YES];
-}
-
-- (nullable OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(nullable NSString *)title modalPresentationStyle:(UIModalPresentationStyle)presentationStyle modalTransitionStyle:(UIModalTransitionStyle)transitionStyle animated:(BOOL)animated navigationBarHidden:(BOOL)navigationBarHidden withDoneButton:(BOOL)withDoneButton NS_EXTENSION_UNAVAILABLE_IOS("")
-{
-    UINavigationController *webNavigationController = [[UINavigationController alloc] init];
-    webNavigationController.navigationBar.barStyle = UIBarStyleDefault;
-    webNavigationController.navigationBarHidden = navigationBarHidden;
-    webNavigationController.modalPresentationStyle = presentationStyle;
-    webNavigationController.modalTransitionStyle = transitionStyle;
-
-    OUIWebViewController *webController = [self showWebViewWithURL:url title:title animated:NO /* will animate the presentation of webNavigationController instead */ navigationController:webNavigationController];
-    webController.wantsDoneButton = withDoneButton;
-    [self.window.rootViewController presentViewController:webNavigationController animated:animated completion:nil];
-    return webController;
-}
-
-- (nullable OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(nullable NSString *)title animated:(BOOL)animated navigationController:(UINavigationController *)navigationController NS_EXTENSION_UNAVAILABLE_IOS("")
-{
-    return [self showWebViewWithURL:url title:title animated:animated navigationController:navigationController withDoneButton:YES];
-}
-
-- (nullable OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(nullable NSString *)title animated:(BOOL)animated navigationController:(UINavigationController *)navigationController withDoneButton:(BOOL)withDoneButton NS_EXTENSION_UNAVAILABLE_IOS("")
-{
-    OBASSERT(url != nil); //Seems like it would be a mistake to ask to show nothing. —LM
-    if (url == nil) {
-        return nil;
-    }
-    
-    OUIWebViewController *webController = [[OUIWebViewController alloc] init];
-    webController.delegate = self;
-    webController.title = title;
-    webController.URL = url;
-    webController.wantsDoneButton = withDoneButton;
-    
-    assert(navigationController != nil); // This is no longer nullable
-    [navigationController pushViewController:webController animated:animated];
-    return webController;
-}
-
-- (void)_showLatestNewsMessage NS_EXTENSION_UNAVAILABLE_IOS("")
-{
-    [self showNewsURLString:[self mostRecentNewsURLString] evenIfShownAlready:YES];
-}
 
 - (void)setNewsURLStringToShowWhenReady:(NSString *)newsURLStringToShowWhenReady
 {
@@ -961,28 +1038,6 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
     return newsURLToShow;
 }
 
-- (OUIWebViewController * _Nullable)showNewsURLString:(NSString *)urlString evenIfShownAlready:(BOOL)showNoMatterWhat
-{
-#if 0 && DEBUG_shannon
-    NSLog(@"asked to show news.  root view controller is %@", self.window.rootViewController);
-    showNoMatterWhat = YES;
-#endif
-    if (self.window.rootViewController.presentedViewController) {
-        self.newsURLStringToShowWhenReady = urlString;
-        return nil;  // we don't want to interrupt the user to show the news message (or try to work around every issue that could arise with trying to present this news message when something else is already presented)
-    }
-    
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Warc-repeated-use-of-weak"
-    if (showNoMatterWhat || ![self haveShownReleaseNotes:urlString]) {
-        self.newsViewController = [self showWebViewWithURL:[NSURL URLWithString:urlString] title:NSLocalizedStringFromTableInBundle(@"News", @"OmniUI", OMNI_BUNDLE, @"News view title") modalPresentationStyle:UIModalPresentationFormSheet modalTransitionStyle:UIModalTransitionStyleCoverVertical animated:YES];
-    }
-    
-    self.newsURLCurrentlyShowing = urlString;
-    return self.newsViewController;
-#pragma clang diagnostic pop
-}
-
 - (BOOL)haveShownReleaseNotes:(NSString *)urlString
 {
     NSArray<NSString *> *previouslyShown = [[NSUserDefaults standardUserDefaults] arrayForKey:PreviouslyShownURLsKey];
@@ -996,135 +1051,18 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
     return foundIt;
 }
 
-- (NSString *)_aboutPanelJSONBindingsString;
+- (void)didShowReleaseNotes:(NSString *)urlString
 {
-    __autoreleasing NSError *jsonError = nil;
-    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:[self aboutScreenBindingsDictionary] options:0 error:&jsonError];
-    assert(jsonData != nil);
-
-    NSString *jsonValue = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-    NSString *jsonBindingsString = [NSString stringWithFormat:@"aboutBindings=%@;", jsonValue];
-    return jsonBindingsString;
-}
-
-- (void)showAboutScreenInNavigationController:(UINavigationController * _Nullable)navigationController withDoneButton:(BOOL)withDoneButton NS_EXTENSION_UNAVAILABLE_IOS("")
-{
-    OUIWebViewController *webViewController;
-    if (navigationController == nil)
-    webViewController = [self showWebViewWithURL:[self aboutScreenURL] title:[self aboutScreenTitle] modalPresentationStyle:UIModalPresentationFormSheet modalTransitionStyle:UIModalTransitionStyleCoverVertical animated:YES navigationBarHidden:NO withDoneButton:withDoneButton];
-    else
-    webViewController = [self showWebViewWithURL:[self aboutScreenURL] title:[self aboutScreenTitle] animated:YES navigationController:navigationController withDoneButton:withDoneButton];
-    [webViewController invokeJavaScriptBeforeLoad:[self _aboutPanelJSONBindingsString]];
-}
-
-- (void)showAboutScreenInNavigationController:(UINavigationController * _Nullable)navigationController NS_EXTENSION_UNAVAILABLE_IOS("")
-{
-    [self showAboutScreenInNavigationController:navigationController withDoneButton:YES];
-}
-
-- (void)_showAboutScreen:(id)sender NS_EXTENSION_UNAVAILABLE_IOS("");
-{
-    [self showAboutScreenInNavigationController:nil];
-}
-
-- (void)_showReleaseNotes:(id)sender NS_EXTENSION_UNAVAILABLE_IOS("");
-{
-    [self showWebViewWithURL:[[NSBundle mainBundle] URLForResource:@"MessageOfTheDay" withExtension:@"html"] title:NSLocalizedStringFromTableInBundle(@"Release Notes", @"OmniUI", OMNI_BUNDLE, @"release notes html screen title")];
-}
-
-static NSString * const OUIHelpBookNameKey = @"OUIHelpBookName";
-
-- (NSURL *)_onlineHelpURL;
-{
-    NSBundle *mainBundle = [NSBundle mainBundle];
-    NSString *helpBookName = [mainBundle objectForInfoDictionaryKey:OUIHelpBookNameKey];
-    if ([NSString isEmptyString:helpBookName])
-        return nil;
-    
-    NSString *helpBookFolder = [mainBundle objectForInfoDictionaryKey:@"OUIHelpBookFolder"];
-    if (helpBookFolder == nil) {
-        return [self _helpForwardURL];
+    NSArray<NSString *> *previouslyShown = [[NSUserDefaults standardUserDefaults] arrayForKey:PreviouslyShownURLsKey];
+    if (!previouslyShown) {
+        previouslyShown = @[];
     }
-
-    NSString *helpEdition = [[self class] helpEdition];
-    if (helpEdition != nil) {
-        helpBookFolder = [helpBookFolder stringByAppendingPathComponent:helpEdition];
-    }
-
-    NSURL *helpIndexURL = [mainBundle URLForResource:@"index" withExtension:@"html" subdirectory:helpBookFolder];
-    
-    if (helpIndexURL == nil) {
-        helpIndexURL = [mainBundle URLForResource:@"contents" withExtension:@"html" subdirectory:helpBookFolder];
-    }
-    
-    if (helpIndexURL == nil) {
-        helpIndexURL = [mainBundle URLForResource:@"top" withExtension:@"html" subdirectory:helpBookFolder];
-    }
-    
-    OBASSERT(helpIndexURL != nil);
-    return helpIndexURL;
-}
-
-- (void)_showOnlineHelp:(id)sender NS_EXTENSION_UNAVAILABLE_IOS("");
-{
-    NSURL *helpIndexURL = [self _onlineHelpURL];
-    if (!helpIndexURL) {
-        OBASSERT_NOT_REACHED("Action should not have been enabled");
+    if ([previouslyShown containsObject:urlString])
         return;
-    }
 
-    if (![helpIndexURL isFileURL]) {
-        // The help URL doesn't refer to built-in documentation files, so let's send this over to Safari
-        [[UIApplication sharedApplication] openURL:helpIndexURL];
-        return;
-    }
-
-    NSString *webViewTitle = [[self class] helpTitle];
-    
-    OUIWebViewController *webController = [self showWebViewWithURL:helpIndexURL title:webViewTitle];
-    [webController invokeJavaScriptAfterLoad:[self _rewriteHelpURLJavaScript] completionHandler:nil];
+    previouslyShown = [previouslyShown arrayByAddingObject:urlString];
+    [[NSUserDefaults standardUserDefaults] setObject:previouslyShown forKey:PreviouslyShownURLsKey];
 }
-
-- (NSString *)_rewriteHelpURLJavaScript;
-{
-    NSString *helpForwardString = [[self _helpForwardURL] absoluteString];
-    return [NSString stringWithFormat:@"\
-            var a = document.getElementById(\"OUIHelpLinkTag\");\
-            a.setAttribute(\"href\", \"%@\")",
-            helpForwardString];
-}
-
-- (NSURL *)_helpForwardURL;
-{
-    NSURLComponents *components = [[NSURLComponents alloc] init];
-    components.scheme = @"https";
-    components.host = @"www.omnigroup.com";
-
-    NSString *path = @"/forward/documentation/html";
-    
-    // Deliberately use the app bundle, not OMNI_BUNDLE – we want to redirect to the running app's documentation
-    path = [path stringByAppendingPathComponent:[[NSBundle mainBundle] bundleIdentifier]];
-    
-    // Only use language codes we localize into, and when all else fails, fall back to English
-    NSString *languageCode = [[[NSBundle mainBundle] preferredLocalizations] firstObject] ?: @"en";
-    path = [path stringByAppendingPathComponent:languageCode];
-    
-    // Clean the version string through OFVersionNumber so that it doesn't include "private test" or other suffixes
-    NSString *versionString = OB_CHECKED_CAST(NSString, [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"]);
-    OFVersionNumber *versionNumber = [[OFVersionNumber alloc] initWithVersionString:versionString];
-    path = [path stringByAppendingPathComponent:[versionNumber cleanVersionString]];
-    
-    components.path = path;
-    NSString *helpEdition = [[self class] helpEdition];
-    if (helpEdition != nil) {
-        components.queryItems = @[
-            [NSURLQueryItem queryItemWithName:@"edition" value:helpEdition],
-        ];
-    }
-    return [components URL];
-}
-
-#pragma mark - OUIMenuControllerDelegate
 
 - (BOOL)newsWantsAttention
 {
@@ -1147,124 +1085,9 @@ static UIImage *menuImage(NSString *name)
     return nil;
 }
 
-- (NSArray <OUIMenuOption *> *)_appMenuTopOptions NS_EXTENSION_UNAVAILABLE_IOS("");
-{
-    NSMutableArray *options = [NSMutableArray array];
-    OUIMenuOption *option;
-    NSArray *additionalOptions;
-    
-    // Space at the top
-    [options addObject:[OUIMenuOption separatorWithTitle:@" "]];
-    
-    option = [self specialFirstAppMenuOption];
-    if (option) {
-        // The special option (if it exists) gets spacers on either side of it. The title must be non-empty for the spacer to have non-zero height, so just make it a space.
-        [options addObject:option];
-        [options addObject:[OUIMenuOption separatorWithTitle:@" "]];
-    }
-    
-    NSString *aboutMenuTitle = [self aboutMenuTitle];
-    if (![NSString isEmptyString:aboutMenuTitle]) {
-        option = [OUIMenuOption optionWithFirstResponderSelector:@selector(_showAboutScreen:) title:aboutMenuTitle image:menuImage(@"OUIMenuItemAbout.png")];
-        [options addObject:option];
-    }
-
-    if ([self _onlineHelpURL]) {
-        option = [OUIMenuOption optionWithFirstResponderSelector:@selector(_showOnlineHelp:)
-                                                           title:[[NSBundle mainBundle] localizedStringForKey:@"OUIHelpBookName" value:[[NSBundle mainBundle] objectForInfoDictionaryKey:@"OUIHelpBookName"] table:@"InfoPlist"]
-                                                           image:menuImage(@"OUIMenuItemHelp.png")];
-        [options addObject:option];
-    }
-    
-    NSString *feedbackMenuTitle = [self feedbackMenuTitle];
-    if (![NSString isEmptyString:feedbackMenuTitle] && ![self isRunningRetailDemo]) {
-        option = [OUIMenuOption optionWithFirstResponderSelector:@selector(sendFeedback:)
-                                                           title:feedbackMenuTitle
-                                                           image:menuImage(@"OUIMenuItemSendFeedback.png")];
-        [options addObject:option];
-    }
-
-    {   // Sign up for the Omni Newsletter
-        NSString *newsletterTitle = NSLocalizedStringFromTableInBundle(@"Omni Newsletter Signup", @"OmniUI", OMNI_BUNDLE, @"Menu item to subscribe to Omni's newsletter");
-        OUIMenuOption *newsletterOption = [OUIMenuOption optionWithFirstResponderSelector:@selector(signUpForOmniNewsletter:)
-                                                                                    title:newsletterTitle
-                                                                                    image:menuImage(@"OUIMenuItemNewsletter.png")];
-        [options addObject:newsletterOption];
-    }
-
-    if ([self mostRecentNewsURLString]){
-        OUIMenuOption *newsOption = [OUIMenuOption optionWithFirstResponderSelector:@selector(_showLatestNewsMessage)
-                                                                              title:NSLocalizedStringFromTableInBundle(@"News", @"OmniUI", OMNI_BUNDLE, @"News menu item")
-                                                                              image:menuImage(@"OUIMenuItemAnnouncement.png")];
-        [options addObject:newsOption];
-        OUIAttentionSeekingButton *newsButton = [[OUIAttentionSeekingButton alloc] initForAttentionKey:OUIAttentionSeekingForNewsKey normalImage:menuImage(@"OUIMenuItemAnnouncement.png") attentionSeekingImage:menuImage(@"OUIMenuItemAnnouncement-Badged.png") dotOrigin:CGPointMake(25, 2)];
-        newsButton.seekingAttention = [self newsWantsAttention];
-        newsButton.userInteractionEnabled = NO;
-        newsOption.attentionDotView = newsButton;
-        
-    }
-    
-    additionalOptions = [self additionalAppMenuOptionsAtPosition:OUIAppMenuOptionPositionBeforeReleaseNotes];
-    if (additionalOptions)
-        [options addObjectsFromArray:additionalOptions];
-    
-    option = [OUIMenuOption optionWithFirstResponderSelector:@selector(_showReleaseNotes:)
-                                                       title:NSLocalizedStringFromTableInBundle(@"Release Notes", @"OmniUI", OMNI_BUNDLE, @"App menu item title")
-                                                       image:menuImage(@"OUIMenuItemReleaseNotes.png")];
-    [options addObject:option];
-    
-    additionalOptions = [self additionalAppMenuOptionsAtPosition:OUIAppMenuOptionPositionAfterReleaseNotes];
-    if (additionalOptions)
-        [options addObjectsFromArray:additionalOptions];
-    
-    additionalOptions = [self additionalAppMenuOptionsAtPosition:OUIAppMenuOptionPositionAtEnd];
-    if (additionalOptions)
-        [options addObjectsFromArray:additionalOptions];
-    
-    // Space at the bottom
-    [options addObject:[OUIMenuOption separatorWithTitle:@" "]];
-    
-    return options;
-}
-
-- (UIViewController *)viewControllerForPresentingMenuController:(OUIMenuController *)menuController;
-{
-    return self.window.rootViewController;
-}
-
-#pragma mark - OUIWebViewControllerDelegate
-
-- (BOOL)webViewControllerShouldClose:(OUIWebViewController *)webViewController NS_EXTENSION_UNAVAILABLE_IOS("");
-{
-    if (webViewController == self.newsViewController
-        && self.newsURLCurrentlyShowing != nil
-        && webViewController.webView.URL) {
-        if (![self haveShownReleaseNotes:self.newsURLCurrentlyShowing]) {
-            // remember that we showed this url
-            NSArray<NSString *> *previouslyShown = [[NSUserDefaults standardUserDefaults] arrayForKey:PreviouslyShownURLsKey];
-            if (!previouslyShown) {
-                previouslyShown = @[];
-            }
-            previouslyShown = [previouslyShown arrayByAddingObject:self.newsURLCurrentlyShowing];
-            [[NSUserDefaults standardUserDefaults] setObject:previouslyShown forKey:PreviouslyShownURLsKey];
-            
-            if ([self.newsURLCurrentlyShowing isEqualToString:self.newsURLStringToShowWhenReady]) {
-                self.newsURLStringToShowWhenReady = nil;
-            }
-        }
-        
-        self.newsViewController = nil;
-        self.newsURLCurrentlyShowing = nil;
-        
-        [[NSNotificationCenter defaultCenter] postNotificationName:OUIAttentionSeekingNotification object:self userInfo:@{ OUIAttentionSeekingForNewsKey : @(NO) }];
-    }
-
-    return YES;
-}
-
 #pragma mark - UIResponder subclass
 
-- (BOOL)canBecomeFirstResponder;
+- (BOOL)canBecomeFirstResponder NS_EXTENSION_UNAVAILABLE_IOS("Not available in extensions.");
 {
     // In some cases when the keyboard is dismissing (after editing a text view on a popover in one case), we'll lose first responder if we don't do something. UIKit normally seems to try to nominate the nearest nextResponder of the UITextView that is ending editing, but in the case of a popover it has no good recourse. It *does* ask the UIApplication and the application's delegate (at least in the case of it being a UIResponder subclass). We'll pass this off to an object nominated by subclasses.
     UIResponder *defaultFirstResponder = self.defaultFirstResponder;
@@ -1274,7 +1097,7 @@ static UIImage *menuImage(NSString *name)
     return [defaultFirstResponder canBecomeFirstResponder];
 }
 
-- (BOOL)becomeFirstResponder;
+- (BOOL)becomeFirstResponder NS_EXTENSION_UNAVAILABLE_IOS("Not available in extensions.");
 {
     UIResponder *defaultFirstResponder = self.defaultFirstResponder;
     

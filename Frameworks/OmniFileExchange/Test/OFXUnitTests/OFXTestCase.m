@@ -1,4 +1,4 @@
-// Copyright 2013-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -246,7 +246,7 @@ static OFXAgent *_makeAgent(OFXTestCase *self, NSString *agentName)
         OFXServerAccount *account = [registry.validCloudSyncAccounts lastObject];
         OBASSERT(account);
         [self waitUntil:^BOOL{
-            return [agent.runningAccounts member:account] != nil;
+            return [agent.accountsSnapshot.runningAccounts member:account] != nil;
         }];
 
         OFXTraceReset();

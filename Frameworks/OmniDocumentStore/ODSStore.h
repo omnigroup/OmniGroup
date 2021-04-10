@@ -29,14 +29,11 @@ typedef NS_ENUM(NSInteger, ODSDocumentType) {
 - (void)removeScope:(ODSScope *)scope;
 
 @property(nonatomic,readonly) ODSScope *defaultUsableScope;
-@property(nonatomic,readonly) ODSScope *trashScope;
 @property(nonatomic,readonly) ODSScope *templateScope;
 
 @property(nonatomic,readonly) NSSet <__kindof ODSFileItem *> *mergedFileItems; // All the file items from all scopes.
 
 - (Class)fileItemClassForURL:(NSURL *)fileURL; // Defaults to asking the delegate. The URL may not exist yet!
-- (BOOL)canViewFileTypeWithIdentifier:(NSString *)fileType;
-- (nullable ODSFileItem *)preferredFileItemForNextAutomaticDownload:(NSSet <__kindof ODSFileItem *> *)fileItems;
 
 - (void)addAfterInitialDocumentScanAction:(void (^)(void))action;
 
@@ -50,10 +47,7 @@ typedef NS_ENUM(NSInteger, ODSDocumentType) {
 
 - (nullable ODSFileItem *)fileItemWithURL:(NSURL *)url;
 
-@property(readonly,nonatomic) NSString *documentTypeForNewFiles;
-- (nullable NSString *)documentTypeForNewFilesOfType:(ODSDocumentType)type;
 - (NSString *)defaultFilenameForDocumentType:(ODSDocumentType)type isDirectory:(BOOL *)outIsDirectory;
-- (NSURL *)temporaryURLForCreatingNewDocumentOfType:(ODSDocumentType)type;
 // IF the provided documentName is nil, then we will use the default name for that new document type.
 - (void)moveNewTemporaryDocumentAtURL:(NSURL *)fileURL toScope:(ODSScope *)scope folder:(nullable ODSFolderItem *)folder documentType:(ODSDocumentType)type documentName:(nullable)documentName completionHandler:(void (^)(ODSFileItem *createdFileItem, NSError *error))handler;
 - (void)moveNewTemporaryDocumentAtURL:(NSURL *)fileURL toScope:(ODSScope *)scope folder:(nullable ODSFolderItem *)folder documentType:(ODSDocumentType)type completionHandler:(void (^)(ODSFileItem *createdFileItem, NSError *error))handler;

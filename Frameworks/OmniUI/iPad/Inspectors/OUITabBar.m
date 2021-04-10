@@ -570,9 +570,11 @@ static UIFont *_DefaultVerticalSelectedTabTitleFont;
     if (appearanceDelegate != nil && [appearanceDelegate respondsToSelector:@selector(horizontalTabBottomStrokeColor)] && [appearanceDelegate respondsToSelector:@selector(horizontalTabSeparatorTopColor)]) {
         gradientStartColor = appearanceDelegate.horizontalTabBottomStrokeColor;
         gradientEndColor = appearanceDelegate.horizontalTabSeparatorTopColor;
-    } else {
-        gradientStartColor = [UIColor colorWithWhite:0.80 alpha:1.0];
-        gradientEndColor = [UIColor colorWithWhite:0.96 alpha:1.0];
+    }
+
+    if (gradientStartColor == nil || gradientEndColor == nil) {
+        gradientStartColor = [UIColor colorNamed:@"inspectorTabSeparatorGradientStart" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
+        gradientEndColor = [UIColor colorNamed:@"inspectorTabSeparatorGradientEnd" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
     }
 
     OBASSERT(gradientStartColor != nil);
@@ -580,7 +582,7 @@ static UIFont *_DefaultVerticalSelectedTabTitleFont;
     
     NSArray *colors = @[(id)gradientStartColor.CGColor, (id)gradientEndColor.CGColor];
     CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-    
+
     _horizontalSeparatorGradient = CGGradientCreateWithColors(colorSpace, (CFArrayRef)colors, NULL);
     
     CGColorSpaceRelease(colorSpace);

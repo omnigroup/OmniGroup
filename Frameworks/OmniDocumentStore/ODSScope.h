@@ -77,19 +77,9 @@ typedef void (^ODSScopeDocumentCreationHandler)(ODSFileItem *createdFileItem, NS
 
 - (void)makeFolderFromItems:(NSSet *)items inParentFolder:(ODSFolderItem *)parentFolder completionHandler:(void (^)(ODSFolderItem *createdFolder, NSArray *errorsOrNil))completionHandler;
 
-- (BOOL)isTrash;
-+ (ODSScope *)trashScope;
-+ (void)setTrashScope:(ODSScope *)trashScope;
-
-+ (BOOL)trashItemAtURL:(NSURL *)url resultingItemURL:(NSURL **)outResultingURL error:(NSError **)error;
-
 - (BOOL)isTemplate;
 + (ODSScope *)templateScope;
 + (void)setTemplateScope:(ODSScope *)templateScope;
-
-@property (nonatomic, readonly) BOOL canRenameDocuments;
-@property (nonatomic, readonly) BOOL canCreateFolders;
-@property (nonatomic, readonly) BOOL isExternal;
 
 - (NSComparisonResult)compareDocumentScope:(ODSScope *)otherScope;
 - (NSInteger)documentScopeGroupRank;

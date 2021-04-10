@@ -25,20 +25,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic) BOOL doubleSizeFonts;
 @property (nonatomic, readonly) BOOL isEditing;
 
-// OUIDocumentRenameSession becomes the delegate of this while renaming
-- (UITextField *)startEditingName;
-- (void)didEndEditing;
-
 @property (nullable, nonatomic, readonly) UIProgressView *transferProgressView;
 
 - (UIView *)viewForScalingStartFrame:(CGRect)startFrame endFrame:(CGRect)endFrame;
 - (void)animationsToPerformAlongsideScalingToHeight:(CGFloat)height;
 
-@end
-
-@interface NSObject (OUIDocumentPickerItemMetadataView)
-- (void)documentPickerItemNameStartedEditing:(id)sender;
-- (void)documentPickerItemNameEndedEditing:(id)sender withName:(NSString *)name;
 @end
 
 NS_ASSUME_NONNULL_END

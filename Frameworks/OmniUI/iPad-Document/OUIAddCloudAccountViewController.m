@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,14 +9,16 @@
 
 #import <OmniFileExchange/OFXServerAccountType.h>
 #import <OmniUIDocument/OUIDocumentAppController.h>
-#import <OmniUIDocument/OUIServerAccountSetupViewController.h>
 #import <OmniFileExchange/OFXServerAccountRegistry.h>
 #import <OmniAppKit/OAAppearance.h>
 #import <OmniAppKit/OAAppearanceColors.h>
+#import <OmniUIDocument/OmniUIDocument-Swift.h>
 
 #import "OUIDocumentAppController-Internal.h"
 
 RCS_ID("$Id$");
+
+NS_ASSUME_NONNULL_BEGIN
 
 @interface OUIAddCloudAccountViewController () <UITableViewDataSource, UITableViewDelegate>
 
@@ -26,14 +28,17 @@ RCS_ID("$Id$");
 {
     UITableView *_tableView;
     NSArray *_accountTypes;
+    
+    OFXAgentActivity *_agentActivity;
     OFXServerAccountUsageMode _usageModeToCreate;
 }
 
-- (instancetype)initWithUsageMode:(OFXServerAccountUsageMode)usageModeToCreate;
+- (instancetype)initWithAgentActivity:(OFXAgentActivity *)agentActivity usageMode:(OFXServerAccountUsageMode)usageModeToCreate;
 {
     if (!(self = [super initWithNibName:nil bundle:nil]))
         return nil;
     
+    _agentActivity = agentActivity;
     _usageModeToCreate = usageModeToCreate;
     
     return self;
@@ -116,7 +121,7 @@ RCS_ID("$Id$");
 
 #pragma mark - UITableViewDelegate
 
-- (NSIndexPath *)tableView:(UITableView *)tableView willSelectRowAtIndexPath:(NSIndexPath *)indexPath;
+- (nullable NSIndexPath *)tableView:(UITableView *)tableView willSelectRowAtIndexPath:(NSIndexPath *)indexPath;
 {
     if ([[OUIAppController controller] showFeatureDisabledForRetailDemoAlertFromViewController:self])
         return nil;
@@ -131,8 +136,8 @@ RCS_ID("$Id$");
     OFXServerAccountType *accountType = [_accountTypes objectAtIndex:accountTypeIndex];
 
     // Add new account
-    OUIServerAccountSetupViewController *setup = [[OUIServerAccountSetupViewController alloc] initForCreatingAccountOfType:accountType withUsageMode:_usageModeToCreate];
-    setup.finished = ^(OUIServerAccountSetupViewController *vc, NSError *errorOrNil){
+    OUIServerAccountSetupViewController *setup = [[OUIServerAccountSetupViewController alloc] initWithAgentActivity: _agentActivity creatingAccountType:accountType usageMode:_usageModeToCreate];
+    setup.finished = ^(OUIServerAccountSetupViewController *vc, NSError * _Nullable errorOrNil){
         OFXServerAccount *account = errorOrNil ? nil : vc.account;
         OBASSERT(account == nil || [[[OFXServerAccountRegistry defaultAccountRegistry] validCloudSyncAccounts] containsObject:account]);
         
@@ -153,12 +158,13 @@ RCS_ID("$Id$");
 
 - (void)_reloadAccountTypes;
 {
-    
-    NSMutableArray *accountTypes = [NSMutableArray arrayWithArray:[OFXServerAccountType accountTypes]];
-    [accountTypes removeObject:[OFXServerAccountType accountTypeWithIdentifier:OFXiTunesLocalDocumentsServerAccountTypeIdentifier]]; // Can't add/remove this account type
-    _accountTypes = [accountTypes copy];
+    _accountTypes = [[OFXServerAccountType accountTypes] copy];
     
     [_tableView reloadData];
 }
 
 @end
+
+NS_ASSUME_NONNULL_END
+
+

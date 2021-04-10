@@ -14,7 +14,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface OUIExportOption : NSObject
+@interface OUIExportOption : NSObject <NSCopying>
 
 - initWithFileType:(NSString *)fileType label:(NSString *)label image:(UIImage *)image requiresPurchase:(BOOL)requiresPurchase;
 

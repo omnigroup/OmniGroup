@@ -258,6 +258,8 @@ NS_ASSUME_NONNULL_BEGIN
     cell.textLabel.text = title;
     if (placeholder)
         cell.textLabel.textColor = self.placeholderTextColor;
+    else
+        cell.textLabel.textColor = [UIColor secondaryLabelColor];
     cell.textLabel.font = [OUIInspectorTextWell defaultLabelFont];
     cell.textLabel.lineBreakMode = NSLineBreakByTruncatingTail;
 
@@ -287,7 +289,7 @@ NS_ASSUME_NONNULL_BEGIN
     static UIColor *defaultDetailTextColor = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        defaultDetailTextColor = cell.detailTextLabel.textColor;
+        defaultDetailTextColor = [UIColor labelColor];
     });
     
     cell.detailTextLabel.text = value;

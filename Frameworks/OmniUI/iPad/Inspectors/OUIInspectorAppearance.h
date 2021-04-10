@@ -7,6 +7,8 @@
 
 #import <OmniUI/OUIThemedAppearance.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 extern OUIThemedAppearanceTheme const OUIThemedAppearanceThemeDark;
 extern OUIThemedAppearanceTheme const OUIThemedAppearanceThemeLight;
 
@@ -49,3 +51,6 @@ extern OUIThemedAppearanceTheme const OUIThemedAppearanceThemeLight;
 
 @interface OUIInspectorAppearanceLight: OUIInspectorAppearance
 @end
+
+NS_ASSUME_NONNULL_END
+

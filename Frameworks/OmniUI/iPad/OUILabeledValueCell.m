@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,6 +10,8 @@
 #import <OmniUI/UIView-OUIExtensions.h>
 
 RCS_ID("$Id$");
+
+NS_ASSUME_NONNULL_BEGIN
 
 @implementation OUILabeledValueCell
 {
@@ -123,11 +125,12 @@ RCS_ID("$Id$");
     [self setNeedsLayout];
 }
 
-- (NSString *)value;
+- (nullable NSString *)value;
 {
     return _valueTextField.text;
 }
-- (void)setValue:(NSString *)value;
+
+- (void)setValue:(nullable NSString *)value;
 {
     if (OFISEQUAL(self.value, value))
         return;
@@ -137,11 +140,12 @@ RCS_ID("$Id$");
     [self setNeedsLayout];
 }
 
-- (NSString *)valuePlaceholder;
+- (nullable NSString *)valuePlaceholder;
 {
     return _valueTextField.placeholder;
 }
-- (void)setValuePlaceholder:(NSString *)valuePlaceholder;
+
+- (void)setValuePlaceholder:(nullable NSString *)valuePlaceholder;
 {
     if (!valuePlaceholder)
         valuePlaceholder = NSLocalizedStringFromTableInBundle(@"None", @"OmniUI", OMNI_BUNDLE, @"empty value cell placeholder");
@@ -244,3 +248,5 @@ RCS_ID("$Id$");
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

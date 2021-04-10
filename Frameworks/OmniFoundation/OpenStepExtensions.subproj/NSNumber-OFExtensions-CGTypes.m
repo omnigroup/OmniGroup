@@ -11,6 +11,8 @@
 
 RCS_ID("$Id$")
 
+NS_ASSUME_NONNULL_BEGIN
+
 @implementation NSNumber (OFCGTypeExtensions)
 
 + (NSNumber *)numberWithCGFloat:(CGFloat)value
@@ -60,3 +62,5 @@ RCS_ID("$Id$")
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

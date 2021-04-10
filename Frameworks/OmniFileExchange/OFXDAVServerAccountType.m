@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -33,21 +33,6 @@ NSString * const OFXWebDAVServerAccountTypeIdentifier = @"com.omnigroup.OmniFile
 }
 
 - (BOOL)requiresServerURL;
-{
-    return YES;
-}
-
-- (BOOL)requiresUsername;
-{
-    return YES;
-}
-
-- (BOOL)requiresPassword;
-{
-    return YES;
-}
-
-- (BOOL)usesCredentials;
 {
     return YES;
 }

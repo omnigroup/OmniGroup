@@ -29,7 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setManagedBarButtonItemsFromArray:(NSArray<UIBarButtonItem *> *)barButtonItems;
 - (void)clearManagedBarButtonItems;
 
-- (void)addManagedBarButtonItems:(NSArray<UIBarButtonItem *> *)barButtonItems;
+- (void)addManagedBarButtonItems:(nullable NSArray<UIBarButtonItem *> *)barButtonItems;
 - (void)addManagedBarButtonItemsObject:(UIBarButtonItem *)barButtonItem;
 
 - (void)removeManagedBarButtonItems:(NSArray<UIBarButtonItem *> *)barButtonItems;

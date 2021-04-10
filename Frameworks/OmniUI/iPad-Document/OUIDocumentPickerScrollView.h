@@ -8,29 +8,27 @@
 #import <UIKit/UIView.h>
 
 #import <OmniUIDocument/OUIDocumentPickerItemSort.h>
+#import <OmniBase/OBUtilities.h>
 
 extern NSString * const OUIDocumentPickerScrollViewItemsBinding;
 
 @class OFPreference;
 @class ODSItem, ODSFileItem;
 @class OUIDocumentPickerItemView, OUIDocumentPickerFileItemView, OUIDocumentPickerScrollView;
-@class OUIDocumentRenameSession;
 
 @protocol OUIDocumentPickerScrollViewDelegate <UIScrollViewDelegate>
-- (void)documentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView itemViewTapped:(OUIDocumentPickerItemView *)itemView;
-- (void)documentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView itemViewLongpressed:(OUIDocumentPickerItemView *)itemView;
-- (void)documentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView itemViewStartedEditingName:(OUIDocumentPickerItemView *)itemView nameTextField:(UITextField *)nameTextField;
-- (void)documentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView itemView:(OUIDocumentPickerItemView *)itemView finishedEditingName:(NSString *)name;
-- (void)documentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView willDisplayItemView:(OUIDocumentPickerItemView *)itemView;
-- (void)documentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView willEndDisplayingItemView:(OUIDocumentPickerItemView *)itemView;
+- (void)documentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView itemViewTapped:(OUIDocumentPickerItemView *)itemView OB_DEPRECATED_ATTRIBUTE;
+- (void)documentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView itemViewLongpressed:(OUIDocumentPickerItemView *)itemView OB_DEPRECATED_ATTRIBUTE;
+- (void)documentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView willDisplayItemView:(OUIDocumentPickerItemView *)itemView OB_DEPRECATED_ATTRIBUTE;
+- (void)documentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView willEndDisplayingItemView:(OUIDocumentPickerItemView *)itemView OB_DEPRECATED_ATTRIBUTE;
 
-- (NSArray *)sortDescriptorsForDocumentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView;
-- (BOOL)isReadyOnlyForDocumentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView;
+- (NSArray *)sortDescriptorsForDocumentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView OB_DEPRECATED_ATTRIBUTE;
+- (BOOL)isReadyOnlyForDocumentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView OB_DEPRECATED_ATTRIBUTE;
 
-- (BOOL)documentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView rectIsFullyVisible:(CGRect)rect;
+- (BOOL)documentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView rectIsFullyVisible:(CGRect)rect OB_DEPRECATED_ATTRIBUTE;
 
 @optional
-- (BOOL)documentPickerScrollViewShouldMultiselect:(OUIDocumentPickerScrollView *)scrollView;
+- (BOOL)documentPickerScrollViewShouldMultiselect:(OUIDocumentPickerScrollView *)scrollView OB_DEPRECATED_ATTRIBUTE;
 
 @end
 
@@ -50,7 +48,6 @@ extern NSString * const OUIDocumentPickerScrollViewItemsBinding;
 
 @property(nonatomic,retain) UILabel *titleViewForCompactWidth;
 @property(nonatomic,retain) UIView *topControls;
-@property(nonatomic,retain) OUIDocumentRenameSession *renameSession;
 
 @property(nonatomic,readonly) NSSet *items;
 
@@ -82,7 +79,6 @@ extern NSString * const OUIDocumentPickerScrollViewItemsBinding;
 - (OUIDocumentPickerFileItemView *)fileItemViewForFileItem:(ODSFileItem *)fileItem;
 - (OUIDocumentPickerItemView *)itemViewHitByRecognizer:(UIGestureRecognizer *)recognizer;
 
-- (ODSFileItem *)preferredVisibleItemFromSet:(NSSet *)fileItemsNeedingPreviewUpdate;
 - (void)previewsUpdatedForFileItem:(ODSFileItem *)fileItem;
 - (void)previewedItemsChangedForGroups;
 

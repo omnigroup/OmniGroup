@@ -25,7 +25,7 @@ RCS_ID("$Id$");
 
 #ifdef OMNI_ASSERTIONS_ON
 
-// Do this once here to make sure the hack works. This can also serve as a template for copying to make your own deperecation protocol.
+// Do this once here to make sure the hack works. This can also serve as a template for copying to make your own deprecation protocol.
 OBDEPRECATED_METHOD(-deprecatedInstanceMethod);
 OBDEPRECATED_METHOD(+deprecatedClassMethod);
 

@@ -9,7 +9,6 @@
 
 typedef enum {
     ODSLocalDirectoryScopeNormal,
-    ODSLocalDirectoryScopeTrash,
     ODSLocalDirectoryScopeTemplate,
 } ODSLocalDirectoryScopeType ;
 
@@ -25,7 +24,6 @@ typedef enum {
 - (id)initWithDirectoryURL:(NSURL *)directoryURL scopeType:(ODSLocalDirectoryScopeType)scopeType documentStore:(ODSStore *)documentStore;
 
 @property(nonatomic,readonly) NSURL *directoryURL;
-@property(nonatomic,readonly) BOOL isTrash;
 @property(nonatomic,readonly) BOOL isTemplate;
 
 @end

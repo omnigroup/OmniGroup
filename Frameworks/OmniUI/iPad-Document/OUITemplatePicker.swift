@@ -1,4 +1,4 @@
-// Copyright 2017-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2017-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,11 +19,6 @@
     func templatePicker(_ templatePicker: OUITemplatePicker, titleForHeaderInSection section: Int, for language: String) -> String
 }
 
-
-@objc public protocol OUITemplatePickerDelegate: class {
-    func templatePicker(_ templatePicker: OUITemplatePicker, didSelect templateURL: URL, animateFrom: UIView)
-    func generalTemplates(in templatePicker: OUITemplatePicker) -> [OUITemplateItem]
-}
 
 
 public final class OUITemplateItem: NSObject, ODSFileItemProtocol {
@@ -125,8 +120,8 @@ public class OUITemplatePicker: UIViewController {
     @objc public weak var internalTemplateDelegate: OUIInternalTemplateDelegate?
     @objc public weak var templateDelegate: OUITemplatePickerDelegate?
 
-    @objc public var documentPicker: OUIDocumentPicker?
-    @objc public var folderItem: ODSFolderItem?
+    //@objc public var documentPicker: OUIDocumentPicker?
+    //@objc public var folderItem: ODSFolderItem?
     @objc public var navigationTitle: String?
     @objc public var wantsCancelButton = true
     @objc public var wantsLanguageButton = true
@@ -156,12 +151,8 @@ public class OUITemplatePicker: UIViewController {
         UserDefaults.standard.setValue(Array(knownLanguages), forKey: OUITemplatePicker.knownLanguagesPreferenceKey)
     }
 
-    fileprivate func cancelPicker() {
-        navigationController?.popViewController(animated: true)
-    }
-
     @objc fileprivate func cancel() {
-        self.navigationController?.popViewController(animated: isEmbedded)
+        templateDelegate?.templatePickerDidCancel(self)
     }
 
     fileprivate func dismissLanguagePicker() {
@@ -429,7 +420,7 @@ extension OUITemplatePicker: UICollectionViewDelegate {
     public func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         if let templateItem = self.templateItem(for: indexPath) {
             let view = self.collectionView(collectionView, cellForItemAt: indexPath) as! OUITemplatePickerCell
-            templateDelegate?.templatePicker(self, didSelect: templateItem.fileURL, animateFrom: view.preview)
+            templateDelegate?.templatePicker(self, didSelectTemplateURL: templateItem.fileURL, animateFrom: view.preview)
         }
     }
 

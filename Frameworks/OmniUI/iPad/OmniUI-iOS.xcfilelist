@@ -91,6 +91,7 @@ OUIActivityIndicator.m
 OUIAnimationSequence.m
 OUIAppController+SpecialURLHandling.m
 OUIAppController.m
+OUIAppControllerSceneHelper.m
 OUIAttentionSeekingButton.m
 OUIBarButtonItem.m
 OUIBlockOutShieldView.m

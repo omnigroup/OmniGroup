@@ -7,6 +7,8 @@
 
 #import <OmniUI/OUILabeledValueCell.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @protocol OUIEditableLabeledValueCellDelegate;
 
 @interface OUIEditableLabeledValueCell : OUILabeledValueCell <UITextFieldDelegate>
@@ -36,3 +38,6 @@
 - (BOOL)editableLabeledValueCell:(OUIEditableLabeledValueCell *)cell textFieldShouldReturn:(UITextField *)textField;
 
 @end
+
+NS_ASSUME_NONNULL_END
+

@@ -1,4 +1,4 @@
-// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -73,6 +73,8 @@ RCS_ID("$Id$");
 
 - (OUIEmptyOverlayView *)newEmptyOverlayView;
 {
+    OBFinishPorting;
+#if 0
     NSString *buttonTitle = NSLocalizedStringFromTableInBundle(@"Tap here to add a document without a template.", @"OmniUIDocument", OMNI_BUNDLE, @"empty template picker button text");
     
     __weak OUIDocumentPickerViewController *weakSelf = self;
@@ -81,30 +83,22 @@ RCS_ID("$Id$");
     }];
     
     return _templatePickerEmptyOverlayView;
+#endif
 }
 
 + (OUIDocumentPickerFilter *)selectedFilterForPicker:(OUIDocumentPicker *)picker;
 {
+    OBFinishPorting;
+#if 0
     id <OUIDocumentPickerDelegate> delegate = picker.delegate;
     if ([delegate respondsToSelector:@selector(documentPickerTemplateDocumentFilter:)]) {
         OUIDocumentPickerFilter *templateFilter = [delegate documentPickerTemplateDocumentFilter:picker];
-
-        // Return a new filter with an extra not-in-trash check in the predicate. The new document template picker should never show any of the strings, but we'll keep the other properties too.
-        NSPredicate *predicate = [NSPredicate predicateWithBlock:^BOOL(id evaluatedObject, NSDictionary *bindings) {
-            if (![templateFilter.predicate evaluateWithObject:evaluatedObject])
-                return NO;
-            // filter out fileItems in the trash or recent documents.
-            ODSItem *item = evaluatedObject;
-            ODSScope *itemScope = item.scope;
-            if (itemScope.isTrash || ([itemScope isKindOfClass:ODSExternalScope.class] && ((ODSExternalScope *)itemScope).isRecentDocuments))
-                return NO;
-            else
-                return YES;
-        }];
+        NSPredicate *predicate = templateFilter.predicate;
 
         return [[OUIDocumentPickerFilter alloc] initWithIdentifier:templateFilter.identifier imageName:templateFilter.identifier predicate:predicate localizedFilterChooserButtonLabel:templateFilter.localizedFilterChooserButtonLabel localizedFilterChooserShortButtonLabel:templateFilter.localizedFilterChooserShortButtonLabel localizedMatchingObjectsDescription:templateFilter.localizedMatchingObjectsDescription];
     }
     return nil;
+#endif
 }
 
 + (NSArray *)sortDescriptors;
@@ -156,11 +150,14 @@ RCS_ID("$Id$");
 
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender;
 {
+    OBFinishPorting;
+#if 0
     if (action == @selector(newDocument:)) {
         return NO;
     }
 
     return [super canPerformAction:action withSender:sender];
+#endif
 }
 
 #pragma mark -
@@ -168,6 +165,8 @@ RCS_ID("$Id$");
 
 - (void)documentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView itemViewTapped:(OUIDocumentPickerItemView *)itemView;
 {
+    OBFinishPorting;
+#if 0
     if ([itemView isKindOfClass:[OUIDocumentPickerFileItemView class]]) {
         ODSFileItem *fileItem = (ODSFileItem *)itemView.item;
         OBASSERT([fileItem isKindOfClass:[ODSFileItem class]]);
@@ -185,6 +184,7 @@ RCS_ID("$Id$");
             [self _endIgnoringDocumentsDirectoryUpdates];
         }];
     }
+#endif
 }
 
 - (BOOL)documentPickerScrollViewShouldMultiselect:(OUIDocumentPickerScrollView *)scrollView

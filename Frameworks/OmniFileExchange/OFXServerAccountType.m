@@ -1,4 +1,4 @@
-// Copyright 2013,2017 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,9 +10,10 @@
 // Hard coding the account types for now.
 #import "OFXOmniSyncServerAccountType.h"
 #import "OFXDAVServerAccountType.h"
-#import "OFXiTunesLocalDocumentsServerAccountType.h"
 
 RCS_ID("$Id$")
+
+NS_ASSUME_NONNULL_BEGIN
 
 @implementation OFXServerAccountType
 
@@ -31,11 +32,6 @@ static NSMutableArray <OFXServerAccountType *> *AccountTypes = nil;
     
     type = [[OFXDAVServerAccountType alloc] init];
     [self registerAccountType:type];
-    
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-    type = [[OFXiTunesLocalDocumentsServerAccountType alloc] init];
-    [self registerAccountType:type];
-#endif
 }
 
 + (void)registerAccountType:(OFXServerAccountType *)type;
@@ -51,7 +47,7 @@ static NSMutableArray <OFXServerAccountType *> *AccountTypes = nil;
     return AccountTypes;
 }
 
-+ (OFXServerAccountType *)accountTypeWithIdentifier:(NSString *)identifier;
++ (nullable OFXServerAccountType *)accountTypeWithIdentifier:(NSString *)identifier;
 {
     for (OFXServerAccountType *type in AccountTypes)
         if ([type.identifier isEqualToString:identifier])
@@ -75,7 +71,7 @@ static NSMutableArray <OFXServerAccountType *> *AccountTypes = nil;
     return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Export to \"%@\"", @"OmniFileExchange", OMNI_BUNDLE, @"Server account export title format"), displayName];
 }
 
-- (NSURL *)baseURLForServerURL:(NSURL *)serverURL username:(NSString *)username;
+- (nullable NSURL *)baseURLForServerURL:(nullable NSURL *)serverURL username:(NSString *)username;
 {
     return serverURL;
 }
@@ -94,3 +90,6 @@ static NSMutableArray <OFXServerAccountType *> *AccountTypes = nil;
 }
 
 @end
+
+NS_ASSUME_NONNULL_END
+

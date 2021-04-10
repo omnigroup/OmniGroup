@@ -69,7 +69,7 @@ class MultiPanePresenter: NSObject {
         return button
     }()
     
-    @objc /**REVIEW**/ func present(pane: Pane, fromViewController presentingController: UIViewController, usingDisplayMode displayMode: MultiPaneDisplayMode, interactivelyWith gesture: UIScreenEdgePanGestureRecognizer? = nil, animated: Bool = true) {
+    @objc /**REVIEW**/ func present(pane: Pane, fromViewController presentingController: MultiPaneController, usingDisplayMode displayMode: MultiPaneDisplayMode, interactivelyWith gesture: UIScreenEdgePanGestureRecognizer? = nil, animated: Bool = true) {
 
         // Ensure layout is up to date before we build up the animation and new constraints
         if animated {
@@ -105,7 +105,7 @@ class MultiPanePresenter: NSObject {
             if gesture != nil { return } // TODO: decide if we want to bail here, or try to support this gesture to drive the expand/collapse animation. It might be confusing for users that they can gesture sometimes, but not others.
 
             let operation: MultiPanePresenterOperation = pane.isVisible ? .collapse : .expand
-            let animator = pane.sidebarAnimator(forOperation: operation, animate:animatesSidebarLayout)
+            let animator = pane.sidebarAnimator(forOperation: operation, in: presentingController, animate:animatesSidebarLayout)
             var additionalAnimations: (()->())?
 
             if operation == .collapse {
@@ -189,15 +189,18 @@ class MultiPanePresenter: NSObject {
             self.overlayPresenter = MultiPaneSlidingOverlayPresenter(pane: pane, pinBarButtonItem: pinButton)
             self.overlayPresenter?.sldingOverlayPresentationControllerDelegate = self
             self.overlayPresenter?.edgeGesture = gesture
-            pane.viewController.transitioningDelegate = self.overlayPresenter
-            pane.viewController.modalPresentationStyle = .custom
             
             assert(pane.viewController.presentedViewController == nil, "We hit an infinite loop if we try to present a view controller with a presented view controller")
-            presentingController.present(pane.viewController, animated: animated, completion: {
+            
+            MultipanePresentationWrapperViewController.presentWrapperController(from: presentingController, animated: animated, rootViewController: pane.viewController, presentationStyle: .custom, adaptivePresentationDelegate: pane.viewController as? UIAdaptivePresentationControllerDelegate, configurationBlock: { wrapper in
+                wrapper.transitioningDelegate = self.overlayPresenter
+            }) {
                 self.removeSnapshotIfNeeded(pane: pane)
                 self.panesInOverlayTransition.remove(pane)
                 self.delegate?.didPerform(operation: .overlay, withPane: pane)
-            })
+            }
+            
+            
             if let presentedController = presentedController {
                 pane.viewController.present(presentedController, animated: false, completion: nil)
             }
@@ -219,15 +222,15 @@ class MultiPanePresenter: NSObject {
         self.delegate?.willPerform(operation: .present, withPane: pane)
         self.overlayPresenter = nil
         
-        if self.delegate?.willPresent?(viewController: pane.viewController) == nil {
-            // Setup reasonable defaults if the delegate is nil or the optional `willPresent` method is not implemented.
-            pane.viewController.transitioningDelegate = nil
-            pane.viewController.modalPresentationStyle = .automatic
-        }
-        
-        presentingController.present(pane.viewController, animated: animated, completion: {
+        MultipanePresentationWrapperViewController.presentWrapperController(from: presentingController, animated: animated, rootViewController: pane.viewController, presentationStyle: nil, adaptivePresentationDelegate: pane.viewController as? UIAdaptivePresentationControllerDelegate, configurationBlock: { wrapper in
+            if self.delegate?.willPresent?(viewController: wrapper) == nil {
+                // Setup reasonable defaults if the delegate is nil or the optional `willPresent` method is not implemented.
+                wrapper.transitioningDelegate = nil
+                wrapper.modalPresentationStyle = .automatic
+            }
+        }) {
             self.delegate?.didPerform(operation: .present, withPane: pane)
-        })
+        }
     }
     
     @objc /**REVIEW**/ internal private(set) var transitionContext: MultiPaneNavigationTransitionContext?
@@ -338,23 +341,20 @@ extension MultiPaneAnimator {
         return UIViewPropertyAnimator(duration: 0.35, timingParameters: UISpringTimingParameters())
     }
     
-    private func transform(forView view: UIView, makingVisible: Bool) -> CGAffineTransform {
-        
-        if makingVisible {
-            if self.location == .left {
-                return CGAffineTransform(translationX: view.bounds.size.width, y: 0)
-            } else if self.location == .right {
-                return CGAffineTransform(translationX: view.bounds.size.width * -1, y: 0)
-            } else {
-                assert(false, "unsupported location for transform")
-            }
+    private func translation(forView view: UIView, makingVisible: Bool) -> CGFloat {
+        let multiplier: CGFloat = makingVisible ? 1 : -1
+        if self.location == .left {
+            return view.bounds.size.width * multiplier
+        } else if self.location == .right {
+            return view.bounds.size.width * -1 * multiplier
+        } else {
+            assertionFailure("unsupported location for transform")
+            return 0
         }
-        
-        return CGAffineTransform.identity
     }
     
     @objc /**REVIEW**/ func slidebarOverlayAnimator(forOperation operation: MultiPanePresenterOperation, interactive: Bool) -> UIViewPropertyAnimator {
-        var animator = self.defaultAnimator
+        var animator = defaultAnimator
         guard operation == .overlay || operation == .dismiss else {
             assertionFailure("expected a expand/collapse operation type, not \(operation)")
             return animator // return animator with no animations
@@ -365,16 +365,18 @@ extension MultiPaneAnimator {
             animator = UIViewPropertyAnimator(duration: 0.15, curve: .linear, animations: nil)
         }
         
-        let view = self.viewController.view! // TODO: should this be handled by a guard? If the view is nil here we have bigger problems, so maybe ok to force and crash (if in a bad state)
-        let transform = self.transform(forView: view, makingVisible: (operation == .overlay))
+        // Our pane can be contained in a wrapper controller, so perform the animation on the deepest ancestor
+        let view = viewController.deepestAncestor.view! // TODO: should this be handled by a guard? If the view is nil here we have bigger problems, so maybe ok to force and crash (if in a bad state)
+        view.layoutIfNeeded()
+        let translation = self.translation(forView: view, makingVisible: (operation == .overlay))
         animator.addAnimations {
-            view.transform = transform
+            view.center.x = view.center.x + translation
         }
         
         return animator
     }
     
-    @objc /**REVIEW**/ func sidebarAnimator(forOperation operation: MultiPanePresenterOperation, animate: Bool) -> UIViewPropertyAnimator {
+    @objc /**REVIEW**/ func sidebarAnimator(forOperation operation: MultiPanePresenterOperation, in multipaneController: MultiPaneController, animate: Bool) -> UIViewPropertyAnimator {
         let animator = self.defaultAnimator
         guard operation == .expand || operation == .collapse else {
             assertionFailure("expected a expand/collapse operation type, not \(operation)")
@@ -390,7 +392,7 @@ extension MultiPaneAnimator {
         let constraintValue = (operation == .expand) ? 0.0 : collapseOffset
         let location = self.location
         
-        animator.addAnimations {
+        let performConstraintChanges = {
             if location == .left {
                 MultiPaneLayout.leadingConstraint(forView: superview)?.constant = constraintValue
             } else if location == .right {
@@ -398,14 +400,91 @@ extension MultiPaneAnimator {
             } else {
                 assertionFailure("unexpected pane location for expand/collapse animation \(location)")
             }
+            // workaround for <bug:///175873> (iOS-OmniGraffle Bug: [iOS 13] hiding sidebar inspector does not resize the canvas back to the edge of the window)
+            multipaneController.orderedPanes.forEach { (pane:Pane) in
+                pane.viewController.view.setNeedsLayout()
+            }
+        }
+        
+        let invalidateSearchBarLayout = {
+            for pane in multipaneController.orderedPanes {
+                guard let navigationController = pane.viewController as? UINavigationController else { continue }
+                guard let searchController = navigationController.topViewController?.navigationItem.searchController else { continue }
+                searchController.searchBar.setNeedsLayout()
+            }
         }
 
         if (animate) {
             animator.addAnimations {
+                performConstraintChanges()
+                
+                // Invalidate the layout for all search bars now, otherwise they are stale after sidebar expand/collapse.
+                //
+                // <bug:///176005> (iOS-OmniFocus Bug: iOS 13: Search field width does not update properly with multipane controller layouts)
+                // Filed with Apple as FB6786500
+
+                invalidateSearchBarLayout()
+
                 superview.layoutIfNeeded()
             }
+        } else {
+            animator.addAnimations(performConstraintChanges)
         }
         
         return animator
+    }
+}
+
+// In order to present a pane as an overlay in one context and as a page sheet in another, we need to create a new wrapping view controller every time a presentation occurs. Once a view controller has received a modalPresentationStyle, it's stuck with that style forever once it's been presented. So, call this class' presentation method each time a pane needs to be presented modally or as an overlay, and we'll wrap the pane's controller in this wrapper
+internal class MultipanePresentationWrapperViewController: UIViewController {
+    static func presentWrapperController(from presentingController: UIViewController, animated: Bool, rootViewController: UIViewController, presentationStyle: UIModalPresentationStyle?, adaptivePresentationDelegate: UIAdaptivePresentationControllerDelegate?, configurationBlock: (MultipanePresentationWrapperViewController)->Void = {_ in }, completion: @escaping ()->Void = {}) {
+        let wrapper = MultipanePresentationWrapperViewController()
+        wrapper.rootViewController = rootViewController
+        wrapper.addChild(rootViewController)
+        
+        configurationBlock(wrapper)
+        
+        if let presentationStyle = presentationStyle {
+            wrapper.modalPresentationStyle = presentationStyle
+        }
+        
+        if let adaptivePresentationDelegate = adaptivePresentationDelegate {
+            assert(wrapper.presentationController?.delegate == nil)
+            wrapper.presentationController?.delegate = adaptivePresentationDelegate
+        }
+        
+        presentingController.present(wrapper, animated: animated, completion: completion)
+    }
+    
+    var rootViewController: UIViewController!
+    
+    override func loadView() {
+        let view = UIView()
+        let rootView = rootViewController.view!
+        view.addSubview(rootView)
+        rootView.translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate([
+            view.leadingAnchor.constraint(equalTo: rootView.leadingAnchor),
+            view.trailingAnchor.constraint(equalTo: rootView.trailingAnchor),
+            view.topAnchor.constraint(equalTo: rootView.topAnchor),
+            view.bottomAnchor.constraint(equalTo: rootView.bottomAnchor)
+        ])
+        
+        view.frame.size = rootView.frame.size
+        
+        self.view = view
+    }
+    
+    // Once the presentation is over, we want to throw this wrapper away, since it's served its purpose of supplying a presentation.
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        
+        // We remove the controller manually below, and that prevents this lifecycle message from percolating down. Call it manually, instead.
+        rootViewController.viewDidDisappear(animated)
+        
+        rootViewController.removeFromParent()
+        rootViewController.view.removeFromSuperview()
+        rootViewController = nil
     }
 }

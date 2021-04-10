@@ -13,6 +13,8 @@
 
 #import <OmniUI/OUIAppController.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 RCS_ID("$Id$");
 
 #if 0 && defined(DEBUG)
@@ -44,7 +46,7 @@ typedef NS_ENUM(NSInteger, OUIKeyboardState) {
 @interface OUIKeyboardNotifier ()
 
 @property (nonatomic) OUIKeyboardState keyboardState;
-@property (nonatomic, copy) NSDictionary *lastKnownKeyboardInfo;
+@property (nonatomic, nullable, copy) NSDictionary *lastKnownKeyboardInfo;
 
 @end
 
@@ -119,7 +121,7 @@ static OUIKeyboardNotifier *sharedNotifier = nil;
     return NO;
 }
 
-- (void)setAccessoryToolbarView:(UIView *)accessoryToolbarView;
+- (void)setAccessoryToolbarView:(nullable UIView *)accessoryToolbarView;
 {
     if (_accessoryToolbarView == accessoryToolbarView)
         return;
@@ -367,3 +369,6 @@ static void _updateAccessoryToolbarViewFrame(OUIKeyboardNotifier *self)
 }
 
 @end
+
+NS_ASSUME_NONNULL_END
+

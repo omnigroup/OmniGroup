@@ -1,4 +1,4 @@
-// Copyright 2017 The Omni Group. All rights reserved.
+// Copyright 2017-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,15 +16,9 @@
     @objc public var documentName: String?
     // This is the actual view of the template we will animate from when opening the newly created file
     @objc public var animateFromView: UIView?
-    @objc public let scope: ODSScope
-    @objc public let store: ODSStore
-    @objc public let folderItem: ODSFolderItem
     @objc public let documentType: ODSDocumentType
 
-    @objc public init(with scope: ODSScope, store: ODSStore, folderItem: ODSFolderItem, documentType: ODSDocumentType, templateURL: URL? = nil, documentName: String? = nil, animateFromView: UIView? = nil) {
-        self.scope = scope
-        self.store = store
-        self.folderItem = folderItem
+    @objc public init(documentType: ODSDocumentType, templateURL: URL? = nil, documentName: String? = nil, animateFromView: UIView? = nil) {
         self.documentType = documentType
         self.templateURL = templateURL
         self.documentName = documentName

@@ -12,7 +12,7 @@
 #import <OmniUIDocument/OUIDocumentPreview.h> // OUIDocumentPreviewArea
 
 @class UIResponder, UIView, UIViewController;
-@class ODSFileItem, OUIDocumentViewController;
+@class OUIDocumentViewController;
 @class OUIDocumentPreview, OUIImageLocation, OUIInteractionLock;
 
 @protocol OUIDocumentViewController;
@@ -28,7 +28,7 @@
 + (BOOL)shouldShowAutosaveIndicator;
 
 // Called when opening an existing document
-- (instancetype)initWithExistingFileItem:(ODSFileItem *)fileItem error:(NSError **)outError;
+- (instancetype)initWithExistingFileURL:(NSURL *)fileURL error:(NSError **)outError;
 
 // Subclass this method if you need to set anything on the document after it's first been created from a template. (UUID's and the like). Callers of this method must perform file coordination on the template URL. The saveURL will be in a temporary location and doesn't need file coordination.
 - (instancetype)initWithContentsOfTemplateAtURL:(NSURL *)templateURLOrNil toBeSavedToURL:(NSURL *)saveURL error:(NSError **)outError;
@@ -40,18 +40,22 @@
 - (instancetype)initEmptyDocumentToBeSavedToURL:(NSURL *)url error:(NSError **)outError;
 
 // Funnel point for initializing documents
-- (instancetype)initWithFileItem:(ODSFileItem *)fileItem url:(NSURL *)url error:(NSError **)outError;
+- (instancetype)initWithFileURL:(NSURL *)fileURL error:(NSError **)outError;
 
 // Can set this before opening a document to tell it that it is being opened for preview generation. Later we might want more control of how errors are captured for off-screen document work, but for now this just makes errors get logged instead of presented to the user. The document view controller may also opt to load less data or otherwise speed up its work by only doing what is necessary for preview generation.
 @property(nonatomic) BOOL forPreviewGeneration;
+
+// Can set this before opening a document to tell it that it is being opened for the purpose of generating exported content.
+@property(nonatomic) BOOL forExportOnly;
+
 - (void)transientFileItemForPreviewGeneration:(ODSFileItem *)fileItem;
 
-@property(nonatomic,readonly) ODSFileItem *fileItem;
+//@property(nonatomic,readonly) ODSFileItem *fileItem;
 
 - (void)willEditDocumentTitle;
 
 @property(nonatomic,readonly) UIViewController *viewControllerToPresent;
-@property(nonatomic,readonly) UIViewController <OUIDocumentViewController> *documentViewController;
+@property(nonatomic,readonly) __kindof UIViewController <OUIDocumentViewController> *documentViewController;
 @property(nonatomic,readonly) BOOL editingDisabled;
 @property(nonatomic) BOOL isDocumentEncrypted; // If it is encrypted, it will be unreadable.
 @property(nonatomic, strong) OUIInteractionLock *applicationLock;
@@ -124,6 +128,17 @@
 
 - (void)accessSecurityScopedResourcesForBlock:(void (^ NS_NOESCAPE)(void))block;
 
+//
++ (NSString *)displayNameForFileURL:(NSURL *)fileURL;
++ (NSString *)editingNameForFileURL:(NSURL *)fileURL;
++ (NSString *)exportingNameForFileURL:(NSURL *)fileURL;
+
+@property(readonly,nonatomic) NSString *editingName;
+@property(readonly,nonatomic) NSString *name;
+@property(readonly,nonatomic) NSString *exportingName;
+
+/// Application-specific subclasses of OUIDocument can subclass this to report the file type identifiers that are available for this file. The argument `isFileExportToLocalDocuments` is YES only if we are doing a filesystem-based export (not send-to-app, etc) to the local iTunes accessible Documents folder. The default implementation returns nil, in which case the export interface will build a default set of types. A NSNull may be inserted into this array to represent "the current type".
++ (NSArray *)availableExportTypesForFileType:(NSString *)fileType isFileExportToLocalDocuments:(BOOL)isFileExportToLocalDocuments;
 
 @end
 

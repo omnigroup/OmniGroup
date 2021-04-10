@@ -10,29 +10,29 @@
 @class ODSFileItem;
 @class OUIDocumentPreviewGenerator;
 
+OB_DEPRECATED_ATTRIBUTE
 @protocol OUIDocumentPreviewGeneratorDelegate <NSObject>
 
 // If YES, the preview generator won't bother generating a preview for this file item since the user is editing it
-- (BOOL)previewGenerator:(OUIDocumentPreviewGenerator *)previewGenerator isFileItemCurrentlyOpen:(ODSFileItem *)fileItem;
+- (BOOL)previewGenerator:(OUIDocumentPreviewGenerator *)previewGenerator isFileItemCurrentlyOpen:(ODSFileItem *)fileItem OB_DEPRECATED_ATTRIBUTE;
 
 // If YES, the preview generator will pause updating previews
-- (BOOL)previewGeneratorHasOpenDocument:(OUIDocumentPreviewGenerator *)previewGenerator;
+- (BOOL)previewGeneratorHasOpenDocument:(OUIDocumentPreviewGenerator *)previewGenerator OB_DEPRECATED_ATTRIBUTE;
 
-- (void)previewGenerator:(OUIDocumentPreviewGenerator *)previewGenerator performDelayedOpenOfFileItem:(ODSFileItem *)fileItem;
-
-- (ODSFileItem *)previewGenerator:(OUIDocumentPreviewGenerator *)previewGenerator preferredFileItemForNextPreviewUpdate:(NSSet *)fileItems;
+- (void)previewGenerator:(OUIDocumentPreviewGenerator *)previewGenerator performDelayedOpenOfFileItem:(ODSFileItem *)fileItem OB_DEPRECATED_ATTRIBUTE;
 
 // if preview generation is too expensive, return no, and we'll write zero length previews and stop trying
-- (BOOL)previewGenerator:(OUIDocumentPreviewGenerator *)previewGenerator shouldGeneratePreviewForURL:(NSURL *)fileURL;
+- (BOOL)previewGenerator:(OUIDocumentPreviewGenerator *)previewGenerator shouldGeneratePreviewForURL:(NSURL *)fileURL OB_DEPRECATED_ATTRIBUTE;
 
 // Takes a fileURL instead of the fileItem since (hypothetically) the file type could change between two different conflict versions (rtf -> rtfd, for example).
-- (Class)previewGenerator:(OUIDocumentPreviewGenerator *)previewGenerator documentClassForFileURL:(NSURL *)fileURL;
+- (Class)previewGenerator:(OUIDocumentPreviewGenerator *)previewGenerator documentClassForFileURL:(NSURL *)fileURL OB_DEPRECATED_ATTRIBUTE;
 
 @end
 
 /*
  Helps manage the set of preview generation needs, app backgrounding and contention with opening actual documents.
  */
+OB_DEPRECATED_ATTRIBUTE
 @interface OUIDocumentPreviewGenerator : NSObject
 
 + (void)disablePreviewsForAnimation;

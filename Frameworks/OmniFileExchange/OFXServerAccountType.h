@@ -7,6 +7,8 @@
 
 #import <Foundation/NSObject.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class OFXServerAccount;
 @protocol OFXServerAccountValidator;
 
@@ -14,12 +16,12 @@
 
 + (void)registerAccountType:(OFXServerAccountType *)type;
 + (NSArray *)accountTypes;
-+ (OFXServerAccountType *)accountTypeWithIdentifier:(NSString *)identifier;
++ (nullable OFXServerAccountType *)accountTypeWithIdentifier:(NSString *)identifier;
 
 - (NSString *)importTitleForDisplayName:(NSString *)displayName;
 - (NSString *)exportTitleForDisplayName:(NSString *)displayName;
 
-- (NSURL *)baseURLForServerURL:(NSURL *)serverURL username:(NSString *)username;
+- (nullable NSURL *)baseURLForServerURL:(nullable NSURL *)serverURL username:(NSString *)username;
 
 @end
 
@@ -31,9 +33,6 @@ typedef void (^OFXServerAccountValidationHandler)(NSError *errorOrNil);
 @property(nonatomic,readonly) NSString *displayName;
 @property(nonatomic,readonly) float presentationPriority;
 @property(nonatomic,readonly) BOOL requiresServerURL;
-@property(nonatomic,readonly) BOOL requiresUsername;
-@property(nonatomic,readonly) BOOL requiresPassword;
-@property(nonatomic,readonly) BOOL usesCredentials;
 - (NSString *)accountDetailsStringForAccount:(OFXServerAccount *)account;
 @property(nonatomic,readonly) NSString *addAccountTitle;
 @property(nonatomic,readonly) NSString *addAccountDescription;
@@ -48,8 +47,7 @@ typedef void (^OFXServerAccountValidationHandler)(NSError *errorOrNil);
 @end
 
 // Identifiers for well known types
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-extern NSString * const OFXiTunesLocalDocumentsServerAccountTypeIdentifier;
-#endif
 extern NSString * const OFXOmniSyncServerAccountTypeIdentifier;
 extern NSString * const OFXWebDAVServerAccountTypeIdentifier;
+
+NS_ASSUME_NONNULL_END

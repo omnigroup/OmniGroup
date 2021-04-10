@@ -7,8 +7,14 @@
 
 #import "OFXAccountAgent.h"
 
+#import <OmniFileExchange/OFXServerAccount.h> // OFX_MAC_STYLE_ACCOUNT
+
+NS_ASSUME_NONNULL_BEGIN
+
 @class ODAVConnection;
 @class OFXContainerAgent, OFXFileItem;
+
+typedef void (^OFXAfterMetadataUpdateAction)(void);
 
 @interface OFXAccountAgent ()
 
@@ -16,10 +22,17 @@
 
 - (void)_fileItemDidDetectUnknownRemoteEdit:(OFXFileItem *)fileItem;
 - (void)_containerAgentNeedsMetadataUpdate:(OFXContainerAgent *)container;
+- (void)_afterMetadataUpdate:(OFXAfterMetadataUpdateAction)action NS_SWIFT_NAME(_afterMetadataUpdate(_:));
 
 @property(nonatomic,readonly) NSOperationQueue *operationQueue;
+
+#if !OFX_MAC_STYLE_ACCOUNT
+// Set by OFXAgent when a migration is started.
+@property(nonatomic,nullable,strong,readwrite) OFXAccountMigration *activeMigration;
+#endif
 
 @end
 
 extern NSString * const OFXAccountAgentDidStopForReplacementNotification;
 
+NS_ASSUME_NONNULL_END

@@ -7,6 +7,8 @@
 
 #import <Foundation/NSObject.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class OFXServerAccountType, OFXServerAccountRegistry;
 
 // This is a terrible name, but it is better than having separate defines that are really all the same.
@@ -33,19 +35,21 @@ typedef NS_ENUM(NSUInteger, OFXServerAccountUsageMode) {
 + (BOOL)validateLocalDocumentsURL:(NSURL *)documentsURL reason:(OFXServerAccountLocalDirectoryValidationReason)reason error:(NSError **)outError;
 + (BOOL)validatePotentialLocalDocumentsParentURL:(NSURL *)documentsURL registry:(OFXServerAccountRegistry *)registry error:(NSError **)outError; // For NSSavePanel in the UI
 
-+ (NSURL *)signinURLFromWebDAVString:(NSString *)webdavString;
-+ (NSString *)suggestedDisplayNameForAccountType:(OFXServerAccountType *)accountType url:(NSURL *)url username:(NSString *)username excludingAccount:(OFXServerAccount *)excludeAccount;
++ (nullable NSURL *)signinURLFromWebDAVString:(NSString *)webdavString;
++ (NSString *)suggestedDisplayNameForAccountType:(OFXServerAccountType *)accountType url:(NSURL *)url username:(nullable NSString *)username excludingAccount:(nullable OFXServerAccount *)excludeAccount;
 
 #if !OFX_MAC_STYLE_ACCOUNT
 // Used by OUIServerAccountSetupViewController when creating a new account. Probably of not much use otherwise.
-+ (NSURL *)generateLocalDocumentsURLForNewAccount:(NSError **)outError;
++ (nullable NSURL *)generateLocalDocumentsURLForNewAccountWithName:(nullable NSString *)nickname error:(NSError **)outError;
 
 // When an account is deleted, this should be used to remove its local documents directory (only on iOS; on Mac we leave the user-visible documents alone).
-+ (void)deleteGeneratedLocalDocumentsURL:(NSURL *)documentsURL completionHandler:(void (^)(NSError *errorOrNil))completionHandler;
++ (void)deleteGeneratedLocalDocumentsURL:(NSURL *)documentsURL accountRequiredMigration:(BOOL)accountRequiredMigration completionHandler:(void (^ _Nullable)(NSError * _Nullable errorOrNil))completionHandler;
 #endif
 
+- init NS_UNAVAILABLE;
+
 // New account with unique identifier -- not yet in any registry (so it can be configured and the configuration cancelled if needed).
-- initWithType:(OFXServerAccountType *)type usageMode:(OFXServerAccountUsageMode)usageMode remoteBaseURL:(NSURL *)remoteBaseURL localDocumentsURL:(NSURL *)localDocumentsURL error:(NSError **)outError;
+- (nullable instancetype)initWithType:(OFXServerAccountType *)type usageMode:(OFXServerAccountUsageMode)usageMode remoteBaseURL:(NSURL *)remoteBaseURL localDocumentsURL:(NSURL *)localDocumentsURL error:(NSError **)outError;
 
 // State that cannot change while we are using an account -- have to remove the account and add a new one.
 @property(nonatomic,readonly) NSString *uuid;
@@ -53,22 +57,28 @@ typedef NS_ENUM(NSUInteger, OFXServerAccountUsageMode) {
 @property(nonatomic,readonly) NSURL *remoteBaseURL;
 @property(nonatomic,readonly) NSString *displayName;
 
+#if !OFX_MAC_STYLE_ACCOUNT
+// Older iOS builds stored the local working copy of documents in a hidden directory. We need to migrate accounts to moving the documents folder inside the local documents directory (or entirely out to Files) before the files will be visible.
+@property(nonatomic,readonly) BOOL requiresMigration;
+- (BOOL)didMigrateToLocalDocumentsURL:(NSURL *)updatedDocumentsURL error:(NSError **)outError NS_SWIFT_NAME(didMigrateToLocalDocumentsURL(_:));
+#endif
+
 @property(nonatomic,readonly) NSURL *localDocumentsURL; // For document syncing; not needed for simple WebDAV access
 
-#if OFX_MAC_STYLE_ACCOUNT
-// On Mac, the user can move the local documents folder, possibly changing its name. We track these moves by storing a bookmark URL. The display name is derived: it's simply the name of the folder.
+// The user can move the local documents folder, possibly changing its name. We track these moves by storing a bookmark URL. The display name is derived: it's simply the name of the folder.
 - (BOOL)resolveLocalDocumentsURL:(NSError **)outError; // Decodes the bookmark and attempts to start accessing the security scoped bookmark
 - (void)clearLocalDocumentsURL; // Relinquishes the local documents directory
-#else
+
 // On iOS, the user never sees the local documents URL so it never changes. However, they need to be able to edit the display name.
-@property(nonatomic,copy) NSString *nickname;
+#if !OFX_MAC_STYLE_ACCOUNT
+@property(nullable,nonatomic,copy) NSString *nickname;
 #endif
 
 @property(nonatomic,readonly) OFXServerAccountUsageMode usageMode;
 
 // The credential service identifier and credentals get set by validating the account via OFXServerAccountType
 // NSURLProtectionSpace cannot be archived in 10.8 (though it conforms the resulting archive data can't be unarchived) so OFXServerAccount just records a service identifier. In 10.7 NSURLProtectionSpace didn't even claim to conform to NSCoding.
-@property(nonatomic,copy) NSString *credentialServiceIdentifier;
+@property(nullable,nonatomic,copy) NSString *credentialServiceIdentifier;
 
 // Must be called before the account can be removed. The sync agent will notice this and begin the process of shutting down the account. Once that happens, the account will be removed.
 - (void)prepareForRemoval;
@@ -80,9 +90,9 @@ typedef NS_ENUM(NSUInteger, OFXServerAccountUsageMode) {
 
 @property(nonatomic,readonly) NSDictionary *propertyList;
 
-@property(nonatomic,readonly) NSError *lastError;
-- (void)reportError:(NSError *)error;
-- (void)reportError:(NSError *)error format:(NSString *)format, ... NS_FORMAT_FUNCTION(2,3);
+@property(nonatomic,readonly,nullable) NSError *lastError;
+- (void)reportError:(nullable NSError *)error;
+- (void)reportError:(nullable NSError *)error format:(nullable NSString *)format, ... NS_FORMAT_FUNCTION(2,3);
 - (void)clearError;
 
 // Helper that dispatches to the main queue for KVO and logs the error.
@@ -98,3 +108,6 @@ typedef NS_ENUM(NSUInteger, OFXServerAccountUsageMode) {
 extern NSString * const OFXAccountTransfersNeededNotification;
 extern NSString * const   OFXAccountTransfersNeededDescriptionKey; // Debugging user info key for what was needed
 #endif
+
+NS_ASSUME_NONNULL_END
+

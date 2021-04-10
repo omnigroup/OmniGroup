@@ -15,8 +15,6 @@
 		344F78CA1B56FAA2003BB98D /* ODSFileItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 348969C2179D9C90007978EC /* ODSFileItem.m */; };
 		344F78CB1B56FAA4003BB98D /* ODSFolderItem.h in Headers */ = {isa = PBXBuildFile; fileRef = 348969C5179D9C90007978EC /* ODSFolderItem.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		344F78CC1B56FAA8003BB98D /* ODSFolderItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 348969C6179D9C90007978EC /* ODSFolderItem.m */; };
-		344F78CD1B56FAAC003BB98D /* ODSExternalScope.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A1A46681AE860A200A23C29 /* ODSExternalScope.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		344F78CE1B56FAB0003BB98D /* ODSExternalScope.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1A46691AE860A200A23C29 /* ODSExternalScope.m */; };
 		344F78CF1B56FAB2003BB98D /* ODSLocalDirectoryScope.h in Headers */ = {isa = PBXBuildFile; fileRef = 348969CA179D9C90007978EC /* ODSLocalDirectoryScope.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		344F78D01B56FAB5003BB98D /* ODSLocalDirectoryScope.m in Sources */ = {isa = PBXBuildFile; fileRef = 348969CB179D9C90007978EC /* ODSLocalDirectoryScope.m */; };
 		344F78D11B56FABA003BB98D /* ODSScope-Subclass.h in Headers */ = {isa = PBXBuildFile; fileRef = 348969CD179D9C90007978EC /* ODSScope-Subclass.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -232,8 +230,6 @@
 		34C1BBFD179DCF710095744C /* ODSErrors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODSErrors.h; sourceTree = SOURCE_ROOT; };
 		34C1BBFF179DCF890095744C /* ODSErrors.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODSErrors.m; sourceTree = SOURCE_ROOT; };
 		34F939921F59E8FF00F95BA6 /* OmniFoundation.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniFoundation.xcodeproj; path = ../OmniFoundation/OmniFoundation.xcodeproj; sourceTree = "<group>"; };
-		4A1A46681AE860A200A23C29 /* ODSExternalScope.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODSExternalScope.h; sourceTree = SOURCE_ROOT; };
-		4A1A46691AE860A200A23C29 /* ODSExternalScope.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODSExternalScope.m; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -390,8 +386,6 @@
 		348969DD179D9CE9007978EC /* Scopes */ = {
 			isa = PBXGroup;
 			children = (
-				4A1A46681AE860A200A23C29 /* ODSExternalScope.h */,
-				4A1A46691AE860A200A23C29 /* ODSExternalScope.m */,
 				348969CA179D9C90007978EC /* ODSLocalDirectoryScope.h */,
 				348969CB179D9C90007978EC /* ODSLocalDirectoryScope.m */,
 				348969CC179D9C90007978EC /* ODSScope-Internal.h */,
@@ -459,7 +453,6 @@
 				344F78D91B56FADB003BB98D /* ODSUtilities.h in Headers */,
 				344F78CF1B56FAB2003BB98D /* ODSLocalDirectoryScope.h in Headers */,
 				344F78C71B56FA94003BB98D /* ODSItem.h in Headers */,
-				344F78CD1B56FAAC003BB98D /* ODSExternalScope.h in Headers */,
 				344F78DB1B56FAE2003BB98D /* ODSErrors.h in Headers */,
 				344F78D41B56FAC9003BB98D /* ODSStore.h in Headers */,
 				344F78D11B56FABA003BB98D /* ODSScope-Subclass.h in Headers */,
@@ -667,7 +660,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				344F78DA1B56FADF003BB98D /* ODSUtilities.m in Sources */,
-				344F78CE1B56FAB0003BB98D /* ODSExternalScope.m in Sources */,
 				344F78C81B56FA9A003BB98D /* ODSItem.m in Sources */,
 				344F78D81B56FAD9003BB98D /* ODSFilter.m in Sources */,
 				344F78D01B56FAB5003BB98D /* ODSLocalDirectoryScope.m in Sources */,

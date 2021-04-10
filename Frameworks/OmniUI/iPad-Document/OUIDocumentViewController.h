@@ -12,6 +12,9 @@
 // Set after the view controller is returned from the subclass implementation of -[OUIDocument makeViewController] (which should _not_ set it). Cleared when the document is closed.
 @property(nonatomic, weak) __kindof OUIDocument *document;
 
+// A subview of the view controller's main view that should be the target of the document open/close animation.
+- (UIView *)documentOpenCloseTransitionView;
+
 @optional
 
 // As the document is opening, animation will be disabled in -didMoveToParentViewController:. This will be called after the animation to make the view controller the main view controller's inner view controller is totally done (and animation is enabled again). This can be used, for example, to start editing and have the keyboard animate out.

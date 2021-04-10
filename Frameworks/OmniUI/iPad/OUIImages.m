@@ -1,4 +1,4 @@
-// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -71,6 +71,46 @@ UIImage *OUIToolbarForwardImage(void)
 UIImage *OUIToolbarBackImage(void)
 {
     return [UIImage imageNamed:@"OUIToolbarBack" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
+}
+
+extern UIImage *OUIContextMenuCopyIcon(void)
+{
+    return [UIImage imageNamed:@"OUIContextMenuCopy" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
+}
+
+extern UIImage *OUIContextMenuCutIcon(void)
+{
+    return [UIImage imageNamed:@"OUIContextMenuCut" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
+}
+
+extern UIImage *OUIContextMenuPasteIcon(void)
+{
+    return [UIImage imageNamed:@"OUIContextMenuPaste" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
+}
+
+extern UIImage *OUIContextMenuDeleteIcon(void)
+{
+    return [UIImage imageNamed:@"OUIContextMenuDelete" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
+}
+
+extern UIImage *OUIContextMenuCopyStyleIcon(void)
+{
+    return [UIImage imageNamed:@"OUIContextMenuCopyStyle" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
+}
+
+extern UIImage *OUIContextMenuPasteStyleIcon(void)
+{
+    return [UIImage imageNamed:@"OUIContextMenuPasteStyle" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
+}
+
+extern UIImage *OUIContextMenuSelectAllIcon(void)
+{
+    return [UIImage imageNamed:@"OUIContextMenuSelectAll" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
+}
+
+extern UIImage *OUIContextMenuCopyAsJavaScriptIcon(void)
+{
+    return [UIImage imageNamed:@"OUIContextMenuCopyAsJavaScript" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
 }
 
 UIImage *disclosureIndicatorFallbackImage(void)

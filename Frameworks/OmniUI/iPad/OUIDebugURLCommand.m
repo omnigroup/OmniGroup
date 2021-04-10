@@ -1,4 +1,4 @@
-// Copyright 2014-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -174,7 +174,9 @@ RCS_ID("$Id$");
     
     [mailController setSubject:subject];
     [mailController setMessageBody:body isHTML:NO];
-    [(OUIAppController *)[[UIApplication sharedApplication] delegate] sendMailTo:@[address] withComposeController:mailController];
+    
+    // TODO: Ultimately we do know which scene is handling the URL command, and we should pass it through.
+    [[OUIAppController controller] sendMailTo:@[address] withComposeController:mailController inScene:nil];
 }
 
 - (BOOL)command_EmailReceipt NS_EXTENSION_UNAVAILABLE_IOS("This depends on UIApplication, which isn't available in application extensions");
@@ -232,7 +234,7 @@ RCS_ID("$Id$");
         [controller setToRecipients:[NSArray arrayWithObject:address]];
         [controller setSubject:subject];
         [controller addAttachmentData:zipData mimeType:@"application/zip" fileName:[zipPath lastPathComponent]];
-        [appController sendMailTo:@[address] withComposeController:controller];
+        [appController sendMailTo:@[address] withComposeController:controller inScene:nil];
     } else {
         NSString *title = NSLocalizedStringFromTableInBundle(@"Cannot Email Diagnostics", @"OmniUI", OMNI_BUNDLE, @"alert title");
         NSString *message = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Mail has not been set up on this %@.",@"OmniUI", OMNI_BUNDLE, @"message format"), [[UIDevice currentDevice] model]];

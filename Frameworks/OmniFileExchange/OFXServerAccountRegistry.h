@@ -13,13 +13,18 @@
  OFXServerAccountRegistry maintains the set of accounts configured by the user.
  */
 
+NS_ASSUME_NONNULL_BEGIN
 
 @interface OFXServerAccountRegistry : NSObject
 
 // The default persistent registry
-+ (OFXServerAccountRegistry *)defaultAccountRegistry;
+@property(nonatomic,readonly,class) OFXServerAccountRegistry *defaultAccountRegistry;
 
-- initWithAccountsDirectoryURL:(NSURL *)accountsDirectoryURL error:(NSError **)outError;
+- (nullable instancetype)initWithAccountsDirectoryURL:(NSURL *)accountsDirectoryURL
+#if OMNI_BUILDING_FOR_IOS
+                           legacyAccountsDirectoryURL:(NSURL *)legacyAccountsDirectoryURL
+#endif
+                                                error:(NSError **)outError;
 
 @property(nonatomic,readonly,copy) NSArray <OFXServerAccount *> *allAccounts; // KVO observable
 @property(nonatomic,readonly,copy) NSArray <OFXServerAccount *> *validCloudSyncAccounts; // KVO observable.
@@ -34,3 +39,6 @@
 - (void)refreshAccount:(OFXServerAccount *)account;
 
 @end
+
+NS_ASSUME_NONNULL_END
+

@@ -1,4 +1,4 @@
-// Copyright 2013-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -35,6 +35,20 @@
 #endif
 #import <dirent.h>
 
+#if !OFX_MAC_STYLE_ACCOUNT
+#import <OmniFileExchange/OmniFileExchange-Swift.h>
+#endif
+
+#import <OmniFoundation/OFLockFile.h>
+#if (!defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE) && OF_LOCK_FILE_AVAILABLE
+    #define OFX_USE_LOCK_FILE 1
+#else
+    #define OFX_USE_LOCK_FILE 0 // The account directory is in our sandbox where no other processes should be able to touch it
+#endif
+
+
+NS_ASSUME_NONNULL_BEGIN
+
 RCS_ID("$Id$")
 
 typedef NS_ENUM(NSUInteger, OFXAccountAgentState) {
@@ -48,13 +62,6 @@ NSString * const OFXAccountAgentDidStopForReplacementNotification = @"OFXAccount
 static NSString * const RemoteTemporaryDirectoryName = @"tmp";
 
 static OFPreference *OFXRecentTransferErrorThresholdBeforeAutomaticallyStopping;
-
-#import <OmniFoundation/OFLockFile.h>
-#if (!defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE) && OF_LOCK_FILE_AVAILABLE
-    #define OFX_USE_LOCK_FILE 1
-#else
-    #define OFX_USE_LOCK_FILE 0 // The account directory is in our sandbox where no other processes should be able to touch it
-#endif
 
 @interface OFXAccountAgent () <NSFilePresenter>
 
@@ -90,6 +97,7 @@ static OFPreference *OFXRecentTransferErrorThresholdBeforeAutomaticallyStopping;
     NSOperationQueue *_operationQueue; // Serial queue for work related to this account, bookkeeping of file items, scans, and transfer status updates.
     
     NSTimer *_metadataUpdateTimer; // Registered on the main queue, but triggers a call over the account's operation queue.
+    NSMutableArray <OFXAfterMetadataUpdateAction> *_afterMetadataUpdateActions;
     
     NSMutableSet *_runningTransfers; // OFXFileSnapshotTransfers that are running.
     
@@ -98,7 +106,7 @@ static OFPreference *OFXRecentTransferErrorThresholdBeforeAutomaticallyStopping;
     
     // Support for coalescing sync requests
     NSLock *_queuedSyncCallbacksLock;
-    NSMutableArray *_locked_queuedSyncCallbacks;
+    NSMutableArray <OFXSyncCompletionHandler> *_locked_queuedSyncCallbacks;
     
     NSURLCredential *_credentialsForCurrentSync;
     
@@ -136,6 +144,10 @@ static OFPreference *OFXRecentTransferErrorThresholdBeforeAutomaticallyStopping;
     OFNetStateRegistration *_stateRegistration;
     
     OFXAccountInfo *_info;
+    
+#if !OFX_MAC_STYLE_ACCOUNT
+    OFXAccountMigration *_activeMigration;
+#endif
 }
 
 static NSSet <NSString *> *_lowercasePathExtensions(id <NSFastEnumeration> pathExtensions)
@@ -182,6 +194,14 @@ static NSSet <NSString *> *_lowercasePathExtensions(id <NSFastEnumeration> pathE
     _syncPathExtensions = [_lowercasePathExtensions(syncPathExtensions) copy];
     _remoteDirectoryName = [remoteDirectoryName copy];
     
+#if !OMNI_BUILDING_FOR_MAC
+    // If an account has been migrated, it is in a location visible to Files.app and in the local documents directory. We can't show placeholder files in this world and need to just download everything. If this account is later migrated, a new account agent will be created and this one discarded.
+    BOOL automaticallyDownloadFileContents = !account.requiresMigration;
+
+    _foregroundAutomaticallyDownloadFileContents = automaticallyDownloadFileContents;
+    _backgroundAutomaticallyDownloadFileContents = automaticallyDownloadFileContents;
+#endif
+
     return self;
 }
 
@@ -291,7 +311,7 @@ static NSSet <NSString *> *_lowercasePathExtensions(id <NSFastEnumeration> pathE
         _lockFile = nil;
 #endif
     };
-    
+
     // Our caller, -[OFXAgent _validatedAccountsChanged], should have already called -resolveLocalDocumentsURL: on our behalf on the Mac.
     NSURL *localDocumentsURL = _account.localDocumentsURL;
 
@@ -650,7 +670,7 @@ static NSSet <NSString *> *_lowercasePathExtensions(id <NSFastEnumeration> pathE
     }
 }
 
-- (void)sync:(void (^)(void))completionHandler;
+- (void)sync:(nullable OFXSyncCompletionHandler)completionHandler;
 {
     OBPRECONDITION([NSThread isMainThread]);
     OBPRECONDITION(_operationQueue);
@@ -662,7 +682,7 @@ static NSSet <NSString *> *_lowercasePathExtensions(id <NSFastEnumeration> pathE
     
     // We don't early out here if self.foregroundSyncingEnabled is NO since we need to flush out any queued completion handlers.
     if (!completionHandler)
-        completionHandler = ^{};
+        completionHandler = ^(NSError *errorOrNil){};
     completionHandler = [completionHandler copy];
         
     // If there are sync operations waiting, just add our completion handler to the callbacks.
@@ -688,12 +708,13 @@ static NSSet <NSString *> *_lowercasePathExtensions(id <NSFastEnumeration> pathE
         // If the keychain is locked and the user clicks cancel, we'll get userCanceledErr (which -[NSError(OBExtensions) causedByUserCancelling] understands.
         [credentialError log:@"Error looking up credentials for %@ with identifier %@", self.account, self.account.credentialServiceIdentifier];
     }
+    NSError *strongCredentialError = credentialError;
     
     self.account.isSyncInProgress = YES;
     
     [_operationQueue addOperationWithBlock:^{
         // Get the list of queued callbacks and clear it, signalling that any further requests start a new batch
-        NSArray *callbacks;
+        NSArray <OFXSyncCompletionHandler> *callbacks;
         [_queuedSyncCallbacksLock lock];
         {
             callbacks = _locked_queuedSyncCallbacks;
@@ -701,23 +722,27 @@ static NSSet <NSString *> *_lowercasePathExtensions(id <NSFastEnumeration> pathE
         }
         [_queuedSyncCallbacksLock unlock];
 
+        NSError *error = nil;
         if (!credential) {
             DEBUG_SYNC(1, @"Skipped; could not look up credentials");
+            error = strongCredentialError;
         } else if (self.backgroundState != OFXAccountAgentStateStarted) {
             DEBUG_SYNC(1, @"Stopped; not performing sync");
+            OFXError(&error, OFXSyncAgentNotStarted, @"Cannot sync", @"Attempted to sync when the sync agent was not started.");
         } else if  (!self.backgroundSyncingEnabled) {
             DEBUG_SYNC(1, @"Syncing disabled; not performing sync");
+            OFXError(&error, OFXSyncDisabled, @"Cannot sync", @"Attempted to sync when sync was disabled.");
         } else {
             if (_lastScanFailed) {
                 // Do a scan right now, and if it fails, don't continue (in particular, don't clear the last error on the account).
-                [self _performContentsChangedScan];
+                [self _performContentsChangedScan:&error];
             }
             if (_lastScanFailed == NO) {
                 //OBASSERT(_credentialsForCurrentSync == nil);
                 @synchronized(self) {
                     _credentialsForCurrentSync = credential;
                 }
-                [self _performSync];
+                [self _performSync:&error];
                 
                 // We leave this set so that transfers that fire up w/o a full sync don't get an assertion/missing credentials.
                 // @synchronized(self) {
@@ -727,20 +752,22 @@ static NSSet <NSString *> *_lowercasePathExtensions(id <NSFastEnumeration> pathE
         }
         
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-            for (void (^handler)(void) in callbacks)
-                handler();
+            for (OFXSyncCompletionHandler handler in callbacks) {
+                handler(error);
+            }
             self.account.isSyncInProgress = NO;
         }];
     }];
 }
 
-- (void)_performSync;
+- (BOOL)_performSync:(NSError **)outError;
 {
     OBPRECONDITION([NSOperationQueue currentQueue] == _operationQueue);
 
     if (self.backgroundState != OFXAccountAgentStateStarted) {
         OBASSERT_NOT_REACHED("Should be running");
-        return;
+        OFXError(outError, OFXSyncAgentNotStarted, @"Cannot sync", @"Attempted to sync when the sync agent was not started.");
+        return NO;
     }
     
     DEBUG_SYNC(1, @"Performing sync");
@@ -755,7 +782,8 @@ static NSSet <NSString *> *_lowercasePathExtensions(id <NSFastEnumeration> pathE
     ODAVConnection *connection = [self _makeConnection];
     if (!connection) {
         OBASSERT_NOT_REACHED("Our -_makeConnection currently always succeeds");
-        return;
+        OFXError(outError, OFXSyncUnableToCreateConnection, @"Cannot sync", @"Unable to create connection.");
+        return NO;
     }
     
     if (!OFXShouldSyncAllPathExtensions(_syncPathExtensions)) {
@@ -787,7 +815,10 @@ static NSSet <NSString *> *_lowercasePathExtensions(id <NSFastEnumeration> pathE
     }
     if (!containerFileInfos) {
         [_account reportError:error];
-        return;
+        if (outError) {
+            *outError = error;
+        }
+        return NO;
     } else {
         [_account clearError]; // server access appears to be working
     }
@@ -863,9 +894,11 @@ static NSSet <NSString *> *_lowercasePathExtensions(id <NSFastEnumeration> pathE
     } else {
         DEBUG_TRANSFER(2, @"Already had transfers queued.");
     }
+    
+    return YES;
 }
 
-- (NSArray <ODAVFileInfo *> *)_upateInfoAndCollectContainerIdentifiersWithConnection:(ODAVConnection *)connection serverDate:(NSDate **)outServerDate error:(NSError **)outError;
+- (nullable NSArray <ODAVFileInfo *> *)_upateInfoAndCollectContainerIdentifiersWithConnection:(ODAVConnection *)connection serverDate:(NSDate **)outServerDate error:(NSError **)outError;
 {
     // We store the main Info.plist, client files and containers in a flat hierarchy in the remote account. This allows us to do a single PROPFIND to see everything that has changed.
     ODAVMultipleFileInfoResult *result = OFXFetchFileInfosEnsuringDirectoryExists(connection, [self _remoteSyncDirectory], outError);
@@ -931,12 +964,12 @@ static NSSet <NSString *> *_lowercasePathExtensions(id <NSFastEnumeration> pathE
     return OFURLContainsURL(_account.localDocumentsURL, fileURL);
 }
 
-- (void)containerNeedsFileTransfer:(OFXContainerAgent *)container;
+- (void)containerNeedsFileTransfer:(nullable OFXContainerAgent *)container;
 {
     return [self containerNeedsFileTransfer:container requestRecorded:nil];
 }
 
-- (void)containerNeedsFileTransfer:(OFXContainerAgent *)transferContainer requestRecorded:(void (^)(void))requestRecorded;
+- (void)containerNeedsFileTransfer:(nullable OFXContainerAgent *)transferContainer requestRecorded:(void (^ _Nullable)(void))requestRecorded;
 {
     OBPRECONDITION([NSOperationQueue currentQueue] == _operationQueue);
     
@@ -1127,7 +1160,7 @@ static NSSet <NSString *> *_lowercasePathExtensions(id <NSFastEnumeration> pathE
     }];
 }
 
-- (void)requestDownloadOfItemAtURL:(NSURL *)fileURL completionHandler:(void (^)(NSError *errorOrNil))completionHandler;
+- (void)requestDownloadOfItemAtURL:(NSURL *)fileURL completionHandler:(void (^ _Nullable)(NSError * _Nullable errorOrNil))completionHandler;
 {
     OBPRECONDITION([NSThread isMainThread]);
 
@@ -1144,7 +1177,7 @@ static NSSet <NSString *> *_lowercasePathExtensions(id <NSFastEnumeration> pathE
     }];
 }
 
-- (void)deleteItemAtURL:(NSURL *)fileURL completionHandler:(void (^)(NSError *errorOrNil))completionHandler;
+- (void)deleteItemAtURL:(NSURL *)fileURL completionHandler:(void (^)(NSError * _Nullable errorOrNil))completionHandler;
 {
     OBPRECONDITION([NSThread isMainThread]);
 
@@ -1161,7 +1194,7 @@ static NSSet <NSString *> *_lowercasePathExtensions(id <NSFastEnumeration> pathE
     }];
 }
 
-- (void)moveItemAtURL:(NSURL *)originalFileURL toURL:(NSURL *)updatedFileURL completionHandler:(void (^)(OFFileMotionResult *moveResult, NSError *errorOrNil))completionHandler;
+- (void)moveItemAtURL:(NSURL *)originalFileURL toURL:(NSURL *)updatedFileURL completionHandler:(void (^)(OFFileMotionResult * _Nullable moveResult, NSError * _Nullable errorOrNil))completionHandler;
 {
     OBPRECONDITION([NSThread isMainThread]);
 
@@ -1197,7 +1230,7 @@ static NSSet <NSString *> *_lowercasePathExtensions(id <NSFastEnumeration> pathE
     return count;
 }
 
-- (void)countPendingTransfers:(void (^)(NSError *errorOrNil, NSUInteger count))completionHandler;
+- (void)countPendingTransfers:(void (^)(NSError * _Nullable errorOrNil, NSUInteger count))completionHandler;
 {
     OBPRECONDITION([NSThread isMainThread]);
 
@@ -1223,7 +1256,7 @@ static NSSet <NSString *> *_lowercasePathExtensions(id <NSFastEnumeration> pathE
     return count;
 }
 
-- (void)countFileItemsWithLocalChanges:(void (^)(NSError *errorOrNil, NSUInteger count))completionHandler;
+- (void)countFileItemsWithLocalChanges:(void (^)(NSError * _Nullable errorOrNil, NSUInteger count))completionHandler;
 {
     OBPRECONDITION([NSThread isMainThread]);
 
@@ -1275,9 +1308,25 @@ static NSSet <NSString *> *_lowercasePathExtensions(id <NSFastEnumeration> pathE
     return [currentQueue.name isEqualToString:[self _operationQueueName]];
 }
 
+#if !OFX_MAC_STYLE_ACCOUNT
+
+// Since OFXAccountAgent is single-use, once a migration is finished (successfully or not), we need to tell OFXAgent to make a new instance to replace us.
+- (void)migrationDidFinish;
+{
+    OBPRECONDITION([NSThread isMainThread]);
+    OBPRECONDITION(_activeMigration);
+    OBPRECONDITION(self.foregroundState == OFXAccountAgentStateStopped); // Don't call after stopping
+    
+    _activeMigration = nil;
+    
+    [[NSNotificationCenter defaultCenter] postNotificationName:OFXAccountAgentDidStopForReplacementNotification object:self userInfo:nil];
+}
+
+#endif
+
 #pragma mark - NSFilePresenter
 
-- (NSURL *)presentedItemURL;
+- (nullable NSURL *)presentedItemURL;
 {
     NSURL *documentsURL = _account.localDocumentsURL;
     OBPRECONDITION(documentsURL);
@@ -1471,7 +1520,24 @@ static NSSet <NSString *> *_lowercasePathExtensions(id <NSFastEnumeration> pathE
     }];
 }
 
-- (NSString *)debugName;
+- (void)_afterMetadataUpdate:(OFXAfterMetadataUpdateAction)action;
+{
+    OBPRECONDITION([NSThread isMainThread]);
+    OBPRECONDITION(_foregroundState == OFXAccountAgentStateStarted);
+    
+    action = [action copy];
+    
+    if (_metadataUpdateTimer) {
+        if (!_afterMetadataUpdateActions) {
+            _afterMetadataUpdateActions = [[NSMutableArray alloc] init];
+        }
+        [_afterMetadataUpdateActions addObject:action];
+    } else {
+        [_metadataRegistrationTable afterUpdate:action];
+    }
+}
+
+- (nullable NSString *)debugName;
 {
     return _debugName;
 }
@@ -1513,11 +1579,11 @@ static NSSet <NSString *> *_lowercasePathExtensions(id <NSFastEnumeration> pathE
             DEBUG_SCAN(1, @"Stopped; not performing contents changed update");
             return;
         }
-        [self _performContentsChangedScan];
+        [self _performContentsChangedScan:NULL];
     }];
 }
 
-- (void)_performContentsChangedScan;
+- (BOOL)_performContentsChangedScan:(NSError **)outError;
 {
     OBPRECONDITION([NSOperationQueue currentQueue] == _operationQueue);
     
@@ -1572,7 +1638,10 @@ static NSSet <NSString *> *_lowercasePathExtensions(id <NSFastEnumeration> pathE
     if (scanError) {
         _lastScanFailed = YES;
         [_account reportError:scanError format:@"Error scanning local documents directory"];
-        return;
+        if (outError) {
+            *outError = scanError;
+        }
+        return NO;
     }
 
     uint64_t endingFilePresenterVersion;
@@ -1582,10 +1651,12 @@ static NSSet <NSString *> *_lowercasePathExtensions(id <NSFastEnumeration> pathE
     if (endingFilePresenterVersion != startingFilePresenterVersion) {
         DEBUG_SCAN(1, "File presenter version has changed to %llu; ignore this scan", endingFilePresenterVersion);
         [self _queueContentsChanged];
-        return;
+        OBUserCancelledError(outError);
+        return NO;
     }
 
     OBASSERT([_containerIdentifierToContainerAgent count] == [containerIdentifierToScan count]);
+    __block NSError *containerError = nil;
     [_containerIdentifierToContainerAgent enumerateKeysAndObjectsUsingBlock:^(NSString *identifier, OFXContainerAgent *container, BOOL *stop) {
         OFXContainerScan *scan = containerIdentifierToScan[identifier];
         __autoreleasing NSError *error;
@@ -1595,12 +1666,21 @@ static NSSet <NSString *> *_lowercasePathExtensions(id <NSFastEnumeration> pathE
                 [self _queueContentsChanged];
             } else {
                 // Could be more than one error, but we'll just record the last and log all of them.
+                containerError = error;
                 [_account reportError:error format:@"Error finishing scan for container %@", [container shortDescription]];
             }
         }
     }];
     
     [self containerNeedsFileTransfer:nil];
+    
+    if (containerError) {
+        if (outError) {
+            *outError = containerError;
+        }
+        return NO;
+    }
+    return YES;
 }
 
 - (void)_handleSubitemAtURL:(NSURL *)oldURL didMoveToURL:(NSURL *)newURL;
@@ -1649,7 +1729,7 @@ static NSSet <NSString *> *_lowercasePathExtensions(id <NSFastEnumeration> pathE
 
 static NSString * const OFXContainerPathExtension = @"container";
 
-- (OFXContainerAgent *)_containerAgentWithIdentifier:(NSString *)identifier;
+- (nullable OFXContainerAgent *)_containerAgentWithIdentifier:(NSString *)identifier;
 {
     OBPRECONDITION([NSOperationQueue currentQueue] == _operationQueue);
     OBPRECONDITION(_containerIdentifierToContainerAgent);
@@ -1812,12 +1892,18 @@ static NSString * const OFXContainerPathExtension = @"container";
     
     if (_foregroundState != OFXAccountAgentStateStarted) {
         OBASSERT(_metadataUpdateTimer == nil);
+        OBASSERT(_afterMetadataUpdateActions == nil);
         return;
     }
     
+    NSArray <OFXAfterMetadataUpdateAction> *afterMetadataUpdateActions = [_afterMetadataUpdateActions copy];
+    _afterMetadataUpdateActions = nil;
+
     [_operationQueue addOperationWithBlock:^{
-        if (_backgroundState != OFXAccountAgentStateStarted)
+        if (_backgroundState != OFXAccountAgentStateStarted) {
+            OBASSERT(afterMetadataUpdateActions == nil); // Could invoke them here maybe
             return;
+        }
         
         NSMutableDictionary *recentTransferErrorsByLocalRelativePath = [[NSMutableDictionary alloc] init];
         [_containerIdentifierToContainerAgent enumerateKeysAndObjectsUsingBlock:^(NSString *identifier, OFXContainerAgent *container, BOOL *stop) {
@@ -1856,8 +1942,14 @@ static NSString * const OFXContainerPathExtension = @"container";
                 }];
             }
         }
+        
+        for (OFXAfterMetadataUpdateAction action in afterMetadataUpdateActions) {
+            [_metadataRegistrationTable afterUpdate:action];
+        }
     }];
     _metadataUpdateTimer = nil;
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

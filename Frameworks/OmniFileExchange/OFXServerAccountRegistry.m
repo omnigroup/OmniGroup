@@ -1,4 +1,4 @@
-// Copyright 2013-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,6 +18,8 @@
 #import "OFXServerAccountRegistry-Internal.h"
 
 RCS_ID("$Id$")
+
+NS_ASSUME_NONNULL_BEGIN
 
 static NSString * const AllAccountsKey = @"allAccounts";
 static NSString * const ValidCloudSyncAccounts = @"validCloudSyncAccounts";
@@ -39,6 +41,10 @@ static NSString * const ValidImportExportAccounts = @"validImportExportAccounts"
         
         // We have a single shared directory for all apps (so the main app's bundle identifier has no influence here). We *do* want the ability to split this off for testing.
         NSURL *accountsDirectoryURL;
+#if OMNI_BUILDING_FOR_IOS
+        NSURL *legacyAccountsDirectoryURL;
+#endif
+        
         const char *accountsDirectoryString = getenv("OFXAccountsDirectory");
         if (accountsDirectoryString && *accountsDirectoryString) {
             NSString *path = [NSString stringWithUTF8String:accountsDirectoryString];
@@ -61,12 +67,21 @@ static NSString * const ValidImportExportAccounts = @"validImportExportAccounts"
                 return;
             }
 
-
+            // On iOS, use the original metadata directory as a legacy directory. As accounts are migrated to use a bookmark for their folder in the app's local Documents folder (instead of a URL into the application support folder), we'll write the account metadata in the new location. This allows installing older copies of the app after migrating accounts without the old application being unable to deal with the new account plist format missing a URL for the documents location.
+#if OMNI_BUILDING_FOR_IOS
+            accountsDirectoryURL = [applicationSupportDirectoryURL URLByAppendingPathComponent:@"com.omnigroup.OmniPresence.Accounts.v2" isDirectory:YES];
+            legacyAccountsDirectoryURL = [applicationSupportDirectoryURL URLByAppendingPathComponent:@"com.omnigroup.OmniPresence.Accounts" isDirectory:YES];
+#else
             accountsDirectoryURL = [applicationSupportDirectoryURL URLByAppendingPathComponent:@"com.omnigroup.OmniPresence.Accounts" isDirectory:YES];
+#endif
         }
 
         __autoreleasing NSError *error = nil;
-        defaultRegistry = [[self alloc] initWithAccountsDirectoryURL:accountsDirectoryURL error:&error];
+        defaultRegistry = [[self alloc] initWithAccountsDirectoryURL:accountsDirectoryURL
+#if OMNI_BUILDING_FOR_IOS
+                                          legacyAccountsDirectoryURL:legacyAccountsDirectoryURL
+#endif
+                                                               error:&error];
         if (!defaultRegistry) {
             NSLog(@"Error creating account registry at %@: %@", accountsDirectoryURL, [error toPropertyList]);
         }
@@ -82,7 +97,11 @@ static NSString * const ValidImportExportAccounts = @"validImportExportAccounts"
     OBRejectUnusedImplementation(self, _cmd);
 }
 
-- initWithAccountsDirectoryURL:(NSURL *)accountsDirectoryURL error:(NSError **)outError;
+- (nullable instancetype)initWithAccountsDirectoryURL:(NSURL *)accountsDirectoryURL
+#if OMNI_BUILDING_FOR_IOS
+                           legacyAccountsDirectoryURL:(NSURL *)legacyAccountsDirectoryURL
+#endif
+                                                error:(NSError **)outError;
 {
     OBPRECONDITION(accountsDirectoryURL); // Doesn't have to exist ... we'll try to make it the first time an account is added.
     
@@ -105,6 +124,10 @@ static NSString * const ValidImportExportAccounts = @"validImportExportAccounts"
     
     _accountsDirectoryURL = [[accountsDirectoryURL URLByStandardizingPath] copy];
     
+#if OMNI_BUILDING_FOR_IOS
+    // We don't create the legacy location and don't care if this does nothing if it doesn't exist.
+    _legacyAccountsDirectoryURL = [[legacyAccountsDirectoryURL URLByStandardizingPath] copy];
+#endif
     
     // TODO: Should we add a lock file, or maybe OFXAgent should when using us?
 
@@ -120,6 +143,21 @@ static NSString * const ValidImportExportAccounts = @"validImportExportAccounts"
         }
     }
 
+#if OMNI_BUILDING_FOR_IOS
+    error = nil;
+    NSArray <NSURL *> *legacyAccountURLs = [[NSFileManager defaultManager] contentsOfDirectoryAtURL:_legacyAccountsDirectoryURL includingPropertiesForKeys:nil options:NSDirectoryEnumerationSkipsSubdirectoryDescendants error:&error];
+    if (!legacyAccountURLs) {
+        if ([error hasUnderlyingErrorDomain:NSPOSIXErrorDomain code:ENOENT] ||
+            [error hasUnderlyingErrorDomain:NSCocoaErrorDomain code:NSFileNoSuchFileError]) {
+            // OK; no legacy accounts
+        } else {
+            NSLog(@"Error loading sync accounts in %@: %@", _legacyAccountsDirectoryURL, [error toPropertyList]);
+        }
+    } else {
+        accountURLs = [accountURLs arrayByAddingObjectsFromArray:legacyAccountURLs];
+    }
+#endif
+    
     NSMutableArray <OFXServerAccount *> *allAccounts = [NSMutableArray new];
 
     for (NSURL *accountURL in accountURLs) {
@@ -146,6 +184,8 @@ static NSString * const ValidImportExportAccounts = @"validImportExportAccounts"
         }
         
         if (account.hasBeenPreparedForRemoval) {
+            DEBUG_ACCOUNT_REMOVAL(1, @"Initializing with an account in the removed state; cleaning it up.");
+
             // We died or were killed before being able to remove the account...
             [self _cleanupAccountAfterRemoval:account];
             continue; // Either way, ignore it.
@@ -297,7 +337,7 @@ static unsigned AccountContext;
 
 #pragma mark - NSObject (NSKeyValueObserving)
 
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context;
+- (void)observeValueForKeyPath:(nullable NSString *)keyPath ofObject:(nullable id)object change:(nullable NSDictionary *)change context:(nullable void *)context;
 {
     if (context == &AccountContext) {
         DEBUG_SYNC(1, @"Account property list changed %@", object);
@@ -318,6 +358,24 @@ static unsigned AccountContext;
 - (BOOL)_writeUpdatedAccountInfo:(OFXServerAccount *)account error:(NSError **)outError;
 {
     NSURL *accountURL = [self localStoreURLForAccount:account];
+    
+#if OMNI_BUILDING_FOR_IOS
+    if (account.didMigrate) {
+        OBASSERT(account.requiresMigration == NO, "The accountURL generated above should be the migrated location");
+        NSURL *legacyAccountURL = [self localStoreURLForAccount:account forceLegacy:YES];
+        
+        // Move the whole account directory to the non-legacy location.
+        __autoreleasing NSError *moveError;
+        if (![[NSFileManager defaultManager] moveItemAtURL:legacyAccountURL toURL:accountURL error:&moveError]) {
+            [moveError log:@"Error moving just-migrated account at %@ to the current accounts directory at %@", legacyAccountURL, accountURL];
+            if (outError) {
+                *outError = moveError;
+            }
+            return NO;
+        }
+    }
+#endif
+    
     NSURL *plistURL = [[accountURL URLByAppendingPathComponent:@"Info.plist"] absoluteURL];
     
     NSURL *temporaryURL = [[NSFileManager defaultManager] temporaryURLForWritingToURL:plistURL allowOriginalDirectory:YES error:outError];
@@ -333,9 +391,31 @@ static unsigned AccountContext;
 
 #pragma mark - Internal
 
+#if OMNI_BUILDING_FOR_IOS
 - (NSURL *)localStoreURLForAccount:(OFXServerAccount *)account;
 {
-    return [[_accountsDirectoryURL URLByAppendingPathComponent:account.uuid isDirectory:YES] absoluteURL];
+    return [self localStoreURLForAccount:account forceLegacy:NO];
+}
+#endif
+
+- (NSURL *)localStoreURLForAccount:(OFXServerAccount *)account
+#if OMNI_BUILDING_FOR_IOS
+                       forceLegacy:(BOOL)forceLegacy;
+#endif
+{
+    NSURL *accountsDirectoryURL;
+    
+#if OMNI_BUILDING_FOR_IOS
+    if (account.requiresMigration || forceLegacy) {
+        accountsDirectoryURL = _legacyAccountsDirectoryURL;
+    } else {
+        accountsDirectoryURL = _accountsDirectoryURL;
+    }
+#else
+    accountsDirectoryURL = _accountsDirectoryURL;
+#endif
+    
+    return [[accountsDirectoryURL URLByAppendingPathComponent:account.uuid isDirectory:YES] absoluteURL];
 }
 
 // This is called after an account is marked for removal and after we are sure any syncing operations on it have finished.
@@ -352,6 +432,8 @@ static unsigned AccountContext;
     // Atomically remove the account directory now that any syncing on this account is done.
     __autoreleasing NSError *removeAccountError;
     NSURL *accountStoreDirectory = [self localStoreURLForAccount:account];
+    DEBUG_ACCOUNT_REMOVAL(1, @"Removing account store directory at %@.", accountStoreDirectory.absoluteString);
+
     if (![[NSFileManager defaultManager] atomicallyRemoveItemAtURL:accountStoreDirectory error:&removeAccountError]) {
         [removeAccountError log:@"Error removing local account store %@", accountStoreDirectory];
         return;
@@ -359,19 +441,22 @@ static unsigned AccountContext;
     
     void (^removalCompleted)(void) = ^{
         OBASSERT([NSThread isMainThread]);
+        DEBUG_ACCOUNT_REMOVAL(1, @"Updating allAccounts property.");
         if (_allAccounts != nil) // Avoid some work and an assertion in -setAllAccounts:
             [self setAllAccounts:[_allAccounts arrayByRemovingObject:account]];
     };
     
-    // On the Mac, we'll leave the synchronized files around since they are in a user-visible location and the user may have just decided to stop using our service. On iOS, there is no other way to get to the files, so we need to clean up after ourselves.
+    // On the Mac, and with migrated iOS accounts, the documents folder is visible and we trash them (in the calling user interface code on the Mac and here for iOS). For unmigrated iOS accounts, there is no other way to get to the files, so we need to clean up after ourselves.
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
     if (account.usageMode == OFXServerAccountUsageModeCloudSync) {
         // Go through this helper method to make sure we delete the right ancestory URL (since there is an extra 'Documents' component). This does some other checks to make sure we are deleting the right thing.
-        [OFXServerAccount deleteGeneratedLocalDocumentsURL:account.localDocumentsURL completionHandler:^(NSError *removeError) {
+        [OFXServerAccount deleteGeneratedLocalDocumentsURL:account.localDocumentsURL accountRequiredMigration:account.requiresMigration completionHandler:^(NSError *removeError) {
             if (removeError)
                 NSLog(@"Error removing local account documents at %@: %@", account.localDocumentsURL, [removeError toPropertyList]);
-            else
+            else {
+                DEBUG_ACCOUNT_REMOVAL(1, @"Calling completion handler");
                 removalCompleted();
+            }
         }];
     }
 #else
@@ -461,3 +546,6 @@ static unsigned AccountContext;
 }
 
 @end
+
+NS_ASSUME_NONNULL_END
+

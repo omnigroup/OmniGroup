@@ -12,7 +12,6 @@
 @interface OUIDocumentPicker (/*Internal*/)
 
 - (void)navigateForDeletionOfFolder:(ODSFolderItem *)deletedItem animated:(BOOL)animated;
-- (ODSFileItem *)preferredVisibleItemForNextPreviewUpdate:(NSSet *)eligibleItems;
 
 - (NSArray *)availableFiltersForScope:(ODSScope *)scope;
 

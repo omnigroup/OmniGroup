@@ -5,36 +5,25 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
+#import <OmniBase/OBUtilities.h>
+
 @class ODSStore, ODSScope, ODSFileItem, ODSFileItemEdit;
 
+OB_DEPRECATED_ATTRIBUTE
 @protocol ODSStoreDelegate <NSObject>
 
-// This must be thread-safe
-- (Class)documentStore:(ODSStore *)store fileItemClassForURL:(NSURL *)fileURL;
-
-- (NSString *)documentStoreBaseNameForNewFiles:(ODSStore *)store;
-- (NSString *)documentStoreBaseNameForNewTemplateFiles:(ODSStore *)store;
-
-// probably no one needs to override hte base OUIAppController version of the implementation of this method
-- (BOOL)documentStore:(ODSStore *)store canViewFileTypeWithIdentifier:(NSString *)uti;
+- (NSString *)documentStoreBaseNameForNewFiles:(ODSStore *)store OB_DEPRECATED_ATTRIBUTE;
+- (NSString *)documentStoreBaseNameForNewTemplateFiles:(ODSStore *)store OB_DEPRECATED_ATTRIBUTE;
 
 @optional
 
-- (NSString *)documentStoreBaseNameForNewOtherFiles:(ODSStore *)store;
+- (NSString *)documentStoreBaseNameForNewOtherFiles:(ODSStore *)store OB_DEPRECATED_ATTRIBUTE;
 
-- (NSString *)documentStoreDocumentTypeForNewFiles:(ODSStore *)store;
-- (NSString *)documentStoreDocumentTypeForNewTemplateFiles:(ODSStore *)store;
-- (NSString *)documentStoreDocumentTypeForNewOtherFiles:(ODSStore *)store;
+- (NSString *)documentStoreDocumentTypeForNewFiles:(ODSStore *)store OB_DEPRECATED_ATTRIBUTE;
+- (NSString *)documentStoreDocumentTypeForNewTemplateFiles:(ODSStore *)store OB_DEPRECATED_ATTRIBUTE;
+- (NSString *)documentStoreDocumentTypeForNewOtherFiles:(ODSStore *)store OB_DEPRECATED_ATTRIBUTE;
 
-- (NSArray *)documentStoreEditableDocumentTypes:(ODSStore *)store;
-
-- (void)documentStore:(ODSStore *)store addedFileItems:(NSSet *)addedFileItems;
-
-- (void)documentStore:(ODSStore *)store fileItem:(ODSFileItem *)fileItem willMoveToURL:(NSURL *)newURL;
-- (void)documentStore:(ODSStore *)store fileItemEdit:(ODSFileItemEdit *)fileItemEdit willCopyToURL:(NSURL *)newURL;
-- (void)documentStore:(ODSStore *)store fileItemEdit:(ODSFileItemEdit *)fileItemEdit finishedCopyToURL:(NSURL *)destinationURL withFileItemEdit:(ODSFileItemEdit *)destinationFileItemEditOrNil;
-- (void)documentStore:(ODSStore *)store willRemoveFileItemAtURL:(NSURL *)destinationURL;
-
-- (ODSFileItem *)documentStore:(ODSStore *)store preferredFileItemForNextAutomaticDownload:(NSSet *)fileItems;
+- (void)documentStore:(ODSStore *)store fileItem:(ODSFileItem *)fileItem willMoveToURL:(NSURL *)newURL OB_DEPRECATED_ATTRIBUTE;
+- (void)documentStore:(ODSStore *)store willRemoveFileItemAtURL:(NSURL *)destinationURL OB_DEPRECATED_ATTRIBUTE;
 
 @end

@@ -9,6 +9,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class NSFileWrapper;
+
 typedef BOOL (^OFFileAccessor)(NSURL *newURL, NSError **outError);
 
 @interface NSFileCoordinator (OFExtensions)
@@ -32,6 +34,9 @@ typedef BOOL (^OFFileAccessor)(NSURL *newURL, NSError **outError);
 
 - (BOOL)prepareToReadItemsAtURLs:(NSArray<NSURL *> *)readingURLs withChanges:(BOOL)withChanges error:(NSError **)outError byAccessor:(BOOL (NS_NOESCAPE ^)(NSError **outError))accessor;
 - (BOOL)prepareToWriteItemsAtURLs:(NSArray<NSURL *> *)writingURLs withChanges:(BOOL)withChanges error:(NSError **)outError byAccessor:(BOOL (NS_NOESCAPE ^)(NSError **outError))accessor;
+
+// Convenience that creates a private operation queue, reads the URL, and calls a completion handler (also on the background queue).
++ (void)readFileWrapperAtFileURL:(NSURL *)fileURL completionHandler:(void (^)(NSFileWrapper * _Nullable fileWrapper, NSError * _Nullable errorOrNil))completionHandler;
 
 @end
 

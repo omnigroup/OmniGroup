@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -85,7 +85,7 @@ RCS_ID("$Id$");
 
 - (void)willMoveToSuperview:(UIView *)superview;
 {
-    if ([OUIInspectorAppearance inspectorAppearanceEnabled]) {
+    if (superview != nil && [OUIInspectorAppearance inspectorAppearanceEnabled]) {
         OUIInspectorAppearance *appearance = OUIInspectorAppearance.appearance;
         // This is here because we will likely need to know what tableview we are in in order to pick our default background. But if we have set some of this in cellForRowAtIndexPath: we will blow it away. Maybe we can work something out.
         self.selectedBackgroundView = [[UIView alloc] init];

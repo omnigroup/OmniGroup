@@ -7,6 +7,8 @@
 
 #import <OmniUI/OUIActionViewController.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class OFXServerAccount;
 
 @interface OUIServerAccountValidationViewController : OUIActionViewController
@@ -14,3 +16,6 @@
 - initWithAccount:(OFXServerAccount *)account username:(NSString *)username password:(NSString *)password;
 
 @end
+
+NS_ASSUME_NONNULL_END
+

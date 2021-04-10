@@ -28,9 +28,6 @@ extern NSString *ODSScopeCacheKeyForURL(NSURL *url);
 
 - (void)setFileItems:(NSSet *)fileItems itemMoved:(BOOL)itemMoved;
 
-- (void)fileItemEdit:(ODSFileItemEdit *)fileItemEdit willCopyToURL:(NSURL *)newURL;
-- (void)fileItemEdit:(ODSFileItemEdit *)fileItemEdit finishedCopyToURL:(NSURL *)destinationURL withFileItemEdit:(ODSFileItemEdit *)destinationFileItemEditOrNil;
-
 - (void)invalidateUnusedFileItems:(NSDictionary *)cacheKeyToFileItem;
 
 // Called on the background queue. Default version does a filesystem-based move. In the case of a filesystem-based moved, the given filePresenter should be passed to the created NSFileCoordinator.

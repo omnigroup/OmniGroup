@@ -7,20 +7,10 @@
 
 #import <UIKit/UIViewControllerTransitioning.h>
 
-@class OUIDocumentPicker;
-@class ODSFileItem;
+@class UIDocumentBrowserTransitionController;
 
-@interface OUIDocumentOpenAnimator : NSObject <UIViewControllerTransitioningDelegate, UIViewControllerAnimatedTransitioning>
+@interface OUIDocumentOpenAnimator : NSObject <UIViewControllerTransitioningDelegate>
 
-+ (instancetype)sharedAnimator;
-
-@property (nonatomic) OUIDocumentPicker *documentPicker;
-@property (nonatomic) ODSFileItem *fileItem;
-@property (nonatomic) ODSFileItem *actualFileItem;
-
-@property (nonatomic, assign) BOOL isOpeningFromPeek;
-@property (nonatomic, strong) UIView *backgroundSnapshotView;
-@property (nonatomic, strong) UIView *previewSnapshotView;
-@property (nonatomic, assign) CGRect previewRect;
+- initWithTransitionController:(UIDocumentBrowserTransitionController *)transitionController;
 
 @end

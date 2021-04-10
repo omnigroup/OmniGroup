@@ -7,9 +7,11 @@
 
 #import <Foundation/NSObject.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface OUIKeyboardNotifier : NSObject
 
-+ (instancetype)sharedNotifier;
+@property(class,nonatomic,readonly) OUIKeyboardNotifier *sharedNotifier;
 
 /// The last known height for the docked keyboard; avoid this height at the bottom of the screen when laying out in response to a keyboard notification.
 @property (nonatomic, readonly) CGFloat lastKnownKeyboardHeight;
@@ -49,3 +51,6 @@ extern NSString * const OUIKeyboardNotifierKeyboardDidHideNotification;
 
 extern NSString * const OUIKeyboardNotifierOriginalUserInfoKey;
 extern NSString * const OUIKeyboardNotifierLastKnownKeyboardHeightKey;
+
+NS_ASSUME_NONNULL_END
+

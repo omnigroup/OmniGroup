@@ -1,4 +1,4 @@
-// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,13 +7,12 @@
 
 #import "OUIExportOptionsController.h"
 
-#import <OmniFileExchange/OFXServerAccount.h>
-#import <OmniFileExchange/OFXServerAccountType.h>
 #import <OmniUIDocument/OUIDocumentExporter.h>
+#import <OmniUIDocument/OUIDocumentAppController.h>
+#import <OmniUIDocument/OUIDocument.h>
 
 @import OmniFoundation;
 
-#import "OUIWebDAVSyncListController.h"
 #import "OUIExportOption.h"
 #import "OUIExportOptionPickerViewController.h"
 
@@ -46,9 +45,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface OUIExportOptionsController () <UIDocumentPickerDelegate, UIDocumentInteractionControllerDelegate, OUIExportOptionPickerViewControllerDelegate> //<OFSFileManagerDelegate>
+@interface OUIExportOptionsController () <OUIExportOptionPickerViewControllerDelegate>
 
-@property (nonatomic, strong) UIDocumentInteractionController *documentInteractionController;
 @property (nonatomic, nullable, readonly) OUIExportOptionPickerViewController *optionPickerViewController;
 
 @end
@@ -56,50 +54,44 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation OUIExportOptionsController
 {
-    OFXServerAccount * _Nullable _serverAccount;
-    ODSFileItem *_fileItem;
-    OUIExportOptionsType _exportType;
+    NSArray <NSURL *> *_fileURLs;
 
     // This navigation controller has a strong pointer back to us, and will be retained while it is presented on screen by the host view controller.
     __weak _OUIExportOptionsNavigationController *_navigationController;
 
-    // _navigationController will be nil in the case of a single export type option; in that case we need to present off the original host view controller.
-    UIViewController *_hostViewController;
-    UIBarButtonItem *_presentingBarButtonItem;
-
     OUIDocumentExporter *_exporter;
-
+    UIActivity *_activity;
+    
     UIView *_optionPickerView;
     CGRect _optionPickerRect;
+    
+    // Processing state
+    NSString *_exportFileType;
+    NSEnumerator <NSURL *> *_fileURLEnumerator;
+    NSMutableArray <NSURL *> *_temporaryOutputFileURLs;
+    NSError *_exportError;
 }
 
-- (id)initWithServerAccount:(nullable OFXServerAccount *)serverAccount fileItem:(ODSFileItem *)fileItem exportType:(OUIExportOptionsType)exportType exporter:(OUIDocumentExporter *)exporter;
+- (id)initWithFileURLs:(NSArray <NSURL *> *)fileURLs exporter:(OUIDocumentExporter *)exporter activity:(UIActivity *)activity;
 {
     self = [super init];
 
-    _serverAccount = serverAccount;
-    _fileItem = fileItem;
-    _exportType = exportType;
+    _fileURLs = [fileURLs copy];
     _exporter = exporter;
-
+    _activity = activity;
+    
     return self;
 }
 
-- (void)dealloc;
-{
-    _documentInteractionController.delegate = nil;
-}
-
-- (void)presentInViewController:(UIViewController *)hostViewController barButtonItem:(nullable UIBarButtonItem *)barButtonItem;
+- (UIViewController *)viewController;
 {
     NSArray <OUIExportOption *> *exportOptions = [self _exportOptions];
 
-    _hostViewController = hostViewController;
-    _presentingBarButtonItem = barButtonItem;
-
     // If there is exactly one option, and no purchases available, then skip the option picker.
     if (exportOptions.count == 1 && exportOptions.firstObject.requiresPurchase == NO) {
-        NSArray *inAppPurchaseExportTypes = [_exporter availableInAppPurchaseExportTypesForFileItem:_fileItem serverAccount:_serverAccount exportOptionsType:_exportType];
+        OBASSERT_NOT_REACHED("We don't currently have this case, so haven't ported this code (and maybe the caller shouldn't create us in this case");
+#if 0
+        NSArray *inAppPurchaseExportTypes = [_exporter availableInAppPurchaseExportTypesForFileURL:_fileURL];
         if (inAppPurchaseExportTypes.count == 0) {
             OUIExportOption *singleExportOption = exportOptions.firstObject;
             OBASSERT(OFISNULL(singleExportOption.fileType), "Expecting the conversion to be 'fast' since it is a native type");
@@ -107,8 +99,9 @@ NS_ASSUME_NONNULL_BEGIN
             [self _performActionForExportOption:singleExportOption];
             return;
         }
+#endif
     }
-
+    
     UIViewController *rootViewController = [self _makeOptionPickerViewControllerWithExportOptions:exportOptions];
 
     // This will keep us alive as long as it is on screen.
@@ -119,7 +112,7 @@ NS_ASSUME_NONNULL_BEGIN
     navigationController.modalPresentationStyle = UIModalPresentationFormSheet;
     navigationController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
 
-    [hostViewController presentViewController:navigationController animated:YES completion:nil];
+    return navigationController;
 }
 
 - (nullable OUIExportOptionPickerViewController *)optionPickerViewController;
@@ -131,49 +124,7 @@ NS_ASSUME_NONNULL_BEGIN
     return nil;
 }
 
-#pragma mark - API
-
-- (void)_exportFileWrapper:(NSFileWrapper *)fileWrapper;
-{
-    [self _foreground_enableInterfaceAfterExportConversionWithCompletion:^{
-        __autoreleasing NSError *error = nil;
-        OUIWebDAVSyncListController *syncListController = [[OUIWebDAVSyncListController alloc] initWithServerAccount:_serverAccount exporting:YES error:&error];
-        _OUIExportOptionsNavigationController *navigationController = _navigationController;
-        if (!syncListController) {
-            OUI_PRESENT_ERROR_FROM(error, navigationController);
-            return;
-        }
-
-        syncListController.exportFileWrapper = fileWrapper;
-
-        [navigationController pushViewController:syncListController animated:YES];
-    }];
-}
-
 #pragma mark - Private
-
-- (void)_foreground_exportFileWrapper:(NSFileWrapper *)fileWrapper;
-{
-    OBPRECONDITION([NSThread isMainThread]);
-    
-    switch (_exportType) {
-        case OUIExportOptionsNone:
-            OBASSERT_NOT_REACHED("We shouldn't have built a file wrapper if we're not exporting");
-            break;
-        case OUIExportOptionsExport:
-            [self _exportFileWrapper:fileWrapper];
-            break;
-        case OUIExportOptionsEmail:
-            OBASSERT_NOT_REACHED("The email option takes another path: -_performActionForExportOption: calls -_foreground_emailExportOfType: directly");
-            break;
-        case OUIExportOptionsSendToApp:
-            [self _foreground_exportSendToAppWithFileWrapper:fileWrapper];
-            break;
-        case OUIExportOptionsSendToService:
-            [self _foreground_exportSendToServiceWithFileWrapper:fileWrapper];
-            break;
-    }
-}
 
 - (nullable NSURL *)_tempURLForExportedFileWrapper:(NSFileWrapper *)fileWrapper shouldZipDirectories:(BOOL)shouldZipDirectories error:(NSError **)outError;
 {
@@ -216,106 +167,120 @@ NS_ASSUME_NONNULL_BEGIN
     return tempURL;
 }
 
-- (void)_foreground_exportSendToAppWithFileWrapper:(NSFileWrapper *)fileWrapper;
+- (void)_foreground_shareConvertedFileURLs;
 {
-    __autoreleasing NSError *error;
-    NSURL *tempURL = [self _tempURLForExportedFileWrapper:fileWrapper shouldZipDirectories:YES error:&error];
-    if (tempURL == nil) {
-        NSError *strongError = error;
-        [self _foreground_enableInterfaceAfterExportConversionWithCompletion:^{
-            OUI_PRESENT_ERROR_FROM(strongError, _navigationController);
-        }];
-        return;
-    }
-    
     [self _foreground_enableInterfaceAfterExportConversionWithCompletion:^{
-        // By now we have written the project out to a temp dir. Time to handoff to Doc Interaction.
-        self.documentInteractionController = [UIDocumentInteractionController interactionControllerWithURL:tempURL];
-        self.documentInteractionController.delegate = self;
+        UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:_temporaryOutputFileURLs applicationActivities:nil];
 
-        BOOL didOpen;
-        if (_optionPickerView) {
-            didOpen = [self.documentInteractionController presentOpenInMenuFromRect:_optionPickerRect inView:_optionPickerView animated:YES];
-        } else {
-            didOpen = [self.documentInteractionController presentPreviewAnimated:YES];
-        }
-
-        if (didOpen == NO) {
-            // Show Activity View Controller instead.
-            UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:@[tempURL] applicationActivities:nil];
-
-            if (_optionPickerView) {
-                activityViewController.modalPresentationStyle = UIModalPresentationPopover;
-                activityViewController.popoverPresentationController.sourceRect = _optionPickerRect;
-                activityViewController.popoverPresentationController.sourceView = _optionPickerView;
-            } else if (_presentingBarButtonItem) {
-                activityViewController.modalPresentationStyle = UIModalPresentationPopover;
-                activityViewController.popoverPresentationController.barButtonItem = _presentingBarButtonItem;
-            }
-
-            [[self _viewControllerForPresenting] presentViewController:activityViewController animated:YES completion:nil];
-        }
+        OBASSERT(_optionPickerView);
+        activityViewController.modalPresentationStyle = UIModalPresentationPopover;
+        activityViewController.popoverPresentationController.sourceRect = _optionPickerRect;
+        activityViewController.popoverPresentationController.sourceView = _optionPickerView;
+        
+        activityViewController.completionWithItemsHandler = ^(UIActivityType  _Nullable UIActivityType, BOOL completed, NSArray * _Nullable returnedItems, NSError * _Nullable activityError){
+            // Signal to our enclosing activity that we finished (which should dismiss our view controller).
+            [_activity activityDidFinish:completed];
+        };
+        
+        [_navigationController presentViewController:activityViewController animated:YES completion:nil];
     }];
 }
 
-- (UIViewController *)_viewControllerForPresenting;
-{
-    _OUIExportOptionsNavigationController *navigationController = _navigationController;
-    if (navigationController) {
-        return navigationController;
-    }
-    OBASSERT(_hostViewController);
-    return _hostViewController;
-}
-
-- (void)_foreground_exportSendToServiceWithFileWrapper:(NSFileWrapper *)fileWrapper;
-{
-    __autoreleasing NSError *error;
-    NSURL *tempURL = [self _tempURLForExportedFileWrapper:fileWrapper shouldZipDirectories:NO error:&error];
-    if (tempURL == nil) {
-        NSError *strongError = error;
-        [self _foreground_enableInterfaceAfterExportConversionWithCompletion:^{
-            OUI_PRESENT_ERROR_FROM(strongError, _navigationController);
-        }];
-        return;
-    }
-    
-    [self _foreground_enableInterfaceAfterExportConversionWithCompletion:^{
-        UIDocumentPickerViewController *pickerViewController = [[UIDocumentPickerViewController alloc] initWithURL:tempURL inMode:UIDocumentPickerModeExportToService];
-        pickerViewController.delegate = self;
-        [[self _viewControllerForPresenting] presentViewController:pickerViewController animated:YES completion:nil];
-    }];
-}
-
-- (void)_foreground_exportDocumentOfType:(NSString *)fileType;
+- (void)_foreground_exportDocumentsOfType:(NSString *)fileType parentViewController:(UIViewController *)parentViewController;
 {
     OBPRECONDITION([NSThread isMainThread]);
     @autoreleasepool {
 
-        if (!_fileItem) {
+        if ([_fileURLs count] == 0) {
             OBASSERT_NOT_REACHED("no selected document");
             [self _foreground_enableInterfaceAfterExportConversionWithCompletion:nil];
             return;
         }
 
-        void (^finish)(NSFileWrapper * _Nullable, NSError * _Nullable) = ^(NSFileWrapper * _Nullable fileWrapper, NSError * _Nullable error){
-            // Need to make sure all of this happens on the main thread.
-            main_async(^{
-                if (fileWrapper == nil) {
-                    [self _foreground_enableInterfaceAfterExportConversionWithCompletion:^{
-                        OUI_PRESENT_ERROR_FROM(error, _navigationController);
-                    }];
-                } else {
-                    [self _foreground_exportFileWrapper:fileWrapper];
-                }
-            });
-        };
-
-        // Give apps an opportunity to override, or defer to super for the simplest cases
-        [_exporter exportFileWrapperOfType:fileType forFileItem:_fileItem withCompletionHandler:^(NSFileWrapper *fileWrapper, NSError *error) {
-            finish(fileWrapper, error);
-        }];
+        OBASSERT(_fileURLEnumerator == nil, "We don't expect to be reused");
+        _fileURLEnumerator = [_fileURLs objectEnumerator];
+        _temporaryOutputFileURLs = [NSMutableArray array];
+        _exportFileType = fileType;
+        _exportError = nil;
+        
+        [self _foreground_processNextFileWithParentViewController:parentViewController];
     }
+}
+
+- (void)_foreground_processNextFileWithParentViewController:(UIViewController *)parentViewController;
+{
+    OBPRECONDITION([NSThread isMainThread]);
+
+    NSURL *fileURL = [_fileURLEnumerator nextObject];
+    if (!fileURL) {
+        [self _foreground_finishedProcessing];
+        return;
+    }
+    
+    Class documentClass = [[OUIDocumentAppController controller] documentClassForURL:fileURL];
+    if (!documentClass) {
+        OBASSERT_NOT_REACHED("Should not be able to select files in the document browser that we can't open");
+        [self _foreground_processNextFileWithParentViewController:parentViewController];
+        return;
+    }
+    
+    __autoreleasing NSError *initError;
+    OUIDocument *document = [[documentClass alloc] initWithExistingFileURL:fileURL error:&initError];
+    if (!document) {
+        [initError log:@"Error creating document for %@", fileURL];
+        [self _foreground_processNextFileWithParentViewController:parentViewController];
+        return;
+    }
+    
+    // Let the document know it can avoid work that isn't needed if the document isn't going to be presented to the user to edit.
+    document.forExportOnly = YES;
+    
+    [document openWithCompletionHandler:^(BOOL openSuccess) {
+        if (!openSuccess) {
+            NSLog(@"Error opening document at %@", fileURL);
+            [self _foreground_processNextFileWithParentViewController:parentViewController];
+        }
+        
+        // Give apps an opportunity to override, or defer to super for the simplest cases
+        [document exportFileWrapperOfType:_exportFileType parentViewController:parentViewController withCompletionHandler:^(NSFileWrapper * _Nullable fileWrapper, NSError * _Nullable exportError) {
+            if (!fileWrapper) {
+                _exportError = exportError;
+                [self _foreground_finishedProcessing];
+                return;
+            }
+            
+            __autoreleasing NSError *writeError = nil;
+            NSURL *outputURL = [self _tempURLForExportedFileWrapper:fileWrapper shouldZipDirectories:NO error:&writeError];
+            if (!outputURL) {
+                _exportError = writeError;
+                [self _foreground_finishedProcessing];
+                return;
+            }
+            [_temporaryOutputFileURLs addObject:outputURL];
+            
+            [document closeWithCompletionHandler:^(BOOL closeSuccess) {
+                OBASSERT(closeSuccess);
+                
+                [document didClose];
+                
+                [self _foreground_processNextFileWithParentViewController:parentViewController];
+            }];
+        }];
+    }];
+}
+
+- (void)_foreground_finishedProcessing;
+{
+    // Need to make sure all of this happens on the main thread.
+    main_async(^{
+        if (_exportError) {
+            [self _foreground_enableInterfaceAfterExportConversionWithCompletion:^{
+                OUI_PRESENT_ERROR_FROM(_exportError, _navigationController);
+            }];
+            return;
+        }
+        [self _foreground_shareConvertedFileURLs];
+    });
 }
 
 - (void)_foreground_disableInterfaceForExportConversionWithCompletion:(void (^ _Nullable)(void))completion;
@@ -341,90 +306,67 @@ NS_ASSUME_NONNULL_BEGIN
     }
 }
 
-- (void)_foreground_emailExportOfType:(NSString *)exportType;
-{
-    OBPRECONDITION([NSThread isMainThread]);
-    
-    @autoreleasepool {
-        if (OFISNULL(exportType)) {
-            // The fileType being null means that the user selected the OO3 file. This does not require a conversion.
-            [_navigationController.presentingViewController dismissViewControllerAnimated:YES completion:^{
-                [_exporter emailFileItem:_fileItem];
-            }];
-            return;
-        }
-
-        if (!_fileItem) {
-            OBASSERT_NOT_REACHED("no selected document");
-            [self _foreground_enableInterfaceAfterExportConversionWithCompletion:nil];
-            return;
-        }
-        
-        [_exporter exportFileWrapperOfType:exportType forFileItem:_fileItem withCompletionHandler:^(NSFileWrapper *fileWrapper, NSError *error) {
-            if (fileWrapper == nil) {
-                [self _foreground_enableInterfaceAfterExportConversionWithCompletion:^{
-                    OUI_PRESENT_ERROR_FROM(error, _navigationController);
-                }];
-                return;
-            }
-
-            [self _foreground_enableInterfaceAfterExportConversionWithCompletion:^{
-                [_navigationController.presentingViewController dismissViewControllerAnimated:YES completion:^{
-                    [_exporter sendEmailWithFileWrapper:fileWrapper forExportType:exportType fileName:_fileItem.name];
-                }];
-            }];
-        }];
-    }
-}
-
-- (void)_performActionForExportOption:(OUIExportOption *)option;
+- (void)_performActionForExportOption:(OUIExportOption *)option parentViewController:(UIViewController *)parentViewController;
 {
     NSString *fileType = option.fileType;
 
     [self _foreground_disableInterfaceForExportConversionWithCompletion:^{
-        if (_exportType == OUIExportOptionsEmail) {
-            [self _foreground_emailExportOfType:fileType];
-        } else {
-            [self _foreground_exportDocumentOfType:fileType];
-        }
+        [self _foreground_exportDocumentsOfType:fileType parentViewController:parentViewController];
     }];
 }
 
 - (NSArray <OUIExportOption *> *)_exportOptions;
 {
-    NSArray *inAppPurchaseExportTypes = [_exporter availableInAppPurchaseExportTypesForFileItem:_fileItem serverAccount:_serverAccount exportOptionsType:_exportType];
-
-    NSMutableArray <OUIExportOption *> *exportOptions = [NSMutableArray array];
-    NSArray <NSString *> *fileTypes = [_exporter availableExportTypesForFileItem:_fileItem serverAccount:_serverAccount exportOptionsType:_exportType];
-    for (NSString *fileType in fileTypes) {
-
-        UIImage *iconImage = nil;
-        NSString *label = nil;
-
-
-        if (OFISNULL(fileType)) {
-            // NOTE: Adding the native type first with a null (instead of a its non-null actual type) is important for doing exports of documents exactly as they are instead of going through the exporter. Ideally both cases would be the same, but in OO/iPad the OO3 "export" path (as opposed to normal "save") has the ability to strip hidden columns, sort sorts, calculate summary values and so on for the benefit of the XSL-based exporters. If we want "export" to the OO file format to not perform these transformations, we'll need to add flags on the OOXSLPlugin to say whether the target wants them pre-applied or not.
-            NSURL *documentURL = _fileItem.fileURL;
-            OBFinishPortingLater("<bug:///75843> (Add a UTI property to ODSFileItem)");
-            NSString *fileUTI = OFUTIForFileExtensionPreferringNative([documentURL pathExtension], nil); // NSString *fileUTI = [ODAVFileInfo UTIForURL:documentURL];
-            iconImage = [_exporter exportIconForUTI:fileUTI];
-
-            label = [_exporter exportLabelForUTI:fileUTI];
-            if (label == nil) {
-                label = [[documentURL path] pathExtension];
-            }
+    NSMutableOrderedSet <NSString *> *inAppPurchaseExportTypes = [NSMutableOrderedSet orderedSet];
+    for (NSURL *fileURL in _fileURLs) {
+        NSArray *types = [_exporter availableInAppPurchaseExportTypesForFileURL:fileURL];
+        if (types) {
+            [inAppPurchaseExportTypes addObjectsFromArray:types];
         }
-        else {
-            iconImage = [_exporter exportIconForUTI:fileType];
-            label = [_exporter exportLabelForUTI:fileType];
-        }
-
-        BOOL requiresPurchase = [inAppPurchaseExportTypes containsObject:fileType];
-        OUIExportOption *option = [[OUIExportOption alloc] initWithFileType:fileType label:label image:iconImage requiresPurchase:requiresPurchase];
-        [exportOptions addObject:option];
     }
 
-    return [exportOptions copy];
+    NSMutableOrderedSet <OUIExportOption *> *exportOptions = [NSMutableOrderedSet orderedSet];
+    for (NSURL *fileURL in _fileURLs) {
+        NSArray <NSString *> *fileTypes = [_exporter availableExportTypesForFileURL:fileURL];
+        for (NSString *fileType in fileTypes) {
+            
+            UIImage *iconImage = nil;
+            NSString *label = nil;
+            
+            
+            if (OFISNULL(fileType)) {
+                // NOTE: Adding the native type first with a null (instead of a its non-null actual type) is important for doing exports of documents exactly as they are instead of going through the exporter. Ideally both cases would be the same, but in OO/iPad the OO3 "export" path (as opposed to normal "save") has the ability to strip hidden columns, sort sorts, calculate summary values and so on for the benefit of the XSL-based exporters. If we want "export" to the OO file format to not perform these transformations, we'll need to add flags on the OOXSLPlugin to say whether the target wants them pre-applied or not.
+                NSString *fileUTI = OFUTIForFileExtensionPreferringNative(fileURL.pathExtension, nil);
+                iconImage = [_exporter exportIconForUTI:fileUTI];
+                
+                label = [_exporter exportLabelForUTI:fileUTI];
+                if (label == nil) {
+                    label = [fileURL pathExtension];
+                }
+            } else {
+                iconImage = [_exporter exportIconForUTI:fileType];
+                label = [_exporter exportLabelForUTI:fileType];
+            }
+            
+            BOOL requiresPurchase = [inAppPurchaseExportTypes containsObject:fileType];
+            OBASSERT(requiresPurchase == NO); // The availableExportTypesForFileURL and inAppPurchaseExportTypes should be disjoint
+            
+            OUIExportOption *option = [[OUIExportOption alloc] initWithFileType:fileType label:label image:iconImage requiresPurchase:requiresPurchase];
+            [exportOptions addObject:option];
+        }
+    }
+
+    // Add on any export types that require a purchase (this will be empty if the purchase has been made already and the types will have already been added via -availableExportTypesForFileURL:.
+    for (NSString *fileType in inAppPurchaseExportTypes) {
+        UIImage *iconImage = [_exporter exportIconForUTI:fileType];
+        NSString *label = [_exporter exportLabelForUTI:fileType];
+
+        OUIExportOption *option = [[OUIExportOption alloc] initWithFileType:fileType label:label image:iconImage requiresPurchase:YES];
+        [exportOptions addObject:option];
+    }
+    
+    
+    return [[exportOptions array] copy];
 }
 
 - (OUIExportOptionPickerViewController *)_makeOptionPickerViewControllerWithExportOptions:(NSArray <OUIExportOption *> *)exportOptions;
@@ -432,13 +374,14 @@ NS_ASSUME_NONNULL_BEGIN
     OUIExportOptionPickerViewController *picker = [[OUIExportOptionPickerViewController alloc] initWithExportOptions:exportOptions];
     picker.delegate = self;
 
-    NSArray *inAppPurchaseExportTypes = [_exporter availableInAppPurchaseExportTypesForFileItem:_fileItem serverAccount:_serverAccount exportOptionsType:_exportType];
+    NSArray <OUIExportOption *> *inAppPurchaseOptions = [exportOptions select:^BOOL(OUIExportOption *option) {
+        return option.requiresPurchase;
+    }];
+    if ([inAppPurchaseOptions count] > 0) {
+        OBASSERT([inAppPurchaseOptions count] == 1);    // only support for one in-app export type
+        OUIExportOption *exportOption = inAppPurchaseOptions[0];
 
-    if ([inAppPurchaseExportTypes count] > 0) {
-        OBASSERT([inAppPurchaseExportTypes count] == 1);    // only support for one in-app export type
-        NSString *exportType = [inAppPurchaseExportTypes objectAtIndex:0];
-
-        NSString *label = [_exporter purchaseDescriptionForExportType:exportType];
+        NSString *label = [_exporter purchaseDescriptionForExportType:exportOption.fileType];
         NSString *purchaseNowLocalized = NSLocalizedStringFromTableInBundle(@"Purchase Now.", @"OmniUIDocument", OMNI_BUNDLE, @"purchase now button title");
 
         picker.inAppPurchaseButtonTitle = [NSString stringWithFormat:@"%@ %@", label, purchaseNowLocalized];
@@ -447,7 +390,11 @@ NS_ASSUME_NONNULL_BEGIN
         picker.showInAppPurchaseButton = NO;
     }
 
-    NSString *docName = _fileItem.name;
+    // TODO: We used to include the document name here, but we can have multiple documents now. We could include the name if there is exactly one, or do a stringsdict and do "Share %d documents as..."
+#if 0
+    Class documentClass = [[OUIDocumentAppController controller] documentClassForURL:_fileURL];
+    
+    NSString *docName = [documentClass displayNameForFileURL:_fileURL];
 
     NSString *actionDescription = nil;
     switch (_exportType) {
@@ -470,19 +417,12 @@ NS_ASSUME_NONNULL_BEGIN
             [picker setExportDestination:nil];
             actionDescription = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Export \"%@\" as:", @"OmniUIDocument", OMNI_BUNDLE, @"export to description"), docName, nil];
             break;
-
-        case OUIExportOptionsExport:
-            if (OFISEQUAL(_serverAccount.type.identifier, OFXiTunesLocalDocumentsServerAccountTypeIdentifier)) {
-                [picker setExportDestination:nil];
-            } else {
-                NSString *addressString = [_serverAccount.remoteBaseURL absoluteString];
-                [picker setExportDestination:[NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Server address: %@", @"OmniUIDocument", OMNI_BUNDLE, @"email action description"), addressString, nil]];
-            }
-            actionDescription = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Export \"%@\" to %@ as:", @"OmniUIDocument", OMNI_BUNDLE, @"export action description"), docName, _serverAccount.displayName, nil];
-            break;
     }
+#endif
+    NSString *actionDescription = NSLocalizedStringFromTableInBundle(@"Share as...", @"OmniUIDocument", OMNI_BUNDLE, @"share action description");
 
     [picker setActionDescription:actionDescription];
+    [picker setExportDestination:nil];
 
     return picker;
 }
@@ -497,7 +437,7 @@ NS_ASSUME_NONNULL_BEGIN
     if (exportOption.requiresPurchase) {
         [_exporter purchaseExportType:exportOption.fileType navigationController:_navigationController];
     } else {
-        [self _performActionForExportOption:exportOption];
+        [self _performActionForExportOption:exportOption parentViewController:optionPicker];
     }
 }
 
@@ -506,37 +446,13 @@ NS_ASSUME_NONNULL_BEGIN
     _optionPickerView = nil;
     _optionPickerRect = CGRectNull;
 
-    NSArray *inAppPurchaseExportTypes = [_exporter availableInAppPurchaseExportTypesForFileItem:_fileItem serverAccount:_serverAccount exportOptionsType:_exportType];
-    OBASSERT(inAppPurchaseExportTypes.count == 1);
+    NSArray <OUIExportOption *> *exportOptions = [optionPicker.exportOptions select:^(OUIExportOption *candidate) {
+        return candidate.requiresPurchase;
+    }];
+    
+    OBASSERT(exportOptions.count == 1);
 
-    [_exporter purchaseExportType:inAppPurchaseExportTypes.firstObject navigationController:_navigationController];
-}
-
-#pragma mark - UIDocumentInteractionControllerDelegate
-
-- (void)documentInteractionController:(UIDocumentInteractionController *)controller didEndSendingToApplication:(nullable NSString *)application;
-{
-    main_async(^{
-        [_exporter clearSelection];
-    });
-    [_navigationController.presentingViewController dismissViewControllerAnimated:NO completion:nil];
-}
-
-- (UIViewController *)documentInteractionControllerViewControllerForPreview:(UIDocumentInteractionController *)controller;
-{
-    return _navigationController;
-}
-
-#pragma mark - UIDocumentPickerDelegate
-
-- (void)documentPicker:(UIDocumentPickerViewController *)controller didPickDocumentsAtURLs:(nonnull NSArray<NSURL *> *)urls
-{
-    [_navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
-}
-
-- (void)documentPickerWasCancelled:(UIDocumentPickerViewController *)controller;
-{
-    [_navigationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
+    [_exporter purchaseExportType:exportOptions.firstObject.fileType navigationController:_navigationController];
 }
 
 @end

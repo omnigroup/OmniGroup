@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,6 +21,30 @@ RCS_ID("$Id$");
     _requiresPurchase = requiresPurchase;
     
     return self;
+}
+
+- (BOOL)isEqual:(id)object;
+{
+    if (![object isKindOfClass:[OUIExportOption class]]) {
+        return NO;
+    }
+    OUIExportOption *other = object;
+    return OFISEQUAL(_fileType, other->_fileType); // Other properties should be derived from this.
+}
+
+- (NSUInteger)hash;
+{
+    return [_fileType hash];
+}
+
+- (id)copyWithZone:(NSZone *)zone;
+{
+    return self;
+}
+
+- (NSString *)debugDescription;
+{
+    return [NSString stringWithFormat:@"<%@:%p %@>", NSStringFromClass([self class]), self, _fileType];
 }
 
 @end

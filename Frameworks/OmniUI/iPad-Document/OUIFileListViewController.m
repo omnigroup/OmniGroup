@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -102,7 +102,7 @@ RCS_ID("$Id$");
     UIImage *icon = nil;
     if (isDocument) {
         if (_exporter == nil) {
-            _exporter = [OUIDocumentExporter exporterForViewController:self];
+            _exporter = [OUIDocumentExporter exporter];
         }
         
         icon = [_exporter iconForUTI:[fileInfo UTI]];
@@ -118,18 +118,6 @@ RCS_ID("$Id$");
     cell.imageView.image = icon;
     
     return cell;
-}
-
-#pragma mark - OUIDocumentExporterHost
-
-- (ODSFileItem *)fileItemToExport
-{
-    return nil;
-}
-
-- (UIColor *)tintColorForExportMenu
-{
-    return self.view.tintColor;
 }
 
 #pragma mark - UIViewController

@@ -21,4 +21,6 @@
 // Bulk update support -- maybe this should be the only option...
 - (void)removeObjectsWithKeys:(NSArray <NSString *> *)removeKeys setObjectsWithDictionary:(NSDictionary <NSString *, ValueType> *)setObjects;
 
+- (void)afterUpdate:(void (^)(void))action;
+
 @end

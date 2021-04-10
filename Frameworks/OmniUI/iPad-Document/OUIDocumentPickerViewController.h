@@ -16,7 +16,7 @@
 
 @protocol OUIDocumentPickerDelegate;
 
-@interface OUIDocumentPickerViewController : UIViewController <UIGestureRecognizerDelegate, OUIDocumentPickerScrollViewDelegate, UIDocumentInteractionControllerDelegate, OUIDocumentExporterHost>
+@interface OUIDocumentPickerViewController : UIViewController <UIGestureRecognizerDelegate, OUIDocumentPickerScrollViewDelegate, UIDocumentInteractionControllerDelegate>
 
 - (instancetype)initWithDocumentPicker:(OUIDocumentPicker *)picker scope:(ODSScope *)scope;
 - (instancetype)initWithDocumentPicker:(OUIDocumentPicker *)picker folderItem:(ODSFolderItem *)folderItem;
@@ -35,7 +35,6 @@
 @property(nonatomic,readonly) ODSFolderItem *folderItem;
 @property(nonatomic,readonly) NSSet *filteredItems;
 
-@property(nonatomic,readonly) BOOL canAddDocuments;
 @property(nonatomic,assign) BOOL isReadOnly;
 
 @property(nonatomic,retain) IBOutlet UIToolbar *toolbar;
@@ -65,17 +64,6 @@
 - (void)scrollToTopAnimated:(BOOL)animated;
 - (void)scrollItemToVisible:(ODSItem *)item animated:(BOOL)animated;
 - (void)scrollItemsToVisible:(id <NSFastEnumeration>)items animated:(BOOL)animated completion:(void (^)(void))completion;
-
-// This will present a template picker if the delegate calls for it, otherwise it will create a new untitled document.
-// There are two flavors of template pickers.  If the documentPicker has an internalTemplateDelegate set it will use the new template picker which supports displaying of internal templates to the app wrapper, without the need to copy them out.
-// Othrwise, if the documentPicker's delegate has implemented, documentPickerTemplateDocumentFilter:, you will end up with the old style template picker.
-- (IBAction)newDocument:(id)sender;
-
-// The new prefered way to create a new document is to use the templateContext.  The other newDocumentWithTemplateFileItem: functions will create a templateContext and then call newDocumentWithTemplateContext:
-- (void)newDocumentWithContext:(OUINewDocumentCreationContext *)context completion:(void (^)(void))completion;
-- (void)newDocumentWithTemplateFileItem:(ODSFileItem *)templateFileItem documentType:(ODSDocumentType)type preserveDocumentName:(BOOL)preserveDocumentName completion:(void (^)(void))completion;
-- (void)newDocumentWithTemplateFileItem:(ODSFileItem *)templateFileItem documentType:(ODSDocumentType)type completion:(void (^)(void))completion;
-- (void)newDocumentWithTemplateFileItem:(ODSFileItem *)templateFileItem;
 
 - (IBAction)duplicateDocument:(id)sender;
 - (IBAction)deleteDocument:(id)sender;

@@ -1,4 +1,4 @@
-// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -36,7 +36,7 @@ RCS_ID("$Id$")
 // the difference between the first tile finishing (at duration - variance) and last tile finishing (at duration)
 #define DURATION_VARIANCE 0.10
 
-- (void)animateOpenTransition:(id <UIViewControllerContextTransitioning>)transitionContext forItem:(ODSItem *)folder;
+- (void)_animateOpenTransition:(id <UIViewControllerContextTransitioning>)transitionContext forItem:(ODSItem *)folder;
 {
     OUIDocumentPickerViewController *sourceController = (OUIDocumentPickerViewController *)[transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
     OUIDocumentPickerViewController *destinationController = (OUIDocumentPickerViewController *)[transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
@@ -141,7 +141,7 @@ RCS_ID("$Id$")
     }
 }
 
-- (void)animateCloseTransition:(id <UIViewControllerContextTransitioning>)transitionContext forItem:(ODSItem *)folder;
+- (void)_animateCloseTransition:(id <UIViewControllerContextTransitioning>)transitionContext forItem:(ODSItem *)folder;
 {
     OUIDocumentPickerViewController *sourceController = (OUIDocumentPickerViewController *)[transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
     OUIDocumentPickerViewController *destinationController = (OUIDocumentPickerViewController *)[transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
@@ -239,9 +239,9 @@ RCS_ID("$Id$")
     OUIDocumentPickerViewController *destinationController = (OUIDocumentPickerViewController *)[transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
 
     if (destinationController.folderItem && [sourceController.filteredItems containsObject:destinationController.folderItem])
-        return [self animateOpenTransition:transitionContext forItem:destinationController.folderItem];
+        return [self _animateOpenTransition:transitionContext forItem:destinationController.folderItem];
     else if (sourceController.folderItem && [destinationController.filteredItems containsObject:sourceController.folderItem])
-        return [self animateCloseTransition:transitionContext forItem:sourceController.folderItem];
+        return [self _animateCloseTransition:transitionContext forItem:sourceController.folderItem];
     else
         return [self _doDissolve:transitionContext];
 }

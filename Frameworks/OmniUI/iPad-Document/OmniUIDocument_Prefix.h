@@ -25,6 +25,12 @@ OB_HIDDEN extern NSInteger OUIDocumentPreviewGeneratorDebug;
         NSLog(@"PREVIEW: " format, ## __VA_ARGS__); \
     } while (0)
 
+OB_HIDDEN extern NSInteger OUIApplicationLaunchDebug;
+#define DEBUG_LAUNCH(level, format, ...) do { \
+    if (OUIApplicationLaunchDebug >= (level)) \
+        NSLog(@"APP: " format, ## __VA_ARGS__); \
+    } while (0)
+
 #if 0 && defined(DEBUG)
     #define DEBUG_DOCUMENT_DEFINED 1
     #define DEBUG_DOCUMENT(format, ...) NSLog(@"DOCUMENT: " format, ## __VA_ARGS__)

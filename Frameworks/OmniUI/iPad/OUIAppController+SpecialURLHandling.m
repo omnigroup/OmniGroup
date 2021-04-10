@@ -1,4 +1,4 @@
-// Copyright 2014-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -93,10 +93,14 @@ RCS_ID("$Id$");
 
 - (UIViewController *)viewControllerForSpecialURLHandlingPresentation;
 {
-    UIViewController *activeController = self.window.rootViewController;
-    while (activeController.presentedViewController != nil)
-        activeController = activeController.presentedViewController;
-    return activeController;
+    UIWindow *window = [[self class] windowForScene:nil options:OUIWindowForSceneOptionsAllowCascadingLookup];
+    UIViewController *viewController = window.rootViewController;
+
+    while (viewController.presentedViewController != nil) {
+        viewController = viewController.presentedViewController;
+    }
+
+    return viewController;
 }
 
 - (BOOL)isSpecialURL:(NSURL *)url;
@@ -116,10 +120,14 @@ RCS_ID("$Id$");
 
 - (BOOL)handleSpecialURL:(NSURL *)url;
 {
+    return [self handleSpecialURL:url presentingFromViewController:[self viewControllerForSpecialURLHandlingPresentation]];
+}
+
+- (BOOL)handleSpecialURL:(NSURL *)url presentingFromViewController:(UIViewController *)controller;
+{
     OBPRECONDITION([self isSpecialURL:url]);
     
-    UIViewController *viewControllerForSpecialURLHandlingPresentation = [self viewControllerForSpecialURLHandlingPresentation];
-    return [[self class] invokeSpecialURL:url confirmingIfNeededWithStyle:UIAlertControllerStyleAlert fromViewController:viewControllerForSpecialURLHandlingPresentation];
+    return [[self class] invokeSpecialURL:url confirmingIfNeededWithStyle:UIAlertControllerStyleAlert fromViewController:controller];
 }
 
 @end

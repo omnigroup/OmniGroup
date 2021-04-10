@@ -8,9 +8,18 @@
 #import <Foundation/NSObject.h>
 
 #import <OmniFileExchange/OFXSyncSchedule.h>
+#import <OmniFileExchange/OFXServerAccount.h> // OFX_MAC_STYLE_ACCOUNT
+
+NS_ASSUME_NONNULL_BEGIN
 
 @class OFFileMotionResult;
 @class OFXFileMetadata, OFXRegistrationTable<ValueType>, OFXServerAccount, OFXContainerAgent, OFXAccountClientParameters;
+
+#if !OFX_MAC_STYLE_ACCOUNT
+@class OFXAccountMigration;
+#endif
+
+typedef void (^OFXSyncCompletionHandler)(NSError * _Nullable errorOrNil);
 
 @interface OFXAccountAgent : NSObject
 
@@ -34,7 +43,7 @@
 
 @property(nonatomic) BOOL automaticallyDownloadFileContents;
 
-- (void)sync:(void (^)(void))completionHandler;
+- (void)sync:(nullable OFXSyncCompletionHandler)completionHandler;
 
 - (NSOperation *)afterAsynchronousOperationsFinish:(void (^)(void))block;
 
@@ -42,21 +51,28 @@
 
 - (BOOL)containsLocalDocumentFileURL:(NSURL *)fileURL;
 
-- (void)containerNeedsFileTransfer:(OFXContainerAgent *)container;
-- (void)containerNeedsFileTransfer:(OFXContainerAgent *)container requestRecorded:(void (^)(void))requestRecorded;
+- (void)containerNeedsFileTransfer:(nullable OFXContainerAgent *)container;
+- (void)containerNeedsFileTransfer:(nullable OFXContainerAgent *)container requestRecorded:(void (^ _Nullable)(void))requestRecorded;
 
 - (void)containerPublishedFileVersionsChanged:(OFXContainerAgent *)container;
-- (void)requestDownloadOfItemAtURL:(NSURL *)fileURL completionHandler:(void (^)(NSError *errorOrNil))completionHandler;
-- (void)deleteItemAtURL:(NSURL *)fileURL completionHandler:(void (^)(NSError *errorOrNil))completionHandler;
-- (void)moveItemAtURL:(NSURL *)originalFileURL toURL:(NSURL *)updatedFileURL completionHandler:(void (^)(OFFileMotionResult *moveResult, NSError *errorOrNil))completionHandler;
+- (void)requestDownloadOfItemAtURL:(NSURL *)fileURL completionHandler:(void (^ _Nullable)(NSError * _Nullable errorOrNil))completionHandler;
+- (void)deleteItemAtURL:(NSURL *)fileURL completionHandler:(void (^)(NSError * _Nullable errorOrNil))completionHandler;
+- (void)moveItemAtURL:(NSURL *)originalFileURL toURL:(NSURL *)updatedFileURL completionHandler:(void (^)(OFFileMotionResult * _Nullable moveResult, NSError * _Nullable errorOrNil))completionHandler;
 
-- (void)countPendingTransfers:(void (^)(NSError *errorOrNil, NSUInteger count))completionHandler;
-- (void)countFileItemsWithLocalChanges:(void (^)(NSError *errorOrNil, NSUInteger count))completionHandler;
+- (void)countPendingTransfers:(void (^)(NSError * _Nullable errorOrNil, NSUInteger count))completionHandler;
+- (void)countFileItemsWithLocalChanges:(void (^)(NSError * _Nullable errorOrNil, NSUInteger count))completionHandler;
 
-@property(nonatomic,copy) NSString *debugName;
+@property(nonatomic,copy,nullable) NSString *debugName;
+
+#if !OFX_MAC_STYLE_ACCOUNT
+@property(nonatomic,nullable,strong,readonly) OFXAccountMigration *activeMigration;
+- (void)migrationDidFinish;
+#endif
 
 #ifdef OMNI_ASSERTIONS_ON
 @property(nonatomic,readonly) BOOL runningOnAccountAgentQueue;
 #endif
 
 @end
+
+NS_ASSUME_NONNULL_END

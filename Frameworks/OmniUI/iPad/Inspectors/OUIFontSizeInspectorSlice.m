@@ -133,7 +133,7 @@ static CGFloat _normalizeFontSize(CGFloat fontSize)
     label.editable = YES;
     [label addTarget:self action:@selector(stepperTextFieldAction:) forControlEvents:UIControlEventValueChanged];
 
-    label.textColor = [OUIInspector disabledLabelTextColor];
+    label.textColor = [UIColor labelColor];
     label.font = [UIFont boldSystemFontOfSize:[OUIInspectorTextWell fontSize]];
     return label;
 }
@@ -247,6 +247,7 @@ static const CGFloat fontSizeControlWidth = 100.0f;
     CGRect decreaseButtonFrame = CGRectMake(CGRectGetMinX(increaseButtonFrame) - buttonWidth, frame.origin.y, buttonWidth, frame.size.height);
     
     _fontSizeLabel = [[UILabel alloc] initWithFrame:fontSizeLabelFrame];
+    _fontSizeLabel.textColor = [UIColor secondaryLabelColor];
     
     _fontSizeDecreaseStepperButton = [[OUIInspectorStepperButton alloc] initWithFrame:decreaseButtonFrame];
     [_fontSizeDecreaseStepperButton addTarget:self action:@selector(decreaseFontSize:) forControlEvents:UIControlEventTouchDown];

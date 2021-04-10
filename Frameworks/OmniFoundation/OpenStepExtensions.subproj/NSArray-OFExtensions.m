@@ -120,13 +120,9 @@ typedef NSComparisonResult (*comparisonMethodIMPType)(id rcvr, SEL _cmd, id othe
         if (test >= count)
             continue;
 	id compareWith = (id)CFArrayGetValueAtIndex((CFArrayRef)self, test);
-	if (compareWith == anObject)
-            return test;
 	NSComparisonResult result = (NSComparisonResult)comparator(anObject, compareWith);
 	if (result > 0) /* NSOrderedDescending */
             low = test+1;
-	else if (result == NSOrderedSame)
-            return test;
     }
     return low;
 }

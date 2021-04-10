@@ -24,3 +24,6 @@
 - (void)eachAccountActivityWithError:(void (^)(OFXAccountActivity *accountActivity))applier;
 
 @end
+
+// Sent whenever the result of -activityForAccount: has changed, with the object being the OFXServerAccount.
+extern NSNotificationName const OFXAgentActivityActivityForAccountDidChangeNotification;

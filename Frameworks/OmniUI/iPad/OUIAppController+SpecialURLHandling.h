@@ -26,10 +26,12 @@
  @param url The special URL to handle. This URL must have a path component matching a string earlier registered with OUIAppController using +registerCommandClass:forSpecialURLPath:.
  @return Whether the URL was handled by the special URL system. A return value of YES simply means that a corresponding command was found and invoked for the given URL; it does not necessarily mean that the command succeeded.
  */
-- (BOOL)handleSpecialURL:(NSURL *)url NS_EXTENSION_UNAVAILABLE_IOS("Special URL handling is not available in extensions");
+- (BOOL)handleSpecialURL:(NSURL *)url NS_EXTENSION_UNAVAILABLE_IOS("Special URL handling is not available in extensions") NS_DEPRECATED_IOS(13_0, 13_0, "Use -handleSpecialURL:presentingFromViewController: instead.");
 
 /// The view controller to use as the presenter if the invocation or confirmation of a special URL command requires presenting another view controller. The default implementation searches for the current topmost presented view controller from the main window's root; subclasses can override to provide a different view controller from which to present.
-- (UIViewController *)viewControllerForSpecialURLHandlingPresentation NS_EXTENSION_UNAVAILABLE_IOS("Special URL handling is not available in extensions");
+@property (nonatomic, readonly) UIViewController *viewControllerForSpecialURLHandlingPresentation NS_EXTENSION_UNAVAILABLE_IOS("Special URL handling is not available in extensions") NS_DEPRECATED_IOS(13_0, 13_0, "The singleton app controller cannot know the correct presentation source in a multi-scene context.");
+
+- (BOOL)handleSpecialURL:(NSURL *)url presentingFromViewController:(UIViewController *)controller;
 
 @end
 

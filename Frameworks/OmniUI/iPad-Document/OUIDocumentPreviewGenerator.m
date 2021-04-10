@@ -169,6 +169,8 @@ static NSMutableArray *blocksWhileDisabled = nil;
 
 static void _writePreviewsForFileItem(OUIDocumentPreviewGenerator *self, OFFileEdit *originalFileEdit)
 {
+    OBFinishPorting;
+#if 0
     NSURL *fileURL = originalFileEdit.originalFileURL;
     
     if (![self->_currentPreviewUpdatingFileItem isValid]) {
@@ -245,11 +247,15 @@ static void _writePreviewsForFileItem(OUIDocumentPreviewGenerator *self, OFFileE
             }
         }
     }];
+#endif
 }
 
 - (void)_continueUpdatingPreviewsOrOpenDocument;
 {
     OBPRECONDITION([NSThread isMainThread]);
+    
+    OBFinishPortingLater("Preview generation disabled");
+    return;
     
     if (_currentPreviewUpdatingFileItem) {
         OBASSERT(_previewUpdatingBackgroundActivity != nil);
@@ -285,9 +291,7 @@ static void _writePreviewsForFileItem(OUIDocumentPreviewGenerator *self, OFFileE
     }
     
     while (_currentPreviewUpdatingFileItem == nil) {
-        _currentPreviewUpdatingFileItem = [delegate previewGenerator:self preferredFileItemForNextPreviewUpdate:_fileItemsNeedingUpdatedPreviews];
-        if (!_currentPreviewUpdatingFileItem)
-            _currentPreviewUpdatingFileItem = [_fileItemsNeedingUpdatedPreviews anyObject];
+        _currentPreviewUpdatingFileItem = [_fileItemsNeedingUpdatedPreviews anyObject];
         
         if (!_currentPreviewUpdatingFileItem)
             return; // No more to do!

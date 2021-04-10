@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -29,9 +29,11 @@ static void _OUILoadCustomClassMapping(void)
         // Also note that we don't handle things like A : B : C with a map of A->C. If B is allocated you'll just get a B.
 #ifdef OMNI_ASSERTIONS_ON
         Class sourceClass = NSClassFromString(sourceClassName);
-        OBASSERT(sourceClass);
+        OBASSERT(sourceClass, @"Missing source class %@", sourceClassName);
         
         Class destinationClass = NSClassFromString(destinationClassName);
+        OBASSERT(destinationClass, @"Missing destination class %@", destinationClassName);
+
         OBASSERT(destinationClass);
         OBASSERT(OFNOTEQUAL(sourceClassName, destinationClassName));
         OBASSERT(OBClassIsSubclassOfClass(destinationClass, sourceClass));

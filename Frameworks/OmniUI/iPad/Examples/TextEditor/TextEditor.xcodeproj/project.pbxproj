@@ -1394,7 +1394,7 @@
 					"$(inherited)",
 					"\"$(SRCROOT)\"",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.OmniTextEdit.iPad;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.TextEditor.iOS;
 				PRODUCT_NAME = TextEditor;
 				TARGETED_DEVICE_FAMILY = 2;
 			};
@@ -1417,7 +1417,7 @@
 					"$(inherited)",
 					"\"$(SRCROOT)\"",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.OmniTextEdit.iPad;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.TextEditor.iOS;
 				PRODUCT_NAME = TextEditor;
 				TARGETED_DEVICE_FAMILY = 2;
 				VALIDATE_PRODUCT = YES;

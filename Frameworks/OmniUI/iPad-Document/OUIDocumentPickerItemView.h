@@ -46,9 +46,6 @@ typedef enum {
 
 - (void)prepareForReuse;
 
-- (void)startRenaming;
-- (UITextField *)editingNameTextField; // Only set while editing
-
 - (void)bounceDown;
 - (void)detachMetaDataView;
 - (void)reattachMetaDataView;

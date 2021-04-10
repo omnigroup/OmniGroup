@@ -11,19 +11,16 @@
 
 #import <OmniUIDocument/OUIExportOptionsType.h>
 
-@class NSFileWrapper;
-@class OFXServerAccount;
-@class ODSFileItem;
 @class OUIDocumentExporter;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface OUIExportOptionsController : NSObject
 
-- (id)initWithServerAccount:(nullable OFXServerAccount *)serverAccount fileItem:(ODSFileItem *)fileItem exportType:(OUIExportOptionsType)exportType exporter:(OUIDocumentExporter*)exporter NS_DESIGNATED_INITIALIZER;
+- (id)initWithFileURLs:(NSArray <NSURL *> *)fileURLs exporter:(OUIDocumentExporter *)exporter activity:(UIActivity *)activity NS_DESIGNATED_INITIALIZER;
 - (id)init NS_UNAVAILABLE;
 
-- (void)presentInViewController:(UIViewController *)hostViewController barButtonItem:(nullable UIBarButtonItem *)barButtonItem;
+@property(nonatomic,readonly) UIViewController *viewController;
 
 @end
 

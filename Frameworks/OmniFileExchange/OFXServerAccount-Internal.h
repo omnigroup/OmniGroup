@@ -16,6 +16,11 @@
 
 - (void)_takeValuesFromPropertyList:(NSDictionary *)propertyList;
 
+#if OMNI_BUILDING_FOR_IOS
+// This is set to YES when an account was previously using the URL format plist, and has just migrated to the bookmark format plist.
+@property(readonly,nonatomic) BOOL didMigrate;
+#endif
+
 @end
 
 OB_HIDDEN extern NSString * const OFXAccountPropertListKey;

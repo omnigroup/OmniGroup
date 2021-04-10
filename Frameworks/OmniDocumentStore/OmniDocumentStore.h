@@ -6,7 +6,6 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniDocumentStore/ODSErrors.h>
-#import <OmniDocumentStore/ODSExternalScope.h>
 #import <OmniDocumentStore/ODSFileItem.h>
 #import <OmniDocumentStore/ODSFilter.h>
 #import <OmniDocumentStore/ODSFolderItem.h>

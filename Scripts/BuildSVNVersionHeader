@@ -22,7 +22,8 @@ Usage () {
 
 # If we cannot find an SVN or git repository, quietly exit.
 # This may be the case for the public source.
-if [[ ! -d ../.svn && ! -d ../.git ]]; then
+# Check only for existence of .git, in case it's a submodule "gitdir:" link file instead of a full directory
+if [[ ! -d ../.svn && ! -e ../.git ]]; then
     exit;
 fi
 
@@ -85,6 +86,7 @@ if [ -z "$REBUILD" ]; then
 fi
 
 BUILD_DATE=`TZ=UTC date +"%Y-%m-%dT%H:%M:%S.000Z"`
+INPUT_XCCONFIG="Omni-Version-Info.xcconfig"
 
 # Figure out the actual COMMIT being used for this build (integer in SVN; hash
 # in Git) as well as an incrementing counter REVISION that represents the
@@ -96,32 +98,34 @@ if [ -d "../.svn" ]; then
     else
         REVISION=`$SVN info --xml . | xpath 'string(/info/entry/@revision)' 2>& /dev/null`
     fi
-elif [ -d "../.git" ]; then
+elif [ -e "../.git" ]; then
     URL=`$GIT ls-remote --get-url origin`
     COMMIT=`$GIT rev-parse HEAD`
+
+    # We always need to compare to the version info xcconfig; the only difference is whether we count commits to HEAD or to the recorded commit hash
+    TAIL=""
     if [ -n "${OMNI_VERSIONS-}" -a -f "${OMNI_VERSIONS-}" ]; then
-        REVISION=$(awk '/Revision: / {print $2}' $OMNI_VERSIONS)
-    else
-        INPUT_XCCONFIG="Omni-Version-Info.xcconfig"
-        if [ -f "${INPUT_XCCONFIG}" ]; then
-            $GIT blame -l "${INPUT_XCCONFIG}" | while read line; do
-                if [[ ! "$line" =~ "OMNI_[^ ]+_VERSION" ]]; then
-                    continue
-                fi
+        TAIL=$(awk '/Revision: / {print $2}' $OMNI_VERSIONS)
+    fi
 
-                BASE=`echo $line | cut -d' ' -f1`
-                REVISION_CANDIDATE=${=$(git log $BASE.. --oneline|wc -l)}
-                if [[ ! -v REVISION || $REVISION_CANDIDATE -lt $REVISION ]]; then
-                    REVISION=$REVISION_CANDIDATE
-                fi
-            done
-            unset REVISION_CANDIDATE
-        fi
+    if [ -f "${INPUT_XCCONFIG}" ]; then
+        $GIT blame -l "${INPUT_XCCONFIG}" | while read line; do
+            if [[ ! "$line" =~ "OMNI_[^ ]+_VERSION" ]]; then
+                continue
+            fi
 
-        if [[ ! -v REVISION ]]; then
-            echo >&2 "Cannot determine number of revisions since reference commit; does Omni-Version-Info.xcconfig exist?"
-            exit 1
-        fi
+            BASE=`echo $line | cut -d' ' -f1`
+            REVISION_CANDIDATE=${=$(git rev-list $BASE..$TAIL --count)}
+            if [[ ! -v REVISION || $REVISION_CANDIDATE -lt $REVISION ]]; then
+                REVISION=$REVISION_CANDIDATE
+            fi
+        done
+        unset REVISION_CANDIDATE
+    fi
+
+    if [[ ! -v REVISION ]]; then
+        echo >&2 "Cannot determine number of revisions since reference commit; does Omni-Version-Info.xcconfig exist?"
+        exit 1
     fi
 else
     URL="not svn or git"
@@ -145,6 +149,14 @@ mkdir -p "$BUILD_DIR/include"
     echo "#define SVNURL $URL"
     echo "#define BUILD_DATE @\"$BUILD_DATE\""
     echo "#define INFO_PLIST_BUILD_DATE $BUILD_DATE"
+
+    if [ -e "../.git" ]; then
+        if [ -f "${INPUT_XCCONFIG}" ]; then
+            awk -F = '{print "#define " $1 " " $2}' "${INPUT_XCCONFIG}"
+        else
+            echo "#define OMNI_INPUT_XCCONFIG_NOT_FOUND $(pwd)/${INPUT_XCCONFIG}"
+        fi
+    fi
 ) > "$OUTPUT_HEADER"
 
 if [ "$GENERATE_VERSIONS_TXT" = "YES" ]; then

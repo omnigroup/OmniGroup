@@ -25,48 +25,34 @@
 #import <OmniUIDocument/OUIDocumentPreview.h>
 #import <OmniUIDocument/OUIDocumentPreviewGenerator.h>
 #import <OmniUIDocument/OUIDocumentPreviewView.h>
+#import <OmniUIDocument/OUIDocumentSceneDelegate.h>
 #import <OmniUIDocument/OUIDocumentViewController.h>
 #import <OmniUIDocument/OUIDocumentCreationTemplatePickerViewController.h>
 #import <OmniUIDocument/OUIErrors.h>
-#import <OmniUIDocument/OUIServerAccountSetupViewController.h>
 #import <OmniUIDocument/OUIToolbarTitleButton.h>
+#import <OmniUIDocument/OmniUIDocument-Swift.h>
 //#import <CrashReporter/CrashReporter.h>
 
-#import "OUIImportExportAccountListViewController.h"
+#import "OUINewDocumentCreationRequest.h"
 #import "OUIDocument-Internal.h"
 #import "OUIDocumentAppController-Internal.h"
-#import "OUIDocumentExternalScopeManager.h"
 #import "OUIDocumentInbox.h"
 #import "OUIDocumentParameters.h"
 #import "OUIDocumentPicker-Internal.h"
 #import "OUIDocumentPickerViewController-Internal.h"
 #import "OUIDocumentPickerItemView-Internal.h"
-#import "OUIRestoreSampleDocumentListController.h"
-#import "OUIDocumentOpenAnimator.h"
-#import "OUIWebDAVSyncListController.h"
 #import "OUILaunchViewController.h"
-#import <OmniFoundation/OFBackgroundActivity.h>
-
+#import "OUIRestoreSampleDocumentListController.h"
 
 RCS_ID("$Id$");
-
-// OUIDocumentConflictResolutionViewControllerDelegate is gone
-OBDEPRECATED_METHOD(-conflictResolutionPromptForFileItem:);
-OBDEPRECATED_METHOD(-conflictResolutionCancelled:);
-
-OBDEPRECATED_METHOD(-documentStore:fileWithURL:andDate:willCopyToURL:);
-OBDEPRECATED_METHOD(-documentStore:fileWithURL:andDate:finishedCopyToURL:andDate:successfully:);
-
-OBDEPRECATED_METHOD(-conflictResolutionFinished:);
 
 static NSString * const OpenBookmarkAction = @"openBookmark";
 
 static NSString * const ODSShortcutTypeNewDocument = @"com.omnigroup.framework.OmniUIDocument.shortcut-items.new-document";
-static NSString * const ODSShortcutTypeOpenRecent = @"com.omnigroup.framework.OmniUIDocument.shortcut-items.open-recent";
 
 static NSString * const ODSOpenRecentDocumentShortcutFileKey = @"ODSFileItemURLStringKey";
 
-static OFDeclareDebugLogLevel(OUIApplicationLaunchDebug);
+OFDeclareDebugLogLevel(OUIApplicationLaunchDebug);
 #define DEBUG_LAUNCH(level, format, ...) do { \
     if (OUIApplicationLaunchDebug >= (level)) \
         NSLog(@"APP: " format, ## __VA_ARGS__); \
@@ -80,7 +66,7 @@ static OFDeclareDebugLogLevel(OUIBackgroundFetchDebug);
 
 static OFDeclareTimeInterval(OUIBackgroundFetchTimeout, 15, 5, 600);
 
-@interface OUIDocumentAppController (/*Private*/) <OUIDocumentPreviewGeneratorDelegate, OUIDocumentPickerDelegate, OUIWebViewControllerDelegate, UIDocumentPickerDelegate>
+@interface OUIDocumentAppController (/*Private*/) <OUIDocumentPreviewGeneratorDelegate, OUIDocumentPickerDelegate, OUIWebViewControllerDelegate, OUIDocumentCreationRequestDelegate, ODSStoreDelegate>
 
 @property(nonatomic,copy) NSArray *launchAction;
 
@@ -89,22 +75,18 @@ static OFDeclareTimeInterval(OUIBackgroundFetchTimeout, 15, 5, 600);
 
 @property (nonatomic, weak) OUIWebViewController *webViewController;
 @property (nonatomic,readonly) UIBarButtonItem *editButtonItem;
-@property (nonatomic, strong) void (^externalPickerCompletionBlock)(NSURL *);
 @property (nonatomic) BOOL readyToShowNews;
 
-@property (nonatomic, strong) NSArray *pendingImportedFileItems;
 @property (nonatomic, strong) NSMutableArray<ODSFileItem *> *awaitedFileItemDownloads;
 
 @property (nonatomic, strong) NSUserActivity *userActivityForCurrentlyOpenDocument;
 
 @end
 
-static unsigned SyncAgentRunningAccountsContext;
+static unsigned SyncAgentAccountsSnapshotContext;
 
 @implementation OUIDocumentAppController
 {
-    OUIDocument *_document;
-    
     BOOL _didFinishLaunching;
     BOOL _isOpeningURL;
 
@@ -113,13 +95,12 @@ static unsigned SyncAgentRunningAccountsContext;
     
     ODSStore *_documentStore;
     ODSLocalDirectoryScope *_localScope;
-    OUIDocumentExternalScopeManager *_externalScopeManager;
     OUIDocumentPreviewGenerator *_previewGenerator;
     BOOL _previewGeneratorForegrounded;
     
-    UIView *_snapshotForDocumentRebuilding;
-    NSURL *_specialURLToHandle;
     OFBackgroundActivity *_backgroundFlushActivity;
+
+    OUIDocumentExporter *_exporter;
 }
 
 + (void)initialize;
@@ -156,776 +137,27 @@ static unsigned SyncAgentRunningAccountsContext;
     if ([error hasUnderlyingErrorDomain:ODSErrorDomain code:ODSFilenameAlreadyInUse])
         return NO; // We need to let the user know to pick a different filename, but reporting this error to us won't help anyone
     
-    if ([error hasUnderlyingErrorDomain:OUIDocumentErrorDomain code:OUICannotMoveItemFromInbox])
+    if ([error hasUnderlyingErrorDomain:OUIDocumentErrorDomain code:OUIDocumentErrorCannotMoveItemFromInbox])
         return NO; // Ignore the error as per <bug:///160026> (iOS-OmniGraffle Bug: Error encountered: Unable to open file (public.zip-archive))
 
     return YES;
 }
 
-- (void)dealloc;
+- (UIWindow *)makeMainWindow
 {
-    [self _setDocument:nil];
+    OBRejectUnusedImplementation(self, _cmd);
 }
 
 // Called at app startup if the main xib didn't have a window outlet hooked up.
-- (UIWindow *)makeMainWindow;
+- (UIWindow *)makeMainWindowForScene:(UIWindowScene *)scene
 {
     NSString *windowClassName = [[OFPreference preferenceForKey:@"OUIMainWindowClass"] stringValue];
     Class windowClass = ![NSString isEmptyString:windowClassName] ? NSClassFromString(windowClassName) : [UIWindow class];
     OBASSERT(OBClassIsSubclassOfClass(windowClass, [UIWindow class]));
     
-    UIWindow *window = [[windowClass alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+    UIWindow *window = [[windowClass alloc] initWithWindowScene:scene];
     window.backgroundColor = [UIColor whiteColor];
     return window;
-}
-
-@synthesize closeDocumentBarButtonItem = _closeDocumentBarButtonItem;
-- (UIBarButtonItem *)closeDocumentBarButtonItem;
-{
-    if (!_closeDocumentBarButtonItem) {
-        NSString *closeDocumentTitle = NSLocalizedStringWithDefaultValue(@"Documents <back button>", @"OmniUIDocument", OMNI_BUNDLE, @"Documents", @"Toolbar button title for returning to list of documents.");
-        _closeDocumentBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:closeDocumentTitle
-                                                                        style:UIBarButtonItemStylePlain target:self action:@selector(closeDocument:)];
-        _closeDocumentBarButtonItem.accessibilityIdentifier = @"BackToDocuments"; // match with compact edition below for consistent screenshot script access.
-    }
-    return _closeDocumentBarButtonItem;
-}
-
-@synthesize compactCloseDocumentBarButtonItem = _compactCloseDocumentBarButtonItem;
-- (UIBarButtonItem *)compactCloseDocumentBarButtonItem;
-{
-    if (!_compactCloseDocumentBarButtonItem) {
-        _compactCloseDocumentBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"OUIToolbarDocumentClose" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil]
-                                                                       style:UIBarButtonItemStylePlain target:self action:@selector(closeDocument:)];
-        _compactCloseDocumentBarButtonItem.accessibilityIdentifier = @"BackToDocuments";
-    }
-    return _compactCloseDocumentBarButtonItem;
-}
-
-@synthesize infoBarButtonItem = _infoBarButtonItem;
-- (UIBarButtonItem *)infoBarButtonItem;
-{
-    if (!_infoBarButtonItem) {
-        _infoBarButtonItem = [OUIInspector inspectorBarButtonItemWithTarget:self action:@selector(_showInspector:)];
-        _infoBarButtonItem.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Info", @"OmniUIDocument", OMNI_BUNDLE, @"Info item accessibility label");
-    }
-    if (self.useCompactBarButtonItemsIfApplicable) {
-        BOOL isHorizontallyCompact = self.document.documentViewController.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassCompact;
-        BOOL isVerticallyCompact = self.document.documentViewController.traitCollection.verticalSizeClass == UIUserInterfaceSizeClassCompact;
-        NSString *imageName = (isHorizontallyCompact || isVerticallyCompact) ? @"OUIToolbarInfo-Compact" : @"OUIToolbarInfo";
-        _infoBarButtonItem.image = [UIImage imageNamed:imageName inBundle:[OUIInspector bundle] compatibleWithTraitCollection:NULL];
-    }
-    return _infoBarButtonItem;
-}
-
-- (UIBarButtonItem *)uniqueInfoBarButtonItem;
-{
-    UIBarButtonItem *infoBarButtonItem = [OUIInspector inspectorOUIBarButtonItemWithTarget:self action:@selector(_showInspector:)];
-    infoBarButtonItem.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Info", @"OmniUIDocument", OMNI_BUNDLE, @"Info item accessibility label");
-
-    if (self.useCompactBarButtonItemsIfApplicable) {
-        BOOL isHorizontallyCompact = self.document.documentViewController.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassCompact;
-        BOOL isVerticallyCompact = self.document.documentViewController.traitCollection.verticalSizeClass == UIUserInterfaceSizeClassCompact;
-        NSString *imageName = (isHorizontallyCompact || isVerticallyCompact) ? @"OUIToolbarInfo-Compact" : @"OUIToolbarInfo";
-        infoBarButtonItem.image = [UIImage imageNamed:imageName inBundle:[OUIInspector bundle] compatibleWithTraitCollection:NULL];
-    }
-
-    return infoBarButtonItem;
-}
-
-- (IBAction)makeNewDocument:(id)sender;
-{
-    if ([self canPerformAction:_cmd withSender:sender])
-        [_documentPicker.selectedScopeViewController newDocument:sender];
-}
-
-- (void)closeDocument:(id)sender;
-{
-    if ([sender isKindOfClass:[UIKeyCommand class]] && [[UIMenuController sharedMenuController] isMenuVisible]) {
-        [[UIMenuController sharedMenuController] hideMenu];
-    }
-    
-    // Update the modification date in case the doc picker is sorting by date and the file save hasn't landed yet.
-    if (self.document.hasUnsavedChanges) {
-        self.document.fileItem.userModificationDate = [NSDate date];
-    }
-    
-    [self closeDocumentWithCompletionHandler:^{
-        [_documentPicker dismissViewControllerAnimated:YES completion:nil];
-    }];
-}
-
-- (void)closeAndDismissDocumentWithCompletionHandler:(void (^)(void))completionHandler
-{
-    [self closeDocumentWithCompletionHandler:^{
-        // If there is no presented view controller the completion handler doesn't get called
-        if (_documentPicker.presentedViewController) {
-            [_documentPicker dismissViewControllerAnimated:YES completion:completionHandler];
-        } else {
-            completionHandler();
-        }
-        
-    }];
-}
-
-- (void)closeDocumentWithCompletionHandler:(void(^)(void))completionHandler;
-{
-    OBPRECONDITION(_document);
-    
-    if (!_document) {
-        if (completionHandler)
-            completionHandler();
-        return;
-    }
-    
-    completionHandler = [completionHandler copy]; // capture scope
-    
-    OUIWithoutAnimating(^{
-        UIWindow *window = self.window;
-        [window endEditing:YES];
-        [window layoutIfNeeded];
-        
-        // Make sure -setNeedsDisplay calls (provoked by -endEditing:) have a chance to get flushed before we invalidate the document contents
-        OUIDisplayNeededViews();
-    });
-    
-    // Ending editing may have started opened an undo group, with the nested group stuff for autosave (see OUIDocument). Give the runloop a chance to close the nested group.
-    if ([_document.undoManager groupingLevel] > 0) {
-        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate distantPast]];
-        OBASSERT([_document.undoManager groupingLevel] == 0);
-    }
-    
-    // Add Snapshot View
-    UIView *viewToSave = _document.viewControllerToPresent.view;
-    UIView *snapshotView = [viewToSave snapshotViewAfterScreenUpdates:NO];
-    [viewToSave addSubview:snapshotView];
-    
-    // Add Closing Spinner
-    UIActivityIndicatorView *closingDocumentIndicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleLarge];
-    closingDocumentIndicatorView.color = viewToSave.window.tintColor;
-    CGRect superviewBounds = viewToSave.bounds;
-    closingDocumentIndicatorView.center = (CGPoint){
-        .x = superviewBounds.size.width / 2,
-        .y = superviewBounds.size.height / 2
-    };
-    [viewToSave addSubview:closingDocumentIndicatorView];
-    [viewToSave bringSubviewToFront:closingDocumentIndicatorView];
-    [closingDocumentIndicatorView startAnimating];
-
-    _document.applicationLock = [OUIInteractionLock applicationLock];
-    [_documentPicker dismissViewControllerAnimated:YES completion:^{
-        [_documentPicker navigateToBestEffortContainerForItem:_document.fileItem];
-        
-        OBStrongRetain(_document);
-        [_document closeWithCompletionHandler:^(BOOL success) {
-            [self _invalidateCurrentUserActivity];
-            
-            [closingDocumentIndicatorView removeFromSuperview];
-            
-            // Give the document a chance to break retain cycles.
-            [_document didClose];
-            self.launchAction = nil;
-            
-            // Doing the -autorelease in the completion handler wasn't late enough. This may not be either...
-            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-                OBASSERT([NSThread isMainThread]);
-                OBStrongRelease(_document);
-            }];
-            
-            // If the document was saved, it will have already updated *its* previews, if we were launched into a document w/o the document picker ever being visible, we might not have previews loaded for other documents
-            [OUIDocumentPreview populateCacheForFileItems:_documentStore.mergedFileItems completionHandler:^{
-                [_document.applicationLock unlock];
-                _document.applicationLock = nil;
-                
-                if (completionHandler)
-                    completionHandler();
-                
-                [self _setDocument:nil];
-                [_previewGenerator documentClosed];
-            }];
-        }];
-    }];
-}
-
-- (void)documentDidDisableEnditing:(OUIDocument *)document;
-{
-    OBPRECONDITION(document.editingDisabled == YES); // When we end editing, we'll look at this and ignore the rename request.
-    
-    OUIWithoutAnimating(^{
-        // <bug:///93505> (Not explicitly ending editing of in-document rename text field on -[OUIDocument disableEditing]) - We used to explicitly end editing of the in-document rename text field when we recieved -[OUIDocumnet disableEditing] via a call to [[OUIDocumentAppController controller] documentDidDisableEnditing:self]. After some testing, it looks like when we set self.viewControllerToPresent.view.userInteractionEnabled = NO in -[OUIDocument disableEditing] that goes thourgh and calls resignFirstResponder for us on the textField. Do we still need to do it explicitly or just trust that disableing a view's userInteraction will do it for us?
-//        [_documentTitleTextField endEditing:YES];
-    });
-}
-
-- (void)documentWillRebuildViewController:(OUIDocument *)document;
-{
-    OBPRECONDITION(document == _document);
-    OBPRECONDITION(_snapshotForDocumentRebuilding == nil);
-    
-    UIWindow *window = self.window;
-    _snapshotForDocumentRebuilding = [window snapshotViewAfterScreenUpdates:NO];
-    [window insertSubview:_snapshotForDocumentRebuilding atIndex:window.subviews.count];
-    window.userInteractionEnabled = NO;
-}
-
-- (void)documentDidRebuildViewController:(OUIDocument *)document;
-{
-    OBPRECONDITION(document == _document);
-    OBPRECONDITION(_snapshotForDocumentRebuilding != nil);
-    
-    [UIView transitionWithView:_snapshotForDocumentRebuilding duration:kOUIDocumentPickerRevertAnimationDuration options:0
-                    animations:^{
-                        _snapshotForDocumentRebuilding.alpha = 0;
-                    }
-                    completion:^(BOOL finished) {
-                        self.window.userInteractionEnabled = YES;
-                        [_snapshotForDocumentRebuilding removeFromSuperview];
-                        _snapshotForDocumentRebuilding = nil;
-                    }];
-}
-
-- (void)documentDidFailToRebuildViewController:(OUIDocument *)document;
-{
-    self.window.userInteractionEnabled = YES;
-    [_snapshotForDocumentRebuilding removeFromSuperview];
-    _snapshotForDocumentRebuilding = nil;
-}
-
-- (OUIDocument *)document;
-{
-    return _document;
-}
-
-- (void)invalidateDocumentPreviews;
-{
-    [OUIDocumentPreview invalidateDocumentPreviewsWithCompletionHandler:^{
-        [_previewGenerator enqueuePreviewUpdateForFileItemsMissingPreviews:_documentStore.mergedFileItems];
-    }];
-}
-
-- (void)openDocumentInPlace:(NSURL *)url
-{
-    ODSFileItem *fileItem = [_documentStore fileItemWithURL:url];
-    if (fileItem == nil) {
-        // The file isn't in our container, and we don't already have a bookmark.
-        fileItem = [_externalScopeManager fileItemFromExternalDocumentURL:url];
-    }
-    if (fileItem == nil) {
-        // maybe there should be some error reported to the user here?
-        return;
-    }
-    if (fileItem.isDownloaded) {
-        [self openDocument:fileItem];
-    } else {
-        if (self.awaitedFileItemDownloads == nil) {
-            self.awaitedFileItemDownloads = [[NSMutableArray<ODSFileItem *> alloc] init];
-        }
-        BOOL secured = [fileItem.fileURL startAccessingSecurityScopedResource];
-        if (secured) {
-            [[self awaitedFileItemDownloads] addObject:fileItem];
-        }
-    }
-}
-
-- (void)importDocumentFromURL:(NSURL *)url;
-{
-    // Instantiate a new document with a temporary fileURL and read it from the file to be imported
-    OUIActivityIndicator *activityIndicator = nil;
-    ODSFileItem *importItem = [_documentPicker.selectedScopeViewController.selectedScope fileItemWithURL:url];
-    OUIDocumentPickerFileItemView *fileItemView = [_documentPicker.selectedScopeViewController.mainScrollView fileItemViewForFileItem:importItem];
-    if (fileItemView) {
-        activityIndicator = [OUIActivityIndicator showActivityIndicatorInView:fileItemView withColor:UIColor.whiteColor bezelColor:[UIColor.darkGrayColor colorWithAlphaComponent:0.9]];
-    } else {
-        UIView *view = _documentPicker.navigationController.topViewController.view;
-        activityIndicator = [OUIActivityIndicator showActivityIndicatorInView:view withColor:UIColor.whiteColor];
-    }
-
-    NSURL *temporaryURL = [_documentStore temporaryURLForCreatingNewDocumentOfType:ODSDocumentTypeNormal];
-    void (^finish)(OUIDocument *document) = [^(OUIDocument *document) {
-        OBASSERT([NSThread isMainThread], "We need to be on the main thread to hide the activity indicator");
-        [activityIndicator hide];
-        
-        if (document) {
-            // Save the document to our temporary location
-            [document saveToURL:temporaryURL forSaveOperation:UIDocumentSaveForOverwriting completionHandler:^(BOOL saveSuccess){
-                // The save completion handler isn't called on the main thread; jump over *there* to start the close (subclasses want that).
-                [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-                    [document closeWithCompletionHandler:^(BOOL closeSuccess){
-                        [self _invalidateCurrentUserActivity];
-                        [document didClose];
-                        
-                        if (!saveSuccess) {
-                            return;
-                        }
-                        
-                        NSString *documentType = [_documentStore documentTypeForNewFiles];
-                        NSString *baseName = [self documentStore:_documentStore baseNameForFileImportedFromURL:url];
-                        
-                        // If the import document is in local scope, add the result to the same folderItem, otherwise add it to the top of the local scope
-                        ODSFolderItem *folderItem = nil;
-                        ODSFileItem *fileItem = [_localScope fileItemWithURL:url];
-                        if (fileItem)
-                            folderItem = [_localScope folderItemContainingItem:fileItem];
-                        
-                        __weak OUIDocumentAppController *weakSelf = self;
-                        [_localScope addDocumentInFolder:folderItem baseName:baseName fileType:documentType fromURL:temporaryURL option:ODSStoreAddByMovingTemporarySourceToAvailableDestinationURL completionHandler:^(ODSFileItem *createdFileItem, NSError *moveError) {
-                            OUIDocumentAppController *strongSelf = weakSelf;
-                            [strongSelf openDocument:createdFileItem];
-                        }];
-                    }];
-                }];
-            }];
-        }
-    } copy];
-    
-    OUIInteractionLock *lock = [OUIInteractionLock applicationLock];
-    NSOperationQueue *queue = [[NSOperationQueue alloc] init];
-    [queue addOperationWithBlock:^{
-        Class cls = [self documentClassForURL:url];
-        OBASSERT(OBClassIsSubclassOfClass(cls, [OUIDocument class]));
-        
-        // This reads the document immediately, which is why we dispatch to a background queue before calling it. We do file coordination on behalf of the document here since we don't get the benefit of UIDocument's efforts during our synchronous read.
-        
-        __autoreleasing NSError *readError;
-        __block OUIDocument *document;
-        
-        NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:nil];
-        BOOL securedURL = [url startAccessingSecurityScopedResource];
-        [coordinator readItemAtURL:url withChanges:YES error:&readError byAccessor:^BOOL(NSURL *newURL, NSError **outError) {
-            document = [[cls alloc] initWithContentsOfImportableFileAtURL:newURL toBeSavedToURL:temporaryURL error:outError];
-            return (document != nil);
-        }];
-        if (securedURL) {
-            [url stopAccessingSecurityScopedResource];
-        }
-        
-        if (document == nil) {
-            __block NSError *reportableError = readError;
-            OFMainThreadPerformBlock(^(void) {
-                OUI_PRESENT_ERROR(reportableError);
-            });
-        }
-        
-        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-            [lock unlock];
-            finish(document);
-        }];
-    }];
-}
-
-- (void)_makeNewDocumentWithTemplateFileItem:(ODSFileItem *)templateFileItem preserveFileName:(BOOL)preserveFileName;
-{    
-    __block OUIDocumentPicker *docPicker = [self documentPicker];
-    
-    [self _closeAllDocumentsBeforePerformingBlock:^{
-        if (!preserveFileName) {
-            [docPicker navigateToScope:[docPicker localDocumentsScope] animated:NO];
-        }
-        if (docPicker.selectedScopeViewController != nil) {
-            [docPicker.selectedScopeViewController newDocumentWithTemplateFileItem:templateFileItem documentType:ODSDocumentTypeNormal preserveDocumentName:preserveFileName completion:nil];
-        } else {
-            [self _enqueueBackgroundMakingOfNewDocumentWithTemplateFileItem:templateFileItem preserveFileName:preserveFileName];
-        }
-    }];
-}
-
-- (void)makeNewDocumentWithTemplateFileItem:(ODSFileItem *)templateFileItem
-{
-    [self _makeNewDocumentWithTemplateFileItem:templateFileItem preserveFileName:NO];
-}
-
-- (void)makeNewDocumentWithFileItem:(ODSFileItem *)fileItem;
-{
-    [self _makeNewDocumentWithTemplateFileItem:fileItem preserveFileName:YES];
-}
-
-// LMTODO: Stolen from OUIDocumentPickerViewController newDocumentWithTemplateFileItem:documentType:completion:
-// We should maybe refactor so that code calls this code?
-- (void)_enqueueBackgroundMakingOfNewDocumentWithTemplateFileItem:(ODSFileItem *)templateFileItem preserveFileName:(BOOL)preserveFileName;
-{
-    // Instead of duplicating the template file item's URL (if we have one), we always read it into a OUIDocument and save it out, letting the document know that this is for the purposes of instantiating a new document. The OUIDocument may do extra work in this case that wouldn't get done if we just cloned the file (and this lets the work be done atomically by saving the new file to a temporary location before moving to a visible location).
-    ODSStore *documentStore = preserveFileName && templateFileItem ? templateFileItem.scope.documentStore : self.documentPicker.documentStore;
-    NSURL *temporaryURL = [documentStore temporaryURLForCreatingNewDocumentOfType:ODSDocumentTypeNormal];
-
-    NSOperationQueue *queue = [[NSOperationQueue alloc] init];
-    [queue addOperationWithBlock:^{
-        Class cls = [[OUIDocumentAppController controller] documentClassForURL:temporaryURL];
-
-        // This reads the document immediately, which is why we dispatch to a background queue before calling it. We do file coordination on behalf of the document here since we don't get the benefit of UIDocument's efforts during our synchronous read.
-
-        __block OUIDocument *document;
-        __autoreleasing NSError *readError;
-
-        if (templateFileItem != nil) {
-            NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:nil];
-            NSURL *templateURL = templateFileItem.fileURL;
-            [coordinator readItemAtURL:templateURL withChanges:YES error:&readError byAccessor:^BOOL(NSURL *newURL, NSError **outError) {
-                NSURL *securedURL = nil;
-                if ([newURL startAccessingSecurityScopedResource])
-                    securedURL = newURL;
-                document = [[cls alloc] initWithContentsOfTemplateAtURL:newURL toBeSavedToURL:temporaryURL error:outError];
-                [securedURL stopAccessingSecurityScopedResource];
-                return (document != nil);
-            }];
-        } else {
-            NSURL *blankURL = [cls builtInBlankTemplateURL]; // No coordination here since if this is non-nil it should be in the app wrapper.
-            OBASSERT_IF(blankURL != nil, OFURLContainsURL([[NSBundle mainBundle] bundleURL], blankURL));
-            document = [[cls alloc] initWithContentsOfTemplateAtURL:blankURL toBeSavedToURL:temporaryURL error:&readError];
-        }
-
-        if (!document) {
-            OUI_PRESENT_ERROR(readError);
-            return;
-        }
-
-        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-            // Save the document to our temporary location
-            [document saveToURL:temporaryURL forSaveOperation:UIDocumentSaveForOverwriting completionHandler:^(BOOL saveSuccess){
-                // The save completion handler isn't called on the main thread; jump over *there* to start the close (subclasses want that).
-                [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-                    [document closeWithCompletionHandler:^(BOOL closeSuccess){
-                        [self _invalidateCurrentUserActivity];
-                        [document didClose];
-
-                        if (!saveSuccess) {
-                            // The document instance should have gotten the real error presented some other way
-                            NSError *cancelledError = [NSError errorWithDomain:NSCocoaErrorDomain code:NSUserCancelledError userInfo:nil];
-                            OUI_PRESENT_ERROR(cancelledError);
-                            return;
-                        }
-
-                        ODSScope *localScope = preserveFileName && templateFileItem ? templateFileItem.scope : [documentStore defaultUsableScope];
-                        ODSFolderItem *folderItem = preserveFileName && templateFileItem ? templateFileItem.parentFolder : nil;
-                        NSString *documentName = preserveFileName && templateFileItem ? templateFileItem.name : nil;
-                        [documentStore moveNewTemporaryDocumentAtURL:temporaryURL toScope:localScope folder:folderItem documentType:ODSDocumentTypeNormal documentName:documentName completionHandler:^(ODSFileItem *createdFileItem, NSError *error){
-                            if (createdFileItem != nil) {
-                                [self openDocument:createdFileItem];
-                            } else {
-                                OUI_PRESENT_ERROR(error);
-                            }
-                        }];
-                    }];
-                }];
-            }];
-        }]; // end of mainQueue
-    }];
-}
-
-
-
-- (void)openDocument:(ODSFileItem *)fileItem;
-{
-    [self _openDocument:fileItem fileItemToRevealFrom:fileItem isOpeningFromPeek:NO willPresentHandler:nil completionHandler:nil];
-}
-
-- (void)openDocument:(ODSFileItem *)fileItem fromPeekWithWillPresentHandler:(void (^)(OUIDocumentOpenAnimator *openAnimator))willPresentHandler completionHandler:(void (^)(void))completionHandler;
-{
-    [self _openDocument:fileItem fileItemToRevealFrom:nil isOpeningFromPeek:YES willPresentHandler:willPresentHandler completionHandler:completionHandler];
-}
-
-- (void)_openDocument:(ODSFileItem *)fileItemToOpen fileItemToRevealFrom:(nullable ODSFileItem *)fileItemToRevealFrom isOpeningFromPeek:(BOOL)isOpeningFromPeek willPresentHandler:(void (^)(OUIDocumentOpenAnimator *openAnimator))willPresent completionHandler:(void (^)(void))completion;
-{
-    OBPRECONDITION([NSThread isMainThread]);
-    OBPRECONDITION(fileItemToOpen);
-    OBPRECONDITION(fileItemToOpen.isDownloaded);
-
-    __block void (^willPresentHandler)(OUIDocumentOpenAnimator *openAnimator) = [willPresent copy];
-    __block void (^completionHandler)(void) = [completion copy];
-    
-    [self checkTemporaryLicensingStateWithCompletionHandler:^{
-        if (_document != nil && _document.fileItem == fileItemToOpen) {
-            // The document we're supposed to open is already open. Let's not do anything, eh?
-            if (completionHandler) {
-                completionHandler();
-            }
-            return;
-        }
-        
-        
-        if (!isOpeningFromPeek) {
-            [_documentPicker navigateToContainerForItem:fileItemToOpen dismissingAnyOpenDocument:YES animated:NO];
-            [_documentPicker.selectedScopeViewController _applicationWillOpenDocument];
-        }
-        
-        void (^onFail)(void) = ^{
-            if (!isOpeningFromPeek) {
-                [self _fadeInDocumentPickerScrollingToFileItem:fileItemToOpen];
-            }
-            _isOpeningURL = NO;
-        };
-        onFail = [onFail copy];
-        
-        NSString *originalPath = fileItemToOpen.fileURL.path;
-        NSString *symlinkDestination = [[NSFileManager defaultManager] destinationOfSymbolicLinkAtPath:originalPath error:NULL];
-        if (symlinkDestination != nil) {
-            NSString *targetPath = [originalPath stringByResolvingSymlinksInPath];
-            if (targetPath == nil || OFISEQUAL(targetPath, originalPath)) {
-                onFail();
-                return;
-            }
-            
-            // Look for the target in the fileItem's scope
-            NSURL *targetURL = [NSURL fileURLWithPath:targetPath];
-            ODSScope *originalScope = fileItemToOpen.scope;
-            if (![originalScope isFileInContainer:targetURL]) {
-                onFail();
-                return;
-            }
-            
-            ODSFileItem *targetItem = [originalScope fileItemWithURL:targetURL];
-            [self _openDocument:targetItem fileItemToRevealFrom:targetItem isOpeningFromPeek:NO willPresentHandler:nil completionHandler:nil];
-            return;
-        }
-        
-        OUIActivityIndicator *activityIndicator = nil;
-        if (!isOpeningFromPeek) {
-            OUIDocumentPickerFileItemView *fileItemView = [_documentPicker.selectedScopeViewController.mainScrollView fileItemViewForFileItem:fileItemToRevealFrom];
-            if (fileItemView) {
-                activityIndicator = [OUIActivityIndicator showActivityIndicatorInView:fileItemView withColor:UIColor.whiteColor bezelColor:[UIColor.darkGrayColor colorWithAlphaComponent:0.9]];
-            }
-            else if (self.window.rootViewController == _documentPicker) {
-                activityIndicator = [OUIActivityIndicator showActivityIndicatorInView:_documentPicker.view withColor:UIColor.whiteColor];
-            }
-        }
-        
-        onFail = [onFail copy];
-        
-        
-        void (^doOpen)(void) = ^{
-            NSURL *fileURL = fileItemToOpen.fileURL;
-            Class cls = [self documentClassForURL:fileURL];
-            OBASSERT(OBClassIsSubclassOfClass(cls, [OUIDocument class]));
-            
-            if ([cls shouldImportFileAtURL:fileURL]) {
-                [self importDocumentFromURL:fileURL];
-                [activityIndicator hide];
-                return;
-            }
-            
-            __autoreleasing NSError *error = nil;
-            OUIDocument *document = [[cls alloc] initWithExistingFileItem:fileItemToOpen error:&error];
-            
-            if (!document) {
-                OUI_PRESENT_ERROR_FROM(error, self.window.rootViewController);
-                onFail();
-                return;
-            }
-            
-            document.applicationLock = [OUIInteractionLock applicationLock];
-            
-            // Can't call this in the open completion handler, the user info comes back empty if we call this there. It's generally ok if our user activity posts as available a bit early, so let's do it here.
-            [self _createDocumentUserActivityForURL:fileURL inStore:fileItemToOpen.scope.documentStore isCreatingFromTemplate:NO];
-            
-            [document openWithCompletionHandler:^(BOOL success){
-                if (!success) {
-                    OUIDocumentHandleDocumentOpenFailure(document, nil);
-                    
-                    [activityIndicator hide];
-                    [document.applicationLock unlock];
-                    document.applicationLock = nil;
-                    
-                    onFail();
-                    return;
-                }
-                
-                OBASSERT([NSThread isMainThread]);
-                [self _setDocument:document];
-                _isOpeningURL = NO;
-                
-                UIViewController *presentFromViewController = _documentPicker;
-                if (!presentFromViewController)
-                    presentFromViewController = _documentPicker;
-                UIViewController <OUIDocumentViewController> *documentViewController = _document.documentViewController;
-                UIViewController *toPresent = _document.viewControllerToPresent;
-                UIView *view = [documentViewController view]; // make sure the view is loaded in case -pickerAnimationViewForTarget: doesn't and return a subview thereof.
-                
-                [UIView performWithoutAnimation:^{
-                    [view setFrame:presentFromViewController.view.bounds];
-                    //[view layoutIfNeeded];  // this seems to be unnecessary and appears to screw up the initial positioning of the canvas
-                    // We shouldn't setup toPresent.view here, before it knows how it's going to display. We should wait for the presentation and adaptability mechanisms to cause layout.
-                    //        [toPresent.view setFrame:presentFromViewController.view.bounds];
-                    //        [toPresent.view layoutIfNeeded];
-                }];
-                
-                OBASSERT(![document hasUnsavedChanges]); // We just loaded our document and created our view, we shouldn't have any view state that needs to be saved. If we do, we should probably investigate to prevent bugs like <bug:///80514> ("Document Updated" on (null) alert is still hanging around), perhaps discarding view state changes if we can't prevent them.
-                
-                [self mainThreadFinishedLoadingDocument:document];
-                
-                // Might be a newly created document that was never edited and trivially returns YES to saving. Make sure there is an item before overwriting our last default value.
-                NSURL *url = _document.fileURL;
-                ODSFileItem *fileItem = [_documentStore fileItemWithURL:url];
-                if (fileItem != nil) {
-                    self.launchAction = [self _launchActionForOpeningURL:url];
-                }
-                
-                // Wait until the document is opened to do this, which will let cache entries from opening document A be used in document B w/o being flushed.
-                [OAFontDescriptor forgetUnusedInstances];
-                
-                // UIWindow will automatically create an undo manager if one isn't found along the responder chain. We want to be darn sure that don't end up getting two undo managers and accidentally splitting our registrations between them.
-                OBASSERT([_document undoManager] == [_document.documentViewController undoManager], "bug:///144566 (Frameworks-iOS Unassigned: TextEditor sample app uses UITextView's undoManager for viewController's -undoManager)");
-                OBASSERT([_document undoManager] == [_document.documentViewController.view undoManager], "bug:///144566 (Frameworks-iOS Unassigned: TextEditor sample app uses UITextView's undoManager for viewController's -undoManager)"); // Does your view controller implement -undoManager? We don't do this for you right now.
-                
-                if ([documentViewController respondsToSelector:@selector(restoreDocumentViewState:)]) {
-                    OFFileEdit *fileEdit = fileItem.fileEdit;
-                    if (fileEdit) // New document
-                        [documentViewController restoreDocumentViewState:[OUIDocumentAppController documentStateForFileEdit:fileEdit]];
-                }
-                
-                BOOL animateDocument = YES;
-                UIWindow *window = self.window;
-                if (window.rootViewController != _documentPicker) {
-                    [_documentPicker showDocuments];
-                    window.rootViewController = _documentPicker;
-                    [window makeKeyAndVisible];
-                    
-                    [self handleCachedSpecialURLIfNeeded];
-                    animateDocument = NO;
-                }
-                
-                OUIDocumentOpenAnimator *animator = [OUIDocumentOpenAnimator sharedAnimator];
-                animator.documentPicker = _documentPicker;
-                animator.fileItem = fileItemToRevealFrom;
-                animator.actualFileItem = fileItem;
-                
-                animator.isOpeningFromPeek = isOpeningFromPeek;
-                animator.backgroundSnapshotView = nil;
-                animator.previewSnapshotView = nil;
-                animator.previewRect = CGRectZero;
-                
-                if (isOpeningFromPeek && willPresentHandler) {
-                    willPresentHandler(animator);
-                }
-                
-                OBASSERT_NOTNULL(toPresent);
-                toPresent.transitioningDelegate = animator;
-                toPresent.modalPresentationStyle = UIModalPresentationFullScreen;
-                
-                [presentFromViewController presentViewController:toPresent animated:animateDocument completion:^{
-                    if ([documentViewController respondsToSelector:@selector(documentFinishedOpening)])
-                        [documentViewController documentFinishedOpening];
-                    [activityIndicator hide];
-                    [document.applicationLock unlock];
-                    document.applicationLock = nil;
-                    
-                    // Ensure that when the document is closed we'll be using a filter that shows it.
-                    [_documentPicker.selectedScopeViewController ensureSelectedFilterMatchesFileItem:fileItem];
-                    
-                    if (completionHandler) {
-                        completionHandler();
-                    }
-                }];
-            }];
-        };
-        
-        if (_document) {
-            // If we have a document open, wait for it to close before starting to open the new one. This can happen if the user backgrounds the app and then taps on a document in Mail or Files.
-            
-            doOpen = [doOpen copy];
-            
-            OBASSERT(_document.applicationLock == nil);
-            _document.applicationLock = [OUIInteractionLock applicationLock];
-            
-            [_document closeWithCompletionHandler:^(BOOL success) {
-                [self _invalidateCurrentUserActivity];
-                OUIDocument *localDoc = _document;
-                UINavigationController *topLevelNavController = self.documentPicker.topLevelNavigationController;
-                [self _setDocument:nil];
-                
-                if ([topLevelNavController presentedViewController] && [[topLevelNavController presentedViewController] isBeingDismissed] == NO) {
-                    [topLevelNavController dismissViewControllerAnimated:NO completion:^{
-                        doOpen();
-                        [localDoc.applicationLock unlock];
-                        localDoc.applicationLock = nil;
-                    }];
-                } else {
-                    doOpen();
-                    [localDoc.applicationLock unlock];
-                    localDoc.applicationLock = nil;
-                }
-            }];
-        } else {
-            // Just open immediately
-            doOpen();
-        }
-    }];
-}
-
-- (void)_invalidateCurrentUserActivity
-{
-    [self.userActivityForCurrentlyOpenDocument resignCurrent];
-    self.userActivityForCurrentlyOpenDocument = nil;
-}
-
-- (void)documentPickerViewController:(OUIDocumentPickerViewController *)controller willCreateNewDocumentFromTemplateAtURL:(NSURL *)url inStore:(ODSStore *)store;
-{
-    [self _createDocumentUserActivityForURL:url inStore:store isCreatingFromTemplate:YES];
-}
-
-- (void)_createDocumentUserActivityForURL:(NSURL *)url inStore:(ODSStore *)store isCreatingFromTemplate:(BOOL)isCreatingFromTemplate;
-{
-    if (![[self class] supportsSiriShortcuts]) {
-        return;
-    }
-    
-    if (@available(iOS 12.0, *)) {
-        OBPRECONDITION(self.userActivity == nil, "Need to invalidate the old activity before creating a new one");
-        OBPRECONDITION(store != nil);
-
-        NSString *identifier = [self _persistentIdentifierForOpenDocumentActivityAtURL:url inStore:store];
-        if (!identifier) {
-            OBASSERT_NOT_REACHED(@"no identifier could be created for %@, possibly an iCloud url?  <bug:///165843> (iOS-OmniGraffle Crasher: Crash opening a file from iCloud using \"Share\" the first time (doesn't crash the 2nd time))", url);
-            return;
-        }
-        
-        NSUserActivity *activity;
-        NSString *localizedFileName = url.URLByDeletingPathExtension.lastPathComponent;
-        if (url == nil) {
-            activity = [[NSUserActivity alloc] initWithActivityType:[[self class] createDocumentFromTemplateUserActivityType]];
-            activity.title = NSLocalizedStringFromTableInBundle(@"Create New Document", @"OmniUIDocument", OMNI_BUNDLE, @"Create Document From Template Document Shortcut Title");
-        } else {
-            NSString *localizedOpenFormatString;
-            if (isCreatingFromTemplate) {
-                activity = [[NSUserActivity alloc] initWithActivityType:[[self class] createDocumentFromTemplateUserActivityType]];
-                localizedOpenFormatString = NSLocalizedStringFromTableInBundle(@"Create New Document From %@", @"OmniUIDocument", OMNI_BUNDLE, @"Create Document From Template Document Shortcut Title");
-                localizedFileName = [self localizedNameForSampleDocumentNamed:localizedFileName];
-            } else {
-                if (![self.userActivityForCurrentlyOpenDocument.activityType isEqualToString:[[self class] createDocumentFromTemplateUserActivityType]]) {
-                    // Don't make an open document activity if we're opening the document from a template
-                    activity = [[NSUserActivity alloc] initWithActivityType:[[self class] openDocumentUserActivityType]];
-                    localizedOpenFormatString = NSLocalizedStringFromTableInBundle(@"Open %@", @"OmniUIDocument", OMNI_BUNDLE, @"Open Document Shortcut Title");
-                }
-            }
-
-            if (localizedOpenFormatString) {
-                activity.title = [NSString stringWithFormat:localizedOpenFormatString, localizedFileName];
-            }
-        }
-        
-        if (url != nil) {
-            NSError *bookmarkError = nil;
-            NSData *urlBookmark = [url bookmarkDataWithOptions:NSURLBookmarkCreationMinimalBookmark includingResourceValuesForKeys:nil relativeToURL:nil error:&bookmarkError];
-            if (urlBookmark == nil) {
-                NSLog(@"error creating bookmark from url %@ - %@", url, bookmarkError);
-            } else {
-                [activity addUserInfoEntriesFromDictionary:@{ @"URL_bookmark" : urlBookmark }];
-                activity.requiredUserInfoKeys = [NSSet setWithObject:@"URL_bookmark"];
-            }
-        }
-        // Exposes us to Siri Shortcuts
-        [activity setEligibleForPrediction:YES];
-
-        [activity setPersistentIdentifier:identifier];
-
-        // Exposes us to Spotlight
-        [activity setEligibleForSearch:YES];
-
-        // <bug:///108386> (iOS-OmniGraffle Feature: Feature: Handoff support)
-        // Need to determine whether or not this is an iCloud URL. If so, we can make this activity eligible for Handoff. Or, if it's not an  iCloud doc, we can adopt the continuation stream APIs to give the other side the data to replicate our document.
-        activity.eligibleForHandoff = NO;
-        
-        self.userActivityForCurrentlyOpenDocument = activity;
-        [activity becomeCurrent];
-    }
 }
 
 - (BOOL)shouldOpenOnlineHelpOnFirstLaunch;
@@ -1091,51 +323,6 @@ static unsigned SyncAgentRunningAccountsContext;
 
 #pragma mark - Background fetch
 
-- (NSArray <ODSFileItem *> *)recentlyEditedFileItems
-{
-    ODSScope *trashScope = [ODSScope trashScope];
-    NSArray *localItems = [[_documentStore mergedFileItems] sortedArrayUsingDescriptors:[OUIDocumentPickerViewController sortDescriptorsForSortType:OUIDocumentPickerItemSortByDate]];
-    localItems = [localItems filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(ODSFileItem *  _Nonnull fileItem, NSDictionary <NSString *,id> * _Nullable bindings) {
-        return (fileItem.scope != trashScope);
-    }]];
-    
-    if ([_document hasUnsavedChanges]) {
-        // quick fix for backgrounding with a document open doesn't reliably put the open document at the top of the list
-        NSUInteger index = [localItems indexOfObject:_document.fileItem];
-        if (index != NSNotFound && index != 0) {
-            NSMutableArray *mutableItems = [localItems mutableCopy];
-            [mutableItems removeObject:_document.fileItem];
-            [mutableItems insertObject:_document.fileItem atIndex:0];
-            localItems = mutableItems;
-        }
-    }
-    
-    NSUInteger numberOfItemsToReturn = 5;
-    if (localItems.count > numberOfItemsToReturn){
-        localItems = [localItems subarrayWithRange:NSMakeRange(0, numberOfItemsToReturn)];
-    }
-    
-    return localItems;
-}
-
-- (void)addRecentlyOpenedDocumentURL:(NSURL *)url;
-{
-    __weak OUIDocumentAppController *weakSelf = self;
-    [_externalScopeManager addRecentlyOpenedDocumentURL:url completionHandler:^(BOOL success) {
-        if (success) {
-            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-                __strong OUIDocumentAppController *strongSelf = weakSelf;
-                [strongSelf _updateShortcutItems];
-            }];
-        }
-    }];
-}
-
-- (NSArray <ODSFileItem *> *)recentlyOpenedFileItems;
-{
-    return [_externalScopeManager recentlyOpenedFileItems];
-}
-
 // OmniPresence-enabled applications should implement -application:performFetchWithCompletionHandler: to call this. We cannot name this method -application:performFetchWithCompletionHandler: since UIKit will throw an exception if you declare 'fetch' in your UIBackgroundModes.
 - (void)performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))completionHandler_;
 {
@@ -1240,146 +427,34 @@ static unsigned SyncAgentRunningAccountsContext;
     OBRequestConcreteImplementation(self, _cmd);
 }
 
-- (UIResponder *)defaultFirstResponder;
-{
-    return [_document defaultFirstResponder];
-    // <bug:///93506> (Should we override defaultFirstResponder in OUIDocumentAppController anymore?)
-    // Make the document picker or the application supplied document view controller the fallback for getting first responder status.
-//    return _mainViewController.innerViewController;
-    return [super defaultFirstResponder];
-}
-
-- (void)importFromExternalContainer:(id)sender;
-{
-    UIDocumentPickerViewController *pickerViewController = [[UIDocumentPickerViewController alloc] initWithDocumentTypes:[self _expandedTypesFromPrimaryTypes:[self viewableFileTypes]] inMode:UIDocumentPickerModeImport];
-    [self _presentExternalDocumentPicker:pickerViewController completionBlock:^(NSURL *url) {
-        [_externalScopeManager importExternalDocumentFromURL:url];
-    }];
-}
-
-- (void)openDocumentFromExternalContainer:(id)sender;
-{
-    UIDocumentPickerViewController *pickerViewController = [[UIDocumentPickerViewController alloc] initWithDocumentTypes:[self _expandedTypesFromPrimaryTypes:[self editableFileTypes]] inMode:UIDocumentPickerModeOpen];
-    [self _presentExternalDocumentPicker:pickerViewController completionBlock:^(NSURL *url) {
-        [self openDocumentInPlace:url];
-    }];
-}
-
-- (BOOL)shouldEnableCopyFromWebDAV; // default YES
-{
-    return YES;
-}
-
 - (NSArray *)additionalAppMenuOptionsAtPosition:(OUIAppMenuOptionPosition)position;
 {
     NSMutableArray *options = [NSMutableArray arrayWithArray:[super additionalAppMenuOptionsAtPosition:position]];
     
-    // Add ways to get more documents only if we are in a valid scope, for now.
-    OUIDocumentPickerViewController *scopeViewController = _documentPicker.selectedScopeViewController;
-    if (scopeViewController != nil && scopeViewController.canAddDocuments && !scopeViewController.selectedScope.isExternal) {
-        switch (position) {
-            case OUIAppMenuOptionPositionBeforeReleaseNotes:
-                break;
+    switch (position) {
+        case OUIAppMenuOptionPositionBeforeReleaseNotes:
+            break;
 
-            case OUIAppMenuOptionPositionAfterReleaseNotes:
-            {
-                NSString *sampleDocumentsDirectoryTitle = [[OUIDocumentAppController controller] sampleDocumentsDirectoryTitle];
-                if (sampleDocumentsDirectoryTitle == nil) {
-                    break;
-                }
-                UIImage *image = [[UIImage imageNamed:@"OUIMenuItemRestoreSampleDocuments" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-                [options addObject:[OUIMenuOption optionWithFirstResponderSelector:@selector(restoreSampleDocuments:) title:sampleDocumentsDirectoryTitle image:image]];
+        case OUIAppMenuOptionPositionAfterReleaseNotes:
+        {
+            NSString *sampleDocumentsDirectoryTitle = [[OUIDocumentAppController controller] sampleDocumentsDirectoryTitle];
+            if (sampleDocumentsDirectoryTitle == nil) {
                 break;
             }
-
-            case OUIAppMenuOptionPositionAtEnd:
-            {
-                UIImage *importImage = [[UIImage imageNamed:@"OUIMenuItemImport" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-
-                // Import from WebDAV
-                if ([self shouldEnableCopyFromWebDAV]) {
-                    OUIMenuOption *importOption = [OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Copy from WebDAV", @"OmniUIDocument", OMNI_BUNDLE, @"gear menu item") image:importImage action:^(OUIMenuInvocation *invocation){
-                        OUIImportExportAccountListViewController *accountList = [[OUIImportExportAccountListViewController alloc] initForExporting:NO];
-                        accountList.title = NSLocalizedStringFromTableInBundle(@"Import", @"OmniUIDocument", OMNI_BUNDLE, @"import sheet title");
-                        UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:accountList];
-                        accountList.finished = ^(OFXServerAccount *account) {
-                            if (!account) {
-                                [navigationController dismissViewControllerAnimated:YES completion:nil];
-                            } else {
-                                __autoreleasing NSError *error;
-                                OUIWebDAVSyncListController *webDavList = [[OUIWebDAVSyncListController alloc] initWithServerAccount:account exporting:NO error:&error];
-                                if (!webDavList)
-                                    OUI_PRESENT_ERROR_FROM(error, navigationController);
-                                else {
-                                    [navigationController pushViewController:webDavList animated:YES];
-                                }
-                            }
-                        };
-                        
-                        navigationController.modalPresentationStyle = UIModalPresentationFormSheet;
-                        [invocation.presentingViewController presentViewController:navigationController animated:YES completion:nil];
-                    }];
-                    [options addObject:importOption];
-                }
-
-                if (OUIDocumentPicker.shouldShowExternalScope) {
-                    // Import from external container via document picker
-                    [options addObject:[OUIMenuOption optionWithFirstResponderSelector:@selector(importFromExternalContainer:) title:NSLocalizedStringFromTableInBundle(@"Copy from…", @"OmniUIDocument", OMNI_BUNDLE, @"gear menu item") image:importImage]];
-                }
-                break;
-            }
-
-            default:
-                OBASSERT_NOT_REACHED("Unknown possition");
-                break;
+            UIImage *image = [[UIImage imageNamed:@"OUIMenuItemRestoreSampleDocuments" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+            [options addObject:[OUIMenuOption optionWithTarget:self selector:@selector(restoreSampleDocuments:) title:sampleDocumentsDirectoryTitle image:image]];
+            break;
         }
+
+        case OUIAppMenuOptionPositionAtEnd:
+            break;
+
+        default:
+            OBASSERT_NOT_REACHED("Unknown possition");
+            break;
     }
 
     return options;
-}
-
-- (OUIWebViewController *)showNewsURLString:(NSString *)urlString evenIfShownAlready:(BOOL)showNoMatterWhat
-{
-    if (self.readyToShowNews) {
-        return [super showNewsURLString:urlString evenIfShownAlready:showNoMatterWhat];
-        
-    } else {
-        self.newsURLStringToShowWhenReady = urlString;
-        return nil;
-    }
-}
-
-- (void)handleCachedSpecialURLIfNeeded
-{
-    if (_specialURLToHandle != nil)
-    {
-        [self handleSpecialURL:_specialURLToHandle];
-        _specialURLToHandle = nil;
-    }
-}
-
-#pragma mark - UIResponder subclass
-
-- (NSArray *)keyCommands;
-{
-    return [OUIKeyCommands keyCommandsForCategories:[NSMutableOrderedSet<NSString *> orderedSetWithObject:@"document-controller"]];
-}
-
-- (BOOL)canPerformAction:(SEL)action withSender:(id)sender;
-{
-    if (action == @selector(undo:))
-        return [_document.undoManager canUndo];
-    
-    if (action == @selector(redo:))
-        return [_document.undoManager canRedo];
-    
-    if (action == @selector(makeNewDocument:))
-        return _document == nil && [_documentPicker.selectedScopeViewController canPerformAction:@selector(newDocument:) withSender:sender];
-
-    if (action == @selector(closeDocument:))
-        return _document != nil;
-    
-    return [super canPerformAction:action withSender:sender];
 }
 
 #pragma mark - API
@@ -1444,6 +519,8 @@ static NSSet *ViewableFileTypes()
 
 - (void)restoreSampleDocuments:(id)sender;
 {
+    OBFinishPortingWithNote("<bug:///176698> (Frameworks-iOS Unassigned: OBFinishPorting: -restoreSampleDocuments: in OUIDocumentAppController)");
+#if 0
     OUIDocumentAppController *documentAppController = [OUIDocumentAppController controller];
     NSURL *sampleDocumentsURL = [documentAppController sampleDocumentsDirectoryURL];
     NSString *restoreSamplesViewControllerTitle = [documentAppController sampleDocumentsDirectoryTitle];
@@ -1458,7 +535,7 @@ static NSSet *ViewableFileTypes()
     navigationController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
     
     [_documentPicker presentViewController:navigationController animated:YES completion:nil];
-    
+#endif
 }
 
 - (void)updatePreviewsFor:(id <NSFastEnumeration>)fileItems;
@@ -1469,11 +546,6 @@ static NSSet *ViewableFileTypes()
 }
 
 #pragma mark - ODSStoreDelegate
-
-- (Class)documentStore:(ODSStore *)store fileItemClassForURL:(NSURL *)fileURL;
-{
-    return [ODSFileItem class];
-}
 
 - (NSString *)documentStoreBaseNameForNewFiles:(ODSStore *)store;
 {
@@ -1490,7 +562,7 @@ static NSSet *ViewableFileTypes()
     return [importedURL.lastPathComponent stringByDeletingPathExtension];
 }
 
-- (NSArray *)documentStoreEditableDocumentTypes:(ODSStore *)store;
+- (NSArray *)documentCreationRequestEditableDocumentTypes:(OUINewDocumentCreationRequest *)request;
 {
     return [self editableFileTypes];
 }
@@ -1560,16 +632,23 @@ static NSSet *ViewableFileTypes()
         UIAlertAction *editAction = [UIAlertAction actionWithTitle:NSLocalizedStringFromTableInBundle(@"Edit Credentials", @"OmniUIDocument", OMNI_BUNDLE, @"When displaying a sync error, this is the option to change the username and password.") style:UIAlertActionStyleDefault handler:^(UIAlertAction * __nonnull action) {
 
             void (^editCredentials)(void) = ^{
+                OBFinishPortingWithNote("<bug:///176699> (Frameworks-iOS Unassigned: OBFinishPorting: Handle editing OmniPresence credentials when presenting a sync error)");
+#if 0
                 [self.documentPicker editSettingsForAccount:account];
+#endif
             };
             editCredentials = [editCredentials copy];
-            if (_document) {
-                [self closeDocumentWithCompletionHandler:^{
+            OUIDocument *document = viewController.sceneDocument;
+            if (document != nil) {
+                [viewController.sceneDelegate closeDocumentWithCompletionHandler:^{
+                    OBFinishPortingWithNote("<bug:///176699> (Frameworks-iOS Unassigned: OBFinishPorting: Handle editing OmniPresence credentials when presenting a sync error)");
+#if 0
                     // Dismissing without animation and then immediately pushing into the top navigation controller causes the screen to be left blank. To prevent this, we dismiss with animation and use the completion handler to run the code that causes the push in the navigation controller.
                     // The document view controller isn't dismissed by -closeDocumentWithCompletionHandler:, which is arguably weird.
                     [self.documentPicker dismissViewControllerAnimated:YES completion:^{
                         editCredentials();
                     }];
+#endif
                 }];
             } else
                 editCredentials();
@@ -1587,14 +666,14 @@ static NSSet *ViewableFileTypes()
     if ([MFMailComposeViewController canSendMail] && ODAVShouldOfferToReportError(syncError)) {
         UIAlertAction *reportAction = [UIAlertAction actionWithTitle:NSLocalizedStringFromTableInBundle(@"Report Error", @"OmniUIDocument", OMNI_BUNDLE, @"When displaying a sync error, this is the option to report the error.") style:UIAlertActionStyleDefault handler:^(UIAlertAction * __nonnull action) {
             NSString *body = [NSString stringWithFormat:@"\n%@\n\n%@\n", [[OUIAppController controller] fullReleaseString], [syncError toPropertyList]];
-            [[OUIAppController controller] sendFeedbackWithSubject:@"Sync failure" body:body];
+            [[OUIAppController controller] sendFeedbackWithSubject:@"Sync failure" body:body inScene:viewController.view.window.windowScene];
         }];
         [alertController addAction:reportAction];
     }
     [viewController presentViewController:alertController animated:YES completion:^{}];
 }
 
-- (void)warnAboutDiscardingUnsyncedEditsInAccount:(OFXServerAccount *)account withCancelAction:(void (^)(void))cancelAction discardAction:(void (^)(void))discardAction;
+- (void)warnAboutDiscardingUnsyncedEditsInAccount:(OFXServerAccount *)account fromViewController:(UIViewController *)parentViewController withCancelAction:(void (^)(void))cancelAction discardAction:(void (^)(void))discardAction;
 {
     if (cancelAction == NULL)
         cancelAction = ^{};
@@ -1629,14 +708,9 @@ static NSSet *ViewableFileTypes()
             }];
             [alertController addAction:discardAlertAction];
 
-            [self.window.rootViewController presentViewController:alertController animated:YES completion:^{}];
+            [parentViewController presentViewController:alertController animated:YES completion:^{}];
         }
     }];
-}
-
-- (BOOL)documentStore:(ODSStore *)store canViewFileTypeWithIdentifier:(NSString *)uti;
-{
-    return [self canViewFileTypeWithIdentifier:uti];
 }
 
 - (NSSet *)internalTemplateFileItems;
@@ -1645,11 +719,6 @@ static NSSet *ViewableFileTypes()
 }
 
 #pragma mark - Subclass responsibility
-
-- (NSString *)recentDocumentShortcutIconImageName;
-{
-    return nil;
-}
 
 - (NSString *)newDocumentShortcutIconImageName;
 {
@@ -1663,7 +732,8 @@ static NSSet *ViewableFileTypes()
 
 - (UIColor *)emptyOverlayViewTextColor;
 {
-    return self.window.tintColor;
+    UIWindow *window = [[self class] windowForScene:nil options:OUIWindowForSceneOptionsAllowCascadingLookup];
+    return window.tintColor;
 }
 
 - (Class)documentExporterClass
@@ -1686,11 +756,6 @@ static NSSet *ViewableFileTypes()
     OBRequestConcreteImplementation(self, _cmd);
 }
 
-- (void)showInspectorFromBarButtonItem:(UIBarButtonItem *)item;
-{
-    OBRequestConcreteImplementation(self, _cmd);
-}
-
 - (BOOL)allowsMultiFileSharing
 {
     // Default to not allowing this. Some of our apps can do this, others can't.
@@ -1700,15 +765,11 @@ static NSSet *ViewableFileTypes()
     return NO;
 }
 
-- (void)mainThreadFinishedLoadingDocument:(OUIDocument *)document;  // For handling any loading that can't be done in a thread
+- (UIColor *)launchActivityIndicatorColor
 {
-    // Okay to do nothing
+    UIWindow *window = [[self class] windowForScene:nil options:OUIWindowForSceneOptionsAllowCascadingLookup];
+    return window.tintColor;
 }
-
-- (UIColor *)launchActivityIndicatorColor {
-    return self.window.tintColor;
-}
-
 
 #pragma mark -
 #pragma mark UIApplicationDelegate
@@ -1720,10 +781,7 @@ static NSSet *ViewableFileTypes()
 {
     DEBUG_LAUNCH(1, @"Delayed finish launching allowCopyingSamples:%d openURL:%@ orShowingHelp:%@", allowCopyingSampleDocuments, launchDocumentURL, showHelp ? @"YES" : @"NO");
     
-    OUIDocumentPickerViewController *documentPickerViewController = _documentPicker.selectedScopeViewController;
-
     BOOL startedOpeningDocument = NO;
-    ODSFileItem *fileItemToSelect = nil;
     ODSFileItem *launchFileItem = nil;
     
     if (launchDocumentURL) {
@@ -1739,14 +797,6 @@ static NSSet *ViewableFileTypes()
         [self copySampleDocumentsToUserDocumentsWithCompletionHandler:^(NSDictionary *nameToURL) {
             [[NSUserDefaults standardUserDefaults] setInteger:builtInResourceVersion forKey:@"SampleDocumentsHaveBeenCopiedToUserDocuments"];
             [[NSUserDefaults standardUserDefaults] setObject:[[NSDate date] xmlString] forKey:@"SampleDocumentsHaveBeenCopiedToUserDocumentsDate"];
-
-            [_documentStore scanItemsWithCompletionHandler:^{
-                // Retry after the scan finished, but this time try opening the Welcome document
-                [self _delayedFinishLaunchingAllowCopyingSampleDocuments:NO // we just did, don't try again
-                                                  openingDocumentWithURL:nil // already checked this
-                                                     orShowingOnlineHelp:YES
-                                                       completionHandler:completionHandler];
-            }];
         }];
         return;
     }
@@ -1778,16 +828,19 @@ static NSSet *ViewableFileTypes()
                 startedOpeningDocument = YES;
             } else {
                 NSURL *launchURL = [self _urlForLaunchAction:launchAction];
-                launchFileItem = [_documentStore fileItemWithURL:launchURL];
-                if (launchFileItem) {
-                    [documentPickerViewController scrollItemToVisible:launchFileItem animated:NO];
-                    NSString *action = [launchAction objectAtIndex:0];
-                    if ([action isEqualToString:OpenBookmarkAction]) {
-                        DEBUG_LAUNCH(1, @"Opening file item %@", [launchFileItem shortDescription]);
-                        [self _openDocument:launchFileItem fileItemToRevealFrom:launchFileItem isOpeningFromPeek:NO willPresentHandler:nil completionHandler:nil];
-                        startedOpeningDocument = YES;
-                    } else
-                        fileItemToSelect = launchFileItem;
+                if (launchURL) {
+                    OBFinishPortingLater("Open previously opened file?");
+#if 0
+                    [_documentBrowser revealDocumentAtURL:launchURL importIfNeeded:NO completion:^(NSURL * _Nullable revealedDocumentURL, NSError * _Nullable error) {
+                        NSString *action = [launchAction objectAtIndex:0];
+                        if ([action isEqualToString:OpenBookmarkAction]) {
+                            DEBUG_LAUNCH(1, @"Opening file item %@", [launchFileItem shortDescription]);
+                            [self _openDocument:launchFileItem isOpeningFromPeek:NO willPresentHandler:nil completionHandler:nil];
+                            startedOpeningDocument = YES;
+                        } else
+                            fileItemToSelect = launchFileItem;
+                    }];
+#endif
                 }
             }
         }
@@ -1807,15 +860,13 @@ static NSSet *ViewableFileTypes()
     
     // Iff we didn't open a document, go to the document picker. We don't want to start loading of previews if the user is going directly to a document (particularly the welcome document).
     if (!startedOpeningDocument) {
-        [self _fadeInDocumentPickerScrollingToFileItem:fileItemToSelect];
-
         if (showHelp && self.hasOnlineHelp && [self shouldOpenOnlineHelpOnFirstLaunch]) {
             dispatch_after(0, dispatch_get_main_queue(), ^{
                 [self showOnlineHelp:nil];
             });
         } else if (self.newsURLStringToShowWhenReady){
             self.readyToShowNews = YES;
-            [self showNewsURLString:self.newsURLStringToShowWhenReady evenIfShownAlready:NO];
+            // [self showNewsURLString:self.newsURLStringToShowWhenReady evenIfShownAlready:NO];
         }
     } else {
         // Now that we are on screen, if we are waiting for a document to open, we'll just fade it in when it is loaded.
@@ -1957,99 +1008,11 @@ static NSSet *ViewableFileTypes()
     return availableWidth;
 }
 
-#if defined(__IPHONE_12_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_12_0
-// iOS 12 defines a real protocol here
-#define RestorablerObjectsArgumentType NSArray <id <UIUserActivityRestoring>> *
-#else
-#define RestorablerObjectsArgumentType NSArray *
-#endif
-
-- (BOOL)application:(UIApplication * __nonnull)application continueUserActivity:(NSUserActivity * __nonnull)userActivity restorationHandler:(void (^ __nonnull)(RestorablerObjectsArgumentType _Nullable restorableObjects))restorationHandler;
+- (BOOL)application:(UIApplication *)application continueUserActivity:(NSUserActivity *)userActivity restorationHandler:(void(^)(NSArray<id<UIUserActivityRestoring>> * __nullable restorableObjects))restorationHandler;
 {
-    BOOL isOpenDocumentActivity = [userActivity.activityType isEqualToString:[[self class] openDocumentUserActivityType]];
-    BOOL isCreateTemplateDocumentActivity = [userActivity.activityType isEqualToString:[[self class] createDocumentFromTemplateUserActivityType]];
-    if (isOpenDocumentActivity || isCreateTemplateDocumentActivity) {
-        NSData *urlBookmark = userActivity.userInfo[@"URL_bookmark"];
-        NSError *bookmarkError = nil;
-        NSURL *fileURL = [NSURL URLByResolvingBookmarkData:urlBookmark options:NSURLBookmarkResolutionWithoutUI relativeToURL:nil bookmarkDataIsStale:nil error:&bookmarkError];
-
-        if (fileURL == nil && isCreateTemplateDocumentActivity == NO) { // if we have a create new doc w/o a template URL, use the default, instead of failing
-            if (bookmarkError != nil) {
-                NSLog(@"Error resolving bookmark %@", bookmarkError);
-            }
-            return NO;
-        }
-        
-        // Let everyone know to not reopen the previously open document in case we're in the process of launching the app
-        _isOpeningURL = YES;
-        
-        
-        // Make sure to execute this after launching, so that our document store is set up. This early outs to run immediately if the application is actively running
-        __weak OUIDocumentAppController *weakSelf = self;
-        [self addLaunchAction:^{
-            // Also make sure to execute the actual opening after the document scan is complete, so that we can properly access the data at the URL. This also early outs to run immediately if the application is running.
-            [weakSelf.documentStore addAfterInitialDocumentScanAction:^{
-                __strong OUIDocumentAppController *strongSelf = weakSelf;
-                
-                ODSFileItem *item = nil;
-                if (fileURL) {
-                    for (ODSScope *aScope in strongSelf.documentStore.scopes) {
-                        item = [aScope fileItemWithURL:fileURL];
-                        if (item) {
-                            break;
-                        }
-                    }
-                    if (!item) {
-                        // we have a URL but it's not in any scope.
-                        item = [_externalScopeManager fileItemFromExternalDocumentURL:fileURL];
-                    }
-                }
-                if (isOpenDocumentActivity) {
-                    if (strongSelf.document) {
-                        [strongSelf closeAndDismissDocumentWithCompletionHandler:^{
-                            OFAfterDelayPerformBlock(0, ^{
-                                [strongSelf openDocument:item];
-                            });
-                            
-                        }];
-                    } else {
-                        [strongSelf openDocument:item];
-                    }
-                } else {
-                    if (strongSelf.document) {
-                        [strongSelf closeAndDismissDocumentWithCompletionHandler:^{
-                            OFAfterDelayPerformBlock(0, ^{
-                                [strongSelf makeNewDocumentWithTemplateFileItem:item];
-                            });
-                        }];
-                    } else {
-                        [strongSelf makeNewDocumentWithTemplateFileItem:item];
-                    }
-                }
-            }];
-        }];
-        
-        return YES;
-    }
-    
-    NSString *uniqueID = userActivity.userInfo[CSSearchableItemActivityIdentifier];
-    if (uniqueID) {
-        self.searchResultsURL = [[self class] fileURLForSpotlightID:uniqueID];
-        if (self.document) {
-            [self closeAndDismissDocumentWithCompletionHandler:^{
-                OFAfterDelayPerformBlock(0, ^{
-                    [self _openDocumentWithURLAfterScan:self.searchResultsURL completion:nil];
-                });
-            }];
-        } else {
-            [self _openDocumentWithURLAfterScan:self.searchResultsURL completion:nil];
-        }
-        return YES;
-    } else {
-        return NO;
-    }
+    OBFinishPortingLater("Figure out which scene to hand off to and, well, hand off to it.");
+    return NO;
 }
-
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions;
 {
@@ -2066,40 +1029,16 @@ static NSSet *ViewableFileTypes()
     if ([application applicationState] == UIApplicationStateBackground)
         activity = [OFBackgroundActivity backgroundActivityWithIdentifier:@"com.omnigroup.OmniUI.OUIDocumentAppController.launching"];
     
-    void (^launchAction)(void) = ^(void){
+    void (^launchAction)(void) = ^(void) {
         DEBUG_LAUNCH(1, @"Did launch with options %@", launchOptions);
         
-        // If our window wasn't loaded from a xib, make one.
-        UIWindow *window = self.window;
-        if (window == nil) {
-            window = [self makeMainWindow];
-            self.window = window;
-        } else {
-            // resize xib window to the current screen size
-            [window setFrame:[[UIScreen mainScreen] bounds]];
-        }
-
         _documentStore = [[ODSStore alloc] initWithDelegate:self];
 
-        _documentPicker = [[OUIDocumentPicker alloc] initWithDocumentStore:_documentStore];
-        _documentPicker.delegate = self;
-        
-        OUILaunchViewController *launchViewController = [[OUILaunchViewController alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleLarge color:[self launchActivityIndicatorColor]];
-        UINavigationController *launchNavController = [[UINavigationController alloc] initWithRootViewController:launchViewController];
-        window.rootViewController = launchNavController;
-        [window makeKeyAndVisible];
-        
-        
         // Pump the runloop once so that the -viewDidAppear: messages get sent before we muck with the view containment again. Otherwise, we never get -viewDidAppear: on the root view controller, and thus the OUILaunchViewController, causing assertions.
         //OUIDisplayNeededViews();
         
         DEBUG_LAUNCH(1, @"Creating document store");
         
-        OFXServerAccountRegistry *registry = [OFXServerAccountRegistry defaultAccountRegistry];
-        if ([registry.allAccounts count] == 0) {
-            [self _importLegacyAccounts];
-        }
-
         // Start out w/o syncing so that our initial setup will just find local documents. This is crufty, but it avoids hangs in syncing when we aren't able to reach the server.
         _syncAgent = [[OFXAgent alloc] init];
         _syncAgent.syncSchedule = (application.applicationState == UIApplicationStateBackground) ? OFXSyncScheduleManual : OFXSyncScheduleNone; // Allow the manual sync from -application:performFetchWithCompletionHandler: that we might be about to do. We just want to avoid automatic syncing.
@@ -2115,13 +1054,8 @@ static NSSet *ViewableFileTypes()
             _localScope = [[ODSLocalDirectoryScope alloc] initWithDirectoryURL:[self _localDirectoryURL] scopeType:ODSLocalDirectoryScopeNormal documentStore:_documentStore];
             [_documentStore addScope:_localScope];
 
-            // See commentary by -_updateDocumentStoreScopes for why we observe the sync agent instead of the account registry
-            [_syncAgent addObserver:self forKeyPath:OFValidateKeyPath(_syncAgent, runningAccounts) options:0 context:&SyncAgentRunningAccountsContext];
-            [self _updateDocumentStoreScopes];
-            
-            _externalScopeManager = [[OUIDocumentExternalScopeManager alloc] initWithDocumentStore:_documentStore];
-            ODSScope *trashScope = [[ODSLocalDirectoryScope alloc] initWithDirectoryURL:[self _trashDirectoryURL] scopeType:ODSLocalDirectoryScopeTrash documentStore:_documentStore];
-            [_documentStore addScope:trashScope];
+            [_syncAgent addObserver:self forKeyPath:OFValidateKeyPath(_syncAgent, accountsSnapshot) options:0 context:&SyncAgentAccountsSnapshotContext];
+            [self _updateBackgroundFetchInterval];
             
             NSURL *templateDirectoryURL = [self _templatesDirectoryURL];
             if (templateDirectoryURL) {
@@ -2143,7 +1077,6 @@ static NSSet *ViewableFileTypes()
                 if (!strongSelf)
                     return;
                 
-
                 [strongSelf _updateCoreSpotlightIndex];
                 
                 [strongSelf _delayedFinishLaunchingAllowCopyingSampleDocuments:YES
@@ -2162,9 +1095,6 @@ static NSSet *ViewableFileTypes()
                         [strongSelf->_previewGenerator enqueuePreviewUpdateForFileItemsMissingPreviews:[strongSelf _mergedFileItems]];
                     }];
 
-                    // Without this, if we are launched in the background on 7.0b4, the snapshot image saved will not have our laid-out view contents.
-                    [strongSelf.window layoutIfNeeded];
-
                     [activity finished];
                                                                  
                     // If we have an expired temporary license, we likely want to notify the user. Do this after the activity finishes so that any UI we bring up does not appear in the snapshot
@@ -2180,7 +1110,7 @@ static NSSet *ViewableFileTypes()
         _didFinishLaunching = YES;
 
         // Possibly want to allow finer control over this, but it does the right thing for now.
-        OUIDocumentPreview.previewTemplateImageTintColor = window.tintColor;
+        // OUIDocumentPreview.previewTemplateImageTintColor = window.tintColor;
 
         // Start real preview generation any time we are missing one.
         [[NSNotificationCenter defaultCenter] addObserverForName:OUIDocumentPickerItemViewPreviewsDidLoadNotification object:nil queue:nil usingBlock:^(NSNotification *note){
@@ -2200,290 +1130,6 @@ static NSSet *ViewableFileTypes()
     // Might be invoked immediately or might be postponed (if we are handling a crash report).
     [self addLaunchAction:launchAction];
 
-    return YES;
-}
-
-- (void)_importLegacyAccountOfType:(NSString *)accountTypeIdentifier fromLocationDefault:(NSString *)locationDefault usernameDefault:(NSString *)usernameDefault alreadyImportedDefault:(NSString *)alreadyImportedDefault;
-{
-    BOOL isOmniSyncServer = OFISEQUAL(accountTypeIdentifier, OFXOmniSyncServerAccountTypeIdentifier);
-
-    OFXServerAccountType *accountType = [OFXServerAccountType accountTypeWithIdentifier:accountTypeIdentifier];
-    assert(accountType != nil);
-
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    if (![[defaults volatileDomainForName:NSRegistrationDomain] objectForKey:alreadyImportedDefault])
-        [defaults registerDefaults:@{alreadyImportedDefault:@NO}];
-    if ([defaults boolForKey:alreadyImportedDefault])
-        return;
-
-    NSString *username = [defaults stringForKey:usernameDefault];
-    if ([NSString isEmptyString:username])
-        return; // Our legacy accounts require a username
-
-    NSURL *locationURL = nil;
-    if (accountType.requiresServerURL) {
-        assert(locationDefault != nil);
-        NSString *locationString = [defaults stringForKey:locationDefault];
-        if ([NSString isEmptyString:locationString])
-            return; // Nothing to import
-        locationURL = [NSURL URLWithString:locationString];
-        if (locationURL == nil)
-            return; // Ignore malformed URLs
-    }
-
-    NSURL *remoteBaseURL = OFURLWithTrailingSlash([accountType baseURLForServerURL:locationURL username:username]);
-    NSString *hostPattern;
-    if (isOmniSyncServer) {
-        hostPattern = @"sync[0-9]*\\.omnigroup\\.com/Omni Sync$";
-    } else {
-        hostPattern = [NSString stringWithFormat:@"^%@/", [[remoteBaseURL host] regularExpressionForLiteralString]];
-    }
-
-    NSURLCredential *credentials = OFReadCredentialsForLegacyHostPattern(hostPattern, username);
-    if (credentials == nil) {
-        NSLog(@"Unable to find password for %@ legacy account using host pattern /%@/ and user '%@'", accountType.displayName, hostPattern, username);
-        return;
-    }
-    NSString *password = [credentials password];
-
-    __autoreleasing NSError *error;
-    NSURL *documentsURL = [OFXServerAccount generateLocalDocumentsURLForNewAccount:&error];
-    if (documentsURL == nil) {
-        NSLog(@"Failed to generate local documents while importing %@ legacy account: %@", accountType.displayName, [error toPropertyList]);
-        return;
-    }
-
-    OFXServerAccount *account = [[OFXServerAccount alloc] initWithType:accountType usageMode:OFXServerAccountUsageModeImportExport remoteBaseURL:remoteBaseURL localDocumentsURL:documentsURL error:&error];
-    if (!account) {
-        [error log:@"Error creating account while importing %@ legacy account:", accountType.displayName];
-        return;
-    }
-
-    id <OFXServerAccountValidator> accountValidator = [account.type validatorWithAccount:account username:username password:password];
-    accountValidator.finished = ^(NSError *errorOrNil) {
-        if (errorOrNil != nil)
-            return;
-
-        OFXServerAccountRegistry *registry = [OFXServerAccountRegistry defaultAccountRegistry];
-        __autoreleasing NSError *registrationError;
-        if (![registry addAccount:account error:&registrationError]) {
-            NSLog(@"Error registering account: %@", [registrationError toPropertyList]);
-            return;
-        }
-
-        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:alreadyImportedDefault]; // Don't import this account again
-    };
-
-    [accountValidator startValidation];
-}
-
-- (void)_importLegacyAccounts;
-{
-    [self _importLegacyAccountOfType:OFXOmniSyncServerAccountTypeIdentifier fromLocationDefault:nil usernameDefault:@"OUIOmniSyncUsername" alreadyImportedDefault:@"OUIOmniSyncUsernameAlreadyImported"];
-    [self _importLegacyAccountOfType:OFXWebDAVServerAccountTypeIdentifier fromLocationDefault:@"OUIWebDAVLocation" usernameDefault:@"OUIWebDAVUsername" alreadyImportedDefault:@"OUIWebDAVLocationAlreadyImported"];
-}
-
-- (BOOL)_loadOmniPresenceConfigFileFromURL:(NSURL *)url;
-{
-    NSDictionary *config = [[NSDictionary alloc] initWithContentsOfURL:url];
-    if (ODSIsInInbox(url)) {
-        // Now that we've finished reading this config file, we don't need to leave it lying around
-        __autoreleasing NSError *deleteError = nil;
-        if (![[NSFileManager defaultManager] removeItemAtURL:url error:&deleteError])
-            NSLog(@"Unable to delete %@: %@", [url absoluteString], [deleteError toPropertyList]);
-    }
-
-    if (config == nil)
-        return NO;
-
-    OFXServerAccountType *accountType = [OFXServerAccountType accountTypeWithIdentifier:[config objectForKey:@"accountType" defaultObject:OFXWebDAVServerAccountTypeIdentifier]];
-    if (accountType == nil) {
-        OBFinishPortingLater("<bug:///147835> (iOS-OmniOutliner Bug: OUIDocumentAppController.m:1949 - Should we display an alert when asked to open a config file with an unrecognized account type?)");
-        return NO;
-    }
-
-    OUIServerAccountSetupViewController *setup = [[OUIServerAccountSetupViewController alloc] initForCreatingAccountOfType:accountType withUsageMode:OFXServerAccountUsageModeCloudSync];
-    setup.location = [config objectForKey:@"location" defaultObject:setup.location];
-    setup.accountName = [config objectForKey:@"accountName" defaultObject:setup.accountName];
-    setup.password = [config objectForKey:@"password" defaultObject:setup.password];
-    setup.nickname = [config objectForKey:@"nickname" defaultObject:setup.nickname];
-
-    UIViewController *presentFromViewController = nil;
-    if (self.document) {
-        presentFromViewController = self.document.viewControllerToPresent;
-    }
-    else {
-        presentFromViewController = _documentPicker;
-    }
-
-    setup.finished = ^(OUIServerAccountSetupViewController *vc, NSError *errorOrNil) {
-        OBPRECONDITION([NSThread isMainThread]);
-        
-        OFXServerAccount *account = errorOrNil ? nil : vc.account;
-        OBASSERT_IF(account != nil & account.usageMode == OFXServerAccountUsageModeCloudSync, [[[OFXServerAccountRegistry defaultAccountRegistry] validCloudSyncAccounts] containsObject:account]);
-        OBASSERT_IF(account != nil && account.usageMode == OFXServerAccountUsageModeImportExport, [[[OFXServerAccountRegistry defaultAccountRegistry] validImportExportAccounts] containsObject:account]);
-        [[OUIDocumentAppController controller] _didAddSyncAccount:account];
-        [vc dismissViewControllerAnimated:YES completion:nil];
-    };
-
-    // Doing this during launch?
-    UIWindow *window = self.window;
-    if (window.rootViewController != _documentPicker) {
-        [_documentPicker showDocuments];
-        window.rootViewController = _documentPicker;
-        [window makeKeyAndVisible];
-        
-        [self handleCachedSpecialURLIfNeeded];
-    }
-
-    UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:setup];
-    navigationController.modalPresentationStyle = UIModalPresentationFormSheet;
-    navigationController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
-    
-    [presentFromViewController presentViewController:navigationController animated:YES completion:nil];
-
-    return YES;
-}
-
-- (void)performOpenURL:(NSURL *)url fileType:(NSString *)fileType fileWillBeImported:(BOOL)fileWillBeImported openInPlaceAccessOkay:(BOOL)openInPlaceAccessOkay;
-{
-    if (fileWillBeImported) {
-        [self importDocumentFromURL:url];
-    } else if (ODSIsInInbox(url)) { // move file for sure
-        OBASSERT(_localScope);
-
-        [OUIDocumentInbox cloneInboxItem:url toScope:_localScope completionHandler:^(ODSFileItem *newFileItem, NSError *errorOrNil) {
-            __autoreleasing NSError *deleteInboxError = nil;
-
-            if (![OUIDocumentInbox coordinatedRemoveItemAtURL:url error:&deleteInboxError]) {
-                NSLog(@"Failed to delete the inbox item with error: %@", [deleteInboxError toPropertyList]);
-            }
-
-            main_async(^{
-                if (!newFileItem) {
-                    // Display Error and return.
-                    OUI_PRESENT_ERROR_FROM(errorOrNil, self.window.rootViewController);
-                    return;
-                }
-                
-                id<OUIDocumentPickerDelegate> documentPickerDelegate = _documentPicker.delegate;
-                if (_document != nil && [documentPickerDelegate respondsToSelector:@selector(documentPickerShouldOpenButNotDisplayUTType:)] && [documentPickerDelegate documentPickerShouldOpenButNotDisplayUTType:newFileItem.fileType]) {
-                    // If we already have an open document and we would accept but not display anything for this file type, then just do nothing and keep the current doc open. (For OmniJS plugin installation, for instance.)
-                    return;
-                }
-
-                if (self.pendingImportedFileItems)
-                    self.pendingImportedFileItems = [self.pendingImportedFileItems arrayByAddingObject:newFileItem];
-                else
-                    self.pendingImportedFileItems = @[newFileItem];
-
-                // Wait half a second to see if any other documents are coming in at the same time. If we get only one, open it, but
-                // if there are more than one we want to stay in the doc picker with them all selected.
-                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(NSEC_PER_SEC / 2)), dispatch_get_main_queue(), ^{
-                    if (self.pendingImportedFileItems.lastObject != newFileItem)
-                        return; // only perform the delayed actions once, not per item
-
-                    [_documentPicker navigateToContainerForItem:newFileItem dismissingAnyOpenDocument:YES animated:NO];
-                    if (self.pendingImportedFileItems.count == 1) {
-                        [self openDocument:newFileItem];
-                    } else {
-                        [_documentPicker.selectedScopeViewController loadViewIfNeeded];
-                        [_documentPicker.selectedScopeViewController ensureSelectedFilterMatchesFileItem:newFileItem];
-                        [_documentPicker.selectedScopeViewController setEditing:YES animated:NO];
-                        for (ODSFileItem *item in self.pendingImportedFileItems)
-                            item.selected = YES;
-                        _isOpeningURL = NO; // Turn this off so that we'll start generating previews right away.
-                        [_previewGenerator enqueuePreviewUpdateForFileItemsMissingPreviews:self.pendingImportedFileItems];
-                    }
-                    self.pendingImportedFileItems = nil;
-                });
-            });
-        }];
-    } else if (ODSIsZipFileType(fileType)) {
-        // Similar to the inbox code above, but with proper security rituals and without deleting the original
-        // Can't just be opened in place, because we want persistent access to the file(s), not the zip they currently live in.
-        [_externalScopeManager importExternalDocumentFromURL:url];
-    } else if (openInPlaceAccessOkay) {
-        [self openDocumentInPlace:url];
-        return;
-    } else {
-        OBASSERT_NOT_REACHED("Will the system ever give us a non-inbox item that we can't open in place?");
-        ODSFileItem *fileItem = [_documentStore fileItemWithURL:url];
-        OBASSERT(fileItem);
-        if (fileItem)
-            [self openDocument:fileItem];
-    }
-}
-
-- (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey, id> *)options;
-{
-    // NOTE: If we are suspending launch actions (possibly due to handling a crash), _didFinishLaunching will be NO and we'd drop this on the ground. So, we add this as launch action as well. We could try to preflight the URL to see if it is certain we can't open it, but we'd have a hard time getting an accurate answer (many of the actions are async anyway).
-    
-    // If this is NO, we must copy the document to maintain access to it
-    BOOL openInPlaceAccessOkay = [options boolForKey:UIApplicationOpenURLOptionsOpenInPlaceKey];
-    NSString *fileType = OFUTIForFileExtensionPreferringNative([url pathExtension], nil);
-    
-    // If we can't actually edit the file we should copy it to our local scope so that we can save it to a new URL without destroying the original. (i.e., this is an import)
-    BOOL fileWillBeImported = NO;
-    if (openInPlaceAccessOkay) {
-        OBASSERT(url.isFileURL);
-        Class cls = [self documentClassForURL:url];
-        OBASSERT(OBClassIsSubclassOfClass(cls, [OUIDocument class]));
-        fileWillBeImported = [cls shouldImportFileAtURL:url];
-    }
-    
-    void (^launchAction)(void) = ^{
-        
-#if defined(DEBUG_lizard)
-        // We'll always finish launching first, but if I'm wrong, I'd like to know.
-        if (!_didFinishLaunching) {
-            OBStopInDebugger("openURL before didFinishLaunching?");
-        }
-#endif
-        
-        DEBUG_LAUNCH(1, @"Did openURL:%@ options:%@", url, options);
-        
-        if ([self isSpecialURL:url]) {
-            _specialURLToHandle = [url copy];
-            if (self.window.rootViewController == _documentPicker) {
-                [self handleCachedSpecialURLIfNeeded];
-            }
-            return;
-        }
-        
-        if ([url isFileURL] && OFISEQUAL([[url path] pathExtension], @"omnipresence-config")) {
-            OBASSERT(_syncAgent != nil);
-            [_syncAgent afterAsynchronousOperationsFinish:^{
-                [self _loadOmniPresenceConfigFileFromURL:url];
-            }];
-            return;
-        }
-        
-        // Only attempt to open handle as an Inbox item if the URL is a file URL.
-        if (url.isFileURL) {
-            _isOpeningURL = YES;
-            // Have to wait for the document store to awake again (if we were backgrounded), initiated by -applicationWillEnterForeground:. <bug:///79297> (Bad animation closing file opened from another app)
-            
-            void (^handleIncomingFiles)(void) = ^(void){
-                OBASSERT(_documentStore);
-                OUIDocumentAppController *strongSelf = self; // We'll never be deallocated anyway, so not going through weak dance.
-                [_documentStore addAfterInitialDocumentScanAction:^{
-                    [strongSelf performOpenURL:url fileType:fileType fileWillBeImported:fileWillBeImported openInPlaceAccessOkay:openInPlaceAccessOkay];
-                }];
-            };
-            
-            if (_documentStore && _localScope) {
-                handleIncomingFiles();
-            }
-            else {
-                OBASSERT(_syncAgent);
-                [_syncAgent afterAsynchronousOperationsFinish:handleIncomingFiles];
-            }
-        }
-    };
-    
-    [self addLaunchAction:launchAction];
-    
     return YES;
 }
 
@@ -2515,14 +1161,6 @@ static NSSet *ViewableFileTypes()
         NSString *launchParameterString = OB_CHECKED_CAST(NSString, launchParameter);
         return [NSURL URLWithString:launchParameterString];
     }
-}
-
-- (void)_setLaunchActionFromCurrentState;
-{
-    if (_document)
-        self.launchAction = [self _launchActionForOpeningURL:_document.fileURL];
-    else
-        self.launchAction = nil;
 }
 
 - (void)applicationWillEnterForeground:(UIApplication *)application;
@@ -2561,11 +1199,6 @@ static NSSet *ViewableFileTypes()
     
     [self _updateShortcutItems];
 
-    if (_didFinishLaunching) { // Might get backgrounded while still launching (like while handling a crash alert)
-        // We do NOT save the document here. UIDocument subscribes to application lifecycle notifications and will provoke a save on itself.
-        [self _setLaunchActionFromCurrentState];
-    }
-    
     // Radar 14075101: UIApplicationDidEnterBackgroundNotification sent twice if app with background activity is killed from Springboard
     if (_syncAgent && _syncAgentForegrounded) {
         _syncAgentForegrounded = NO;
@@ -2602,8 +1235,6 @@ static NSSet *ViewableFileTypes()
 {
     DEBUG_LAUNCH(1, @"Will terminate");
 
-    [self _setLaunchActionFromCurrentState];
-
     // Radar 14075101: UIApplicationDidEnterBackgroundNotification sent twice if app with background activity is killed from Springboard (though in this case, we get 'did background' and then 'will terminate' and OFXAgent doesn't handle this since both transition it to its 'stopped' state).
     if (_syncAgent && _syncAgentForegrounded) {
         _syncAgentForegrounded = NO;
@@ -2622,12 +1253,20 @@ static NSSet *ViewableFileTypes()
     [OUIDocumentPreview discardHiddenPreviews];
 }
 
+- (UISceneConfiguration *)application:(UIApplication *)application configurationForConnectingSceneSession:(UISceneSession *)connectingSceneSession options:(UISceneConnectionOptions *)options;
+{
+    UISceneConfiguration *configuration = [[UISceneConfiguration alloc] initWithName:nil sessionRole:connectingSceneSession.role];
+    configuration.sceneClass = [UIWindowScene class];
+    configuration.delegateClass = [OUIDocumentSceneDelegate class];
+    configuration.storyboard = nil;
+    return configuration;
+}
+
 #pragma mark - UIApplicationShortcutItem Handling
 
 - (void)_updateShortcutItems
 {
     // Update quicklaunch actions
-    NSArray *recentItems = [self recentlyOpenedFileItems];
     NSMutableArray <UIApplicationShortcutItem *> *shortcutItems = [[NSMutableArray <UIApplicationShortcutItem *> alloc] init];
 
     if (self.canCreateNewDocument) {
@@ -2637,51 +1276,19 @@ static NSSet *ViewableFileTypes()
         UIApplicationShortcutItem *newDocItem = [[UIApplicationShortcutItem alloc] initWithType:ODSShortcutTypeNewDocument localizedTitle:newDocumentLocalizedTitle localizedSubtitle:nil icon:newDocShortcutIcon userInfo:nil];
         [shortcutItems addObject:newDocItem];
     }
-
-    NSString *shortcutImageName = [self recentDocumentShortcutIconImageName];
-    for (ODSFileItem *fileItem in recentItems) {
-        NSURL *fileURL = fileItem.fileURL;
-        if (!fileURL)
-            continue;
-        
-        NSDictionary *userInfo = @{ ODSOpenRecentDocumentShortcutFileKey : fileURL.absoluteString };
-        
-        UIApplicationShortcutIcon *shortcutIcon = shortcutImageName ? [UIApplicationShortcutIcon iconWithTemplateImageName:shortcutImageName] : nil;
-        
-        UIApplicationShortcutItem *item = [[UIApplicationShortcutItem alloc] initWithType:ODSShortcutTypeOpenRecent
-                                                                           localizedTitle:fileItem.name
-                                                                        localizedSubtitle:nil
-                                                                                     icon:shortcutIcon
-                                                                                 userInfo:userInfo];
-        [shortcutItems addObject:item];
-    }
     
     [UIApplication sharedApplication].shortcutItems = shortcutItems;
 }
 
-- (void)_closeAllDocumentsBeforePerformingBlock:(void(^)(void))completionHandler;
-{
-    if (_document != nil) {
-        [self closeDocumentWithCompletionHandler:completionHandler];
-    } else {
-        if (completionHandler != NULL) {
-            completionHandler();
-        }
-    }
-}
-
 - (void)application:(UIApplication *)application performActionForShortcutItem:(UIApplicationShortcutItem *)shortcutItem completionHandler:(void (^)(BOOL))completionHandler;
 {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Warc-repeated-use-of-weak"
-    __weak OUIDocumentAppController *weakSelf = self;  // weak self is only to keep compiler happy
     if ([shortcutItem.type hasSuffix:@".shortcut-items.open-recent"]) {
         // Open Recent
         NSString *urlString = [shortcutItem.userInfo stringForKey:ODSOpenRecentDocumentShortcutFileKey];
         if (![NSString isEmptyString:urlString]) {
             NSURL *url = [NSURL URLWithString:urlString];
             if (url) {
-                [weakSelf _openDocumentWithURLAfterScan:url completion:^{
+                [self _openDocumentWithURLAfterScan:url completion:^{
                     if (completionHandler) {
                         completionHandler(YES);
                     }
@@ -2698,12 +1305,16 @@ static NSSet *ViewableFileTypes()
         }
     }
     else if ([shortcutItem.type hasSuffix:@".shortcut-items.new-document"]) {
-        [weakSelf addLaunchAction:^{
-            [weakSelf.documentPicker.documentStore addAfterInitialDocumentScanAction:^{
-                [weakSelf _closeAllDocumentsBeforePerformingBlock:^{
+        // __weak OUIDocumentAppController *weakSelf = self;  // weak self is only to keep compiler happy
+        [self addLaunchAction:^{
+            OBFinishPortingWithNote("<bug:///176705> (Frameworks-iOS Unassigned: OBFinishPorting: Handle new document shortcut item in OUIDocumentAppController)");
+#if 0
+            OUIDocumentAppController *strongSelf = weakSelf;
+            [strongSelf.documentPicker.documentStore addAfterInitialDocumentScanAction:^{
+                [strongSelf _closeAllDocumentsBeforePerformingBlock:^{
                     // New Document
-                    OUIDocumentPicker *documentPicker = [weakSelf documentPicker];
-                    [documentPicker navigateToScope:[[weakSelf documentPicker] localDocumentsScope] animated:NO];
+                    OUIDocumentPicker *documentPicker = [strongSelf documentPicker];
+                    [documentPicker navigateToScope:[[strongSelf documentPicker] localDocumentsScope] animated:NO];
                     [documentPicker.selectedScopeViewController newDocumentWithTemplateFileItem:nil documentType:ODSDocumentTypeNormal completion:^{
                         if (completionHandler) {
                             completionHandler(YES);
@@ -2711,18 +1322,12 @@ static NSSet *ViewableFileTypes()
                     }];
                 }];
             }];
+#endif
         }];
     }
-#pragma clang diagnostic pop
 }
 
 #pragma mark - ODSStoreDelegate
-
-- (void)documentStore:(ODSStore *)store addedFileItems:(NSSet *)addedFileItems;
-{
-    // Register previews as files appear and start preview generation for them. _previewGenerator might still be nil if we are starting up, but we still want to register the previews.
-    [self updatePreviewsFor:addedFileItems];
-}
 
 - (void)documentStore:(ODSStore *)store fileItem:(ODSFileItem *)fileItem willMoveToURL:(NSURL *)newURL;
 {
@@ -2736,22 +1341,6 @@ static NSSet *ViewableFileTypes()
             // title has changed, regenerate spotlight info
             [_previewGenerator fileItemNeedsPreviewUpdate:fileItem];
         }
-    }
-}
-
-- (void)documentStore:(ODSStore *)store fileItemEdit:(ODSFileItemEdit *)fileItemEdit willCopyToURL:(NSURL *)newURL;
-{
-    // Let the preview system know that if anyone comes asking for the new item, it should return the existing preview.
-    [OUIDocumentPreview addAliasFromFileItemEdit:fileItemEdit toFileWithURL:newURL];
-}
-
-- (void)documentStore:(ODSStore *)store fileItemEdit:(ODSFileItemEdit *)fileItemEdit finishedCopyToURL:(NSURL *)destinationURL withFileItemEdit:(ODSFileItemEdit *)destinationFileItemEditOrNil;
-{
-    [OUIDocumentPreview removeAliasFromFileItemEdit:fileItemEdit toFileWithURL:destinationURL];
-    
-    if (destinationFileItemEditOrNil) {
-        [[self class] copyDocumentStateFromFileEdit:fileItemEdit.originalFileEdit toFileEdit:destinationFileItemEditOrNil.originalFileEdit];
-        [OUIDocumentPreview cachePreviewImagesForFileEdit:destinationFileItemEditOrNil.originalFileEdit byDuplicatingFromFileEdit:fileItemEdit.originalFileEdit];
     }
 }
 
@@ -2769,17 +1358,15 @@ static NSSet *ViewableFileTypes()
         [[NSUserDefaults standardUserDefaults] setObject:dict forKey:@"SpotlightToFileURLPathMapping"];
     }
     
-    if (@available(iOS 12.0, *)) {
-        NSString *identifierForURL = [self _persistentIdentifierForOpenDocumentActivityAtURL:destinationURL inStore:store];
-        [NSUserActivity deleteSavedUserActivitiesWithPersistentIdentifiers:@[identifierForURL] completionHandler:^{}];
-    }
+    NSString *identifierForURL = [self _persistentIdentifierForOpenDocumentActivityAtURL:destinationURL inStore:store];
+    [NSUserActivity deleteSavedUserActivitiesWithPersistentIdentifiers:@[identifierForURL] completionHandler:^{}];
 }
 
 - (NSString *)_persistentIdentifierForOpenDocumentActivityAtURL:(NSURL *)url inStore:(ODSStore *)store
 {
     if (url == nil) {
         // OmniPlan passes nil as the URL because it doesn't allow the user to specify a template when making a new document.
-        return [@[self.localScope.displayName, @"NewDocumentFromDefaultTemplate"] componentsJoinedByString:@"."];
+        return @"NewDocumentFromDefaultTemplate";
     }
 
     NSString *scopeString;
@@ -2885,163 +1472,47 @@ static NSMutableDictionary *spotlightToFileURL;
     }
 }
 
-- (ODSFileItem *)documentStore:(ODSStore *)store preferredFileItemForNextAutomaticDownload:(NSSet *)fileItems;
-{
-    return [_documentPicker.selectedScopeViewController _preferredVisibleItemFromSet:fileItems];
-}
-
-#pragma mark - OUIDocumentPickerDelegate
-
-- (void)documentPicker:(OUIDocumentPicker *)picker openTappedFileItem:(ODSFileItem *)fileItem;
-{
-    OBPRECONDITION(fileItem);
-    
-#if 1 && defined(DEBUG_bungi)
-    BOOL crashBasedOnFilename = YES;
-#else
-    BOOL crashBasedOnFilename = [[NSUserDefaults standardUserDefaults] boolForKey:@"OUIDocumentPickerShouldCrashBasedOnFileName"];
-#endif
-    if (crashBasedOnFilename) {
-        OBRecordBacktrace("crashing intentionally", OBBacktraceBuffer_Generic);
-        OBRecordBacktraceWithContext("crashing intentionally w/context", OBBacktraceBuffer_Generic, (__bridge void *)self);
-
-        NSString *crashType = [[fileItem.fileURL lastPathComponent] stringByDeletingPathExtension];
-        if ([crashType isEqual:@"crash-abort"])
-            abort();
-        if ([crashType isEqual:@"crash-null"])
-            NSLog(@"%d", *(int *)(intptr_t)[@"0" intValue]);
-        if ([crashType isEqual:@"crash-exception"])
-            [NSException raise:NSGenericException reason:@"testing unhandled exception"];
-        if ([crashType isEqual:@"crash-signal"])
-            raise(SIGTRAP); // really the same as abort since it raises SIGABRT
-#if 0
-        if ([crashType isEqual:@"crash-report"]) {
-            NSData *reportData = [[PLCrashReporter sharedReporter] generateLiveReport];
-            PLCrashReport *report = [[PLCrashReport alloc] initWithData:reportData error:NULL];
-            
-            NSString *reportText = [PLCrashReportTextFormatter stringValueForCrashReport:report withTextFormat:PLCrashReportTextFormatiOS];
-            NSURL *reportURL = [[NSURL fileURLWithPath:NSTemporaryDirectory()] URLByAppendingPathComponent:@"crash-report.txt"];
-            
-            __autoreleasing NSError *error = nil;
-            if (![reportText writeToURL:reportURL atomically:NO encoding:NSUTF8StringEncoding error:&error]) {
-                [error log:@"Error writing report to %@", reportURL];
-                
-            }
-            
-            return;
-        }
-#endif
-    }
-    
-    // If we crash in trying to open this document, we should stay in the file picker the next time we launch rather than trying to open it over and over again
-    self.launchAction = nil;
-    
-    if (![_previewGenerator shouldOpenDocumentWithFileItem:fileItem])
-        return;
-    
-    [self openDocument:fileItem];
-}
-
-- (void)documentPicker:(OUIDocumentPicker *)picker openCreatedFileItem:(ODSFileItem *)fileItem fileItemToRevealFrom:(ODSFileItem *)fileItemToRevealFrom;
-{
-    OBPRECONDITION(fileItem);
-
-    // If we crash in trying to open this document, we should stay in the file picker the next time we launch rather than trying to open it over and over again
-    self.launchAction = nil;
-
-    // We could also remember the animation type if we want to defer this until after this preview is done generating.
-#if 0
-    if (![_previewGenerator shouldOpenDocumentWithFileItem:fileItem])
-        return;
-#endif
-
-    [self _openDocument:fileItem fileItemToRevealFrom:fileItemToRevealFrom isOpeningFromPeek:NO willPresentHandler:nil completionHandler:nil];
-}
-
-- (void)documentPicker:(OUIDocumentPicker *)picker openCreatedFileItem:(ODSFileItem *)fileItem;
-{
-    [self documentPicker:picker openCreatedFileItem:fileItem fileItemToRevealFrom:fileItem];
-}
-
 #pragma mark - OUIDocumentPreviewGeneratorDelegate delegate
 
 - (BOOL)previewGenerator:(OUIDocumentPreviewGenerator *)previewGenerator isFileItemCurrentlyOpen:(ODSFileItem *)fileItem;
 {
+    OBFinishPortingLater("How much of OUIDocumentPreviewGenerator should we keep?");
     OBPRECONDITION(fileItem);
-    return OFISEQUAL(_document.fileURL, fileItem.fileURL);
+    return NO; // OFISEQUAL(_document.fileURL, fileItem.fileURL);
 }
 
 - (BOOL)previewGeneratorHasOpenDocument:(OUIDocumentPreviewGenerator *)previewGenerator;
 {
+    OBFinishPortingLater("How much of OUIDocumentPreviewGenerator should we keep?");
     OBPRECONDITION(_didFinishLaunching); // Don't start generating previews before the app decides whether to open a launch document
-    return _isOpeningURL || _document != nil;
+    return YES; // _isOpeningURL || _document != nil;
 }
 
 - (void)previewGenerator:(OUIDocumentPreviewGenerator *)previewGenerator performDelayedOpenOfFileItem:(ODSFileItem *)fileItem;
 {
+    OBFinishPortingLater("How much of OUIDocumentPreviewGenerator should we keep?");
     [self documentPicker:nil openTappedFileItem:fileItem];
-}
-
-- (ODSFileItem *)previewGenerator:(OUIDocumentPreviewGenerator *)previewGenerator preferredFileItemForNextPreviewUpdate:(NSSet *)fileItems;
-{
-    return [_documentPicker preferredVisibleItemForNextPreviewUpdate:fileItems];
 }
 
 - (BOOL)previewGenerator:(OUIDocumentPreviewGenerator *)previewGenerator shouldGeneratePreviewForURL:(NSURL *)fileURL;
 {
+    OBFinishPortingLater("How much of OUIDocumentPreviewGenerator should we keep?");
     return YES;
 }
 
 - (Class)previewGenerator:(OUIDocumentPreviewGenerator *)previewGenerator documentClassForFileURL:(NSURL *)fileURL;
 {
+    OBFinishPortingLater("How much of OUIDocumentPreviewGenerator should we keep?");
     return [self documentClassForURL:fileURL];
-}
-
-#pragma mark - UIDocumentPickerDelegate
-
-- (void)_presentExternalDocumentPicker:(UIDocumentPickerViewController *)externalDocumentPicker completionBlock:(void (^)(NSURL *))externalPickerCompletionBlock;
-{
-    _externalPickerCompletionBlock = [externalPickerCompletionBlock copy];
-    externalDocumentPicker.delegate = self;
-    [self.window.rootViewController presentViewController:externalDocumentPicker animated:YES completion:nil];
-}
-
-- (void)documentPicker:(UIDocumentPickerViewController *)picker didPickDocumentsAtURLs:(nonnull NSArray<NSURL *> *)urls;
-{
-    for (NSURL *url in urls) {
-        _externalPickerCompletionBlock(url);
-    }
-}
-
-- (void)documentPickerWasCancelled:(UIDocumentPickerViewController *)controller;
-{
-    _externalPickerCompletionBlock(nil);
-}
-
-#pragma mark - OUIUndoBarButtonItemTarget
-
-- (id)targetForAction:(SEL)action withSender:(id)sender;
-{
-    return [_document.documentViewController targetForAction:action withSender:sender];
-}
-
-- (void)undo:(id)sender;
-{
-    [_document undo:sender];
-}
-
-- (void)redo:(id)sender;
-{
-    [_document redo:sender];
 }
 
 #pragma mark - NSObject (NSKeyValueObserving)
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context;
 {
-    if (context == &SyncAgentRunningAccountsContext) {
-        if (object == _syncAgent && [keyPath isEqual:OFValidateKeyPath(_syncAgent, runningAccounts)]) {
-            [self _updateDocumentStoreScopes];
+    if (context == &SyncAgentAccountsSnapshotContext) {
+        if (object == _syncAgent && [keyPath isEqual:OFValidateKeyPath(_syncAgent, accountsSnapshot)]) {
+            [self _updateBackgroundFetchInterval];
         } else
             OBASSERT_NOT_REACHED("Unknown KVO keyPath");
         return;
@@ -3123,47 +1594,14 @@ static NSString * const OUINextLaunchActionDefaultsKey = @"OUINextLaunchAction";
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
-- (void)_updateDocumentStoreScopes;
-{
-    OBPRECONDITION(_syncAgent);
-    OBPRECONDITION(_documentStore);
-
-    NSMutableDictionary *previousAccountUUIDToScope = [NSMutableDictionary new];
-    for (ODSScope *candidate in _documentStore.scopes) {
-        if (![candidate isKindOfClass:[OFXDocumentStoreScope class]])
-            continue; // Skip the local scope
-        
-        OFXDocumentStoreScope *scope = (OFXDocumentStoreScope *)candidate;
-        previousAccountUUIDToScope[scope.account.uuid] = scope;
-    }
-    
-    // We need to wait for the sync agent to acknowledge a new account before poking it. So, we observe the sync agent's runningAccounts property (and it observes the account registry, in turn).
-    for (OFXServerAccount *account in _syncAgent.runningAccounts) {
-        NSString *uuid = account.uuid;
-        OFXDocumentStoreScope *scope = previousAccountUUIDToScope[uuid];
-        if (scope) {
-            [previousAccountUUIDToScope removeObjectForKey:uuid];
-            continue;
-        }
-        
-        scope = [[OFXDocumentStoreScope alloc] initWithSyncAgent:_syncAgent account:account documentStore:_documentStore];
-        [_documentStore addScope:scope];
-    }
-    
-    if ([previousAccountUUIDToScope count] > 0) {
-        // Remove scopes for old accounts. If one of them was the selected scope, select something else.
-        [previousAccountUUIDToScope enumerateKeysAndObjectsUsingBlock:^(NSString *uuid, OFXDocumentStoreScope *scope, BOOL *stop) {
-            [_documentStore removeScope:scope];
-        }];
-    }
-    
-    [self _updateBackgroundFetchInterval];
-}
-
 - (void)_updateBackgroundFetchInterval;
 {
+    OBPRECONDITION(_syncAgent);
+    
     NSTimeInterval backgroundFetchInterval;
-    if ([_syncAgent.runningAccounts count] > 0) {
+    OFXServerAccountsSnapshot *accountsSnapshot = _syncAgent.accountsSnapshot;
+
+    if ([accountsSnapshot.runningAccounts count] > 0) {
         DEBUG_FETCH(1, @"Setting minimum fetch interval to \"minimum\".");
         backgroundFetchInterval = UIApplicationBackgroundFetchIntervalMinimum;
     } else {
@@ -3172,89 +1610,6 @@ static NSString * const OUINextLaunchActionDefaultsKey = @"OUINextLaunchAction";
     }
 
     [[UIApplication sharedApplication] setMinimumBackgroundFetchInterval:backgroundFetchInterval];
-}
-
-- (void)_fadeInDocumentPickerScrollingToFileItem:(ODSFileItem *)fileItem;
-{
-    DEBUG_LAUNCH(1, @"Showing picker, showing item %@", [fileItem shortDescription]);
-    
-    [_documentPicker showDocuments];
-    self.window.rootViewController = _documentPicker;
-    [self.window makeKeyAndVisible];
-    
-    [self handleCachedSpecialURLIfNeeded];
-    
-    [OUIDocumentPreview populateCacheForFileItems:_documentStore.mergedFileItems completionHandler:^{
-    }];
-}
-
-- (void)_setDocument:(OUIDocument *)document;
-{
-    if (_document == document)
-        return;
-    
-    if (_document) {
-        [[NSNotificationCenter defaultCenter] removeObserver:self name:UIDocumentStateChangedNotification object:_document];
-        [_document didClose];
-    }
-    
-    _document = document;
-    
-    if (_document) {        
-        [self addRecentlyOpenedDocumentURL:document.fileURL];
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_documentStateChanged:) name:UIDocumentStateChangedNotification object:_document];
-    }
-}
-
-- (void)_didAddSyncAccount:(OFXServerAccount *)account;
-{
-    OBPRECONDITION([NSThread isMainThread]);
-    
-    if (account != nil && account.usageMode == OFXServerAccountUsageModeCloudSync) {
-        // Wait for the agent to start up. Ugly, but less so than adding an ivar and having -_updateDocumentStoreScopes clear/unlock interaction...
-        // This might be marginally less terrible if we had a 'block interaction until foo' object we could create and run.
-        
-        OUIInteractionLock *lock = [OUIInteractionLock applicationLock];
-        [self _selectScopeWithAccount:account completionHandler:^{
-            [lock unlock];
-        }];
-    }
-}
-
-- (void)_selectScopeWithAccount:(OFXServerAccount *)account completionHandler:(void (^)(void))completionHandler;
-{
-    OBPRECONDITION([NSThread isMainThread]);
-
-    completionHandler = [completionHandler copy];
-    
-    for (ODSScope *candidate in _documentStore.scopes) {
-        if (![candidate isKindOfClass:[OFXDocumentStoreScope class]])
-            continue; // Skip the local scope
-        
-        OFXDocumentStoreScope *scope = (OFXDocumentStoreScope *)candidate;
-        if (scope.account == account) {
-            OBFinishPortingLater("<bug:///147834> (iOS-OmniOutliner Bug: OUIDocumentAppController.m:2793 - Reveal scope in document picker)");
-//            _documentPicker.selectedScopeViewController.selectedScope = scope;
-            if (completionHandler)
-                completionHandler();
-            return;
-        }
-    }
-    
-    // Our update of document store scopes happens in response to a block invoked on the main queue and our initial call to -_didAddSyncAccount: is on a block too. So, put ourselves at the end of the main queue.
-    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-        [self _selectScopeWithAccount:account completionHandler:completionHandler];
-    }];
-}
-
-- (void)_documentStateChanged:(NSNotification *)note;
-{
-    OBPRECONDITION([note object] == _document);
-
-    UIDocumentState state = _document.documentState;
-    OB_UNUSED_VALUE(state);
-    
-    DEBUG_DOCUMENT(@"State changed to %ld", state);
 }
 
 static void _updatePreviewForFileItem(OUIDocumentAppController *self, NSNotification *note)
@@ -3274,6 +1629,8 @@ static void _updatePreviewForFileItem(OUIDocumentAppController *self, NSNotifica
 
 - (void)_fileItemFinishedDownloadingNotification:(NSNotification *)note;
 {
+    OBFinishPorting;
+#if 0
     if (self.awaitedFileItemDownloads != nil && self.awaitedFileItemDownloads.count > 0) {
         ODSFileItem *finishedFileItem = note.userInfo[ODSFileItemInfoKey];
         ODSFileItem *awaitedFileItem = self.awaitedFileItemDownloads[0];
@@ -3285,15 +1642,13 @@ static void _updatePreviewForFileItem(OUIDocumentAppController *self, NSNotifica
         }
     }
     _updatePreviewForFileItem(self, note);
-}
-
-- (void)_showInspector:(id)sender;
-{
-    [self showInspectorFromBarButtonItem:_infoBarButtonItem];
+#endif
 }
 
 - (void)_openDocumentWithURLAfterScan:(NSURL *)fileURL completion:(void(^)(void))completion;
 {
+    OBFinishPorting;
+#if 0
     // We should be called early on, before any previously open document has been opened.
     OBPRECONDITION(_isOpeningURL == NO);
     OBPRECONDITION(_document == nil);
@@ -3328,6 +1683,7 @@ static void _updatePreviewForFileItem(OUIDocumentAppController *self, NSNotifica
         [_documentStore addAfterInitialDocumentScanAction:afterScanAction];
     };
     [self addLaunchAction:launchAction];
+#endif
 }
 
 - (NSURL *)_localDirectoryURL
@@ -3338,11 +1694,6 @@ static void _updatePreviewForFileItem(OUIDocumentAppController *self, NSNotifica
 - (NSURL *)_templatesDirectoryURL
 {
     return [ODSLocalDirectoryScope templateDirectoryURL];
-}
-
-- (NSURL *)_trashDirectoryURL
-{
-    return [ODSLocalDirectoryScope trashDirectoryURL];
 }
 
 #pragma mark -Snapshots

@@ -7,6 +7,10 @@
 
 #import <OmniFoundation/NSFileCoordinator-OFExtensions.h>
 
+#import <OmniFoundation/NSFileManager-OFTemporaryPath.h>
+
+@import Foundation;
+
 RCS_ID("$Id$")
 
 NS_ASSUME_NONNULL_BEGIN
@@ -155,6 +159,36 @@ static BOOL _ensureParentDirectory(NSURL *url, NSError **outError)
         completionHandler();
     }];
     return success;
+}
+
++ (void)readFileWrapperAtFileURL:(NSURL *)fileURL completionHandler:(void (^)(NSFileWrapper * _Nullable fileWrapper, NSError * _Nullable errorOrNil))completionHandler;
+{
+    completionHandler = [completionHandler copy];
+
+    NSOperationQueue *queue = [[NSOperationQueue alloc] init];
+    [queue addOperationWithBlock:^{
+        NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:nil];
+        
+        __block NSFileWrapper *fileWrapper;
+        __autoreleasing NSError *error;
+        BOOL ok = [coordinator readItemAtURL:fileURL withChanges:YES error:&error byAccessor:^BOOL(NSURL *newURL, NSError **outError) {
+            __autoreleasing NSError *readError;
+            fileWrapper = [[NSFileWrapper alloc] initWithURL:newURL options:NSFileWrapperReadingImmediate error:&readError];
+            if (!fileWrapper) {
+                if (outError) {
+                    *outError = readError;
+                }
+                return NO;
+            }
+            return YES;
+        }];
+        
+        if (ok) {
+            completionHandler(fileWrapper, nil);
+        } else {
+            completionHandler(nil, error);
+        }
+    }];
 }
 
 @end

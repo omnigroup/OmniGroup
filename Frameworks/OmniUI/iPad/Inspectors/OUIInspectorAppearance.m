@@ -9,6 +9,8 @@
 
 RCS_ID("$Id$");
 
+NS_ASSUME_NONNULL_BEGIN
+
 OUIThemedAppearanceTheme const OUIThemedAppearanceThemeDark = @"OUIThemedAppearanceThemeDark";
 OUIThemedAppearanceTheme const OUIThemedAppearanceThemeLight = @"OUIThemedAppearanceThemeLight";
 
@@ -101,3 +103,4 @@ static BOOL OUIInspectorAppearanceEnabled = NO;
 
 @end
 
+NS_ASSUME_NONNULL_END

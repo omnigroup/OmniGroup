@@ -1,4 +1,4 @@
-// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -57,7 +57,7 @@ NSString * const OFXOmniSyncServerAccountTypeIdentifier = @"com.omnigroup.OmniFi
     return NSLocalizedStringFromTableInBundle(@"Omni Sync Server", @"OmniFileExchange", OMNI_BUNDLE, @"Set up server account title");
 }
 
-- (NSURL *)baseURLForServerURL:(NSURL *)serverURL username:(NSString *)username;
+- (NSURL *)baseURLForServerURL:(nullable NSURL *)serverURL username:(NSString *)username;
 {
     OBPRECONDITION(serverURL == nil);
     

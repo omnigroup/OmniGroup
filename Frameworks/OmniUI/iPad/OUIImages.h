@@ -18,6 +18,16 @@ extern UIImage *OUIDisclosureIndicatorImage(void);
 extern UIImage *OUIToolbarForwardImage(void);
 extern UIImage *OUIToolbarBackImage(void);
 
+extern UIImage *OUIContextMenuCopyIcon(void);
+extern UIImage *OUIContextMenuCutIcon(void);
+extern UIImage *OUIContextMenuPasteIcon(void);
+extern UIImage *OUIContextMenuDeleteIcon(void);
+
+extern UIImage *OUIContextMenuCopyStyleIcon(void);
+extern UIImage *OUIContextMenuPasteStyleIcon(void);
+extern UIImage *OUIContextMenuSelectAllIcon(void);
+extern UIImage *OUIContextMenuCopyAsJavaScriptIcon(void);
+
 @interface OUIImageLocation : NSObject
 
 - initWithName:(NSString *)name bundle:(NSBundle *)bundle;

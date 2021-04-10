@@ -1,4 +1,4 @@
-// Copyright 2016-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -75,7 +75,8 @@ class SldingOverlayPresentationController: UIPresentationController {
     
     @objc /**REVIEW**/ init(withPane pane: Pane, presentingController: UIViewController?) {
         self.pane = pane
-        super.init(presentedViewController: self.pane.viewController, presenting: presentingController)
+        // For slideover presentations, we wrap the pane's view controller for adaptive presentation reasons
+        super.init(presentedViewController: self.pane.viewController.deepestAncestor, presenting: presentingController)
         self.overrideTraitCollection = UITraitCollection(horizontalSizeClass: .compact)
     }
     
@@ -145,20 +146,22 @@ class SldingOverlayPresentationController: UIPresentationController {
     
     override func willTransition(to newCollection: UITraitCollection, with coordinator: UIViewControllerTransitionCoordinator) {
         super.willTransition(to: newCollection, with: coordinator)
-        self.dismiss(animated: false)
+        dismiss(animated: false)
     }
     
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
         super.viewWillTransition(to: size, with: coordinator)
-        self.dismiss(animated: false)
+        dismiss(animated: false)
     }
     
     @objc /**REVIEW**/ func handleTap(gesture: UITapGestureRecognizer) {
-        self.dismiss(animated: true)
+        dismiss(animated: true)
     }
     
     private func dismiss(animated: Bool) {
-        self.presentedViewController.dismiss(animated: true, completion:nil)
+        // We don't want to do this if we're being dismissed by a transition caused by snapshotting
+        // <bug:///176333> (iOS-OmniFocus Bug: Backgrounding the app when editing an action in an overlay inspector causes the bottom toolbar to remain at an "above keyboard" position even though the keyboard was dismissed)
+        self.presentedViewController.dismiss(animated: animated, completion:nil)
     }
 }
 

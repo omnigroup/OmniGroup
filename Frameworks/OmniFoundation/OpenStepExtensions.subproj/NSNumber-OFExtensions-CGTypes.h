@@ -14,6 +14,8 @@
 #import <CoreGraphics/CGBase.h>
 #endif
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface NSNumber (OFCGTypeExtensions)
 
 + (NSNumber *)numberWithCGFloat:(CGFloat)value;
@@ -60,4 +62,6 @@
 #error CGFLOAT_IS_DOUBLE is not defined
 #endif
 #endif
+
+NS_ASSUME_NONNULL_END
 

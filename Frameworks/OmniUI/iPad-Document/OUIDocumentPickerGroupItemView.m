@@ -1,4 +1,4 @@
-// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -79,6 +79,8 @@ static unsigned GroupItemContext;
 
 - (NSArray *)previewedItems;
 {
+    OBFinishPorting;
+#if 0
     ODSFolderItem *item = (ODSFolderItem *)self.item;
     OBASSERT(!item || [item isKindOfClass:[ODSFolderItem class]]);
 
@@ -100,6 +102,7 @@ static unsigned GroupItemContext;
     _cachedPreviewedItems = [filteredItems sortedArrayUsingDescriptors:sortDescriptors];
 
     return _cachedPreviewedItems;
+#endif
 }
 
 - (void)layoutSubviews;

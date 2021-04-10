@@ -1,4 +1,4 @@
-// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,9 +10,9 @@
 #import <OmniUIDocument/OUIDocumentTitleView.h>
 #import <OmniDocumentStore/ODSErrors.h>
 #import <OmniDocumentStore/ODSFileItem.h>
+#import <OmniDocumentStore/ODSScope.h>
 #import <OmniFileExchange/OFXAccountActivity.h>
 #import <OmniFileExchange/OFXAgentActivity.h>
-#import <OmniFileExchange/OFXDocumentStoreScope.h>
 #import <OmniFoundation/OFBinding.h>
 #import <OmniFoundation/OFUTI.h>
 #import <OmniUI/OUIRotationLock.h>
@@ -49,6 +49,8 @@ NSString * const OUIDocumentNavigationItemOriginalDocumentNameUserInfoKey = @"OU
 
 @property (nonatomic, strong) OUIRotationLock *renamingRotationLock;
 
+@property (nonatomic, copy) NSString *observedDocumentName;
+
 @end
 
 @implementation OUIDocumentNavigationItem
@@ -59,11 +61,23 @@ NSString * const OUIDocumentNavigationItemOriginalDocumentNameUserInfoKey = @"OU
     BOOL _renaming;
 }
 
++ (BOOL)canRenameDocument:(OUIDocument *)document;
+{
+    NSURL *documentURL = document.fileURL.URLByStandardizingPath;
+    if (documentURL == nil)
+        return NO;
+
+    NSURL *documentDirectoryURL = [[NSFileManager defaultManager] URLForDirectory:NSDocumentDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:YES error:NULL];
+    if (documentDirectoryURL == nil)
+        return NO;
+
+    return [documentURL.path hasPrefix:documentDirectoryURL.path];
+}
+
 - (instancetype)initWithDocument:(OUIDocument *)document;
 {
     // We do want to make sure our title property stays up to date with the document's title, so that if another view controller is pushed on to the navigation stack after us, the right name appears in the Back button.
-    ODSFileItem *fileItem = document.fileItem;
-    NSString *title = fileItem.name;
+    NSString *title = document.name;
     
     _titleColor = [UIColor blackColor];
     
@@ -75,21 +89,15 @@ NSString * const OUIDocumentNavigationItemOriginalDocumentNameUserInfoKey = @"OU
         _documentTitleView.title = title;
         _documentTitleView.delegate = self;
         _documentTitleView.hideTitle = NO;
-        
-        ODSScope *fileItemScope = fileItem.scope;
-        if ([fileItemScope isKindOfClass:[OFXDocumentStoreScope class]]) {
-            OFXDocumentStoreScope *scope = (OFXDocumentStoreScope *)fileItemScope;
-            OFXAgentActivity *agentActivity = [OUIDocumentAppController controller].agentActivity;
-            _documentTitleView.syncAccountActivity = [agentActivity activityForAccount:scope.account];
-            OBASSERT(_documentTitleView.syncAccountActivity != nil);
-        }
-        
-        _documentTitleView.titleCanBeTapped = fileItemScope.canRenameDocuments;
+                
+        _documentTitleView.titleCanBeTapped = [[self class] canRenameDocument:document];
         self.title = title;
         
         self.titleView = _documentTitleView;
 
-        _fileNameBinding = [[OFBinding alloc] initWithSourceObject:fileItem sourceKeyPath:OFValidateKeyPath(fileItem, name) destinationObject:self destinationKeyPath:OFValidateKeyPath(self, title)]; // value already propagated by designated initializer
+        // Bind to a separate property since the document `name` will change on a file presenter's background queue.
+        _observedDocumentName = [title copy];
+        _fileNameBinding = [[OFBinding alloc] initWithSourceObject:document sourceKeyPath:OFValidateKeyPath(document, name) destinationObject:self destinationKeyPath:OFValidateKeyPath(self, observedDocumentName)]; // value already propagated by designated initializer
         
         _documentTitleTextField = [[UITextField alloc] initWithFrame:CGRectMake(0.0f, 0.0f, 200.0f, 31.0f)];
         _documentTitleTextField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
@@ -157,7 +165,7 @@ NSString * const OUIDocumentNavigationItemOriginalDocumentNameUserInfoKey = @"OU
         self.title = @"";
         _documentTitleView.titleCanBeTapped = NO;
     } else {
-        self.title = self.document.fileItem.name;
+        self.title = self.document.name;
         _documentTitleView.titleCanBeTapped = YES;
     }
 }
@@ -203,6 +211,22 @@ NSString * const OUIDocumentNavigationItemOriginalDocumentNameUserInfoKey = @"OU
     _documentTitleTextField.textColor = titleColor;
 }
 
+- (void)setObservedDocumentName:(NSString *)observedDocumentName;
+{
+    OBPRECONDITION(![NSThread isMainThread], "We expect to be called in the background due to file coordination (which shouldn't be done on the main queue");
+
+    _observedDocumentName = [observedDocumentName copy];
+    
+    __weak OUIDocumentNavigationItem *weakSelf = self;
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        OUIDocumentNavigationItem *strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+        strongSelf.title = observedDocumentName;
+    }];
+}
+
 #pragma mark - UITextFieldDelegate
 
 - (BOOL)textFieldShouldBeginEditing:(UITextField *)textField;
@@ -213,11 +237,8 @@ NSString * const OUIDocumentNavigationItemOriginalDocumentNameUserInfoKey = @"OU
     OUIDocument *document = _document;
     [document willEditDocumentTitle];
     textField.keyboardAppearance = [OUIAppController controller].defaultKeyboardAppearance;
-
-    ODSFileItem *fileItem = document.fileItem;
-    OBASSERT(fileItem);
     
-    textField.text = fileItem.editingName;
+    textField.text = document.editingName;
     return YES;
 }
 
@@ -226,8 +247,7 @@ NSString * const OUIDocumentNavigationItemOriginalDocumentNameUserInfoKey = @"OU
     // If we are new, there will be no fileItem.
     // Actually, we give documents default names and load their fileItem up immediately on creation...
     OUIDocument *document = _document;
-    ODSFileItem *fileItem = document.fileItem;
-    NSString *originalName = fileItem.editingName;
+    NSString *originalName = document.editingName;
     OBASSERT(originalName);
     
     NSString *newName = [textField text];
@@ -239,48 +259,62 @@ NSString * const OUIDocumentNavigationItemOriginalDocumentNameUserInfoKey = @"OU
     
     // Otherwise, start the rename and return NO for now, but remember that we've tried already.
     _hasAttemptedRename = YES;
-    NSURL *currentURL = [fileItem.fileURL copy];
-    
+
+#ifdef OMNI_ASSERTIONS_ON
+    NSURL *currentURL = [document.fileURL copy];
     NSString *uti = OFUTIForFileExtensionPreferringNative([currentURL pathExtension], nil);
     OBASSERT(uti);
-    
-    // We don't want a "directory changed" notification for the local documents directory.
-//    OUIDocumentPicker *documentPicker = self.documentPicker;
-    
+#endif
+
     // Tell the document that the rename is local
     [document _willBeRenamedLocally];
     self.title = newName; // edit field will be dismissed and the title label displayed before the rename is completed so this will make sure that the label shows the updated name
     
     // Make sure we don't close the document while the rename is happening, or some such. It would probably be OK with the synchronization API, but there is no reason to allow it.
     OUIInteractionLock *lock = [OUIInteractionLock applicationLock];
-    
-    [fileItem.scope renameFileItem:fileItem baseName:newName fileType:uti completionHandler:^(NSURL *destinationURL, NSError *error){
-        main_async(^{
-            
-            [lock unlock];
-            
-            if (!destinationURL) {
-                NSLog(@"Error renaming document with URL \"%@\" to \"%@\" with type \"%@\": %@", [currentURL absoluteString], newName, uti, [error toPropertyList]);
-                OUI_PRESENT_ERROR(error);
 
-                self.title = originalName;
-                
-                if ([error hasUnderlyingErrorDomain:ODSErrorDomain code:ODSFilenameAlreadyInUse]) {
-                    // Leave the fixed name for the user to try again.
-                    _hasAttemptedRename = NO;
-                } else {
-                    // Some other error which may not be correctable -- bail
-                    [_documentTitleTextField endEditing:YES];
-                }
+    [self _renameDocument:document fromName:originalName toName:newName completionBlock:^(BOOL success, NSError *error) {
+        [lock unlock];
+
+        if (!success) {
+            [error log:@"Error renaming document with URL \"%@\" to \"%@\"", document.fileURL.absoluteString, newName];
+            OUI_PRESENT_ERROR_IN_SCENE(error, _documentTitleTextField.window.windowScene);
+
+            self.title = originalName;
+
+            if ([error hasUnderlyingErrorDomain:ODSErrorDomain code:ODSFilenameAlreadyInUse]) {
+                // Leave the fixed name for the user to try again.
+                _hasAttemptedRename = NO;
             } else {
-                // Don't need to scroll the document picker in this copy of the code.
-                //[documentPicker _didPerformRenameToFileURL:destinationURL];
+                // Some other error which may not be correctable -- bail
                 [_documentTitleTextField endEditing:YES];
             }
-        });
+        } else {
+            // Don't need to scroll the document picker in this copy of the code.
+            [_documentTitleTextField endEditing:YES];
+        }
     }];
-    
-    return NO;
+
+    return NO; // Don't end editing until we succeed
+}
+
+- (void)_renameDocument:(OUIDocument *)document fromName:(NSString *)originalName toName:(NSString *)newName completionBlock:(void (^)(BOOL success, NSError *error))completionBlock;
+{
+    [document performAsynchronousFileAccessUsingBlock:^{
+        NSFileManager *manager = [NSFileManager defaultManager];
+        NSURL *originalURL = document.fileURL; // Possible we've moved or changed file types since the rename operation started?
+
+        NSString  *newFileName = [newName stringByAppendingPathExtension:[originalURL pathExtension]];
+        NSURL *newURL = [[originalURL URLByDeletingLastPathComponent] URLByAppendingPathComponent:newFileName];
+
+        __autoreleasing NSError *moveError = nil;
+
+        BOOL success = [manager moveItemAtURL:originalURL toURL:newURL error:&moveError];
+        NSError *strongError = success ? nil : moveError;
+        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+            completionBlock(success, strongError);
+        }];
+    }];
 }
 
 - (void)setRenaming:(BOOL)isRenaming;
@@ -323,11 +357,6 @@ NSString * const OUIDocumentNavigationItemOriginalDocumentNameUserInfoKey = @"OU
 
 #pragma mark - OUIDocumentTitleViewDelegate
 
-- (void)documentTitleView:(OUIDocumentTitleView *)documentTitleView syncButtonTapped:(id)sender;
-{
-    [_document _manualSync:sender];
-}
-
 - (void)documentTitleView:(OUIDocumentTitleView *)documentTitleView titleTapped:(id)sender;
 {
     if (_renaming) {
@@ -362,7 +391,7 @@ NSString * const OUIDocumentNavigationItemOriginalDocumentNameUserInfoKey = @"OU
     [_documentTitleTextField becomeFirstResponder];
 
     // Add Shield View
-    UIWindow *window = [OUIAppController controller].window;
+    UIWindow *window = self.document.documentViewController.view.window;
     UITapGestureRecognizer *shieldViewTapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(_shieldViewTapped:)];
     NSArray *passthroughViews = [NSArray arrayWithObject:_documentTitleTextField];
     OUIShieldView *shieldView = [OUIShieldView shieldViewWithView:window];

@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -157,53 +157,6 @@ RCS_ID("$Id$");
         [self addSubview:_transferProgressView];
         [self setNeedsLayout];
     }
-}
-
-- (UITextField *)startEditingName;
-{
-    OBPRECONDITION(_nameTextField == nil);
-
-    if (_nameTextField) {
-        [_nameTextField removeFromSuperview];
-        _nameTextField = nil;
-    }
-
-    // We lazily create the text field for editing. As of 11.2, at least, navigating between the scope list and the local documents (with four documents) was leaking about 5MB due to UITextField doing odd things during the animation. We don't actually need a full text field until we start editing, though one possible down side to this approach is that it may not be as clear via accessibility attributes that you can tap the metadata view to start editing the document name.
-    _nameTextField = [[_OUIDocumentNameTextField alloc] init];
-    _nameTextField.translatesAutoresizingMaskIntoConstraints = NO;
-
-    [self insertSubview:_nameTextField belowSubview:_nameLabel];
-
-    _nameTextField.textAlignment = NSTextAlignmentLeft;
-    _nameTextField.font = [UIFont systemFontOfSize:self.nameLabelFontSize];
-    _nameTextField.textColor = OAMakeUIColor(kOUIDocumentPickerItemViewNameLabelColor);
-    _nameTextField.autocapitalizationType = UITextAutocapitalizationTypeWords;
-    _nameTextField.spellCheckingType = UITextSpellCheckingTypeNo;
-    _nameTextField.returnKeyType = UIReturnKeyDone;
-
-    _nameTextField.text = _nameLabel.text;
-    _nameTextField.useLargerClearButton = _doubleSizeFonts;
-
-    _nameTextField.frame = _nameLabel.frame;
-
-    _nameLabel.hidden = YES;
-
-    [_nameTextField becomeFirstResponder];
-    
-    return _nameTextField;
-}
-
-- (void)didEndEditing;
-{
-    if (!_nameTextField) {
-        OBASSERT_NOT_REACHED("Don't call unless we are editing");
-        return;
-    }
-
-    [_nameTextField removeFromSuperview];
-    _nameTextField = nil;
-
-    _nameLabel.hidden = NO;
 }
 
 - (NSString *)name;

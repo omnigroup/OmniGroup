@@ -12,6 +12,9 @@
 @interface OFXServerAccountRegistry ()
 
 @property(nonatomic,readonly) NSURL *accountsDirectoryURL;
+#if OMNI_BUILDING_FOR_IOS
+@property(nonatomic,readonly) NSURL *legacyAccountsDirectoryURL;
+#endif
 
 - (NSURL *)localStoreURLForAccount:(OFXServerAccount *)account; // Where we put our metadata and the containers.
 

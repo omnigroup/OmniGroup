@@ -28,7 +28,7 @@ static NSInteger OFCompletionMatchScoreCapitalLetter = 0;
 static OFCharacterSet *_WhitespaceOFCharacterSet = nil;
 static OFCharacterSet *_UppercaseLetterOFCharacterSet = nil;
 
-OFCompletionMatchingOptions OFCompletionMatchingDefaultOptions = (OFCompletionMatchingOptionCaseInsensitive | OFCompletionMatchingOptionDiacriticInsensitive);
+const OFCompletionMatchingOptions OFCompletionMatchingDefaultOptions = (OFCompletionMatchingOptionCaseInsensitive | OFCompletionMatchingOptionDiacriticInsensitive);
 
 @interface OFCompletionMatch ()
 

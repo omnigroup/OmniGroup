@@ -15,6 +15,7 @@
 #import <OmniUI/OUIActivityIndicator.h>
 #import <OmniUI/OUIAnimationSequence.h>
 #import <OmniUI/OUIAppController.h>
+#import <OmniUI/OUIAppControllerSceneHelper.h>
 #import <OmniUI/OUIAttentionSeekingButton.h>
 #import <OmniUI/OUIBarButtonItem.h>
 #import <OmniUI/OUIBlockOutShieldView.h>

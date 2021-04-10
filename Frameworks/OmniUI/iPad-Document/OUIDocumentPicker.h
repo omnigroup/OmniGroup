@@ -15,8 +15,6 @@
 
 @interface OUIDocumentPicker : OUIWrappingViewController
 
-@property (class, readonly) BOOL shouldShowExternalScope;
-
 - (instancetype)initWithDocumentStore:(ODSStore *)documentStore;
 
 @property (retain, nonatomic) ODSStore *documentStore;

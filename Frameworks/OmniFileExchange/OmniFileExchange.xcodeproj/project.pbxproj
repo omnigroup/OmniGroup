@@ -37,12 +37,10 @@
 		343682991B58293200BC25E6 /* OFXDAVServerAccountType.m in Sources */ = {isa = PBXBuildFile; fileRef = 34AFAD73164B132E009E39AB /* OFXDAVServerAccountType.m */; };
 		3436829A1B58293200BC25E6 /* OFXDAVServerAccountValidator.h in Headers */ = {isa = PBXBuildFile; fileRef = 34AFAD74164B132E009E39AB /* OFXDAVServerAccountValidator.h */; };
 		3436829B1B58293200BC25E6 /* OFXDAVServerAccountValidator.m in Sources */ = {isa = PBXBuildFile; fileRef = 34AFAD75164B132E009E39AB /* OFXDAVServerAccountValidator.m */; };
-		3436829C1B58293200BC25E6 /* OFXiTunesLocalDocumentsServerAccountType.h in Headers */ = {isa = PBXBuildFile; fileRef = 34AFAD76164B132E009E39AB /* OFXiTunesLocalDocumentsServerAccountType.h */; };
-		3436829D1B58293200BC25E6 /* OFXiTunesLocalDocumentsServerAccountType.m in Sources */ = {isa = PBXBuildFile; fileRef = 34AFAD77164B132E009E39AB /* OFXiTunesLocalDocumentsServerAccountType.m */; };
 		3436829E1B58293200BC25E6 /* OFXOmniSyncServerAccountType.h in Headers */ = {isa = PBXBuildFile; fileRef = 34AFAD78164B132E009E39AB /* OFXOmniSyncServerAccountType.h */; };
 		3436829F1B58293200BC25E6 /* OFXOmniSyncServerAccountType.m in Sources */ = {isa = PBXBuildFile; fileRef = 34AFAD79164B132E009E39AB /* OFXOmniSyncServerAccountType.m */; };
-		343682A01B58295000BC25E6 /* OFXAccountAgent-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 34AFAD39164B114F009E39AB /* OFXAccountAgent-Internal.h */; };
-		343682A11B58295000BC25E6 /* OFXAccountAgent.h in Headers */ = {isa = PBXBuildFile; fileRef = 34AFAD3A164B114F009E39AB /* OFXAccountAgent.h */; };
+		343682A01B58295000BC25E6 /* OFXAccountAgent-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 34AFAD39164B114F009E39AB /* OFXAccountAgent-Internal.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		343682A11B58295000BC25E6 /* OFXAccountAgent.h in Headers */ = {isa = PBXBuildFile; fileRef = 34AFAD3A164B114F009E39AB /* OFXAccountAgent.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		343682A21B58295000BC25E6 /* OFXAccountAgent.m in Sources */ = {isa = PBXBuildFile; fileRef = 34AFAD3B164B114F009E39AB /* OFXAccountAgent.m */; };
 		343682A31B58295000BC25E6 /* OFXAccountClientParameters.h in Headers */ = {isa = PBXBuildFile; fileRef = 34C530DC16F917610007477E /* OFXAccountClientParameters.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		343682A41B58295000BC25E6 /* OFXAccountClientParameters.m in Sources */ = {isa = PBXBuildFile; fileRef = 34C530DD16F917610007477E /* OFXAccountClientParameters.m */; };
@@ -99,8 +97,6 @@
 		343682D81B5829A600BC25E6 /* OFXFileSnapshotRemoteEncoding.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A847DB16B98D5400ACDB6C /* OFXFileSnapshotRemoteEncoding.m */; };
 		343682D91B5829A600BC25E6 /* OFXContentIdentifier.h in Headers */ = {isa = PBXBuildFile; fileRef = 34119020170CB816008332E5 /* OFXContentIdentifier.h */; };
 		343682DA1B5829A600BC25E6 /* OFXContentIdentifier.m in Sources */ = {isa = PBXBuildFile; fileRef = 34119023170CB84C008332E5 /* OFXContentIdentifier.m */; };
-		343682DB1B5829A600BC25E6 /* OFXDocumentStoreScope.h in Headers */ = {isa = PBXBuildFile; fileRef = 34AFADD1164B16CF009E39AB /* OFXDocumentStoreScope.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		343682DC1B5829A600BC25E6 /* OFXDocumentStoreScope.m in Sources */ = {isa = PBXBuildFile; fileRef = 34AFADD2164B16CF009E39AB /* OFXDocumentStoreScope.m */; };
 		343682DD1B5829A600BC25E6 /* OFXTrace.h in Headers */ = {isa = PBXBuildFile; fileRef = 34F7D55C164B37F400911B0A /* OFXTrace.h */; };
 		343682DE1B5829A600BC25E6 /* OFXTrace.m in Sources */ = {isa = PBXBuildFile; fileRef = 34F7D55D164B37F400911B0A /* OFXTrace.m */; };
 		343682DF1B5829A600BC25E6 /* OFXErrors.h in Headers */ = {isa = PBXBuildFile; fileRef = 34BAF4BB164B78CC001BC4B0 /* OFXErrors.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -154,6 +150,9 @@
 		347601B616C4741D00675597 /* OFXFileSnapshotDeleteTransfer.m in Sources */ = {isa = PBXBuildFile; fileRef = 347601B316C4741D00675597 /* OFXFileSnapshotDeleteTransfer.m */; };
 		347601C016C4841E00675597 /* OFXFileItemTransfers.h in Headers */ = {isa = PBXBuildFile; fileRef = 347601BE16C4841E00675597 /* OFXFileItemTransfers.h */; };
 		347601C216C4841E00675597 /* OFXFileItemTransfers.m in Sources */ = {isa = PBXBuildFile; fileRef = 347601BF16C4841E00675597 /* OFXFileItemTransfers.m */; };
+		3482169A22E0E68900801258 /* OFXAccountMigration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3482169922E0E68900801258 /* OFXAccountMigration.swift */; };
+		3482169C22E0EFB200801258 /* OFXBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3482169B22E0EFB200801258 /* OFXBundle.swift */; };
+		3482169D22E0EFB200801258 /* OFXBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3482169B22E0EFB200801258 /* OFXBundle.swift */; };
 		34824AFA1742E55600253D52 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34AFAD2A164B0EC8009E39AB /* Foundation.framework */; };
 		34824AFD1742E55600253D52 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 34824AFC1742E55600253D52 /* main.m */; };
 		34824B0B1742E5C000253D52 /* OmniCommandLine.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34824B0A1742E5B200253D52 /* OmniCommandLine.framework */; };
@@ -170,8 +169,8 @@
 		34A270751731C5A300C00438 /* OFXRemotePackageTypeTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A270741731C5A300C00438 /* OFXRemotePackageTypeTestCase.m */; };
 		34A847DC16B98D5400ACDB6C /* OFXFileSnapshotRemoteEncoding.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A847DA16B98D5400ACDB6C /* OFXFileSnapshotRemoteEncoding.h */; };
 		34A847DE16B98D5400ACDB6C /* OFXFileSnapshotRemoteEncoding.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A847DB16B98D5400ACDB6C /* OFXFileSnapshotRemoteEncoding.m */; };
-		34AFAD4D164B114F009E39AB /* OFXAccountAgent-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 34AFAD39164B114F009E39AB /* OFXAccountAgent-Internal.h */; };
-		34AFAD4E164B114F009E39AB /* OFXAccountAgent.h in Headers */ = {isa = PBXBuildFile; fileRef = 34AFAD3A164B114F009E39AB /* OFXAccountAgent.h */; };
+		34AFAD4D164B114F009E39AB /* OFXAccountAgent-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 34AFAD39164B114F009E39AB /* OFXAccountAgent-Internal.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		34AFAD4E164B114F009E39AB /* OFXAccountAgent.h in Headers */ = {isa = PBXBuildFile; fileRef = 34AFAD3A164B114F009E39AB /* OFXAccountAgent.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		34AFAD4F164B114F009E39AB /* OFXAccountAgent.m in Sources */ = {isa = PBXBuildFile; fileRef = 34AFAD3B164B114F009E39AB /* OFXAccountAgent.m */; };
 		34AFAD51164B114F009E39AB /* OFXAgent-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 34AFAD3C164B114F009E39AB /* OFXAgent-Internal.h */; };
 		34AFAD52164B114F009E39AB /* OFXAgent.h in Headers */ = {isa = PBXBuildFile; fileRef = 34AFAD3D164B114F009E39AB /* OFXAgent.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -191,8 +190,6 @@
 		34AFAD84164B132E009E39AB /* OFXDAVServerAccountType.m in Sources */ = {isa = PBXBuildFile; fileRef = 34AFAD73164B132E009E39AB /* OFXDAVServerAccountType.m */; };
 		34AFAD86164B132E009E39AB /* OFXDAVServerAccountValidator.h in Headers */ = {isa = PBXBuildFile; fileRef = 34AFAD74164B132E009E39AB /* OFXDAVServerAccountValidator.h */; };
 		34AFAD88164B132E009E39AB /* OFXDAVServerAccountValidator.m in Sources */ = {isa = PBXBuildFile; fileRef = 34AFAD75164B132E009E39AB /* OFXDAVServerAccountValidator.m */; };
-		34AFAD8A164B132E009E39AB /* OFXiTunesLocalDocumentsServerAccountType.h in Headers */ = {isa = PBXBuildFile; fileRef = 34AFAD76164B132E009E39AB /* OFXiTunesLocalDocumentsServerAccountType.h */; };
-		34AFAD8C164B132E009E39AB /* OFXiTunesLocalDocumentsServerAccountType.m in Sources */ = {isa = PBXBuildFile; fileRef = 34AFAD77164B132E009E39AB /* OFXiTunesLocalDocumentsServerAccountType.m */; };
 		34AFAD8E164B132E009E39AB /* OFXOmniSyncServerAccountType.h in Headers */ = {isa = PBXBuildFile; fileRef = 34AFAD78164B132E009E39AB /* OFXOmniSyncServerAccountType.h */; };
 		34AFAD90164B132E009E39AB /* OFXOmniSyncServerAccountType.m in Sources */ = {isa = PBXBuildFile; fileRef = 34AFAD79164B132E009E39AB /* OFXOmniSyncServerAccountType.m */; };
 		34AFAD92164B132E009E39AB /* OFXServerAccount-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 34AFAD7A164B132E009E39AB /* OFXServerAccount-Internal.h */; };
@@ -210,8 +207,6 @@
 		34AFADCD164B15C5009E39AB /* OFXTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 34AFADBD164B15B3009E39AB /* OFXTestCase.m */; };
 		34AFADCE164B1642009E39AB /* OmniFileExchange.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34AFACE2164B0E70009E39AB /* OmniFileExchange.framework */; };
 		34AFADD0164B1642009E39AB /* OmniDAV.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2787A6361991F292008D3495 /* OmniDAV.framework */; };
-		34AFADD3164B16CF009E39AB /* OFXDocumentStoreScope.h in Headers */ = {isa = PBXBuildFile; fileRef = 34AFADD1164B16CF009E39AB /* OFXDocumentStoreScope.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34AFADD5164B16CF009E39AB /* OFXDocumentStoreScope.m in Sources */ = {isa = PBXBuildFile; fileRef = 34AFADD2164B16CF009E39AB /* OFXDocumentStoreScope.m */; };
 		34BAF4B0164B74D9001BC4B0 /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1E9FA5971ED511BE00CC2AB8 /* OmniFoundation.framework */; };
 		34BAF4B1164B750A001BC4B0 /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1E66EB711ED513E6005E32FD /* OmniBase.framework */; };
 		34BAF4B4164B7531001BC4B0 /* OFTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 34BAF4B3164B7531001BC4B0 /* OFTestCase.m */; };
@@ -581,6 +576,50 @@
 		347601B316C4741D00675597 /* OFXFileSnapshotDeleteTransfer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXFileSnapshotDeleteTransfer.m; sourceTree = SOURCE_ROOT; };
 		347601BE16C4841E00675597 /* OFXFileItemTransfers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFXFileItemTransfers.h; sourceTree = SOURCE_ROOT; };
 		347601BF16C4841E00675597 /* OFXFileItemTransfers.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXFileItemTransfers.m; sourceTree = SOURCE_ROOT; };
+		3482169922E0E68900801258 /* OFXAccountMigration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OFXAccountMigration.swift; sourceTree = SOURCE_ROOT; };
+		3482169B22E0EFB200801258 /* OFXBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OFXBundle.swift; sourceTree = SOURCE_ROOT; };
+		3482169E22E0F27D00801258 /* Omni-Application-Common-MASEnterprise.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-MASEnterprise.xcconfig"; sourceTree = "<group>"; };
+		3482169F22E0F27D00801258 /* Server-Global-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Server-Global-Common.xcconfig"; sourceTree = "<group>"; };
+		348216A022E0F27D00801258 /* Target-Server-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Target-Server-Common.xcconfig"; sourceTree = "<group>"; };
+		348216A122E0F27D00801258 /* Server-XCTest-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Server-XCTest-Release.xcconfig"; sourceTree = "<group>"; };
+		348216A222E0F27D00801258 /* Omni-XCTest-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-XCTest-Debug.xcconfig"; sourceTree = "<group>"; };
+		348216A322E0F27D00801258 /* Server-Framework-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Server-Framework-Common.xcconfig"; sourceTree = "<group>"; };
+		348216A422E0F27D00801258 /* Touch-XCTest-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-XCTest-Release.xcconfig"; sourceTree = "<group>"; };
+		348216A522E0F27D00801258 /* Watch-Application-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Application-Debug.xcconfig"; sourceTree = "<group>"; };
+		348216A622E0F27D00801258 /* Omni-XCTest-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-XCTest-Release.xcconfig"; sourceTree = "<group>"; };
+		348216A722E0F27E00801258 /* Watch-Framework-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Framework-Debug.xcconfig"; sourceTree = "<group>"; };
+		348216A822E0F27E00801258 /* Server-Application-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Server-Application-Release.xcconfig"; sourceTree = "<group>"; };
+		348216A922E0F27E00801258 /* Target-Watch-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Target-Watch-Common.xcconfig"; sourceTree = "<group>"; };
+		348216AA22E0F27E00801258 /* Server-Bundle-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Server-Bundle-Release.xcconfig"; sourceTree = "<group>"; };
+		348216AB22E0F27E00801258 /* Server-Library-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Server-Library-Common.xcconfig"; sourceTree = "<group>"; };
+		348216AC22E0F27E00801258 /* Watch-Application-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Application-Common.xcconfig"; sourceTree = "<group>"; };
+		348216AD22E0F27E00801258 /* Server-Tool-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Server-Tool-Release.xcconfig"; sourceTree = "<group>"; };
+		348216AE22E0F27E00801258 /* Server-Library-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Server-Library-Release.xcconfig"; sourceTree = "<group>"; };
+		348216AF22E0F27E00801258 /* Server-Application-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Server-Application-Debug.xcconfig"; sourceTree = "<group>"; };
+		348216B022E0F27E00801258 /* Watch-Application-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Application-Release.xcconfig"; sourceTree = "<group>"; };
+		348216B222E0F27E00801258 /* Server-Library-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Server-Library-Debug.xcconfig"; sourceTree = "<group>"; };
+		348216B322E0F27E00801258 /* Server-Tool-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Server-Tool-Debug.xcconfig"; sourceTree = "<group>"; };
+		348216B422E0F27E00801258 /* Server-Framework-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Server-Framework-Release.xcconfig"; sourceTree = "<group>"; };
+		348216B522E0F27E00801258 /* Server-Tool-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Server-Tool-Common.xcconfig"; sourceTree = "<group>"; };
+		348216B622E0F27E00801258 /* Omni-Global-Common-MASEnterprise.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-MASEnterprise.xcconfig"; sourceTree = "<group>"; };
+		348216B722E0F27E00801258 /* Server-Bundle-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Server-Bundle-Debug.xcconfig"; sourceTree = "<group>"; };
+		348216B822E0F27F00801258 /* Server-Application-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Server-Application-Common.xcconfig"; sourceTree = "<group>"; };
+		348216B922E0F27F00801258 /* Watch-Bundle-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Bundle-Release.xcconfig"; sourceTree = "<group>"; };
+		348216BA22E0F27F00801258 /* Server-XCTest-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Server-XCTest-Debug.xcconfig"; sourceTree = "<group>"; };
+		348216BB22E0F27F00801258 /* Server-Bundle-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Server-Bundle-Common.xcconfig"; sourceTree = "<group>"; };
+		348216BC22E0F27F00801258 /* Watch-Bundle-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Bundle-Common.xcconfig"; sourceTree = "<group>"; };
+		348216BD22E0F27F00801258 /* Omni-XCTest-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-XCTest-Common.xcconfig"; sourceTree = "<group>"; };
+		348216BE22E0F27F00801258 /* Server-Framework-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Server-Framework-Debug.xcconfig"; sourceTree = "<group>"; };
+		348216BF22E0F27F00801258 /* Watch-Framework-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Framework-Common.xcconfig"; sourceTree = "<group>"; };
+		348216C022E0F27F00801258 /* Touch-XCTest-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-XCTest-Common.xcconfig"; sourceTree = "<group>"; };
+		348216C122E0F27F00801258 /* Watch-Bundle-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Bundle-Debug.xcconfig"; sourceTree = "<group>"; };
+		348216C222E0F27F00801258 /* Watch-Framework-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Framework-Release.xcconfig"; sourceTree = "<group>"; };
+		348216C322E0F27F00801258 /* Touch-XCTest-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-XCTest-Debug.xcconfig"; sourceTree = "<group>"; };
+		348216C422E0F27F00801258 /* Omni-Global-Settings.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Settings.xcconfig"; sourceTree = "<group>"; };
+		348216C522E0F27F00801258 /* Server-Global-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Server-Global-Debug.xcconfig"; sourceTree = "<group>"; };
+		348216C622E0F27F00801258 /* Server-Global-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Server-Global-Release.xcconfig"; sourceTree = "<group>"; };
+		348216C722E0F27F00801258 /* Server-XCTest-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Server-XCTest-Common.xcconfig"; sourceTree = "<group>"; };
+		348216C922E0F29300801258 /* Omni-Global.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global.xcconfig"; sourceTree = "<group>"; };
 		34824AF91742E55600253D52 /* OFXAuthTest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = OFXAuthTest; sourceTree = BUILT_PRODUCTS_DIR; };
 		34824AFC1742E55600253D52 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		34824AFF1742E55600253D52 /* OFXAuthTest-Prefix.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "OFXAuthTest-Prefix.h"; sourceTree = "<group>"; };
@@ -657,8 +696,6 @@
 		34AFAD73164B132E009E39AB /* OFXDAVServerAccountType.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXDAVServerAccountType.m; sourceTree = SOURCE_ROOT; };
 		34AFAD74164B132E009E39AB /* OFXDAVServerAccountValidator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFXDAVServerAccountValidator.h; sourceTree = SOURCE_ROOT; };
 		34AFAD75164B132E009E39AB /* OFXDAVServerAccountValidator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXDAVServerAccountValidator.m; sourceTree = SOURCE_ROOT; };
-		34AFAD76164B132E009E39AB /* OFXiTunesLocalDocumentsServerAccountType.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFXiTunesLocalDocumentsServerAccountType.h; sourceTree = SOURCE_ROOT; };
-		34AFAD77164B132E009E39AB /* OFXiTunesLocalDocumentsServerAccountType.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXiTunesLocalDocumentsServerAccountType.m; sourceTree = SOURCE_ROOT; };
 		34AFAD78164B132E009E39AB /* OFXOmniSyncServerAccountType.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFXOmniSyncServerAccountType.h; sourceTree = SOURCE_ROOT; };
 		34AFAD79164B132E009E39AB /* OFXOmniSyncServerAccountType.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXOmniSyncServerAccountType.m; sourceTree = SOURCE_ROOT; };
 		34AFAD7A164B132E009E39AB /* OFXServerAccount-Internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "OFXServerAccount-Internal.h"; sourceTree = SOURCE_ROOT; };
@@ -675,8 +712,6 @@
 		34AFADBB164B15B3009E39AB /* OFXDocumentEditTestCase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OFXDocumentEditTestCase.m; path = Test/OFXUnitTests/OFXDocumentEditTestCase.m; sourceTree = SOURCE_ROOT; };
 		34AFADBC164B15B3009E39AB /* OFXTestCase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OFXTestCase.h; path = Test/OFXUnitTests/OFXTestCase.h; sourceTree = SOURCE_ROOT; };
 		34AFADBD164B15B3009E39AB /* OFXTestCase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OFXTestCase.m; path = Test/OFXUnitTests/OFXTestCase.m; sourceTree = SOURCE_ROOT; };
-		34AFADD1164B16CF009E39AB /* OFXDocumentStoreScope.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFXDocumentStoreScope.h; sourceTree = SOURCE_ROOT; };
-		34AFADD2164B16CF009E39AB /* OFXDocumentStoreScope.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXDocumentStoreScope.m; sourceTree = SOURCE_ROOT; };
 		34BAF4B2164B7531001BC4B0 /* OFTestCase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OFTestCase.h; path = ../../../OmniFoundation/Tests/OFTestCase.h; sourceTree = "<group>"; };
 		34BAF4B3164B7531001BC4B0 /* OFTestCase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OFTestCase.m; path = ../../../OmniFoundation/Tests/OFTestCase.m; sourceTree = "<group>"; };
 		34BAF4B8164B7578001BC4B0 /* OBTestCase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OBTestCase.h; path = ../../../OmniBase/OBTestCase.h; sourceTree = "<group>"; };
@@ -938,6 +973,14 @@
 			path = ..;
 			sourceTree = SOURCE_ROOT;
 		};
+		348216C822E0F29300801258 /* Private */ = {
+			isa = PBXGroup;
+			children = (
+				348216C922E0F29300801258 /* Omni-Global.xcconfig */,
+			);
+			path = Private;
+			sourceTree = "<group>";
+		};
 		34824AFB1742E55600253D52 /* OFXAuthTest */ = {
 			isa = PBXGroup;
 			children = (
@@ -1004,6 +1047,7 @@
 				34AFAD39164B114F009E39AB /* OFXAccountAgent-Internal.h */,
 				34AFAD3A164B114F009E39AB /* OFXAccountAgent.h */,
 				34AFAD3B164B114F009E39AB /* OFXAccountAgent.m */,
+				3482169922E0E68900801258 /* OFXAccountMigration.swift */,
 				34C530DC16F917610007477E /* OFXAccountClientParameters.h */,
 				34C530DD16F917610007477E /* OFXAccountClientParameters.m */,
 				3474308D16F1434C009C693C /* OFXAccountInfo.h */,
@@ -1041,8 +1085,6 @@
 				34A847DB16B98D5400ACDB6C /* OFXFileSnapshotRemoteEncoding.m */,
 				34119020170CB816008332E5 /* OFXContentIdentifier.h */,
 				34119023170CB84C008332E5 /* OFXContentIdentifier.m */,
-				34AFADD1164B16CF009E39AB /* OFXDocumentStoreScope.h */,
-				34AFADD2164B16CF009E39AB /* OFXDocumentStoreScope.m */,
 				34F7D55C164B37F400911B0A /* OFXTrace.h */,
 				34F7D55D164B37F400911B0A /* OFXTrace.m */,
 				34BAF4BB164B78CC001BC4B0 /* OFXErrors.h */,
@@ -1057,6 +1099,7 @@
 				3422A9B717F4A9D200ACA42E /* OFXPersistentPropertyList.m */,
 				34FF45FB17B19F0B00E6AFCA /* OFXSyncClient.h */,
 				34FF45FC17B19F0B00E6AFCA /* OFXSyncClient.m */,
+				3482169B22E0EFB200801258 /* OFXBundle.swift */,
 			);
 			name = Source;
 			path = OmniFileExchange;
@@ -1067,6 +1110,7 @@
 			children = (
 				34AFACFB164B0E8C009E39AB /* Omni-Application-Common-AppStore.xcconfig */,
 				34AFACFC164B0E8C009E39AB /* Omni-Application-Common-MacAppStore.xcconfig */,
+				3482169E22E0F27D00801258 /* Omni-Application-Common-MASEnterprise.xcconfig */,
 				34AFACFD164B0E8C009E39AB /* Omni-Application-Common-OmniStore.xcconfig */,
 				34AFACFE164B0E8C009E39AB /* Omni-Application-Common-Store.xcconfig */,
 				34AFACFF164B0E8C009E39AB /* Omni-Application-Common.xcconfig */,
@@ -1080,19 +1124,48 @@
 				34AFAD0A164B0E8C009E39AB /* Omni-Framework-Release.xcconfig */,
 				34AFAD0B164B0E8C009E39AB /* Omni-Global-Common-AppStore.xcconfig */,
 				34AFAD0C164B0E8C009E39AB /* Omni-Global-Common-MacAppStore.xcconfig */,
+				348216B622E0F27E00801258 /* Omni-Global-Common-MASEnterprise.xcconfig */,
 				34AFAD0D164B0E8C009E39AB /* Omni-Global-Common-OmniStore.xcconfig */,
 				34AFAD0E164B0E8C009E39AB /* Omni-Global-Common-Store.xcconfig */,
 				34AFAD0F164B0E8C009E39AB /* Omni-Global-Common.xcconfig */,
 				34AFAD11164B0E8C009E39AB /* Omni-Global-Debug.xcconfig */,
 				34AFAD12164B0E8C009E39AB /* Omni-Global-Release.xcconfig */,
+				348216C422E0F27F00801258 /* Omni-Global-Settings.xcconfig */,
 				34AFAD13164B0E8C009E39AB /* Omni-Library-Common.xcconfig */,
 				34AFAD15164B0E8C009E39AB /* Omni-Library-Debug.xcconfig */,
 				34AFAD16164B0E8C009E39AB /* Omni-Library-Release.xcconfig */,
 				34AFAD17164B0E8C009E39AB /* Omni-Tool-Common.xcconfig */,
 				34AFAD19164B0E8C009E39AB /* Omni-Tool-Debug.xcconfig */,
 				34AFAD1A164B0E8C009E39AB /* Omni-Tool-Release.xcconfig */,
+				348216BD22E0F27F00801258 /* Omni-XCTest-Common.xcconfig */,
+				348216A222E0F27D00801258 /* Omni-XCTest-Debug.xcconfig */,
+				348216A622E0F27D00801258 /* Omni-XCTest-Release.xcconfig */,
+				348216C822E0F29300801258 /* Private */,
+				348216B822E0F27F00801258 /* Server-Application-Common.xcconfig */,
+				348216AF22E0F27E00801258 /* Server-Application-Debug.xcconfig */,
+				348216A822E0F27E00801258 /* Server-Application-Release.xcconfig */,
+				348216BB22E0F27F00801258 /* Server-Bundle-Common.xcconfig */,
+				348216B722E0F27E00801258 /* Server-Bundle-Debug.xcconfig */,
+				348216AA22E0F27E00801258 /* Server-Bundle-Release.xcconfig */,
+				348216A322E0F27D00801258 /* Server-Framework-Common.xcconfig */,
+				348216BE22E0F27F00801258 /* Server-Framework-Debug.xcconfig */,
+				348216B422E0F27E00801258 /* Server-Framework-Release.xcconfig */,
+				3482169F22E0F27D00801258 /* Server-Global-Common.xcconfig */,
+				348216C522E0F27F00801258 /* Server-Global-Debug.xcconfig */,
+				348216C622E0F27F00801258 /* Server-Global-Release.xcconfig */,
+				348216AB22E0F27E00801258 /* Server-Library-Common.xcconfig */,
+				348216B222E0F27E00801258 /* Server-Library-Debug.xcconfig */,
+				348216AE22E0F27E00801258 /* Server-Library-Release.xcconfig */,
+				348216B522E0F27E00801258 /* Server-Tool-Common.xcconfig */,
+				348216B322E0F27E00801258 /* Server-Tool-Debug.xcconfig */,
+				348216AD22E0F27E00801258 /* Server-Tool-Release.xcconfig */,
+				348216C722E0F27F00801258 /* Server-XCTest-Common.xcconfig */,
+				348216BA22E0F27F00801258 /* Server-XCTest-Debug.xcconfig */,
+				348216A122E0F27D00801258 /* Server-XCTest-Release.xcconfig */,
 				34AFAD1B164B0E8C009E39AB /* Target-Mac-Common.xcconfig */,
+				348216A022E0F27D00801258 /* Target-Server-Common.xcconfig */,
 				34AFAD1C164B0E8C009E39AB /* Target-Touch-Common.xcconfig */,
+				348216A922E0F27E00801258 /* Target-Watch-Common.xcconfig */,
 				34AFAD1D164B0E8C009E39AB /* Touch-Application-Common.xcconfig */,
 				34AFAD1F164B0E8C009E39AB /* Touch-Application-Debug.xcconfig */,
 				34AFAD20164B0E8C009E39AB /* Touch-Application-Release.xcconfig */,
@@ -1105,6 +1178,18 @@
 				34AFAD21164B0E8C009E39AB /* Touch-Library-Common.xcconfig */,
 				34AFAD23164B0E8C009E39AB /* Touch-Library-Debug.xcconfig */,
 				34AFAD24164B0E8C009E39AB /* Touch-Library-Release.xcconfig */,
+				348216C022E0F27F00801258 /* Touch-XCTest-Common.xcconfig */,
+				348216C322E0F27F00801258 /* Touch-XCTest-Debug.xcconfig */,
+				348216A422E0F27D00801258 /* Touch-XCTest-Release.xcconfig */,
+				348216AC22E0F27E00801258 /* Watch-Application-Common.xcconfig */,
+				348216A522E0F27D00801258 /* Watch-Application-Debug.xcconfig */,
+				348216B022E0F27E00801258 /* Watch-Application-Release.xcconfig */,
+				348216BC22E0F27F00801258 /* Watch-Bundle-Common.xcconfig */,
+				348216C122E0F27F00801258 /* Watch-Bundle-Debug.xcconfig */,
+				348216B922E0F27F00801258 /* Watch-Bundle-Release.xcconfig */,
+				348216BF22E0F27F00801258 /* Watch-Framework-Common.xcconfig */,
+				348216A722E0F27E00801258 /* Watch-Framework-Debug.xcconfig */,
+				348216C222E0F27F00801258 /* Watch-Framework-Release.xcconfig */,
 			);
 			name = Configurations;
 			path = ../../Configurations;
@@ -1125,12 +1210,12 @@
 		34AFAD71164B1316009E39AB /* Accounts */ = {
 			isa = PBXGroup;
 			children = (
+				34AFAD7A164B132E009E39AB /* OFXServerAccount-Internal.h */,
 				34AFAD7B164B132E009E39AB /* OFXServerAccount.h */,
 				34AFAD7C164B132E009E39AB /* OFXServerAccount.m */,
 				34AFAD7D164B132E009E39AB /* OFXServerAccountRegistry-Internal.h */,
 				34AFAD7E164B132E009E39AB /* OFXServerAccountRegistry.h */,
 				34AFAD7F164B132E009E39AB /* OFXServerAccountRegistry.m */,
-				34AFAD7A164B132E009E39AB /* OFXServerAccount-Internal.h */,
 				34AFAD80164B132E009E39AB /* OFXServerAccountType.h */,
 				34AFAD81164B132E009E39AB /* OFXServerAccountType.m */,
 				3441607116B07DBF00E917F5 /* OFXServerAccountValidator.h */,
@@ -1138,8 +1223,6 @@
 				34AFAD73164B132E009E39AB /* OFXDAVServerAccountType.m */,
 				34AFAD74164B132E009E39AB /* OFXDAVServerAccountValidator.h */,
 				34AFAD75164B132E009E39AB /* OFXDAVServerAccountValidator.m */,
-				34AFAD76164B132E009E39AB /* OFXiTunesLocalDocumentsServerAccountType.h */,
-				34AFAD77164B132E009E39AB /* OFXiTunesLocalDocumentsServerAccountType.m */,
 				34AFAD78164B132E009E39AB /* OFXOmniSyncServerAccountType.h */,
 				34AFAD79164B132E009E39AB /* OFXOmniSyncServerAccountType.m */,
 			);
@@ -1213,7 +1296,6 @@
 				343682A81B58295000BC25E6 /* OFXAgent-Internal.h in Headers */,
 				343682CB1B58298D00BC25E6 /* OFXUploadRenameFileSnapshot.h in Headers */,
 				343682C11B58298700BC25E6 /* OFXFileSnapshotContentsActions.h in Headers */,
-				343682DB1B5829A600BC25E6 /* OFXDocumentStoreScope.h in Headers */,
 				343682AB1B58295000BC25E6 /* OFXContainerAgent-Internal.h in Headers */,
 				343682C51B58298D00BC25E6 /* OFXFileSnapshotUploadTransfer.h in Headers */,
 				343682E11B5829A600BC25E6 /* OFXRegistrationTable.h in Headers */,
@@ -1226,7 +1308,6 @@
 				343682921B58293200BC25E6 /* OFXServerAccountRegistry.h in Headers */,
 				3436829E1B58293200BC25E6 /* OFXOmniSyncServerAccountType.h in Headers */,
 				343682BD1B58295000BC25E6 /* OFXAccountActivity.h in Headers */,
-				3436829C1B58293200BC25E6 /* OFXiTunesLocalDocumentsServerAccountType.h in Headers */,
 				343682D91B5829A600BC25E6 /* OFXContentIdentifier.h in Headers */,
 				343682C71B58298D00BC25E6 /* OFXUploadContentsFileSnapshot.h in Headers */,
 				343682A11B58295000BC25E6 /* OFXAccountAgent.h in Headers */,
@@ -1277,14 +1358,12 @@
 				34AFAD61164B114F009E39AB /* OFXFileSnapshot.h in Headers */,
 				34AFAD82164B132E009E39AB /* OFXDAVServerAccountType.h in Headers */,
 				34AFAD86164B132E009E39AB /* OFXDAVServerAccountValidator.h in Headers */,
-				34AFAD8A164B132E009E39AB /* OFXiTunesLocalDocumentsServerAccountType.h in Headers */,
 				34AFAD8E164B132E009E39AB /* OFXOmniSyncServerAccountType.h in Headers */,
 				34AFAD92164B132E009E39AB /* OFXServerAccount-Internal.h in Headers */,
 				34AFAD94164B132E009E39AB /* OFXServerAccount.h in Headers */,
 				34AFAD98164B132E009E39AB /* OFXServerAccountRegistry-Internal.h in Headers */,
 				34AFAD9A164B132E009E39AB /* OFXServerAccountRegistry.h in Headers */,
 				34AFAD9E164B132E009E39AB /* OFXServerAccountType.h in Headers */,
-				34AFADD3164B16CF009E39AB /* OFXDocumentStoreScope.h in Headers */,
 				34F7D55E164B37F400911B0A /* OFXTrace.h in Headers */,
 				34BAF4BD164B78CC001BC4B0 /* OFXErrors.h in Headers */,
 				34744D5B1669125600681CBC /* OFXFeatures.h in Headers */,
@@ -1411,12 +1490,14 @@
 				TargetAttributes = {
 					343682781B58284500BC25E6 = {
 						CreatedOnToolsVersion = 7.0;
+						LastSwiftMigration = 1100;
 					};
 					34824AF81742E55600253D52 = {
 						DevelopmentTeam = 34YW5XSRB7;
 					};
 					34AFACE1164B0E70009E39AB = {
 						DevelopmentTeam = 34YW5XSRB7;
+						LastSwiftMigration = 1100;
 					};
 					34AFADA7164B1401009E39AB = {
 						DevelopmentTeam = 34YW5XSRB7;
@@ -1429,6 +1510,7 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				Base,
 			);
 			mainGroup = 34AFACD6164B0E70009E39AB;
 			productRefGroup = 34AFACE3164B0E70009E39AB /* Products */;
@@ -1785,15 +1867,14 @@
 				343682B91B58295000BC25E6 /* OFXFileMetadata.m in Sources */,
 				3436829B1B58293200BC25E6 /* OFXDAVServerAccountValidator.m in Sources */,
 				343682D81B5829A600BC25E6 /* OFXFileSnapshotRemoteEncoding.m in Sources */,
-				343682DC1B5829A600BC25E6 /* OFXDocumentStoreScope.m in Sources */,
 				343682DA1B5829A600BC25E6 /* OFXContentIdentifier.m in Sources */,
 				343682D61B5829A600BC25E6 /* OFXFileState.m in Sources */,
 				343682CC1B58298D00BC25E6 /* OFXUploadRenameFileSnapshot.m in Sources */,
-				3436829D1B58293200BC25E6 /* OFXiTunesLocalDocumentsServerAccountType.m in Sources */,
 				343682E01B5829A600BC25E6 /* OFXErrors.m in Sources */,
 				343682B61B58295000BC25E6 /* OFXFileItemTransfers.m in Sources */,
 				343682CA1B58298D00BC25E6 /* OFXFileSnapshotUploadContentsTransfer.m in Sources */,
 				3436829F1B58293200BC25E6 /* OFXOmniSyncServerAccountType.m in Sources */,
+				3482169D22E0EFB200801258 /* OFXBundle.swift in Sources */,
 				343682C41B58298700BC25E6 /* OFXFileSnapshotTransfer.m in Sources */,
 				343682AD1B58295000BC25E6 /* OFXContainerAgent.m in Sources */,
 				343682AA1B58295000BC25E6 /* OFXAgent.m in Sources */,
@@ -1801,6 +1882,7 @@
 				343682BB1B58295000BC25E6 /* OFXFileSnapshot.m in Sources */,
 				343682B11B58295000BC25E6 /* OFXContainerScan.m in Sources */,
 				343682CE1B58298D00BC25E6 /* OFXFileSnapshotUploadRenameTransfer.m in Sources */,
+				3482169A22E0E68900801258 /* OFXAccountMigration.swift in Sources */,
 				343682961B58293200BC25E6 /* OFXServerAccountType.m in Sources */,
 				343682D41B58299A00BC25E6 /* OFXFileSnapshotDeleteTransfer.m in Sources */,
 				343682A21B58295000BC25E6 /* OFXAccountAgent.m in Sources */,
@@ -1836,12 +1918,10 @@
 				34AFAD62164B114F009E39AB /* OFXFileSnapshot.m in Sources */,
 				34AFAD84164B132E009E39AB /* OFXDAVServerAccountType.m in Sources */,
 				34AFAD88164B132E009E39AB /* OFXDAVServerAccountValidator.m in Sources */,
-				34AFAD8C164B132E009E39AB /* OFXiTunesLocalDocumentsServerAccountType.m in Sources */,
 				34AFAD90164B132E009E39AB /* OFXOmniSyncServerAccountType.m in Sources */,
 				34AFAD96164B132E009E39AB /* OFXServerAccount.m in Sources */,
 				34AFAD9C164B132E009E39AB /* OFXServerAccountRegistry.m in Sources */,
 				34AFADA0164B132E009E39AB /* OFXServerAccountType.m in Sources */,
-				34AFADD5164B16CF009E39AB /* OFXDocumentStoreScope.m in Sources */,
 				34F7D55F164B37F400911B0A /* OFXTrace.m in Sources */,
 				34BAF4BF164B78CC001BC4B0 /* OFXErrors.m in Sources */,
 				34D60296166ECAF900205BE5 /* OFXFileSnapshotUploadContentsTransfer.m in Sources */,
@@ -1864,6 +1944,7 @@
 				3474309116F1434C009C693C /* OFXAccountInfo.m in Sources */,
 				34C530E016F917610007477E /* OFXAccountClientParameters.m in Sources */,
 				6CBD70541701FE6F0035A9EC /* OFXAccountActivity.m in Sources */,
+				3482169C22E0EFB200801258 /* OFXBundle.swift in Sources */,
 				346A4DA017035F9800AD048A /* OFXDAVUtilities.m in Sources */,
 				346A4DAC1703708100AD048A /* OFXContainerDocumentIndex.m in Sources */,
 				34119024170CB84C008332E5 /* OFXContentIdentifier.m in Sources */,
@@ -2010,7 +2091,7 @@
 		};
 		34AFADB7164B1401009E39AB /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 34AFAD05164B0E8C009E39AB /* Omni-Bundle-Debug.xcconfig */;
+			baseConfigurationReference = 348216A222E0F27D00801258 /* Omni-XCTest-Debug.xcconfig */;
 			buildSettings = {
 				FRAMEWORK_SEARCH_PATHS = (
 					"\"$(DEVELOPER_LIBRARY_DIR)/Frameworks\"",
@@ -2034,7 +2115,7 @@
 		};
 		34AFADB8164B1401009E39AB /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 34AFAD06164B0E8C009E39AB /* Omni-Bundle-Release.xcconfig */;
+			baseConfigurationReference = 348216A622E0F27D00801258 /* Omni-XCTest-Release.xcconfig */;
 			buildSettings = {
 				FRAMEWORK_SEARCH_PATHS = (
 					"\"$(DEVELOPER_LIBRARY_DIR)/Frameworks\"",

@@ -9,11 +9,8 @@
 
 // The ~/Documents/Inbox folder is populated by UIDocumentInteractionController.
 
-@class ODSFileItem, ODSScope;
-
 @interface OUIDocumentInbox : NSObject
 
-+ (void)cloneInboxItem:(NSURL *)inboxURL toScope:(ODSScope *)scope completionHandler:(void (^)(ODSFileItem *newFileItem, NSError *errorOrNil))completionHandler;
-+ (BOOL)coordinatedRemoveItemAtURL:(NSURL *)URL error:(NSError **)outError;
++ (void)takeInboxItem:(NSURL *)inboxURL completionHandler:(void (^)(NSURL *newFileURL, NSError *errorOrNil))completionHandler;
 
 @end

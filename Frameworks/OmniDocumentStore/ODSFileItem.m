@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -74,17 +74,17 @@ NSString * const ODSFileItemInfoKey = @"fileItem";
 
 + (NSString *)displayNameForFileURL:(NSURL *)fileURL fileType:(NSString *)fileType;
 {
-    return [self editingNameForFileURL:fileURL fileType:fileType];
+    OBFinishPorting; // Use the method on UIDocument
 }
 
 + (NSString *)editingNameForFileURL:(NSURL *)fileURL fileType:(NSString *)fileType;
 {
-    return [[[fileURL path] lastPathComponent] stringByDeletingPathExtension];
+    OBFinishPorting; // Use the method on UIDocument
 }
 
 + (NSString *)exportingNameForFileURL:(NSURL *)fileURL fileType:(NSString *)fileType;
 {
-    return [self displayNameForFileURL:fileURL fileType:fileType];
+    OBFinishPorting; // Use the method on UIDocument
 }
 
 - initWithScope:(ODSScope *)scope fileURL:(NSURL *)fileURL isDirectory:(BOOL)isDirectory fileEdit:(OFFileEdit *)fileEdit userModificationDate:(NSDate *)userModificationDate;
@@ -95,7 +95,10 @@ NSString * const ODSFileItemInfoKey = @"fileItem";
     // OBPRECONDITION(fileEdit); // This is nil for files that haven't been downloaded (since we don't publish stub files any more).
     OBPRECONDITION(userModificationDate);
     OBPRECONDITION(scope.documentStore);
+    
+    // NOTE: This is failing now when we have an OmniPresence folder inside ~/Documents (but once our document picker and document store are gone, that won't be an issue).
     OBPRECONDITION([scope isFileInContainer:fileURL] || scope.documentsURL == nil);
+    
     // OBPRECONDITION(isDirectory == [[fileURL absoluteString] hasSuffix:@"/"]); // We can't compute isDirectory here based on the filesystem state since the file URL might not currently exist (if it represents a non-downloaded file in a cloud scope). However, it's not clear that we can rely on always having a / suffix in our URLs either, since the URL might be a security scoped resource that we need to preserve in its original form.
     
     if (!fileURL) {
@@ -187,23 +190,6 @@ NSString * const ODSFileItemInfoKey = @"fileItem";
     }
 }
 
-- (NSData *)emailData;
-{
-    return [NSData dataWithContentsOfURL:self.fileURL];
-}
-
-- (NSString *)emailFilename;
-{
-    OBPRECONDITION([NSThread isMainThread]);
-    
-    return [[self.fileURL path] lastPathComponent];
-}
-
-- (NSData *)dataForWritingToExternalStorage
-{
-    return nil;
-}
-
 - (NSString *)editingName;
 {
     OBPRECONDITION([NSThread isMainThread]);
@@ -225,6 +211,8 @@ NSString * const ODSFileItemInfoKey = @"fileItem";
 
 - (NSComparisonResult)compare:(ODSFileItem *)otherItem;
 {
+    OBFinishPorting;
+#if 0
     OBPRECONDITION([NSThread isMainThread]);
     
     // First, compare dates
@@ -260,6 +248,7 @@ NSString * const ODSFileItemInfoKey = @"fileItem";
     
     // If all else is equal, compare URLs (maybe different extensions?). (If those are equal, so are the items!)
     return [[self.fileURL absoluteString] compare:[otherItem.fileURL absoluteString]];
+#endif    
 }
 
 #pragma mark - ODSItem protocol

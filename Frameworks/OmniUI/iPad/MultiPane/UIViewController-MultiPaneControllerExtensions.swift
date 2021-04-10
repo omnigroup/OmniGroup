@@ -46,7 +46,7 @@ extension UIViewController: MultiPaneContentController {
 
 // MARK: -
 
-@objc protocol MultiPaneControllerFinding {
+@objc public protocol MultiPaneControllerFinding {
     var multiPaneController: MultiPaneController? { get }
     var presentingOrAncestorMultipaneController: MultiPaneController? { get }
 }
@@ -55,7 +55,7 @@ extension UIViewController: MultiPaneContentController {
 
 extension UIViewController: MultiPaneControllerFinding {
     // This doesn't work when the left pane is displayed as an overlay -- in that case the `parent` of the sidebar navigation controller is nil and instead the multi-pane controller is its presenting view controller.
-    @objc var multiPaneController: MultiPaneController? {
+    @objc public var multiPaneController: MultiPaneController? {
         if let mulitPane = self as? MultiPaneController {
             return mulitPane
         }

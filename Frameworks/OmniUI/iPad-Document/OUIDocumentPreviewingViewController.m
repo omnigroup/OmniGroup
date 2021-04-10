@@ -1,4 +1,4 @@
-// Copyright 2015-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,7 @@
 
 #import <OmniDocumentStore/ODSFileItem.h>
 
+#import <OmniUI/OUIAppController.h>
 #import <OmniUIDocument/OUIDocumentPreview.h>
 #import <OmniUIDocument/OUIDocumentPreviewView.h>
 
@@ -51,6 +52,8 @@ RCS_ID("$Id$");
 
 - (void)viewDidLoad;
 {
+    OBFinishPorting;
+#if 0
     [super viewDidLoad];
     
     self.view.backgroundColor = [UIColor whiteColor];
@@ -62,6 +65,7 @@ RCS_ID("$Id$");
     
     self.documentNameLabel.text = self.fileItem.name;
     self.documentUserModifiedDateLabel.text = [self _userModificationStringFromDate:self.fileItem.userModificationDate];
+#endif
 }
 
 - (void)viewDidLayoutSubviews;
@@ -69,7 +73,11 @@ RCS_ID("$Id$");
     // For peek, we only get to set the width or the height, depending on if we are in portrait or landscape. (For portrait we get to se the height; For landscape, the width.)
     CGFloat documentInfoHeight = [self.documentInfoContainerView systemLayoutSizeFittingSize:UILayoutFittingCompressedSize].height;
     
-    UIWindow *window = [UIApplication sharedApplication].delegate.window;
+    UIWindow *window = self.view.window;
+    if (window == nil) {
+        window = [OUIAppController windowForScene:nil options:OUIWindowForSceneOptionsAllowCascadingLookup];
+    }
+    
     CGSize windowSize = window.bounds.size;
     if (windowSize.width > windowSize.height) {
         // Landscape, set the width.
@@ -140,7 +148,11 @@ RCS_ID("$Id$");
         [visualEffectView.leftAnchor constraintEqualToAnchor:self.view.leftAnchor].active = YES;
     }
     
-    UIWindow *window = [UIApplication sharedApplication].delegate.window;
+    UIWindow *window = self.view.window;
+    if (window == nil) {
+        window = [OUIAppController windowForScene:nil options:OUIWindowForSceneOptionsAllowCascadingLookup];
+    }
+    
     CGSize windowSize = window.bounds.size;
     if (windowSize.width > windowSize.height) {
         // Landscape

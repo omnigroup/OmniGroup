@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,6 +19,8 @@
 #import <OmniFoundation/NSObject-OFExtensions.h>
 
 RCS_ID("$Id$")
+
+NS_ASSUME_NONNULL_BEGIN
 
 @interface OUIServerAccountValidationViewController ()
 
@@ -42,7 +44,7 @@ RCS_ID("$Id$")
     id <OFXServerAccountValidator> _accountValidator;
 }
 
-- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil;
+- (id)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil;
 {
     OBRejectUnusedImplementation(self, _cmd);
 }
@@ -79,7 +81,7 @@ RCS_ID("$Id$")
     };
     
     OFXServerAccount *account = _accountValidator.account;
-    _accountValidator.finished = ^(NSError *errorOrNil){
+    _accountValidator.finished = ^(NSError * _Nullable errorOrNil){
         OBASSERT([NSThread isMainThread]);
         
         OUIServerAccountValidationViewController *strongSelf = weakSelf;
@@ -119,7 +121,7 @@ RCS_ID("$Id$")
 
 #pragma mark - OUIActionViewController
 
-- (void)finishWithError:(NSError *)error;
+- (void)finishWithError:(NSError * _Nullable)error;
 {
     _accountValidator = nil;
     [super finishWithError:error];
@@ -159,7 +161,7 @@ RCS_ID("$Id$")
 
 #pragma mark - Private
 
-- (void)_finishedAddingAccount:(OFXServerAccount *)account withError:(NSError *)error;
+- (void)_finishedAddingAccount:(nullable OFXServerAccount *)account withError:(NSError * _Nullable)error;
 {
     if (!account) {
         [self finishWithError:error];
@@ -201,3 +203,6 @@ RCS_ID("$Id$")
 }
 
 @end
+
+NS_ASSUME_NONNULL_END
+

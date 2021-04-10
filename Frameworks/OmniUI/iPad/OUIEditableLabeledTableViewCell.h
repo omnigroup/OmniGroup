@@ -7,8 +7,13 @@
 
 #import <UIKit/UITableViewCell.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class OUIEditableLabeledValueCell;
 
 @interface OUIEditableLabeledTableViewCell : UITableViewCell
 @property(nonatomic,readonly) OUIEditableLabeledValueCell *editableValueCell;
 @end
+
+NS_ASSUME_NONNULL_END
+

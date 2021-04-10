@@ -7,6 +7,7 @@
 
 #import <OmniDocumentStore/ODSItem.h>
 #import <OmniFoundation/OFFileEdit.h>
+#import <OmniBase/OBUtilities.h>
 
 @class ODSScope;
 @class ODSFileItemEdit;
@@ -43,23 +44,18 @@ typedef void (^ODSScopeItemMotionStatus)(ODSFileItemMotion *itemMotion, NSURL *d
 
 @interface ODSFileItem : ODSItem <ODSItem, ODSFileItem>
 
-+ (NSString *)displayNameForFileURL:(NSURL *)fileURL fileType:(NSString *)fileType;
-+ (NSString *)editingNameForFileURL:(NSURL *)fileURL fileType:(NSString *)fileType;
-+ (NSString *)exportingNameForFileURL:(NSURL *)fileURL fileType:(NSString *)fileType;
++ (NSString *)displayNameForFileURL:(NSURL *)fileURL fileType:(NSString *)fileType NS_UNAVAILABLE OB_DEPRECATED_ATTRIBUTE;
++ (NSString *)editingNameForFileURL:(NSURL *)fileURL fileType:(NSString *)fileType NS_UNAVAILABLE OB_DEPRECATED_ATTRIBUTE;
++ (NSString *)exportingNameForFileURL:(NSURL *)fileURL fileType:(NSString *)fileType NS_UNAVAILABLE OB_DEPRECATED_ATTRIBUTE;
 
 - initWithScope:(ODSScope *)scope fileURL:(NSURL *)fileURL isDirectory:(BOOL)isDirectory fileEdit:(OFFileEdit *)fileEdit userModificationDate:(NSDate *)userModificationDate;
 
 @property(readonly,nonatomic) NSURL *fileURL;
 @property(readonly,nonatomic) NSString *fileType;
 
-@property(readonly) NSData *emailData; // packages cannot currently be emailed, so this allows subclasses to return a different content for email
-@property(readonly) NSString *emailFilename;
-
-@property(readonly) NSData *dataForWritingToExternalStorage;  // should be flat file marked as always flat file so desktop doesn't inflate it on edit
-
-@property(readonly,nonatomic) NSString *editingName;
-@property(readonly,nonatomic) NSString *name;
-@property(readonly,nonatomic) NSString *exportingName;
+@property(readonly,nonatomic) NSString *editingName NS_UNAVAILABLE OB_DEPRECATED_ATTRIBUTE;
+@property(readonly,nonatomic) NSString *name NS_UNAVAILABLE OB_DEPRECATED_ATTRIBUTE;
+@property(readonly,nonatomic) NSString *exportingName NS_UNAVAILABLE OB_DEPRECATED_ATTRIBUTE;
 
 @property(copy,nonatomic) OFFileEdit *fileEdit; // Information about the last edited state of the file on disk; nil if not present.
 @property(readonly,nonatomic) NSDate *fileModificationDate; // Wrapper for fileEdit.fileModificationDate

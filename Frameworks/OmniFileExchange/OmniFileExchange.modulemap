@@ -4,4 +4,10 @@ framework module OmniFileExchange {
 
     export *
     module * { export * }
+    
+    explicit module Internal {
+        header "OFXAccountAgent.h"
+        header "OFXAccountAgent-Internal.h"
+    }
+
 }

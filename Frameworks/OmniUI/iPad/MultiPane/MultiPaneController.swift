@@ -285,6 +285,11 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
     
     override open func viewDidLoad() {
         super.viewDidLoad()
+        
+        if view.backgroundColor == nil {
+            view.backgroundColor = UIColor.systemBackground
+        }
+        
         if deferChildControllerContainment {
             deferChildControllerContainment = false
             // do containment work
@@ -500,7 +505,17 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
 //MARK: - Private api
 //MARK: - Pane containment and layout
     @objc /**REVIEW**/ internal func pane(forViewController controller: UIViewController) -> Pane? {
-        return orderedPanes.first { $0.viewController == controller }
+        return orderedPanes.first { pane in
+            if pane.viewController == controller {
+                return true
+            } else if controller is MultipanePresentationWrapperViewController {
+                assert(controller.children.count == 1 && !(controller.children.first is MultipanePresentationWrapperViewController))
+                if pane.viewController == controller.children.first {
+                    return true
+                }
+            }
+            return false
+        }
     }
     
     private func insertPane(pane: Pane) {
@@ -541,50 +556,65 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
     // Called when a view controller size/trait transition occurs.
     fileprivate func updateDisplayMode(forSize size: CGSize, traitCollection: UITraitCollection) {
         guard pane(withLocation: .center) != nil else {
-            // <bug:///174861> (iOS-OmniFocus Crasher: Has repro: iPadOS 13, specialized MultiPaneController.updateDisplayMode(forSize:traitCollection:) (MultiPaneController.swift:0), AppCoordinator.initialSetup() (AppCoordinator.swift:641))
+            // <bug:///174861> (iOS-OmniFocus Crasher: Has repro: iPadOS 13, specialized MultiPaneController.updateDisplayMode(forSize:traitCollection:) (MultiPaneController.swift:0), DatabaseSceneCoordinator.initialSetup() (DatabaseSceneCoordinator.swift:641))
             // In iOS 13, this started getting called from transitions very early in the window setup; don't crash, but return early
             return
         }
-        guard canUpdateDisplayMode() else { return }
+        
+        var preferredMode: MultiPaneDisplayMode = .multi
         
         if traitCollection.horizontalSizeClass == .compact {
-            displayMode = .compact
-            return
-        }
-        
-        let screenSize = UIScreen.main.bounds.size
-        var preferredMode: MultiPaneDisplayMode = .multi
-        if size.width < screenSize.height || size.width < screenSize.width {
-            // portrait or multitasking mode, traditionally single pane
-            preferredMode = .single
+            preferredMode = .compact
         } else {
-            // landscape, or traditionally multi pane
-            preferredMode = .multi
-        }
-
-        let mode = layoutDelegate?.wantsTransition?(to: preferredMode, on: self, using: size) ?? preferredMode
-        
-        // .Compact isn't a valid response here, so guard against it and use the preferredMode instead.
-        if mode != .compact {
-            preferredMode = mode
-        }
-        
-        displayMode = preferredMode
-        
-        updatePinButtonItems()
-    }
-    
-    private func canUpdateDisplayMode() -> Bool {
-        // we can't do any updates to the display until we dismiss any modal controllers managed by the MPC (controllers managed by a Pane).
-        // This can take a runloop turn or two, so we use the dismissal completion handler to call our update system again.
-        if let presentedController = presentedViewController {
-            if pane(forViewController: presentedController) != nil {
-                // skip doing display updates since we have modal controllers in the way.
-                return false
+            let screenSize = UIScreen.main.bounds.size
+            
+            if size.width < screenSize.height || size.width < screenSize.width {
+                // portrait or multitasking mode, traditionally single pane
+                preferredMode = .single
+            } else {
+                // landscape, or traditionally multi pane
+                preferredMode = .multi
+            }
+            
+            let mode = layoutDelegate?.wantsTransition?(to: preferredMode, on: self, using: size) ?? preferredMode
+            
+            // .Compact isn't a valid response here, so guard against it and use the preferredMode instead.
+            if mode != .compact {
+                preferredMode = mode
             }
         }
         
-        return true
+        let savedFirstResponder: UIResponder?
+        if let responder = UIResponder.firstResponder {
+            savedFirstResponder = responder
+        } else {
+            savedFirstResponder = nil
+        }
+        
+        if let presentedController = presentedViewController, let pane = pane(forViewController: presentedController), displayMode == .compact && preferredMode != .compact {
+                let shieldView = UIView(frame: view.frame)
+                shieldView.backgroundColor = UIColor.systemBackground
+                view.addSubview(shieldView)
+                view.bringSubviewToFront(shieldView)
+            
+            self.dismiss(animated: true, completion: {
+                self.displayMode = preferredMode
+                self.updatePinButtonItems()
+                
+                shieldView.removeFromSuperview()
+                    
+                // Need a turn of the run loop to get the shield view out of there. Otherwise, the appearance animation gets wonky.
+                DispatchQueue.main.asyncAfter(deadline: DispatchTime.now()+0.1, execute: {
+                    if !pane.isVisible {
+                        self.showPane(at: pane.location, animated: false)
+                        savedFirstResponder?.becomeFirstResponder()
+                    }
+                })
+            })
+        } else {
+            displayMode = preferredMode
+            updatePinButtonItems()
+        }
     }
     
     // update the panes with the given size, setting the proper pane.displayStyle and preparing embedded panes for layout
@@ -751,6 +781,9 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
                     // only used in non-compact environments.
                     if let showPaneOverride = self.layoutDelegate?.shouldShowPane?(at: pane.location, multiPaneController: self) {
                         pane.visibleWhenEmbedded = showPaneOverride
+                        if pane.configuration.canBePinned {
+                            pane.configuration.isPinned = true
+                        }
                     }
                 }
                 

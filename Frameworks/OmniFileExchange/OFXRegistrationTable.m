@@ -1,4 +1,4 @@
-// Copyright 2013-2014,2017 The Omni Group. All rights reserved.
+// Copyright 2013-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -112,6 +112,17 @@ static void _unlockedRegister(OFXRegistrationTable *self, NSString *key, id obje
     });
 }
 
+- (void)afterUpdate:(void (^)(void))action;
+{
+    // Run the block through our background queue and back through the main queue to make sure it happens after any currently queued updates.
+    action = [action copy];
+    dispatch_async(_queue, ^{
+        dispatch_async(dispatch_get_main_queue(), ^{
+            action();
+        });
+    });
+}
+
 #pragma mark - Debugging
 
 - (NSString *)shortDescription;
@@ -123,8 +134,9 @@ static void _unlockedRegister(OFXRegistrationTable *self, NSString *key, id obje
 
 - (void)_queueUpdate;
 {
-    // dispatch_get_current_queue() is deprecated sadly.
-    //OBPRECONDITION(dispatch_get_current_queue() == _queue);
+#ifdef DEBUG
+    dispatch_assert_queue(_queue);
+#endif
     
     if (_publicUpdateQueued)
         return;
@@ -138,8 +150,9 @@ static void _unlockedRegister(OFXRegistrationTable *self, NSString *key, id obje
 
 - (void)_performUpdate;
 {
-    // dispatch_get_current_queue() is deprecated sadly.
-    //OBPRECONDITION(dispatch_get_current_queue() == dispatch_get_main_queue());
+#ifdef DEBUG
+    dispatch_assert_queue(dispatch_get_main_queue());
+#endif
     
     __block NSDictionary *table;
     

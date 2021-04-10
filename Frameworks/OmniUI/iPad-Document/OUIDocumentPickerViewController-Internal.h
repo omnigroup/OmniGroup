@@ -10,14 +10,10 @@
 
 @interface OUIDocumentPickerViewController (/*Internal*/) <OUIDocumentPickerScrollViewDelegate>
 
-- (void)_applicationWillOpenDocument;
-
 - (void)_beginIgnoringDocumentsDirectoryUpdates;
 - (void)_endIgnoringDocumentsDirectoryUpdates;
 
 - (void)_updateToolbarItemsForTraitCollection:(UITraitCollection *)traitCollection animated:(BOOL)animated;
-
-- (ODSFileItem *)_preferredVisibleItemFromSet:(NSSet *)fileItemsNeedingPreviewUpdate;
 
 - (void)_renameItem:(ODSItem *)item baseName:(NSString *)baseName completionHandler:(void (^)(NSError *errorOrNil))completionHandler;
 

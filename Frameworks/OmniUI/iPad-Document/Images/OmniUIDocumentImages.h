@@ -9,9 +9,9 @@
 
 @interface UIImage (OmniUIDocumentImages)
 
-+ (UIImage *)OmniUIDocument_MenuItemConvertToFile;
-+ (UIImage *)OmniUIDocument_MenuItemTemplate;
+@property(nonatomic,readonly,class) UIImage *OmniUIDocument_MenuItemConvertToFile NS_SWIFT_NAME(OmniUIDocument_MenuItemConvertToFile);
+@property(nonatomic,readonly,class) UIImage *OmniUIDocument_MenuItemTemplate NS_SWIFT_NAME(OmniUIDocument_MenuItemTemplate);
 
-+ (UIImage *)OmniUIDocument_ServerAccountValidationSuccessImage;
+@property(nonatomic,readonly,class) UIImage *OmniUIDocument_ServerAccountValidationSuccessImage NS_SWIFT_NAME(OmniUIDocument_ServerAccountValidationSuccessImage);
 
 @end

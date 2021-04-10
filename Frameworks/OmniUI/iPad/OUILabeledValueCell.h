@@ -7,6 +7,8 @@
 
 #import <UIKit/UIView.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface OUILabeledValueCell : UIView
 
 + (UIFont *)labelFont;
@@ -19,8 +21,8 @@
 @property (nonatomic) BOOL usesActualLabelWidth;
 @property (nonatomic, copy) NSString *label;
 @property (nonatomic, assign) NSTextAlignment labelAlignment;
-@property (nonatomic, copy) NSString *value;
-@property (nonatomic, copy) NSString *valuePlaceholder;
+@property (nonatomic, nullable, copy) NSString *value;
+@property (nonatomic, nullable, copy) NSString *valuePlaceholder;
 @property (nonatomic, getter=isHighlighted) BOOL highlighted;
 
 - (void)labelChanged;
@@ -43,3 +45,5 @@
 - (UITableViewCell *)containingTableViewCell;
 
 @end
+
+NS_ASSUME_NONNULL_END

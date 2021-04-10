@@ -1,4 +1,4 @@
-// Copyright 2001-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -1177,8 +1177,7 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
     if (oneItem) {
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
         if (oneItem.releaseNotesURLString.length > 0 && [[UIApplication sharedApplication].delegate isKindOfClass:[OUIAppController class]]) {
-            OUIAppController *appController = (OUIAppController *)[UIApplication sharedApplication].delegate;
-            [appController showNewsURLString:oneItem.releaseNotesURLString evenIfShownAlready:NO];
+            OUIAppController.sharedController.newsURLStringToShowWhenReady = oneItem.releaseNotesURLString;
         }
 #endif
         // MAS Build.

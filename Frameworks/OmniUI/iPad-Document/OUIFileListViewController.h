@@ -10,7 +10,7 @@
 
 @class ODAVFileInfo;
 
-@interface OUIFileListViewController : UITableViewController <OUIDocumentExporterHost>
+@interface OUIFileListViewController : UITableViewController
 
 @property (nonatomic, copy) NSArray *files;
 

@@ -7,7 +7,6 @@
 
 typedef NS_ENUM(NSInteger, OUIExportOptionsType) {
     OUIExportOptionsNone, /* not used for exporting. used for getting a rough idea of how many export types are available */
-    OUIExportOptionsExport,
     OUIExportOptionsEmail,
     OUIExportOptionsSendToApp,
     OUIExportOptionsSendToService,

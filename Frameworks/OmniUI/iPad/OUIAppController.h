@@ -16,11 +16,22 @@ NS_ASSUME_NONNULL_BEGIN
 @class UIBarButtonItem;
 @class OUIMenuOption;
 
-#define OUI_PRESENT_ERROR(error) [[[OUIAppController controller] class] presentError:(error) fromViewController:[[[[UIApplication sharedApplication] delegate] window] rootViewController] file:__FILE__ line:__LINE__]
+// IMPORTANT note about the error/alert presentation macros.
+//
+// Avoid using the _IN_ACTIVE_SCENE variants. These will attempt to look up an active scene, but all the scenes that are currently on screen (side-by-side, or in slideover) are in the active state, so it will pick one subject to the semantics of `+windowForScene:options:` when passed a nil scene and allowing cascading lookup.
+//
+// Prefer to specify a non-nil scene, or a view controller to present from.
+
+#define OUI_PRESENT_ERROR_IN_SCENE(error, scene) [[[OUIAppController controller] class] presentError:(error) inScene:scene file:__FILE__ line:__LINE__]
+#define OUI_PRESENT_ERROR_IN_ACTIVE_SCENE(error) [[[OUIAppController controller] class] presentError:(error) inScene:nil file:__FILE__ line:__LINE__]
 #define OUI_PRESENT_ERROR_FROM(error, viewController) [[[OUIAppController controller] class] presentError:(error) fromViewController:(viewController) file:__FILE__ line:__LINE__]
 
-#define OUI_PRESENT_ALERT(error) [[[OUIAppController controller] class] presentAlert:(error) fromViewController:[[[[UIApplication sharedApplication] delegate] window] rootViewController] file:__FILE__ line:__LINE__]
+#define OUI_PRESENT_ALERT_IN_SCENE(error, scene) [[[OUIAppController controller] class] presentAlert:(error) inScene:scene file:__FILE__ line:__LINE__]
+#define OUI_PRESENT_ALERT_IN_ACTIVE_SCENE(error) [[[OUIAppController controller] class] presentAlert:(error) inScene:nil file:__FILE__ line:__LINE__]
 #define OUI_PRESENT_ALERT_FROM(error, viewController) [[[OUIAppController controller] class] presentAlert:(error) fromViewController:(viewController) file:__FILE__ line:__LINE__]
+
+#define OUI_PRESENT_ERROR_DEPRECATED(error) [[[OUIAppController controller] class] presentError:(error) fromViewController:[OUIAppController controller].window.rootViewController file:__FILE__ line:__LINE__]
+#define OUI_PRESENT_ALERT_DEPRECATED(error) [[[OUIAppController controller] class] presentAlert:(error) fromViewController:[OUIAppController controller].window.rootViewController file:__FILE__ line:__LINE__]
 
 /// An error with a @(NO) for this user info key will not get an error reporting option.
 extern NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey;
@@ -53,10 +64,19 @@ typedef NS_OPTIONS(NSUInteger, OUIApplicationEditionOptions) {
     OUIApplicationEditionOptionsVerbose                     = (OUIApplicationEditionOptionsIncludeApplicationName | OUIApplicationEditionOptionsIncludeMajorVersionNumber),
 };
 
+typedef NS_OPTIONS(NSUInteger, OUIWindowForSceneOptions) {
+    OUIWindowForSceneOptionsNone                            = 0,
+    OUIWindowForSceneOptionsAllowCascadingLookup            = 1 << 0,
+    OUIWindowForSceneOptionsRequireForegroundActiveScene    = 1 << 1,
+    OUIWindowForSceneOptionsRequireForegroundScene          = 1 << 2,
+};
+
 @property (class, nonatomic, nullable, readonly) NSString *applicationEdition;
 + (nullable NSString *)applicationEditionWithOptions:(OUIApplicationEditionOptions)options;
 
 @property (class, nonatomic, nullable, readonly) NSString *majorVersionNumberString;
+
+extern NSString *const OUIHelpBookNameKey; // @"OUIHelpBookName" is the Info.plist key which tells the app where to find its built-in help
 
 @property (class, nonatomic, nullable, readonly) NSString *helpEdition;
 @property (class, nonatomic, nullable, readonly) NSString *helpTitle;
@@ -64,32 +84,37 @@ typedef NS_OPTIONS(NSUInteger, OUIApplicationEditionOptions) {
 @property (class, nonatomic, readonly, getter=inSandboxStore) BOOL sandboxStore;
 
 + (BOOL)canHandleURLScheme:(NSString *)urlScheme;
-+ (void)openURL:(NSURL*)url options:(NSDictionary<NSString *, id> *)options completionHandler:(void (^ __nullable)(BOOL success))completion NS_AVAILABLE_IOS(10_0) NS_EXTENSION_UNAVAILABLE_IOS("");
++ (void)openURL:(NSURL*)url options:(NSDictionary<NSString *, id> *)options completionHandler:(void (^ __nullable)(BOOL success))completion NS_EXTENSION_UNAVAILABLE_IOS("") NS_DEPRECATED_IOS(13_0, 13_0, "The singleton app controller cannot know the correct presentation source in a multi-scene context.");
 
 + (BOOL)shouldOfferToReportError:(NSError *)error;
 + (void)presentError:(NSError *)error NS_EXTENSION_UNAVAILABLE_IOS("Use +presentError:fromViewController: or another variant instead.");
 + (void)presentError:(NSError *)error fromViewController:(UIViewController *)viewController;
++ (void)presentError:(NSError *)error inScene:(nullable UIScene *)scene file:(const char * _Nullable)file line:(int)line NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based approach.");
 + (void)presentError:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char * _Nullable)file line:(int)line;
 + (void)presentError:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char * _Nullable)file line:(int)line optionalActionTitle:(nullable NSString *)optionalActionTitle optionalAction:(void (^ __nullable)(UIAlertAction *action))optionalAction;
 + (void)presentError:(NSError *)error fromViewController:(UIViewController *)viewController cancelButtonTitle:(NSString *)cancelButtonTitle optionalActionTitle:(nullable NSString *)optionalActionTitle optionalAction:(void (^ __nullable)(UIAlertAction *action))optionalAction;
 
-+ (void)presentAlert:(NSError *)error file:(const char * _Nullable)file line:(int)line NS_EXTENSION_UNAVAILABLE_IOS("Use +presentAlert:fromViewController:file:line: instead.");  // 'OK' instead of 'Cancel' for the button title
++ (void)presentAlert:(NSError *)error inScene:(nullable UIScene *)scene file:(const char * _Nullable)file line:(int)line NS_EXTENSION_UNAVAILABLE_IOS("Use +presentAlert:fromViewController:file:line: instead.");  // 'OK' instead of 'Cancel' for the button title
++ (void)presentAlert:(NSError *)error file:(const char * _Nullable)file line:(int)line NS_EXTENSION_UNAVAILABLE_IOS("Use +presentAlert:fromViewController:file:line: instead.") NS_DEPRECATED_IOS(13_0, 13_0, "The singleton app controller cannot know the correct presentation source in a multi-scene context. Use +presentAlert:fromViewController:file:line: instead.");  // 'OK' instead of 'Cancel' for the button title
 
 + (void)presentAlert:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char * _Nullable)file line:(int)line;  // 'OK' instead of 'Cancel' for the button title
 
 - (NSOperationQueue *)backgroundPromptQueue;
 
-@property(nonatomic,nullable,retain) IBOutlet UIWindow *window;
+@property (nonatomic, nullable, strong) IBOutlet UIWindow *window NS_DEPRECATED_IOS(5_0, 13_0, "Use view controller and scene based alternatives.");
+
+/// When passing a nil scene and OUIWindowForSceneOptionsAllowCascadingLookup, this method will attempt to find a scene which mathces the other options passed.
+///
+/// However, when doing this search, all the scenes that are currently on screen (side-by-side, or in slideover) are in the active state. The resolved window will be the main window for the scene associated with the key window, but failing that, a random scene out of the active ones will be picked, which is likely not what you want.
++ (nullable UIWindow *)windowForScene:(nullable UIScene *)scene options:(OUIWindowForSceneOptions)options NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based approach.");
 
 // Can be set by early startup code and queried by later startup code to determine whether to launch into a plain state (no inbox item opened, no last document opened, etc). This can be used by applications integrating crash reporting software when they detect a crash from a previous launch and want to report it w/o other launch-time activities.
 @property(nonatomic,assign) BOOL shouldPostponeLaunchActions;
 - (void)addLaunchAction:(void (^)(void))launchAction;
 
-// Implicitly includes Done as the right bar button
-- (void)showAboutScreenInNavigationController:(UINavigationController * _Nullable)navigationController NS_EXTENSION_UNAVAILABLE_IOS("");
-- (void)showAboutScreenInNavigationController:(UINavigationController * _Nullable)navigationController withDoneButton:(BOOL)withDoneButton NS_EXTENSION_UNAVAILABLE_IOS("");
-@property(nonatomic,readonly) BOOL hasOnlineHelp;
-- (void)showOnlineHelp:(nullable id)sender NS_EXTENSION_UNAVAILABLE_IOS("");
+@property (nonatomic, nullable, readonly) NSURL *helpForwardURL; // Used to rewrite URLs to point at our website as needed
+@property (nonatomic, nullable, readonly) NSURL *onlineHelpURL; // URL pointing at our help (could be embedded in the app)
+@property (nonatomic, readonly) BOOL hasOnlineHelp;
 
 // UIApplicationDelegate methods that we implement
 - (void)applicationWillTerminate:(UIApplication *)application;
@@ -97,7 +122,7 @@ typedef NS_OPTIONS(NSUInteger, OUIApplicationEditionOptions) {
 - (void)applicationDidReceiveMemoryWarning:(UIApplication *)application;
 
 // A UIResponder to make first responder if the app delegate is asked to become first responder.
-@property(nonatomic,readonly) UIResponder *defaultFirstResponder;
+@property(nonatomic,readonly) UIResponder *defaultFirstResponder NS_EXTENSION_UNAVAILABLE_IOS("Not available in extensions.");
 
 // Just stores a default that other parts of the app can use to set/get what keyboard to use.
 @property(nonatomic,assign) UIKeyboardAppearance defaultKeyboardAppearance;
@@ -112,17 +137,14 @@ typedef NS_OPTIONS(NSUInteger, OUIApplicationEditionOptions) {
 
 // App menu support
 @property (nonatomic, strong, nullable) NSString *newsURLStringToShowWhenReady;
-@property (nonatomic, strong, nullable) NSString *newsURLCurrentlyShowing;
-@property (nonatomic, weak) OUIWebViewController *newsViewController NS_EXTENSION_UNAVAILABLE_IOS("OUIWebViewController not available in app extensions.");
-- (void)dismissAppMenuIfVisible:(UINavigationController *)navigationController;
 
 @property (nonatomic, readonly) BOOL hasUnreadNews;
 @property (nonatomic, readonly) BOOL hasAnyNews;
+- (BOOL)haveShownReleaseNotes:(NSString *)urlString;
+- (void)didShowReleaseNotes:(NSString *)urlString;
 
 /// The most recent news URL, which could be an unread one or just the most recently shown one. Will be nil if there is no unread news and no already-read news stored in preferences.
 - (NSString *)mostRecentNewsURLString;
-
-- (OUIWebViewController * _Nullable)showNewsURLString:(NSString *)urlString evenIfShownAlready:(BOOL)showNoMatterWhat NS_EXTENSION_UNAVAILABLE_IOS("OUIWebViewController not available in app extensions.");
 
 typedef NS_ENUM(NSInteger, OUIAppMenuOptionPosition) {
     OUIAppMenuOptionPositionBeforeReleaseNotes,
@@ -144,21 +166,24 @@ extern NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey; // @"
 - (NSString *)currentSKU;
 - (NSString *)purchaseDateString;
 - (NSString *)appSpecificDebugInfo;
-- (UIBarButtonItem *)newAppMenuBarButtonItem; // insert this into your view controllers; see -additionalAppMenuOptionsAtPosition: for customization
+
+@property (nonatomic, readonly) BOOL newsWantsAttention;
+
 - (NSArray *)additionalAppMenuOptionsAtPosition:(OUIAppMenuOptionPosition)position; // override to supplement super's return value with additional OUIMenuOptions
 - (nullable OUIMenuOption *)specialFirstAppMenuOption; // Override to place an option at the top of the list, separate from the rest
-- (void)sendFeedbackWithSubject:(NSString * _Nullable)subject body:(NSString * _Nullable)body NS_EXTENSION_UNAVAILABLE_IOS("Feedback cannot be sent from extensions.");
-- (IBAction)sendFeedback:(id)sender NS_EXTENSION_UNAVAILABLE_IOS("");
-- (IBAction)signUpForOmniNewsletter:(id)sender NS_EXTENSION_UNAVAILABLE_IOS("");
+- (void)sendFeedbackWithSubject:(NSString * _Nullable)subject body:(NSString * _Nullable)body inScene:(nullable UIScene *)scene NS_EXTENSION_UNAVAILABLE_IOS("Feedback cannot be sent from extensions.");
+- (void)signUpForOmniNewsletterFromViewController:(UIViewController *)viewController NS_EXTENSION_UNAVAILABLE_IOS("Extensions cannot sign up for the Omni newsletter");
 - (MFMailComposeViewController * _Nullable)mailComposeController;
-- (void)sendMailTo:(NSArray<NSString *> *)recipients withComposeController:(MFMailComposeViewController *)mailComposeController;
+- (void)sendMailTo:(NSArray<NSString *> *)recipients withComposeController:(MFMailComposeViewController *)mailComposeController inScene:(nullable UIScene *)scene;
 
-/// Presents a view controller displaying the contents of the given URL in an in-app web view. The view controller is wrapped in a UINavigationController instance; if non-nil, the given title is shown in the navigation bar of this controller. Returns the web view controller being used to show the URL's content.
-- (nullable OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(nullable NSString *)title NS_EXTENSION_UNAVAILABLE_IOS("OUIWebViewController not available in app extensions.");
-- (nullable OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(nullable NSString *)title modalPresentationStyle:(UIModalPresentationStyle)presentationStyle modalTransitionStyle:(UIModalTransitionStyle)transitionStyle animated:(BOOL)animated NS_EXTENSION_UNAVAILABLE_IOS("OUIWebViewController not available in app extensions.");
-- (nullable OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(nullable NSString *)title modalPresentationStyle:(UIModalPresentationStyle)presentationStyle modalTransitionStyle:(UIModalTransitionStyle)transitionStyle animated:(BOOL)animated navigationBarHidden:(BOOL)navigationBarHidden NS_EXTENSION_UNAVAILABLE_IOS("OUIWebViewController not available in app extensions.");
-- (nullable OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(nullable NSString *)title animated:(BOOL)animated navigationController:(UINavigationController *)navigationController NS_EXTENSION_UNAVAILABLE_IOS("OUIWebViewController not available in app extensions.");
-
+@property(nonatomic,readonly) UIImage *appMenuImage;
+@property(nonatomic,readonly) UIImage *aboutMenuImage;
+@property(nonatomic,readonly) UIImage *helpMenuImage;
+@property(nonatomic,readonly) UIImage *sendFeedbackMenuImage;
+@property(nonatomic,readonly) UIImage *newsletterMenuImage;
+@property(nonatomic,readonly) UIImage *announcementMenuImage;
+@property(nonatomic,readonly) UIImage *announcementBadgedMenuImage;
+@property(nonatomic,readonly) UIImage *releaseNotesMenuImage;
 @property(nonatomic,readonly) UIImage *settingsMenuImage;
 @property(nonatomic,readonly) UIImage *inAppPurchasesMenuImage;
 @property(nonatomic,readonly) UIImage *quickStartMenuImage;
@@ -169,7 +194,7 @@ extern NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey; // @"
 
 @property(nonatomic,readonly) BOOL useCompactBarButtonItemsIfApplicable; // will allow for possible compact versions of navbar items
 
-- (UIImage *)exportBarButtonItemImageInHostViewController:(UIViewController *)hostViewController;
+- (UIImage *)exportBarButtonItemImageInViewController:(UIViewController *)viewController;
 
 - (void)willWaitForSnapshots;
 - (void)didFinishWaitingForSnapshots;

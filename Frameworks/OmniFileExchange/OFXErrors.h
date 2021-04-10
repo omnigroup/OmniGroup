@@ -45,6 +45,14 @@ enum {
     OFXNoContainer,
     OFXTooManyRecentFileTransferErrors,
     
+    OFXSyncAgentNotStarted,
+    OFXSyncDisabled,
+    OFXSyncUnableToCreateConnection,
+
+    
+    // Migration (enabled for macOS and iOS so that error codes are the same on both platforms)
+    OFXMigrationAlreadyActive,
+    
     // Document store scope
     OFXFileItemNotDownloaded,
 };

@@ -40,15 +40,6 @@ RCS_ID("$Id$");
 
 NS_ASSUME_NONNULL_BEGIN
 
-OBDEPRECATED_METHOD(-createNewDocument:);
-OBDEPRECATED_METHOD(-createdNewDocument:templateURL:completionHandler:);
-OBDEPRECATED_METHOD(-urlForNewDocumentOfType:); // could write a wrapper that asks the scope, but it has this now.
-OBDEPRECATED_METHOD(-documentStore:scannedFileItems:); // -documentStore:addedFileItems:
-
-OBDEPRECATED_METHOD(-documentStore:fileWithURL:andDate:willMoveToURL:);
-OBDEPRECATED_METHOD(-documentStore:fileWithURL:andDate:finishedMoveToURL:successfully:);
-
-
 NSString *ODSPathExtensionForFileType(NSString *fileType, BOOL *outIsPackage)
 {
     OBPRECONDITION(fileType);
@@ -140,9 +131,7 @@ static unsigned ScopeContext;
     [scope addObserver:self forKeyPath:OFValidateKeyPath(scope, hasFinishedInitialScan) options:0 context:&ScopeContext];
     [scope addObserver:self forKeyPath:OFValidateKeyPath(scope, fileItems) options:0 context:&ScopeContext];
 
-    if ([scope isTrash])
-        _trashScope = scope;
-    else if ([scope isTemplate])
+    if ([scope isTemplate])
         _templateScope = scope;
 
     NSArray *scopes = [_scopes arrayByAddingObject:scope];
@@ -194,30 +183,9 @@ static unsigned ScopeContext;
     return nil;
 }
 
-- (Class)fileItemClassForURL:(NSURL *)fileURL; // Defaults to asking the delegate. The URL may not exist yet!
+- (Class)fileItemClassForURL:(NSURL *)fileURL;
 {
-    id <ODSStoreDelegate> delegate = _weak_delegate;
-    OBPRECONDITION(delegate);
-    
-    // Nil means we don't want it to show up.
-    return [delegate documentStore:self fileItemClassForURL:fileURL];
-}
-
-- (BOOL)canViewFileTypeWithIdentifier:(NSString *)fileType;
-{
-    id <ODSStoreDelegate> delegate = _weak_delegate;
-    OBPRECONDITION(delegate);
-
-    return [delegate documentStore:self canViewFileTypeWithIdentifier:fileType];
-}
-
-- (nullable ODSFileItem *)preferredFileItemForNextAutomaticDownload:(NSSet <__kindof ODSFileItem *> *)fileItems;
-{
-    id <ODSStoreDelegate> delegate = _weak_delegate;
-
-    if (delegate && [delegate respondsToSelector:@selector(documentStore:preferredFileItemForNextAutomaticDownload:)])
-        return [delegate documentStore:self preferredFileItemForNextAutomaticDownload:fileItems];
-    return nil;
+    return [ODSFileItem class];
 }
 
 - (void)addAfterInitialDocumentScanAction:(void (^)(void))action;
@@ -356,41 +324,10 @@ static unsigned ScopeContext;
     return nil;
 }
 
-- (nullable NSString *)documentTypeForNewFilesOfType:(ODSDocumentType)type;
-{
-    id <ODSStoreDelegate> delegate = _weak_delegate;
-
-    switch (type) {
-        case ODSDocumentTypeNormal:
-            if ([delegate respondsToSelector:@selector(documentStoreDocumentTypeForNewFiles:)])
-                return [delegate documentStoreDocumentTypeForNewFiles:self];
-            break;
-        case ODSDocumentTypeTemplate:
-            if ([delegate respondsToSelector:@selector(documentStoreDocumentTypeForNewTemplateFiles:)])
-                return [delegate documentStoreDocumentTypeForNewTemplateFiles:self];
-            break;
-        case ODSDocumentTypeOther:
-            if ([delegate respondsToSelector:@selector(documentStoreDocumentTypeForNewOtherFiles:)])
-                return [delegate documentStoreDocumentTypeForNewOtherFiles:self];
-            break;
-        default:
-            OBFinishPortingLater("Is there a new document type we don't know about?");
-            break;
-    }
-
-    if ([delegate respondsToSelector:@selector(documentStoreEditableDocumentTypes:)]) {
-        NSArray *editableTypes = [delegate documentStoreEditableDocumentTypes:self];
-
-        OBASSERT([editableTypes count] < 2); // If there is more than one, we might pick the wrong one.
-
-        return [editableTypes lastObject];
-    }
-
-    return nil;
-}
-
 - (NSString *)defaultFilenameForDocumentType:(ODSDocumentType)type isDirectory:(BOOL *)outIsDirectory;
 {
+    OBFinishPorting;
+#if 0
     NSString *documentType = [self documentTypeForNewFilesOfType:type];
     
     id <ODSStoreDelegate> delegate = _weak_delegate;
@@ -407,25 +344,13 @@ static unsigned ScopeContext;
     NSString *pathExtension = ODSPathExtensionForFileType(documentType, outIsDirectory);
     
     return [baseName stringByAppendingPathExtension:pathExtension];
-}
-
-- (NSString *)documentTypeForNewFiles;
-{
-    return [self documentTypeForNewFilesOfType:ODSDocumentTypeNormal];
-}
-
-- (NSURL *)temporaryURLForCreatingNewDocumentOfType:(ODSDocumentType)type;
-{
-    BOOL isDirectory;
-    NSString *documentType = [self documentTypeForNewFilesOfType:type];
-    NSString *pathExtension = ODSPathExtensionForFileType(documentType, &isDirectory);
-    
-    NSString *temporaryFilename = [OFXMLCreateID() stringByAppendingPathExtension:pathExtension];
-    return [NSURL fileURLWithPath:[NSTemporaryDirectory() stringByAppendingPathComponent:temporaryFilename] isDirectory:isDirectory];
+#endif
 }
 
 - (void)moveNewTemporaryDocumentAtURL:(NSURL *)fileURL toScope:(ODSScope *)scope folder:(nullable ODSFolderItem *)folder documentType:(ODSDocumentType)type documentName:(nullable)documentName completionHandler:(void (^)(ODSFileItem *createdFileItem, NSError *error))handler;
 {
+    OBFinishPorting;
+#if 0
     NSString *documentType = [self documentTypeForNewFilesOfType:type];
 
     id <ODSStoreDelegate> delegate = _weak_delegate;
@@ -456,6 +381,7 @@ static unsigned ScopeContext;
     }
     
     [scope addDocumentInFolder:folder baseName:baseName fileType:documentType fromURL:fileURL option:ODSStoreAddByMovingTemporarySourceToAvailableDestinationURL completionHandler:handler];
+#endif
 }
 
 - (void)moveNewTemporaryDocumentAtURL:(NSURL *)fileURL toScope:(ODSScope *)scope folder:(nullable ODSFolderItem *)folder documentType:(ODSDocumentType)type completionHandler:(void (^)(ODSFileItem *createdFileItem, NSError *error))handler;
@@ -498,24 +424,9 @@ static unsigned ScopeContext;
         [mergedFileItems unionSet:scope.fileItems];
 
     if (OFNOTEQUAL(_mergedFileItems, mergedFileItems)) {
-        NSSet *addedFileItems;
-        
-        id <ODSStoreDelegate> delegate = self->_weak_delegate;
-
-        if ([delegate respondsToSelector:@selector(documentStore:addedFileItems:)]) {
-            NSMutableSet *items = [[NSMutableSet alloc] initWithSet:mergedFileItems];
-            if (_mergedFileItems)
-                [items minusSet:_mergedFileItems];
-            if ([items count])
-                addedFileItems = [items copy];
-        }
-        
         [self willChangeValueForKey:OFValidateKeyPath(self, mergedFileItems)];
         _mergedFileItems = [[NSMutableSet alloc] initWithSet:mergedFileItems];
         [self didChangeValueForKey:OFValidateKeyPath(self, mergedFileItems)];
-        
-        if (addedFileItems)
-            [delegate documentStore:self addedFileItems:addedFileItems];
     }
     
     [self _flushAfterInitialDocumentScanActions];
@@ -570,24 +481,6 @@ static unsigned ScopeContext;
         [delegate documentStore:self fileItem:fileItem willMoveToURL:newURL];
 }
 
-- (void)_fileItemEdit:(ODSFileItemEdit *)fileItemEdit willCopyToURL:(NSURL *)newURL;
-{
-    OBPRECONDITION([NSThread isMainThread]);
-    
-    id <ODSStoreDelegate> delegate = _weak_delegate;
-    if ([delegate respondsToSelector:@selector(documentStore:fileItemEdit:willCopyToURL:)])
-        [delegate documentStore:self fileItemEdit:fileItemEdit willCopyToURL:newURL];
-}
-
-- (void)_fileItemEdit:(ODSFileItemEdit *)fileItemEdit finishedCopyToURL:(NSURL *)destinationURL withFileItemEdit:(ODSFileItemEdit *)destinationFileItemEditOrNil;
-{
-    OBPRECONDITION([NSThread isMainThread]);
-    
-    id <ODSStoreDelegate> delegate = _weak_delegate;
-    if ([delegate respondsToSelector:@selector(documentStore:fileItemEdit:finishedCopyToURL:withFileItemEdit:)])
-        [delegate documentStore:self fileItemEdit:fileItemEdit finishedCopyToURL:destinationURL withFileItemEdit:destinationFileItemEditOrNil];
-}
-
 - (void)_willRemoveFileItems:(NSArray <ODSFileItem *> *)fileItems;
 {
     OBPRECONDITION([NSThread isMainThread]);
@@ -603,5 +496,3 @@ static unsigned ScopeContext;
 @end
 
 NS_ASSUME_NONNULL_END
-
-

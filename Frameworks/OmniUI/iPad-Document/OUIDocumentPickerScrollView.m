@@ -26,7 +26,6 @@
 #import <OmniUI/UINavigationController-OUIExtensions.h>
 
 #import "OUIDocumentPickerItemView-Internal.h"
-#import "OUIDocumentRenameSession.h"
 #import "OUIDocumentParameters.h"
 
 RCS_ID("$Id$");
@@ -674,49 +673,6 @@ static OUIDocumentPickerItemView *_itemViewHitByRecognizer(NSArray *itemViews, U
     return _itemViewHitByRecognizer(_groupItemViews, recognizer);
 }
 
-// Used to pick file items that are visible for automatic download (if they are small and we are on wi-fi) or preview generation.
-- (ODSFileItem *)preferredVisibleItemFromSet:(NSSet *)fileItemsNeedingPreviewUpdate;
-{
-    // Prefer to update items that are visible, and then among those, do items starting at the top-left.
-    ODSFileItem *bestFileItem = nil;
-    CGFloat bestVisiblePercentage = 0;
-    CGPoint bestOrigin = CGPointZero;
-
-    CGPoint contentOffset = self.contentOffset;
-    CGRect bounds = self.bounds;
-    
-    CGRect contentRect;
-    contentRect.origin = contentOffset;
-    contentRect.size = bounds.size;
-
-    OFExtent contentYExtent = OFExtentFromRectYRange(contentRect);
-    if (contentYExtent.length <= 1)
-        return nil; // Avoid divide by zero below.
-    
-    for (OUIDocumentPickerFileItemView *fileItemView in _fileItemViews) {
-        ODSFileItem *fileItem = (ODSFileItem *)fileItemView.item;
-        if ([fileItemsNeedingPreviewUpdate member:fileItem] == nil)
-            continue;
-
-        CGRect itemFrame = fileItemView.frame;
-        CGPoint itemOrigin = itemFrame.origin;
-        OFExtent itemYExtent = OFExtentFromRectYRange(itemFrame);
-
-        OFExtent itemVisibleYExtent = OFExtentIntersection(itemYExtent, contentYExtent);
-        CGFloat itemVisiblePercentage = itemVisibleYExtent.length / contentYExtent.length;
-        
-        if (itemVisiblePercentage > bestVisiblePercentage ||
-            itemOrigin.y < bestOrigin.y ||
-            (itemOrigin.y == bestOrigin.y && itemOrigin.x < bestOrigin.x)) {
-            bestFileItem = fileItem;
-            bestVisiblePercentage = itemVisiblePercentage;
-            bestOrigin = itemOrigin;
-        }
-    }
-    
-    return bestFileItem;
-}
-
 - (void)previewsUpdatedForFileItem:(ODSFileItem *)fileItem;
 {
     for (OUIDocumentPickerFileItemView *fileItemView in _fileItemViews) {
@@ -862,7 +818,7 @@ static LayoutInfo _updateLayoutAndSetContentSize(OUIDocumentPickerScrollView *se
 
 - (void)layoutSubviews;
 {
-    if (_renameSession || !self.window) {
+    if (!self.window) {
         return;
     }
     LayoutInfo layoutInfo = _updateLayout(self);
@@ -874,9 +830,7 @@ static LayoutInfo _updateLayoutAndSetContentSize(OUIDocumentPickerScrollView *se
         DEBUG_LAYOUT(@"  Bailing since we have zero size");
         return;
     }
-    
-    [_renameSession layoutDimmingView];
-    
+        
     if (self.window) {  // otherwise, our width isn't set correctly yet and frame math goes wrong before it goes right, causing undesired animations
         if (_topControls) {
             if ([_topControls superview] != self){
@@ -1131,33 +1085,6 @@ static LayoutInfo _updateLayoutAndSetContentSize(OUIDocumentPickerScrollView *se
     [super layoutSubviews];
 }
 
-#pragma mark - NSObject (OUIDocumentPickerItemMetadataView)
-
-- (void)documentPickerItemNameStartedEditing:(id)sender;
-{
-    UIView *view = sender; // This is currently the private name+date view. Could hook this up better if this all works out (maybe making our item view publish a 'started editing' control event.
-    OUIDocumentPickerItemView *itemView = [view enclosingViewOfClass:[OUIDocumentPickerItemView class]];
-    
-    // should be one of ours, not some other temporary animating item view
-    OBASSERT([_fileItemViews containsObjectIdenticalTo:itemView] ^ [_groupItemViews containsObjectIdenticalTo:itemView]);
-
-    UITextField *nameTextField = itemView.editingNameTextField;
-    OBASSERT(nameTextField);
-
-    [self.delegate documentPickerScrollView:self itemViewStartedEditingName:itemView nameTextField:nameTextField];
-}
-
-- (void)documentPickerItemNameEndedEditing:(id)sender withName:(NSString *)name;
-{
-    UIView *view = sender; // This is currently the private name+date view. Could hook this up better if this all works out (maybe making our item view publish a 'started editing' control event.
-    OUIDocumentPickerItemView *itemView = [view enclosingViewOfClass:[OUIDocumentPickerItemView class]];
-    
-    // should be one of ours, not some other temporary animating item view
-    OBASSERT([_fileItemViews containsObjectIdenticalTo:itemView] ^ [_groupItemViews containsObjectIdenticalTo:itemView]);
-    
-    [self.delegate documentPickerScrollView:self itemView:itemView finishedEditingName:(NSString *)name];
-}
-
 #pragma mark - Private
 
 - (CGRect)_frameForItem:(ODSItem *)item layoutInfo:(LayoutInfo)layoutInfo;
@@ -1190,10 +1117,7 @@ static LayoutInfo _updateLayoutAndSetContentSize(OUIDocumentPickerScrollView *se
     
     if (positionIndex == NSNotFound) {
         OBASSERT([_items member:item] == nil); // If we didn't find the positionIndex it should mean that the item isn't in _items or _sortedItems. If the item is in _items but not _sortedItems, its probably becase we havn't yet called -sortItems.
-        if (![[item scope] isExternal]) {
-            // We probably shouldn't have asked for the frame of an external item either, but it's less shocking that there's no index for an external item.
-            OBASSERT_NOT_REACHED("Asking for the frame of an item that is unknown/ignored");
-        }
+        OBASSERT_NOT_REACHED("Asking for the frame of an item that is unknown/ignored");
         return CGRectZero;
     }
     
@@ -1210,9 +1134,6 @@ static LayoutInfo _updateLayoutAndSetContentSize(OUIDocumentPickerScrollView *se
 
 - (void)_itemViewLongpressed:(UIGestureRecognizer*)gesture
 {
-    if (self.renameSession) {
-        return;
-    }
     if (gesture.state == UIGestureRecognizerStateBegan) {        
         OUIDocumentPickerItemView *itemView = OB_CHECKED_CAST(OUIDocumentPickerItemView, gesture.view);
         

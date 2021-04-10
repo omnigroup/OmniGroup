@@ -1,4 +1,4 @@
-// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -30,7 +30,7 @@ NSString * const OUIUndoPopoverWillShowNotification = @"OUIUndoPopoverWillShowNo
 @end
 
 @interface OUIUndoBarButtonItem ()
-- (OUIMenuController *)_menuControllerForRegularMenuPresentation;
+- (OUIMenuController *)_menuControllerForRegularMenuPresentationInWindow:(UIWindow *)window;
 - (UIAlertController *)_alertControllerForCompactMenuPresentation;
 @end
 
@@ -283,7 +283,7 @@ static id _commonInit(OUIUndoBarButtonItem *self)
     [menuPresenter presentMenuForUndoBarButtonItem:self];
 }
 
-- (OUIMenuController *)_menuControllerForRegularMenuPresentation NS_EXTENSION_UNAVAILABLE_IOS("");
+- (OUIMenuController *)_menuControllerForRegularMenuPresentationInWindow:(UIWindow *)window NS_EXTENSION_UNAVAILABLE_IOS("");
 {
     if (!_menuController) {
         _menuController = [[OUIMenuController alloc] init];
@@ -296,7 +296,7 @@ static id _commonInit(OUIUndoBarButtonItem *self)
     }
     
     // retint each time, because Focus uses multiple tints
-    _menuController.tintColor = [OUIAppController controller].window.tintColor;
+    _menuController.tintColor = window.window.tintColor;
     
     id <OUIUndoBarButtonItemTarget> target = _weak_undoBarButtonItemTarget;
     
@@ -446,7 +446,7 @@ static BOOL DidDismissAnyMenus;
     else {
         // we can use our popover
         UINavigationController *navigationController = [self isKindOfClass:[UINavigationController class]] ? (UINavigationController *)self : self.navigationController;
-        OUIMenuController *menuController = [barButtonItem _menuControllerForRegularMenuPresentation];
+        OUIMenuController *menuController = [barButtonItem _menuControllerForRegularMenuPresentationInWindow:self.view.window];
         [menuController.popoverPresentationController addManagedBarButtonItemsFromNavigationController:navigationController];
         
         [[NSNotificationCenter defaultCenter] postNotificationName:OUIUndoPopoverWillShowNotification object:barButtonItem];

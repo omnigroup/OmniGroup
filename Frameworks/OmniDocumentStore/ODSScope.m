@@ -25,9 +25,6 @@ OBDEPRECATED_METHOD(-urlForNewDocumentInFolderNamed:baseName:fileType:); // fold
 OBDEPRECATED_METHOD(-addDocumentInFolderNamed:baseName:fromURL:option:completionHandler:); // folderURL
 OBDEPRECATED_METHOD(-copyCurrentlyUsedFileNamesInFolderNamed:ignoringFileURL:); // folderURL
 
-OBDEPRECATED_METHOD(-fileWithURL:andDate:willCopyToURL:);
-OBDEPRECATED_METHOD(-fileWithURL:andDate:finishedCopyToURL:andDate:successfully:);
-
 @interface ODSScope (/*Private*/)
 @property(nonatomic,copy) NSSet *fileItems; // redeclared so we can use -mutableSetValueForKey:
 @end
@@ -237,9 +234,6 @@ static NSString *_makeCanonicalPath(NSString *path)
 #endif
     
     ODSFileItem *fileItem = [[fileItemClass alloc] initWithScope:self fileURL:fileURL isDirectory:isDirectory fileEdit:fileEdit userModificationDate:userModificationDate];
-    
-    // Shouldn't make file items for files we can't view.
-    OBASSERT([documentStore canViewFileTypeWithIdentifier:fileItem.fileType]);
     
     DEBUG_STORE(@"  made new file item %@ for %@", fileItem, fileURL);
     
@@ -565,7 +559,7 @@ static OFFileEdit *_performAdd(ODSScope *scope, NSURL *fromURL, NSURL *toURL, Ad
 
         ODSStore *documentStore = self.documentStore;
         canView = ([documentStore fileItemClassForURL:fakeDestinationURL] != Nil);
-        canView &= (fileType != nil) && [documentStore canViewFileTypeWithIdentifier:fileType];
+        canView &= (fileType != nil);
     } while (0);
     
     if (!canView) {
@@ -798,9 +792,6 @@ static OFFileEdit *_performAdd(ODSScope *scope, NSURL *fromURL, NSURL *toURL, Ad
         OBASSERT([NSThread isMainThread]);
         OBASSERT((destinationEditOrNil == nil) ^ (error == nil));
         
-        // This percolates up to copy the preview
-        [self fileItemEdit:sourceItemMotion.originalItemEdit finishedCopyToURL:destinationURL withFileItemEdit:destinationEditOrNil];
-        
         if (status)
             status(sourceItemMotion, destinationURL, destinationEditOrNil, error);
     };
@@ -808,11 +799,6 @@ static OFFileEdit *_performAdd(ODSScope *scope, NSURL *fromURL, NSURL *toURL, Ad
     [self _doMotion:@"COPY" withItems:items toFolder:parentFolder ignoringFileItems:nil status:copyStatus completionHandler:completionHandler
              action:
      ^OFFileMotionResult *(ODSFileItemMotion *sourceItemMotion, NSURL *destinationFileURL, NSError **outError) {
-         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-             // This percolates up to make the new location an alias for previews for the expected copy
-             [self fileItemEdit:sourceItemMotion.originalItemEdit willCopyToURL:destinationFileURL];
-         }];
-
          OFFileEdit *resultEdit = _performAdd(self, sourceItemMotion.sourceFileURL, destinationFileURL, AddByCreatingParentDirectories, outError);
          if (!resultEdit)
              return nil;
@@ -1088,25 +1074,6 @@ static NSString *_filenameForUserGivenFolderName(NSString *name)
     }];
 }
 
-- (BOOL)isTrash;
-{
-    return NO;
-}
-
-static ODSScope *_trashScope = nil;
-
-+ (ODSScope *)trashScope;
-{
-    return _trashScope;
-}
-
-+ (void)setTrashScope:(ODSScope *)trashScope;
-{
-    assert(_trashScope == nil); // We shouldn't have more than one trash in an iOS app
-    _trashScope = trashScope;
-    OBPRECONDITION(_trashScope == nil || [_trashScope isTrash]); // The trash scope should know it's the trash
-}
-
 // This risks deadlock, please try not to use it!
 - (void)_performSynchronousFileAccessUsingBlock:(void (^)(void))block;
 {
@@ -1116,38 +1083,6 @@ static ODSScope *_trashScope = nil;
     }
 
     [_actionOperationQueue addOperations:@[[NSBlockOperation blockOperationWithBlock:block]] waitUntilFinished:YES];
-}
-
-+ (BOOL)trashItemAtURL:(NSURL *)url resultingItemURL:(NSURL **)outResultingURL error:(NSError **)outError;
-{
-    ODSScope *trashScope = [self trashScope];
-
-    // Let's require the trash so we don't unrecoverably delete things we mean to recoverably delete
-    assert(trashScope != nil);
-
-    __block BOOL success = NO;
-    __block NSError *strongError = nil;
-    __block NSURL *resultingURL = nil;
-    [trashScope _performSynchronousFileAccessUsingBlock:^{
-        NSMutableSet *usedFilenames = [trashScope _copyCurrentlyUsedFileNamesInFolderAtURL:nil];
-
-        __autoreleasing NSError *error = nil;
-        resultingURL = [trashScope _moveURL:url avoidingFileNames:usedFilenames usingCoordinator:NO error:&error];
-        if (!resultingURL) {
-            strongError = error;
-        }
-
-        success = (resultingURL != nil);
-    }];
-
-    if (!success && outError) {
-        *outError = strongError;
-    }
-
-    if (outResultingURL != NULL && resultingURL != nil)
-        *outResultingURL = resultingURL;
-    
-    return success;
 }
 
 static ODSScope *_templateScope = nil;
@@ -1167,21 +1102,6 @@ static ODSScope *_templateScope = nil;
     assert(_templateScope == nil); // We shouldn't have more than one template scope in an iOS app
     _templateScope = templateScope;
     OBPRECONDITION(_templateScope == nil || [_templateScope isTemplate]); // The template scope should know it's the template scope
-}
-
-- (BOOL)canRenameDocuments;
-{
-    return YES;
-}
-
-- (BOOL)canCreateFolders;
-{
-    return !self.isTrash;
-}
-
-- (BOOL)isExternal;
-{
-    return NO;
 }
 
 - (BOOL)prepareToRelinquishItem:(ODSItem *)item error:(NSError **)outError;
@@ -1380,15 +1300,6 @@ static ODSScope *_templateScope = nil;
 
     // We don't call -_updateItemTree since this gets called for moves w/in a folder. The caller is responsible for handling this if needed.
     //[self _updateItemTree];
-}
-
-- (void)fileItemEdit:(ODSFileItemEdit *)fileItemEdit willCopyToURL:(NSURL *)newURL;
-{
-    [self.documentStore _fileItemEdit:fileItemEdit willCopyToURL:newURL];
-}
-- (void)fileItemEdit:(ODSFileItemEdit *)fileItemEdit finishedCopyToURL:(NSURL *)destinationURL withFileItemEdit:(ODSFileItemEdit *)destinationFileItemEditOrNil;
-{
-    [self.documentStore _fileItemEdit:fileItemEdit finishedCopyToURL:(NSURL *)destinationURL withFileItemEdit:destinationFileItemEditOrNil];
 }
 
 - (void)_fileItemContentsChanged:(ODSFileItem *)fileItem;

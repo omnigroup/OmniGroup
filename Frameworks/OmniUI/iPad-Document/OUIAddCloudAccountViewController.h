@@ -9,7 +9,9 @@
 #import <OmniFileExchange/OFXServerAccount.h>
 #import <OmniUI/OUIAppController.h>
 
-@class OFXServerAccount;
+NS_ASSUME_NONNULL_BEGIN
+
+@class OFXAgentActivity, OFXServerAccount;
 
 /*
  Shows a list of available account types and navigates to an account editor
@@ -17,8 +19,10 @@
 
 @interface OUIAddCloudAccountViewController : UIViewController <OUIDisabledDemoFeatureAlerter>
 
-- (instancetype)initWithUsageMode:(OFXServerAccountUsageMode)usageModeToCreate;
+- (instancetype)initWithAgentActivity:(OFXAgentActivity *)agentActivity usageMode:(OFXServerAccountUsageMode)usageModeToCreate;
 
-@property (copy, nonatomic) void (^finished)(OFXServerAccount *newAccountOrNil);
+@property (copy, nullable, nonatomic) void (^finished)(OFXServerAccount * _Nullable newAccountOrNil);
 
 @end
+
+NS_ASSUME_NONNULL_END
