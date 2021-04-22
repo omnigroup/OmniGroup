@@ -13,9 +13,6 @@
 /* Error message when renaming a folder and there is already a folder with the requested name. */
 "Cannot rename folder." = "不能重命名文件夹。";
 
-/* Document store scope display name */
-"Local Documents" = "本地文稿";
-
 /* Error suggestion when renaming a file to a name that is already in use. */
 "Please choose a different name." = "请选择其他名称。";
 

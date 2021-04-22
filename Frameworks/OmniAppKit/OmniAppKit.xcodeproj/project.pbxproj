@@ -80,7 +80,7 @@
 		342F05181B69795200C7BB34 /* OAAppearance.h in Headers */ = {isa = PBXBuildFile; fileRef = 342F05161B69794C00C7BB34 /* OAAppearance.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		342F05191B69795300C7BB34 /* OAAppearance.h in Headers */ = {isa = PBXBuildFile; fileRef = 342F05161B69794C00C7BB34 /* OAAppearance.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		342F051A1B69795900C7BB34 /* OAAppearance.m in Sources */ = {isa = PBXBuildFile; fileRef = 342F05171B69794C00C7BB34 /* OAAppearance.m */; };
-		342F051B1B69795900C7BB34 /* OAAppearance.m in Sources */ = {isa = PBXBuildFile; fileRef = 342F05171B69794C00C7BB34 /* OAAppearance.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		342F051B1B69795900C7BB34 /* OAAppearance.m in Sources */ = {isa = PBXBuildFile; fileRef = 342F05171B69794C00C7BB34 /* OAAppearance.m */; };
 		342F051C1B69795F00C7BB34 /* OAAppearance.plist in Resources */ = {isa = PBXBuildFile; fileRef = 342F05151B69794C00C7BB34 /* OAAppearance.plist */; };
 		342F05241B6979A500C7BB34 /* OAAppearanceBenchmarks.m in Sources */ = {isa = PBXBuildFile; fileRef = 342F051D1B69799A00C7BB34 /* OAAppearanceBenchmarks.m */; };
 		342F05251B6979A500C7BB34 /* OAAppearanceTestBaseline.h in Headers */ = {isa = PBXBuildFile; fileRef = 342F051E1B69799A00C7BB34 /* OAAppearanceTestBaseline.h */; };
@@ -90,7 +90,7 @@
 		342F05291B6979A500C7BB34 /* OAAppearanceTestSubclass1.plist in Resources */ = {isa = PBXBuildFile; fileRef = 342F05221B69799A00C7BB34 /* OAAppearanceTestSubclass1.plist */; };
 		342F052A1B6979A500C7BB34 /* OAAppearanceTestSubclass2.plist in Resources */ = {isa = PBXBuildFile; fileRef = 342F05231B69799A00C7BB34 /* OAAppearanceTestSubclass2.plist */; };
 		342F05301B697A6100C7BB34 /* OAAppearanceColors.h in Headers */ = {isa = PBXBuildFile; fileRef = 342F052C1B697A6100C7BB34 /* OAAppearanceColors.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		342F05311B697A6100C7BB34 /* OAAppearanceColors.m in Sources */ = {isa = PBXBuildFile; fileRef = 342F052D1B697A6100C7BB34 /* OAAppearanceColors.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		342F05311B697A6100C7BB34 /* OAAppearanceColors.m in Sources */ = {isa = PBXBuildFile; fileRef = 342F052D1B697A6100C7BB34 /* OAAppearanceColors.m */; };
 		342F05331B697A8D00C7BB34 /* OAAppearance.plist in Resources */ = {isa = PBXBuildFile; fileRef = 342F052B1B697A6100C7BB34 /* OAAppearance.plist */; };
 		342F05341B697A9000C7BB34 /* OAAppearanceDarkColors.plist in Resources */ = {isa = PBXBuildFile; fileRef = 342F052E1B697A6100C7BB34 /* OAAppearanceDarkColors.plist */; };
 		342F05351B697A9200C7BB34 /* OAAppearanceDefaultColors.plist in Resources */ = {isa = PBXBuildFile; fileRef = 342F052F1B697A6100C7BB34 /* OAAppearanceDefaultColors.plist */; };
@@ -115,7 +115,7 @@
 		3459EE391B694A8400D4F085 /* OAColor.h in Headers */ = {isa = PBXBuildFile; fileRef = 3459EE331B694A8400D4F085 /* OAColor.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3459EE3A1B694A8400D4F085 /* OAColor.h in Headers */ = {isa = PBXBuildFile; fileRef = 3459EE331B694A8400D4F085 /* OAColor.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3459EE3B1B694A8400D4F085 /* OAColor.m in Sources */ = {isa = PBXBuildFile; fileRef = 3459EE341B694A8400D4F085 /* OAColor.m */; };
-		3459EE3C1B694A8400D4F085 /* OAColor.m in Sources */ = {isa = PBXBuildFile; fileRef = 3459EE341B694A8400D4F085 /* OAColor.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		3459EE3C1B694A8400D4F085 /* OAColor.m in Sources */ = {isa = PBXBuildFile; fileRef = 3459EE341B694A8400D4F085 /* OAColor.m */; };
 		345E74250C6D07CB0034A811 /* OASendFeedbackErrorRecovery.h in Headers */ = {isa = PBXBuildFile; fileRef = 345E74230C6D07CB0034A811 /* OASendFeedbackErrorRecovery.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		345E74260C6D07CB0034A811 /* OASendFeedbackErrorRecovery.m in Sources */ = {isa = PBXBuildFile; fileRef = 345E74240C6D07CB0034A811 /* OASendFeedbackErrorRecovery.m */; };
 		346A98A215903B0F00CA3359 /* NSAnimationContext-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 346A98A015903B0F00CA3359 /* NSAnimationContext-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -132,19 +132,19 @@
 		348293EC1B1F842C00812D27 /* NSTextStorage-OAFixes.m in Sources */ = {isa = PBXBuildFile; fileRef = 348293E91B1F842C00812D27 /* NSTextStorage-OAFixes.m */; };
 		348293ED1B1F842C00812D27 /* NSTextStorage-OAFixes.m in Sources */ = {isa = PBXBuildFile; fileRef = 348293E91B1F842C00812D27 /* NSTextStorage-OAFixes.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		3484DD8B194FFC3500D83731 /* NSAttributedString-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F36FE8AB2E911C9CC38 /* NSAttributedString-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		3484DD8C194FFC3A00D83731 /* NSAttributedString-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F20FE8AB2E911C9CC38 /* NSAttributedString-OAExtensions.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		3484DD8C194FFC3A00D83731 /* NSAttributedString-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F20FE8AB2E911C9CC38 /* NSAttributedString-OAExtensions.m */; };
 		3484DD8D194FFC4400D83731 /* NSLayoutManager-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 3425E48E09C5F2A3003140C9 /* NSLayoutManager-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		3484DD8E194FFC4800D83731 /* NSLayoutManager-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 3425E48F09C5F2A3003140C9 /* NSLayoutManager-OAExtensions.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		3484DD8E194FFC4800D83731 /* NSLayoutManager-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 3425E48F09C5F2A3003140C9 /* NSLayoutManager-OAExtensions.m */; };
 		3484DD8F194FFC5500D83731 /* OAFeatures.h in Headers */ = {isa = PBXBuildFile; fileRef = 34275D1C13981621003F28F5 /* OAFeatures.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3484DD90194FFC6000D83731 /* OAFindPattern.h in Headers */ = {isa = PBXBuildFile; fileRef = 137CBE6F011899AF7F000001 /* OAFindPattern.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		3484DD91194FFC6400D83731 /* OAFindPattern.m in Sources */ = {isa = PBXBuildFile; fileRef = 137CBE70011899AF7F000001 /* OAFindPattern.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		3484DD91194FFC6400D83731 /* OAFindPattern.m in Sources */ = {isa = PBXBuildFile; fileRef = 137CBE70011899AF7F000001 /* OAFindPattern.m */; };
 		3484DD92194FFC6D00D83731 /* OAParagraphStyle.h in Headers */ = {isa = PBXBuildFile; fileRef = 3473992111947194002DF726 /* OAParagraphStyle.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3484DD93194FFC7700D83731 /* OATextAttributes.h in Headers */ = {isa = PBXBuildFile; fileRef = 34ED275B11DBBD2E006C33FF /* OATextAttributes.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		3484DD94194FFC7C00D83731 /* OATextAttributes.m in Sources */ = {isa = PBXBuildFile; fileRef = 34ED275C11DBBD2E006C33FF /* OATextAttributes.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		3484DD94194FFC7C00D83731 /* OATextAttributes.m in Sources */ = {isa = PBXBuildFile; fileRef = 34ED275C11DBBD2E006C33FF /* OATextAttributes.m */; };
 		3484DD95194FFC7F00D83731 /* OATextAttachment.h in Headers */ = {isa = PBXBuildFile; fileRef = 344B6E4712A4D3DC00D876CD /* OATextAttachment.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3484DD96194FFC8400D83731 /* OATextAttachment.m in Sources */ = {isa = PBXBuildFile; fileRef = 344B6E4812A4D3DC00D876CD /* OATextAttachment.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		3484DD97194FFC8700D83731 /* OATextAttachmentCell.h in Headers */ = {isa = PBXBuildFile; fileRef = 3451254912D421E6009A1AF0 /* OATextAttachmentCell.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		3484DD98194FFC8A00D83731 /* OATextAttachmentCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3451254A12D421E6009A1AF0 /* OATextAttachmentCell.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		3484DD98194FFC8A00D83731 /* OATextAttachmentCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3451254A12D421E6009A1AF0 /* OATextAttachmentCell.m */; };
 		3484DD99194FFC9700D83731 /* OATextStorage.h in Headers */ = {isa = PBXBuildFile; fileRef = 3401161411E516C10016ADB3 /* OATextStorage.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3484DD9A194FFCB100D83731 /* NSFileWrapper-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 340DD55F09AD38E900E8A437 /* NSFileWrapper-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3484DD9B194FFCB500D83731 /* NSFileWrapper-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 340DD56009AD38E900E8A437 /* NSFileWrapper-OAExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
@@ -513,7 +513,7 @@
 		4D8B6F571C56E3E700C05FA2 /* OAAppearance-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D8B6F551C56E3E700C05FA2 /* OAAppearance-Internal.h */; };
 		4D8B6F581C56E3E700C05FA2 /* OAAppearance-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D8B6F551C56E3E700C05FA2 /* OAAppearance-Internal.h */; };
 		4D9E9C7C1C52C1EB00BAE4A3 /* OAAppearancePropertyListCoder.h in Headers */ = {isa = PBXBuildFile; fileRef = 4DA2ED401C51B70700CCEE3C /* OAAppearancePropertyListCoder.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4D9E9C7D1C52C1F300BAE4A3 /* OAAppearancePropertyListCoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 4DA2ED411C51B70700CCEE3C /* OAAppearancePropertyListCoder.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		4D9E9C7D1C52C1F300BAE4A3 /* OAAppearancePropertyListCoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 4DA2ED411C51B70700CCEE3C /* OAAppearancePropertyListCoder.m */; };
 		4D9E9C7F1C52C2C800BAE4A3 /* OAAppearancePropertyListCoderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D9E9C7E1C52C2C800BAE4A3 /* OAAppearancePropertyListCoderTests.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		4DA2ED421C51B70700CCEE3C /* OAAppearancePropertyListCoder.h in Headers */ = {isa = PBXBuildFile; fileRef = 4DA2ED401C51B70700CCEE3C /* OAAppearancePropertyListCoder.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4DA2ED431C51B70700CCEE3C /* OAAppearancePropertyListCoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 4DA2ED411C51B70700CCEE3C /* OAAppearancePropertyListCoder.m */; };
@@ -3392,7 +3392,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastTestingUpgradeCheck = 0510;
-				LastUpgradeCheck = 1120;
+				LastUpgradeCheck = 1130;
 				TargetAttributes = {
 					34C12AFB194FF90F005CB70B = {
 						CreatedOnToolsVersion = 6.0;

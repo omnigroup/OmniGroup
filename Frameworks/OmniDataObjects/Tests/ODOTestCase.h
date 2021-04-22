@@ -43,6 +43,10 @@
 @end
 #import "ODOTestCaseOptionalScalarTypes-Properties.h"
 
+@interface ODOTestCaseOptionalDate : ODOTestCaseObject
+@end
+#import "ODOTestCaseOptionalDate-Properties.h"
+
 @interface ODOTestCaseMultipleBooleans : ODOTestCaseObject
 @end
 #import "ODOTestCaseMultipleBooleans-Properties.h"

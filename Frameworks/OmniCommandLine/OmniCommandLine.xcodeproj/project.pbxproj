@@ -398,7 +398,7 @@
 		34824A9B1742E3C200253D52 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1120;
+				LastUpgradeCheck = 1130;
 				ORGANIZATIONNAME = "The Omni Group";
 				TargetAttributes = {
 					34824AA31742E3C200253D52 = {

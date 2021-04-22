@@ -76,12 +76,6 @@
 /* Lose unsynced changes warning: title */
 "Discard unsynced edits?" = "未同期の編集内容を破棄しますか？";
 
-/* Message letting the user know that their document was moved from one folder to another. */
-"Document moved." = "書類が移動しました。";
-
-/* Title for alert informing user that the document has been reloaded with edits from another device */
-"Document Updated" = "書類が更新されました";
-
 /* Toolbar button title for returning to list of documents. */
 "Documents <back button>" = "書類";
 
@@ -108,20 +102,14 @@
 /* Info item accessibility label */
 "Info" = "情報";
 
-/* Notice for the user about the last edit to a document (unknown device) */
-"Last edit: %@" = "最後の編集：%@";
-
-/* Notice for the user about the last edit to a document (another device) */
-"Last edit: %@ on another device" = "最後の編集：%@（別のデバイス）";
-
-/* Notice for the user about the last edit to a document (this device) */
-"Last edit: %@ on this device" = "最後の編集：%@（このデバイス）";
-
 /* OmniPresence sync status: prefix for the 'last sync' status */
 "Last sync" = "最後の同期";
 
 /* Update news: button title */
 "Learn More" = "詳しい情報";
+
+/* Local Documents display name */
+"Local Documents" = "ローカル書類";
 
 /* Server Account Setup label: location */
 "Location" = "場所";
@@ -190,9 +178,6 @@
 
 /* rename button title */
 "Rename" = "名称変更";
-
-/* Message format for alert informing user that the document has been renamed on another device */
-"Renamed to %@." = "名称が %@ に変更されました。";
 
 /* replace button title */
 "Replace" = "置き換える";

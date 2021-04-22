@@ -27,6 +27,52 @@
 
 RCS_ID("$Id$")
 
+@implementation ODOSQLFetchAggregation
+
++ (instancetype)aggregationWithExtremum:(ODOFetchExtremum)extremum attribute:(ODOAttribute *)attribute;
+{
+    return [[[self alloc] initWithExtremum:extremum attribute:attribute] autorelease];
+}
+
+- (instancetype)initWithExtremum:(ODOFetchExtremum)extremum attribute:(ODOAttribute *)attribute;
+{
+    if (!(self = [super init])) {
+        return nil;
+    }
+    _extremum = extremum;
+    _attribute = [attribute retain];
+    return self;
+}
+
+- (id)copyWithZone:(NSZone *)zone;
+{
+    return [self retain];
+}
+
+- (void)dealloc;
+{
+    [_attribute release];
+    [super dealloc];
+}
+
+- (NSString *)debugDescription;
+{
+    return [NSString stringWithFormat:@"<%@:%p %@>", NSStringFromClass([self class]), self, [self _sqliteAggregateColumnSpecification]];
+}
+
+- (NSString *)_sqliteAggregateColumnSpecification;
+{
+    NSString *key = [_attribute name];
+    switch (self.extremum) {
+        case ODOFetchMinimum: return [NSString stringWithFormat:@"min(%@)", key];
+        case ODOFetchMaximum: return [NSString stringWithFormat:@"max(%@)", key];
+    }
+}
+
+@end
+
+#pragma mark -
+
 @interface ODOSQLStatement (/*Private*/)
 
 @property (nonatomic, strong, readwrite) ODOSQLConnection *connection;
@@ -70,12 +116,17 @@ RCS_ID("$Id$")
 
 - (instancetype)initSelectProperties:(NSArray *)properties fromEntity:(ODOEntity *)rootEntity connection:(ODOSQLConnection *)connection predicate:(NSPredicate *)predicate error:(NSError **)outError;
 {
+    return [self initSelectProperties:properties usingAggregation:nil fromEntity:rootEntity connection:connection predicate:predicate error:outError];
+}
+
+- (instancetype)initSelectProperties:(NSArray<ODOProperty *> *)properties usingAggregation:(ODOSQLFetchAggregation *)aggregation fromEntity:(ODOEntity *)rootEntity connection:(ODOSQLConnection *)connection predicate:(NSPredicate *)predicate error:(NSError **)outError;
+{
     OBPRECONDITION([properties count] > 0);
     
     // TODO: Not handling joins until we actually need them.
     
     NSMutableString *sql = [NSMutableString stringWithFormat:@"SELECT "];
-
+    
     // TODO: Map ODOObject constants to their primary keys (but allow raw primary key values too).
     
     // This will usually either be just the pk for the root entity or all the schema attributes of the root entity.
@@ -90,7 +141,14 @@ RCS_ID("$Id$")
             [sql appendString:@", "];
         [sql appendString:[prop name]];
     }
-
+    
+    if (aggregation != nil) {
+        // We are guaranteed to have at least one column spec by now because we asserted `[properties count] > 0` above
+        [sql appendString:@", "];
+        [sql appendString:[aggregation _sqliteAggregateColumnSpecification]];
+        _hasAggregateColumnSpecification = YES;
+    }
+    
     [sql appendFormat:@" FROM %@", [rootEntity name]];
     
     return [self _initSelectStatement:sql fromEntity:rootEntity connection:connection predicate:predicate error:outError];
@@ -610,8 +668,9 @@ BOOL ODOExtractNonPrimaryKeySchemaPropertiesFromRowIntoObject(struct sqlite3 *sq
             }
             
             OBASSERT(propertyIndex <= INT_MAX);
-            if (!ODOSQLStatementCreateValue(sqlite, statement, (int)propertyIndex, &value, [attr type], [attr valueClass], outError))
+            if (!ODOSQLStatementCreateValue(sqlite, statement, (int)propertyIndex, &value, [attr type], [attr valueClass], outError)) {
                 return NO;
+            }
             
             // DO NOT use -willChangeValueForKey: and -didChangeValueForKey: here.  We don't want KVO and we don't want changes to get logged since we aren't "changing" the object.
             OBASSERT(!ODOObjectChangeProcessingEnabled(object)); // this should be off anyway since we haven't yet awoken from fetch.

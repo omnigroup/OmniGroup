@@ -373,7 +373,7 @@ static NSSet <NSString *> *_lowercasePathExtensions(id <NSFastEnumeration> pathE
         OBASSERT(_lockFile, @"The lock object should be created even if the lock is taken or invalid.");
         
         __autoreleasing NSError *lockError = nil;
-        if (![_lockFile lockWithOptions:OFLockFileLockOperationOptionsNone error:&lockError]) {
+        if (![_lockFile lockWithOptions:OFLockFileLockOperationIgnoreLocksFromOtherHosts error:&lockError]) {
             OFXError(&lockError, OFXUnableToLockAccount, @"Cannot start syncing.", @"Unable to lock account.");
             [_account reportError:lockError format:@"Error starting account agent. Unable to lock account."];
             if (outError)

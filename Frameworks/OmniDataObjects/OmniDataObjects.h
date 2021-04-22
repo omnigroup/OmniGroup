@@ -12,6 +12,7 @@
 #import <OmniDataObjects/ODOFeatures.h>
 #import <OmniDataObjects/ODOAttribute.h>
 #import <OmniDataObjects/ODOEntity.h>
+#import <OmniDataObjects/ODOFetchExtremum.h>
 #import <OmniDataObjects/ODOFetchRequest.h>
 #import <OmniDataObjects/ODOObject.h>
 #import <OmniDataObjects/ODOObjectSnapshot.h>

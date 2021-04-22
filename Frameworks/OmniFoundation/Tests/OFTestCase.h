@@ -18,7 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-#define OFDataShouldBeEqual(expected, actual) XCTAssertEqual(expected, actual, nil)
+#define OFDataShouldBeEqual(expected, actual) XCTAssertEqual(expected, actual)
 #else
 extern void OFDiffData(XCTestCase *testCase, NSData *expected, NSData *actual);
 extern void OFDiffDataFiles(XCTestCase *testCase, NSString *expectedPath, NSString *actualPath);

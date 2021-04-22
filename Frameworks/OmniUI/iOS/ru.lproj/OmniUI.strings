@@ -1,12 +1,12 @@
+/* Something open in another window alert title - the token is a short description of the activity open in the other window, for example: 'Account Setup' */
+"%@ is open in another window" = "%@ открыт в другом окне";
+
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@ из %2$@";
 
 /* Default title for the About menu item
    title for in app purchase - placeholder is product title */
 "About %@" = "О программе %@";
-
-/* MultiPane Back button title, when system is compact */
-"Back" = "Назад";
 
 /* Bold button accessibility label */
 "Bold" = "Жирный";
@@ -71,6 +71,9 @@
 
 /* increment button accessibility label */
 "Increment" = "Прирост";
+
+/* Feedback error reason */
+"Internal error: this app has no feedback address configured." = "Внутренняя ошибка: для этого приложения не настроен адрес отзыва.";
 
 /* default special URL confirm button title */
 "Invoke" = "Вызвать";
@@ -152,8 +155,17 @@
 /* Strike Through button accessibility label */
 "Strike Through" = "Зачеркивание";
 
+/* Feedback error reason */
+"This device hasn't been configured to send email." = "Это устройство не настроено для отправки эл. почты.";
+
 /* Certificate trust alert button title */
 "Trust Always" = "Всегда доверять";
+
+/* Feedback error description */
+"Unable to send feedback" = "Не удалось отправить отзыв";
+
+/* Feedback error description */
+"Unable to send feedback." = "Не удалось отправить отзыв.";
 
 /* Underline button accessibility label */
 "Underline" = "Подчеркивание";

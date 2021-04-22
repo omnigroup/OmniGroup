@@ -62,6 +62,7 @@ Formatters.subproj/OFTimeSpan.m
 Formatters.subproj/OFTimeSpanFormatter.m
 Keychain/OFCredentials-iOS.m
 Keychain/OFCredentials.m
+OFASCIIPropertyListSerialization.m
 OFASN1Utilities-Construction.m
 OFASN1Utilities.m
 OFBacktrace.m

@@ -13,9 +13,6 @@
 /* Error message when renaming a folder and there is already a folder with the requested name. */
 "Cannot rename folder." = "Der Ordner kann nicht umbenannt werden.";
 
-/* Document store scope display name */
-"Local Documents" = "Lokale Dokumente";
-
 /* Error suggestion when renaming a file to a name that is already in use. */
 "Please choose a different name." = "Wählen Sie einen anderen Namen aus.";
 

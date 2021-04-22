@@ -9,6 +9,10 @@
 
 import Foundation
 
+#if os(iOS)
+import UIKit
+#endif
+
 @objc(OFResourceLocationDelegate) public protocol ResourceLocationDelegate {
     func resourceLocationDidUpdateResourceURLs(_ location: ResourceLocation)
     func resourceLocationDidMove(_ location: ResourceLocation)
@@ -62,6 +66,8 @@ private let bookmarkCreationOptions: URL.BookmarkCreationOptions = [.withSecurit
     private weak var delegate: ResourceLocationDelegate?
     private var invalidated: Bool = false
 
+    private var registeredFilePresenter: Bool
+
     // A shared queue for file presenter notifications -- maybe not a good idea since move operations block?
     private static let FilePresenterQueue: OperationQueue = {
         let queue = OperationQueue()
@@ -90,9 +96,29 @@ private let bookmarkCreationOptions: URL.BookmarkCreationOptions = [.withSecurit
             return ResourceType(predicate: predicate, contents: ResourceLocationContents())
         })
 
+        #if os(iOS)
+        // Will be nil in unit tests or app extensions, for example.
+        if let app = OFSharedApplication() {
+            registeredFilePresenter = app.applicationState != .background
+        } else {
+            registeredFilePresenter = false
+        }
+        #else
+        registeredFilePresenter = true
+        #endif
+
         super.init()
 
-        NSFileCoordinator.addFilePresenter(self)
+        #if os(iOS)
+        // Don't sign up for these notifications in app extensions.
+        if registeredFilePresenter {
+            NotificationCenter.default.addObserver(self, selector: #selector(applicationDidEnterBackground(_:)), name: UIApplication.didEnterBackgroundNotification, object: nil)
+            NotificationCenter.default.addObserver(self, selector: #selector(applicationWillEnterForeground(_:)), name: UIApplication.willEnterForegroundNotification, object: nil)
+        }
+        #endif
+        if registeredFilePresenter {
+            NSFileCoordinator.addFilePresenter(self)
+        }
 
         if synchronousInitialScan {
             let scannedFileEdits = peformScan(folderURL: folderURL, synchronousInitialScan: true)
@@ -149,8 +175,10 @@ private let bookmarkCreationOptions: URL.BookmarkCreationOptions = [.withSecurit
     
     @objc public func updateNowThatObservedLocationExists() {
         assert(FileManager.default.fileExists(atPath: _folderURL.path), "Adding self as a presenter for a URL that doesn't exist yet. Most likely will result in not receiving expected file presenter messages.")
-        NSFileCoordinator.removeFilePresenter(self)
-        NSFileCoordinator.addFilePresenter(self)
+        if registeredFilePresenter {
+            NSFileCoordinator.removeFilePresenter(self)
+            NSFileCoordinator.addFilePresenter(self)
+        }
     }
 
     // NSFileCoordinator retains us, so we need an invalidate method.
@@ -161,7 +189,9 @@ private let bookmarkCreationOptions: URL.BookmarkCreationOptions = [.withSecurit
             return
         }
         invalidated = true
-        NSFileCoordinator.removeFilePresenter(self)
+        if registeredFilePresenter {
+            NSFileCoordinator.removeFilePresenter(self)
+        }
         delegate = nil
 
         lock.protect {
@@ -425,9 +455,26 @@ private let bookmarkCreationOptions: URL.BookmarkCreationOptions = [.withSecurit
         delegate?.resourceLocationDidMove(self)
     }
 
+    #if os(iOS)
+    @objc private func applicationDidEnterBackground(_ notification: Notification) {
+        if registeredFilePresenter {
+            registeredFilePresenter = false
+            NSFileCoordinator.removeFilePresenter(self)
+        }
+    }
+    @objc private func applicationWillEnterForeground(_ notification: Notification) {
+        if !registeredFilePresenter {
+            registeredFilePresenter = true
+            NSFileCoordinator.addFilePresenter(self)
+            requestScan()
+        }
+    }
+    #endif
+
 }
 
 // Allow being a pointer-based dictionary key
+@available(iOSApplicationExtension, unavailable)
 extension ResourceLocation : NSCopying {
     public func copy(with zone: NSZone?) -> Any {
         return self

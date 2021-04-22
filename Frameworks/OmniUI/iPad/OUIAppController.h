@@ -49,13 +49,6 @@ extern NSString * const OUIAttentionSeekingForNewsKey;
 
 + (NSString *)applicationName;
 
-typedef NS_OPTIONS(NSUInteger, OUIApplicationEditionOptions) {
-    OUIApplicationEditionOptionsNone                        = 0,
-    OUIApplicationEditionOptionsIncludeApplicationName      = 1 << 0,
-    OUIApplicationEditionOptionsIncludeMajorVersionNumber   = 1 << 1,
-    OUIApplicationEditionOptionsVerbose                     = (OUIApplicationEditionOptionsIncludeApplicationName | OUIApplicationEditionOptionsIncludeMajorVersionNumber),
-};
-
 typedef NS_OPTIONS(NSUInteger, OUIWindowForSceneOptions) {
     OUIWindowForSceneOptionsNone                            = 0,
     OUIWindowForSceneOptionsAllowFallbackLookup             = 1 << 0,
@@ -64,9 +57,9 @@ typedef NS_OPTIONS(NSUInteger, OUIWindowForSceneOptions) {
 };
 
 @property (class, nonatomic, nullable, readonly) NSString *applicationEdition;
-+ (nullable NSString *)applicationEditionWithOptions:(OUIApplicationEditionOptions)options;
-
 @property (class, nonatomic, nullable, readonly) NSString *majorVersionNumberString;
+@property (class, nonatomic, readonly) NSString *appStoreApplicationId;
+@property (class, nonatomic, readonly) NSString *appStoreReviewLink;
 
 extern NSString *const OUIHelpBookNameKey; // @"OUIHelpBookName" is the Info.plist key which tells the app where to find its built-in help
 
@@ -232,7 +225,7 @@ extern NSNotificationName const OUISystemIsSnapshottingNotification;
 
 @property (readonly) BOOL canCreateNewDocument;
 @property (readonly) BOOL shouldEnableCreateNewDocument;
-- (void)unlockCreateNewDocumentWithCompletion:(void (^ __nonnull)(BOOL isUnlocked))completionBlock;
+- (void)unlockCreateNewDocumentInViewController:(UIViewController *)viewController withCompletionHandler:(void (^ __nonnull)(BOOL isUnlocked))completionBlock;
 
 - (void)checkTemporaryLicensingStateInViewController:(UIViewController *)viewController withCompletionHandler:(void (^ __nullable)(void))completionHandler;
 

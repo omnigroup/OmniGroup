@@ -13,9 +13,6 @@
 /* Error message when renaming a folder and there is already a folder with the requested name. */
 "Cannot rename folder." = "폴더 이름을 바꿀 수 없습니다.";
 
-/* Document store scope display name */
-"Local Documents" = "로컬 도큐멘트";
-
 /* Error suggestion when renaming a file to a name that is already in use. */
 "Please choose a different name." = "다른 이름을 선택하십시오.";
 

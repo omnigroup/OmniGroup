@@ -1,11 +1,11 @@
+/* Something open in another window alert title - the token is a short description of the activity open in the other window, for example: 'Account Setup' */
+"%@ is open in another window" = "%@ está aberto em outra janela";
+
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@ de %2$@";
 
 /* Default title for the About menu item */
 "About %@" = "Sobre o %@";
-
-/* MultiPane Back button title, when system is compact */
-"Back" = "Voltar";
 
 /* Bold button accessibility label */
 "Bold" = "Negrito";
@@ -70,6 +70,9 @@
 
 /* increment button accessibility label */
 "Increment" = "Incrementar";
+
+/* Feedback error reason */
+"Internal error: this app has no feedback address configured." = "Erro interno: este app não tem nenhum endereço de comentários configurado.";
 
 /* default special URL confirm button title */
 "Invoke" = "Invocar";
@@ -148,8 +151,17 @@
 /* Strike Through button accessibility label */
 "Strike Through" = "Tachado";
 
+/* Feedback error reason */
+"This device hasn't been configured to send email." = "Este dispositivo não foi configurado para enviar e-mails.";
+
 /* Certificate trust alert button title */
 "Trust Always" = "Confiar Sempre";
+
+/* Feedback error description */
+"Unable to send feedback" = "Não foi possível enviar comentários";
+
+/* Feedback error description */
+"Unable to send feedback." = "Não foi possível enviar comentários.";
 
 /* Underline button accessibility label */
 "Underline" = "Sublinhar";

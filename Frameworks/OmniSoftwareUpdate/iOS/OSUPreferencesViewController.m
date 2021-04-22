@@ -169,7 +169,7 @@ enum {
 }
 
 // Convenience to run w/o a parent navigation controller.
-+ (OUIMenuOption *)menuOption;
++ (OUIMenuOption *)menuOption NS_EXTENSION_UNAVAILABLE_IOS("");
 {
     UIImage *settingsImage = [[OUIAppController controller] settingsMenuImage];
     
@@ -549,7 +549,7 @@ enum {
     [_infoHeaderView sizeToFit];
 }
 
-- (void)_toggleEnabled:(UISwitch *)sender;
+- (void)_toggleEnabled:(UISwitch *)sender NS_EXTENSION_UNAVAILABLE_IOS("");
 {
     if ([[OUIAppController controller] showFeatureDisabledForRetailDemoAlertFromViewController:self]) {
         sender.on = NO;

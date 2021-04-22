@@ -73,7 +73,62 @@ class MultiPanePresenter: NSObject {
         return button
     }()
     
+    // This class and the following helper methods, along with the multiPanePresentationCompletionHelpers property, both help to ensure that we do not attempt to present a pane that is already being presented and ensure all the relevant completion handlers for in-progress presentations get called.
+    private class MultiPanePresentationCompletionHelper {
+        weak var multiPaneController: MultiPaneController?
+        var locationsBeingShownToCompletionHandlers: [MultiPaneLocation : [()->Void]] = [:]
+        
+        @discardableResult func append(completionHandler: @escaping ()->Void, forActivePresentationAt location: MultiPaneLocation) -> Bool {
+            let hasExistingEntry = locationsBeingShownToCompletionHandlers[location] != nil
+            locationsBeingShownToCompletionHandlers[location, default: []].append(completionHandler)
+            return hasExistingEntry
+        }
+        
+        init(multiPaneController: MultiPaneController) {
+            self.multiPaneController = multiPaneController
+        }
+    }
+    
+    private func existingCompletionHelper(for multiPaneController: MultiPaneController) -> MultiPanePresentationCompletionHelper? {
+        return multiPanePresentationCompletionHelpers.first(where: { $0.multiPaneController == multiPaneController })
+    }
+    
+    private func completionHandlers(for multiPaneController: MultiPaneController, presentingAt location: MultiPaneLocation) -> [()->Void]? {
+        return existingCompletionHelper(for: multiPaneController)?.locationsBeingShownToCompletionHandlers[location]
+    }
+    
+    private func clearCompletionHandlers(for multiPaneController: MultiPaneController, presentingAt location: MultiPaneLocation) {
+        existingCompletionHelper(for: multiPaneController)?.locationsBeingShownToCompletionHandlers[location] = nil
+    }
+    
+    private var multiPanePresentationCompletionHelpers: [MultiPanePresentationCompletionHelper] = []
+    
     func present(pane: Pane, fromViewController presentingController: MultiPaneController, usingDisplayMode displayMode: MultiPaneDisplayMode, interactivelyWith gesture: UIScreenEdgePanGestureRecognizer? = nil, animated: Bool = true, completion: @escaping ()->Void = {}) {
+        let location = pane.location
+
+        if let existingMultiPanePresentationCompletionHelper = existingCompletionHelper(for: presentingController) {
+            // Since this method takes a non-optional completion handler, the presence of any existing enqueued completion handler indicates that a presentation for this pane is currently in progress. If there is a presentation in progress, we early out and avoid requesting another presentation in order to avoid <bug:///180199> (iOS-OmniFocus Crasher: uncaught exception 'UIViewControllerHierarchyInconsistency')
+            guard !existingMultiPanePresentationCompletionHelper.append(completionHandler: completion, forActivePresentationAt: location) else { return }
+        } else {
+            // This MPC has not yet had a pane presentation. Create a completion helper for it, and enqueue the completion block for the presentation we are about to begin.
+            let newCompletionHelper = MultiPanePresentationCompletionHelper(multiPaneController: presentingController)
+            newCompletionHelper.append(completionHandler: completion, forActivePresentationAt: location)
+            multiPanePresentationCompletionHelpers.append(newCompletionHelper)
+        }
+        
+        // Reassign to ensure we perform all enqueued completion handlers for this presentation.
+        let completion = {[weak self] in
+            if let completionHandlers = self?.completionHandlers(for: presentingController, presentingAt: location) {
+                for completionHandler in completionHandlers {
+                    completionHandler()
+                }
+            }
+            // We performed the completions, so clear out our references to them.
+            self?.clearCompletionHandlers(for: presentingController, presentingAt: location)
+        }
+        
+        // Below, we have the actual presentation code.
+        
         // Ensure layout is up to date before we build up the animation and new constraints
         if animated {
             presentingController.view.layoutIfNeeded()
@@ -212,7 +267,7 @@ class MultiPanePresenter: NSObject {
             
             assert(pane.viewController.presentedViewController == nil, "We hit an infinite loop if we try to present a view controller with a presented view controller")
             
-            MultipanePresentationWrapperViewController.presentWrapperController(from: presentingController, animated: animated, rootViewController: pane.viewController, presentationStyle: .custom, adaptivePresentationDelegate: pane.viewController as? UIAdaptivePresentationControllerDelegate, configurationBlock: { wrapper in
+            MultipanePresentationWrapperViewController.presentWrapperController(from: presentingController, animated: animated, contentViewController: pane.viewController, presentationStyle: .custom, adaptivePresentationDelegate: pane.viewController as? UIAdaptivePresentationControllerDelegate, configurationBlock: { wrapper in
                 wrapper.transitioningDelegate = self.overlayPresenter
             }) {
                 self.removeSnapshotIfNeeded(pane: pane)
@@ -239,7 +294,7 @@ class MultiPanePresenter: NSObject {
         delegate?.willPerform(operation: .present, withPane: pane)
         overlayPresenter = nil
         
-        MultipanePresentationWrapperViewController.presentWrapperController(from: presentingController, animated: animated, rootViewController: pane.viewController, presentationStyle: nil, adaptivePresentationDelegate: pane.viewController as? UIAdaptivePresentationControllerDelegate, configurationBlock: { wrapper in
+        MultipanePresentationWrapperViewController.presentWrapperController(from: presentingController, animated: animated, contentViewController: pane.viewController, presentationStyle: nil, adaptivePresentationDelegate: pane.viewController as? UIAdaptivePresentationControllerDelegate, configurationBlock: { wrapper in
             if self.delegate?.willPresent?(viewController: wrapper) == nil {
                 // Setup reasonable defaults if the delegate is nil or the optional `willPresent` method is not implemented.
                 wrapper.transitioningDelegate = nil
@@ -372,12 +427,13 @@ extension MultiPaneAnimator {
         return UIViewPropertyAnimator(duration: MultiPaneAnimator.defaultAnimationDuration, curve: .easeInOut, animations: nil)
     }
     
-    private func translation(forView view: UIView, makingVisible: Bool) -> CGFloat {
+    private func centerX(forView view: UIView, makingVisible: Bool) -> CGFloat {
         let multiplier: CGFloat = makingVisible ? 1 : -1
         if location == .left {
-            return view.bounds.size.width * multiplier
+            return multiplier * view.bounds.size.width / 2.0
         } else if location == .right {
-            return view.bounds.size.width * -1 * multiplier
+            guard let container = view.superview else { assertionFailure(); return 0 }
+            return container.frame.maxX - (multiplier * view.bounds.size.width / 2.0)
         } else {
             assertionFailure("unsupported location for transform")
             return 0
@@ -398,11 +454,15 @@ extension MultiPaneAnimator {
         
         // Our pane can be contained in a wrapper controller, so perform the animation on the deepest ancestor
         let view = viewController.furthestAncestor.view! // TODO: should this be handled by a guard? If the view is nil here we have bigger problems, so maybe ok to force and crash (if in a bad state)
-        view.layoutIfNeeded()
+        
+        // Ensure the view is ready to animate
+        UIView.performWithoutAnimation {
+            view.layoutIfNeeded()
+        }
 
-        let translation = self.translation(forView: view, makingVisible: (operation == .overlay))
+        let centerX = self.centerX(forView: view, makingVisible: (operation == .overlay))
         animator.addAnimations {
-            view.center.x = view.center.x + translation
+            view.center.x = centerX
         }
         
         return animator
@@ -469,13 +529,14 @@ extension MultiPaneAnimator {
 
 // MARK: -
 
-// In order to present a pane as an overlay in one context and as a page sheet in another, we need to create a new wrapping view controller every time a presentation occurs. Once a view controller has received a modalPresentationStyle, it's stuck with that style forever once it's been presented. So, call this class' presentation method each time a pane needs to be presented modally or as an overlay, and we'll wrap the pane's controller in this wrapper
+// In order to present a pane as an overlay in one context and as a page sheet in another, we need to create a new wrapping view controller every time a presentation occurs. Once a view controller has received a modalPresentationStyle, it's stuck with that style forever once it's been presented. So, call this class' presentation method each time a pane needs to be presented modally or as an overlay, and we'll wrap the pane's controller in this wrapper.
+// This class is only intended to be used internally by the MultiPanePresenter. It is marked public in case there is an app-level protocol implementation that this controller is required to have an implementation of. OmniFocus needs this for overrides for FocusSyncViewControllerCompatibility.
 @objc(OUIMultipanePresentationWrapperViewController)
-internal class MultipanePresentationWrapperViewController: UIViewController {
-    static func presentWrapperController(from presentingController: UIViewController, animated: Bool, rootViewController: UIViewController, presentationStyle: UIModalPresentationStyle?, adaptivePresentationDelegate: UIAdaptivePresentationControllerDelegate?, configurationBlock: (MultipanePresentationWrapperViewController)->Void = {_ in }, completion: @escaping ()->Void = {}) {
+public class MultipanePresentationWrapperViewController: UIViewController {
+    fileprivate static func presentWrapperController(from presentingController: UIViewController, animated: Bool, contentViewController: UIViewController, presentationStyle: UIModalPresentationStyle?, adaptivePresentationDelegate: UIAdaptivePresentationControllerDelegate?, configurationBlock: (MultipanePresentationWrapperViewController)->Void = {_ in }, completion: @escaping ()->Void = {}) {
         let wrapper = MultipanePresentationWrapperViewController()
-        wrapper.rootViewController = rootViewController
-        wrapper.addChild(rootViewController)
+        wrapper.contentViewController = contentViewController
+        wrapper.addChild(contentViewController)
         
         configurationBlock(wrapper)
         
@@ -491,11 +552,11 @@ internal class MultipanePresentationWrapperViewController: UIViewController {
         presentingController.present(wrapper, animated: animated, completion: completion)
     }
     
-    var rootViewController: UIViewController!
+    public private(set) var contentViewController: UIViewController!
     
-    override func loadView() {
+    override public func loadView() {
         let view = UIView()
-        let rootView = rootViewController.view!
+        let rootView = contentViewController.view!
         view.addSubview(rootView)
         rootView.translatesAutoresizingMaskIntoConstraints = false
         
@@ -509,10 +570,13 @@ internal class MultipanePresentationWrapperViewController: UIViewController {
         view.frame.size = rootView.frame.size
         
         self.view = view
+        
+        view.setNeedsLayout()
+        view.layoutIfNeeded()
     }
     
     @available(iOSApplicationExtension, unavailable)
-    override func viewWillAppear(_ animated: Bool) {
+    override public func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
         // <bug:///179342> (iOS-OmniFocus Bug: Compact: Inspector bottom bar is scrolled out of view after backgrounding, then returning to app)
@@ -521,7 +585,7 @@ internal class MultipanePresentationWrapperViewController: UIViewController {
     }
     
     
-    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+    override public func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
         if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
             // Need a turn of the run loop or else we hit an infinite loop
@@ -538,17 +602,17 @@ internal class MultipanePresentationWrapperViewController: UIViewController {
     }
     
     // Once the presentation is over, we want to throw this wrapper away, since it's served its purpose of supplying a presentation.
-    override func viewDidDisappear(_ animated: Bool) {
+    override public func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         
         // Only remove the wrapped controller if we're being dismissed. If something is being presented over top of us, we need to stick around.
         guard isBeingDismissed else { return }
         
         // We remove the controller manually below, and that prevents this lifecycle message from percolating down. Call it manually, instead.
-        rootViewController?.viewDidDisappear(animated)
+        contentViewController?.viewDidDisappear(animated)
         
-        rootViewController?.removeFromParent()
-        rootViewController?.view?.removeFromSuperview()
-        rootViewController = nil
+        contentViewController?.removeFromParent()
+        contentViewController?.view?.removeFromSuperview()
+        contentViewController = nil
     }
 }

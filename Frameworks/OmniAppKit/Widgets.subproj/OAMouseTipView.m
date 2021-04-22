@@ -234,14 +234,13 @@ static NSParagraphStyle *mousetipParagrphStyle;
     CGFloat totalHeight = 0;
     NSRect lineFrag;
     
-    while(1) {
+    while (lineRange.location < glyphRange.length) {
         lineFrag = [layoutManager lineFragmentUsedRectForGlyphAtIndex:lineRange.location effectiveRange:&lineRange];
         totalHeight += lineFrag.size.height;
         
         NSInteger charIndex = [layoutManager characterIndexForGlyphAtIndex:lineRange.location];
         
-        NSRange foo;
-        NSDictionary *dictionary = [contents attributesAtIndex:charIndex effectiveRange:&foo];
+        NSDictionary *dictionary = [contents attributesAtIndex:charIndex effectiveRange:NULL];
         NSParagraphStyle *paragraphStyle = [dictionary objectForKey:NSParagraphStyleAttributeName];
         
         if (paragraphStyle && [paragraphStyle alignment] == NSTextAlignmentCenter) {
@@ -258,9 +257,6 @@ static NSParagraphStyle *mousetipParagrphStyle;
                 maxLineWidth = MAX(maxLineWidth, NSMaxX(lineFrag));
         }
         
-        if (NSMaxRange(lineRange) >= glyphRange.length) {
-            break;
-        }
         lineRange.location += lineRange.length;
     }
     

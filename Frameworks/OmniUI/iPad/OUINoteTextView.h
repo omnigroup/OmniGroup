@@ -29,6 +29,8 @@
 @property (nonatomic, readonly, getter=isResigningFirstResponder) BOOL resigningFirstResponder;
 // -------------------------------------------------------------------------
 
+// Do not directly call -becomeFirstResponder if you want to begin text editing in this text view. Due to internal reasons related to our handling of links, that call will not work. Calling this method will flip the right internal levers and begin text editing if the current first responder can resign its first responder status.
+- (void)beginTextEditing;
 
 @end
 

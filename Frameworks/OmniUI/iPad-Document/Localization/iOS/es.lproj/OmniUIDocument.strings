@@ -76,12 +76,6 @@
 /* Lose unsynced changes warning: title */
 "Discard unsynced edits?" = "¿Descartar las modificaciones no sincronizadas?";
 
-/* Message letting the user know that their document was moved from one folder to another. */
-"Document moved." = "Documento movido.";
-
-/* Title for alert informing user that the document has been reloaded with edits from another device */
-"Document Updated" = "Documento actualizado";
-
 /* Toolbar button title for returning to list of documents. */
 "Documents <back button>" = "Documentos";
 
@@ -108,20 +102,14 @@
 /* Info item accessibility label */
 "Info" = "Información";
 
-/* Notice for the user about the last edit to a document (unknown device) */
-"Last edit: %@" = "Última modificación: %@";
-
-/* Notice for the user about the last edit to a document (another device) */
-"Last edit: %@ on another device" = "Última modificación: %@ en otro dispositivo";
-
-/* Notice for the user about the last edit to a document (this device) */
-"Last edit: %@ on this device" = "Última modificación: %@ en este dispositivo";
-
 /* OmniPresence sync status: prefix for the 'last sync' status */
 "Last sync" = "Última sincronización";
 
 /* Update news: button title */
 "Learn More" = "Más información";
+
+/* Local Documents display name */
+"Local Documents" = "Documentos locales";
 
 /* Server Account Setup label: location */
 "Location" = "Ubicación";
@@ -190,9 +178,6 @@
 
 /* rename button title */
 "Rename" = "Renombrar";
-
-/* Message format for alert informing user that the document has been renamed on another device */
-"Renamed to %@." = "Renombrado como %@.";
 
 /* replace button title */
 "Replace" = "Reemplazar";
@@ -280,7 +265,7 @@
 "View OmniPresence Documents" = "Ver documentos OmniPresence";
 
 /* Update news: description */
-"We've retired our custom document browser in favor of using Apple's built-in browser, making it easier than ever for you to choose where you want to keep your documents." = "Hemos retirado nuestro navegador de documentos propio con el fin de incorporar el navegador integrado de Apple, facilitando así más que nunca la  elección de dónde conservar tus documentos.";
+"We've retired our custom document browser in favor of using Apple's built-in browser, making it easier than ever for you to choose where you want to keep your documents." = "Hemos retirado nuestro navegador de documentos propio con el fin de incorporar el navegador integrado de Apple, facilitando así más que nunca la elección de dónde conservar tus documentos.";
 
 /* error description */
 "While attempting to open %@, received an error from the system" = "Se ha recibido un error del sistema al intentar abrir %@";

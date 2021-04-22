@@ -13,9 +13,6 @@
 /* Error message when renaming a folder and there is already a folder with the requested name. */
 "Cannot rename folder." = "Não foi possível renomear a pasta.";
 
-/* Document store scope display name */
-"Local Documents" = "Documentos Locais";
-
 /* Error suggestion when renaming a file to a name that is already in use. */
 "Please choose a different name." = "Escolha outro nome.";
 

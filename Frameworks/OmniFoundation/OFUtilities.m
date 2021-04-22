@@ -467,9 +467,14 @@ id OFCreatePlistFor4CC(uint32_t v)
 
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-UIApplication *OFSharedApplication(void)
+UIApplication * _Nullable OFSharedApplication(void)
 {
-    return [NSClassFromString(@"UIApplication") sharedApplication];
+    static Class applicationClass;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        applicationClass = NSClassFromString(@"UIApplication");
+    });
+    return [applicationClass sharedApplication];
 }
 #endif
 

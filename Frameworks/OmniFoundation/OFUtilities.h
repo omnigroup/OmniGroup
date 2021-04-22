@@ -12,6 +12,8 @@
 
 @class NSLock;
 
+NS_ASSUME_NONNULL_BEGIN
+
 extern void OFLog(NSString *messageFormat, ...) __attribute__((format(__NSString__, 1, 2)));
 
 extern SEL OFRegisterSelectorIfAbsent(const char *selName);
@@ -49,7 +51,7 @@ extern NSString *OFOSStatusDescription(OSStatus err);
 
 // Formats a four character code into a ASCII representation.  This can take up to 4*3+1 characters.  Each byte can be up to three characters ('\ff'), plus the trailing NULL.  Returns the given fccString for ease in passing to NSLog/printf.
 // The fcc is really a FourCharCode (or OSType, OSStatus, ComponentResult, etc, etc, etc).  Don't want to include MacTypes.h here though.
-extern char *OFFormatFCC(uint32_t fcc, char fccString[13]);
+extern char *OFFormatFCC(uint32_t fcc, char fccString[_Nonnull 13]);
 
 // Parses a FourCharCode (or OSType) from an ObjC property-list type. This is compatible with the strings created by UTCreateStringForOSType(), but also accepts NSDatas and NSNumbers. Returns YES if successful, NO if not.
 BOOL OFGet4CCFromPlist(id pl, uint32_t *fourcc);
@@ -76,4 +78,12 @@ static inline NSUInteger OFHashUIntptr(uintptr_t v)
 }
 
 typedef BOOL (^OFPredicateBlock)(id object);
-typedef id (^OFObjectToObjectBlock)(id anObject);
+typedef id _Nullable (^OFObjectToObjectBlock)(id anObject);
+
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+// +[UIApplication sharedApplication] is not available in application extensions. This works around that for APIs in this framework, but those APIs should not be called w/in app extensions (and should be marked with NS_EXTENSION_UNAVAILABLE_IOS("message...") like +sharedApplication is).
+@class UIApplication;
+UIApplication * _Nullable OFSharedApplication(void);
+#endif
+
+NS_ASSUME_NONNULL_END

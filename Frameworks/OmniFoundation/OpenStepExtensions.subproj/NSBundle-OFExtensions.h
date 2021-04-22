@@ -14,6 +14,8 @@
 
 @interface NSBundle (OFExtensions)
 
+@property (class, readonly) NSString *containingApplicationBundleIdentifier;
+
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 /// Various pieces of information extraced from the code signature for this bundle.
 /// See Security/SecCode.h for the dictionary keys.

@@ -19,7 +19,7 @@
 + (NSString *)localizedLongDescription;
 + (BOOL)sendAnonymousDeviceInformationEnabled;
 
-+ (OUIMenuOption *)menuOption;
++ (OUIMenuOption *)menuOption NS_EXTENSION_UNAVAILABLE_IOS("");
 
 // Subclass API
 

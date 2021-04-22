@@ -13,9 +13,6 @@
 /* Error message when renaming a folder and there is already a folder with the requested name. */
 "Cannot rename folder." = "フォルダの名前を変更できません。";
 
-/* Document store scope display name */
-"Local Documents" = "ローカル書類";
-
 /* Error suggestion when renaming a file to a name that is already in use. */
 "Please choose a different name." = "別の名前を選択してください。";
 

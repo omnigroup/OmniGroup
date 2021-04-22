@@ -55,6 +55,7 @@ Currently the only way to create strings with deferred bytes/characters is using
 + (NSString *)abbreviatedStringForHertz:(unsigned long long)hz;
 + (NSString *)approximateStringForTimeInterval:(NSTimeInterval)interval;
 + (NSString *)spacesOfLength:(NSUInteger)aLength;
++ (NSString *)xesOfLength:(NSUInteger)aLength;
 + (NSString *)stringWithStrings:(NSString *)first, ... NS_REQUIRES_NIL_TERMINATION;
 
 - (BOOL)isPercentage;

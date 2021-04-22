@@ -14,7 +14,6 @@
 /*!
  OUIWebViewController provides a way to present Web content modally. It is intended for use as the root view controller of a UINavigationController; instances will use the navigation bar and toolbar for controls. The caller is responsible for wrapping an instance in a navigation controller before presentation.
  */
-NS_EXTENSION_UNAVAILABLE_IOS("OUIWebViewController not available in app extensions.")
 @interface OUIWebViewController : UIViewController <WKNavigationDelegate>
 
 @property (nonatomic, weak) id <OUIWebViewControllerDelegate> delegate;
@@ -57,8 +56,7 @@ NS_EXTENSION_UNAVAILABLE_IOS("OUIWebViewController not available in app extensio
 /*!
  * \brief Called when the close button is tapped. Return YES if the view controller should dismiss itself. Default value is YES if not implemented.
  */
-- (BOOL)webViewControllerShouldClose:(OUIWebViewController *)webViewController NS_EXTENSION_UNAVAILABLE_IOS("OUIWebViewController not available in app extensions.");
-
-- (void)webViewControllerDidClose:(OUIWebViewController *)webViewController NS_EXTENSION_UNAVAILABLE_IOS("OUIWebViewController not available in app extensions.");
+- (BOOL)webViewControllerShouldClose:(OUIWebViewController *)webViewController;
+- (void)webViewControllerDidClose:(OUIWebViewController *)webViewController;
 
 @end

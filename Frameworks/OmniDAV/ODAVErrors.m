@@ -9,9 +9,9 @@
 
 RCS_ID("$Id$");
 
-NSString * const ODAVErrorDomain = @"com.omnigroup.frameworks.OmniDAV.ErrorDomain";
+NSErrorDomain const ODAVErrorDomain = @"com.omnigroup.frameworks.OmniDAV.ErrorDomain";
 
-NSString * const ODAVHTTPErrorDomain = @"com.omnigroup.frameworks.OmniDAV.DAVHTTP.ErrorDomain";
+NSErrorDomain const ODAVHTTPErrorDomain = @"com.omnigroup.frameworks.OmniDAV.DAVHTTP.ErrorDomain";
 NSString * const ODAVHTTPErrorDataKey = @"errorData";
 NSString * const ODAVHTTPErrorDataContentTypeKey = @"errorDataContentType";
 NSString * const ODAVHTTPErrorStringKey = @"errorString";

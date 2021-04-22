@@ -229,13 +229,19 @@ static void __iOS7B5CleanConsoleOutput(void)
 
 + (nullable NSString *)applicationEdition;
 {
-    return [self applicationEditionWithOptions:OUIApplicationEditionOptionsNone];
-}
-
-+ (nullable NSString *)applicationEditionWithOptions:(OUIApplicationEditionOptions)options;
-{
     OBRequestConcreteImplementation(self, _cmd);
     return nil;
+}
+
++ (NSString *)appStoreApplicationId;
+{
+    OBRequestConcreteImplementation(self, _cmd);
+    return @"";
+}
+
++ (NSString *)appStoreReviewLink;
+{
+    return [NSString stringWithFormat:@"<a href=\"itms-apps://itunes.apple.com/app/%@?action=write-review\">%@</a>", [self appStoreApplicationId], NSLocalizedStringFromTableInBundle(@"Write a Review", @"OmniUI", OMNI_BUNDLE, @"about page app store review link text")];
 }
 
 + (nullable NSString *)majorVersionNumberString;
@@ -1130,7 +1136,7 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
     return self.canCreateNewDocument;
 }
 
-- (void)unlockCreateNewDocumentWithCompletion:(void (^ __nonnull)(BOOL isUnlocked))completionBlock;
+- (void)unlockCreateNewDocumentInViewController:(UIViewController *)viewController withCompletionHandler:(void (^ __nonnull)(BOOL isUnlocked))completionBlock;
 {
     completionBlock(self.canCreateNewDocument);
 }

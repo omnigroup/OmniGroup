@@ -7,16 +7,8 @@
 
 #import "OSUSettings.h"
 
-#import <OmniFoundation/CFPropertyList-OFExtensions.h>
-#import <OmniFoundation/NSString-OFSimpleMatching.h>
-#import <OmniFoundation/NSFileManager-OFSimpleExtensions.h>
-#import <OmniBase/OmniBase.h>
-
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-#import <OmniFoundation/NSProcessInfo-OFExtensions.h>
-#endif
-
-RCS_ID("$Id$");
+@import OmniBase;
+@import OmniFoundation;
 
 /*
  We used to read/write these to a shared preferences domain. But, with the advent of sandboxing, Apple prefers that we not use the temporary entitlement to enable this (at least on the Mac). On iOS, the "shared preference domain" was never shared since it was written into our own container. The shared application group does allow us to share between applications from the same developer. If we write to an app domain that is the same as a group container identifier, NSUserDefaults will write to the group container.
@@ -38,8 +30,9 @@ static void _OSUSettingInitialize(void)
             // We have no good way of checking these entitlements on iOS, but still need them.
 #if (!defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE) && defined(OMNI_ASSERTIONS_ON)
             // OmniGroupCrashCatcher links OmniSoftwareUpdate and inherits the containing app's sandbox settings. But, the signing entitlements we get back in this case don't list the parent entitlements. The parent app launching should have checked this (though I suppose it could be crashing since it didn't have the entitlement).
-            if ([[NSProcessInfo processInfo] isSandboxed] && ![[[NSProcessInfo processInfo] processName] isEqual:@"OmniGroupCrashCatcher"]) {
-                NSDictionary *entitlements = [[NSProcessInfo processInfo] codeSigningEntitlements];
+            NSProcessInfo *processInfo = NSProcessInfo.processInfo;
+            if ([processInfo isSandboxed] && !OFISEQUAL(processInfo.processName, @"OmniGroupCrashCatcher") && !OFISEQUAL(NSBundle.mainBundle.bundlePath.pathExtension, @"appex")) {
+                NSDictionary *entitlements = [processInfo codeSigningEntitlements];
                 id value = [entitlements objectForKey:@"com.apple.security.temporary-exception.shared-preference.read-only"];
                 if (value == nil)
                     value = [NSArray array];
@@ -60,7 +53,7 @@ id OSUSettingGetValueForKey(NSString *key)
 
     _OSUSettingInitialize();
     
-    // If we are sanboxed, this should read from the group container, not directly from ~/Library/Preferences. If we aren't sandboxed, the two paths should be equivalent so we'll read the old cached values.
+    // If we are sandboxed, this should read from the group container, not directly from ~/Library/Preferences. If we aren't sandboxed, the two paths should be equivalent so we'll read the old cached values.
     id value = [OSUDefaults objectForKey:key];
     if (value) {
         return value;

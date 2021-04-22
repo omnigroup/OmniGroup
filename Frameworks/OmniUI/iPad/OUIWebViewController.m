@@ -14,6 +14,7 @@
 #import <OmniFoundation/OFOrderedMutableDictionary.h>
 #import <OmniFoundation/OFVersionNumber.h>
 #import <OmniUI/OUIAppController.h>
+#import <OmniUI/OUIAppController+SpecialURLHandling.h>
 #import <OmniUI/OUIBarButtonItem.h>
 #import <OmniUI/UIPopoverPresentationController-OUIExtensions.h>
 #import <OmniUI/UIViewController-OUIExtensions.h>
@@ -42,7 +43,7 @@ static NSString * const InvalidScheme = @"x-invalid";
 
 #pragma mark - Actions
 
-- (IBAction)openInSafari:(id)sender;
+- (IBAction)openInSafari:(id)sender NS_EXTENSION_UNAVAILABLE_IOS("");
 {
     [[UIApplication sharedApplication] openURL:[self URL]];
 }
@@ -238,14 +239,15 @@ static NSString * const InvalidScheme = @"x-invalid";
 
     // Special URL
     if ([OUIAppController canHandleURLScheme:scheme]) {
+        decisionHandler(WKNavigationActionPolicyCancel); // Never try to load our URLs in the web view
+
+        OUIAppController *appController = OUIAppController.sharedController;
+        if ([appController isSpecialURL:requestURL] && [appController handleSpecialURL:requestURL presentingFromViewController:self]) {
+            return;
+        }
+
         UIScene *scene = self.containingScene;
-        [scene openURL:requestURL options:nil completionHandler:^(BOOL success) {
-            if (success) {
-                decisionHandler(WKNavigationActionPolicyCancel);
-            } else {
-                decisionHandler(WKNavigationActionPolicyAllow);
-            }
-        }];
+        [scene openURL:requestURL options:nil completionHandler:^(BOOL success) {}];
         return;
     }
 
@@ -345,7 +347,7 @@ static NSString * const InvalidScheme = @"x-invalid";
 - (void)startSpinner
 {
     if (!self.spinner) {
-        self.spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+        self.spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleMedium];
         self.spinner.translatesAutoresizingMaskIntoConstraints = NO;
     }
     if (self.spinner.superview != self.webView) {

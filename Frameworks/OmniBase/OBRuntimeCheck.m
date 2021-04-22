@@ -23,6 +23,11 @@ RCS_ID("$Id$");
 #define OB_CHECK_COPY_WITH_ZONE
 #endif
 
+// Count SEL occurances
+#if 0 && defined(DEBUG)
+#define OB_COUNT_SEL_OCCURANCES
+#endif
+
 #ifdef OMNI_ASSERTIONS_ON
 
 // Do this once here to make sure the hack works. This can also serve as a template for copying to make your own deprecation protocol.
@@ -43,6 +48,10 @@ static BOOL OBReportWarningsInSystemLibraries = NO;
 static unsigned MethodSignatureConflictCount = 0;
 static unsigned SuppressedConflictCount = 0;
 static unsigned MethodMultipleImplementationCount = 0;
+
+#ifdef OB_COUNT_SEL_OCCURANCES
+static CFMutableDictionaryRef SelectorOccurenceCounts = NULL;
+#endif
 
 static char *_copyNormalizeMethodSignature(SEL sel, const char *sig)
 {
@@ -372,8 +381,10 @@ static void _checkSignaturesVsSuperclass(Class cls, Method *methods, unsigned in
 {
     // Any method that is implemented by a class and its superclass should have the same signature.  ObjC doesn't encode static type declarations in method signatures, so we can't check for covariance.
     Class superClass = class_getSuperclass(cls);
-    if (!superClass)
+    if (!superClass) {
+        // This doesn't increment SEL counts for root classes if OB_COUNT_SEL_OCCURANCES is defined.
         return;
+    }
     
     // Get our method list and check each one vs. the superclass
     if (methods) {
@@ -387,6 +398,11 @@ static void _checkSignaturesVsSuperclass(Class cls, Method *methods, unsigned in
                 //fprintf(stderr, "Skipping selector %s on class %s\n", sel_getName(sel), class_getName(cls));
                 continue;
             }
+
+#ifdef OB_COUNT_SEL_OCCURANCES
+            uintptr_t occurrences = (uintptr_t)CFDictionaryGetValue(SelectorOccurenceCounts, sel);
+            CFDictionarySetValue(SelectorOccurenceCounts, sel, (const void *)(occurrences + 1));
+#endif
 
             Method superMethod = class_getInstanceMethod(superClass, sel); // This could be a class method if cls is itself the metaclass, here "instance" just means "the class we passed in"
             if (!superMethod)
@@ -876,6 +892,20 @@ static void _checkCopyWithZoneImplementations(void)
 }
 #endif // defined(OB_CHECK_COPY_WITH_ZONE)
 
+
+#ifdef OB_COUNT_SEL_OCCURANCES
+static void _addUniqueSelectorNames(const void *key, const void *value, void *context)
+{
+    SEL sel = (SEL)key;
+    uintptr_t count = (uintptr_t)value;
+    NSMutableArray *names = (__bridge NSMutableArray *)context;
+
+    if (count == 1) {
+        [names addObject:NSStringFromSelector(sel)];
+    }
+}
+#endif
+
 // We don't need these to happen immediately, and they can happen multiple times while bundles are loading, so we queue them up.
 static void _OBPerformRuntimeChecks(void)
 {
@@ -893,6 +923,10 @@ static void _OBPerformRuntimeChecks(void)
 
         // Reset this to zero to avoid double-counting errors if we get called again due to bundle loading.
         DeprecatedMethodImplementationCount = 0;
+
+#ifdef OB_COUNT_SEL_OCCURANCES
+        SelectorOccurenceCounts = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, NULL, NULL);
+#endif
 
         // Check that the macro actually worked and that (at least some of) the __attribute__((constructor)) invocations have run.
         OBASSERT(DeprecatedClassSelectors && CFSetGetCount(DeprecatedClassSelectors) > 0);
@@ -941,6 +975,15 @@ static void _OBPerformRuntimeChecks(void)
         // OBASSERT(DeprecatedMethodImplementationCount == 0);
 
         free(classes);
+
+#ifdef OB_COUNT_SEL_OCCURANCES
+        NSMutableArray *selectorNames = [[NSMutableArray alloc] init];
+        CFDictionaryApplyFunction(SelectorOccurenceCounts, _addUniqueSelectorNames, (__bridge void *)selectorNames);
+        CFRelease(SelectorOccurenceCounts);
+
+        [selectorNames sortUsingSelector:@selector(compare:)];
+        NSLog(@"Unique selectors (%ld):\n%@\n", [selectorNames count], selectorNames);
+#endif
 
 //        NSLog(@"*** OBPerformRuntimeChecks finished in %.2f seconds.", [NSDate timeIntervalSinceReferenceDate] - runtimeChecksStart);
     }

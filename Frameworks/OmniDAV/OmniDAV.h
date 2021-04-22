@@ -13,6 +13,7 @@
 #import <OmniDAV/ODAVConnectionTimeoutDelegate.h>
 #import <OmniDAV/ODAVErrors.h>
 #import <OmniDAV/ODAVFileInfo.h>
+#import <OmniDAV/ODAVLink.h>
 #import <OmniDAV/ODAVOperation.h>
 #import <OmniDAV/ODAVStaleFiles.h>
 #import <OmniDAV/ODAVUpload.h>

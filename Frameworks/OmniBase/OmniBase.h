@@ -24,6 +24,7 @@
 #import <OmniBase/OBLoadAction.h>
 
 #import <OmniBase/OBUtilities.h>
+#import <OmniBase/OBLog.h>
 #import <OmniBase/OBLogger.h>
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE

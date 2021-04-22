@@ -1,12 +1,12 @@
+/* Something open in another window alert title - the token is a short description of the activity open in the other window, for example: 'Account Setup' */
+"%@ is open in another window" = "%@ は別のウインドウ内に開いています";
+
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@／%2$@";
 
 /* Default title for the About menu item
    title for in app purchase - placeholder is product title */
 "About %@" = "%@ について";
-
-/* MultiPane Back button title, when system is compact */
-"Back" = "戻る";
 
 /* Bold button accessibility label */
 "Bold" = "ボールド";
@@ -71,6 +71,9 @@
 
 /* increment button accessibility label */
 "Increment" = "増やす";
+
+/* Feedback error reason */
+"Internal error: this app has no feedback address configured." = "内部エラー：このアプリには、フィードバック用アドレスが設定されていません。";
 
 /* default special URL confirm button title */
 "Invoke" = "起動";
@@ -152,8 +155,17 @@
 /* Strike Through button accessibility label */
 "Strike Through" = "取り消し線";
 
+/* Feedback error reason */
+"This device hasn't been configured to send email." = "このデバイスはメールを送信できるように設定されていません。";
+
 /* Certificate trust alert button title */
 "Trust Always" = "常に信頼する";
+
+/* Feedback error description */
+"Unable to send feedback" = "フィードバックを送信できません";
+
+/* Feedback error description */
+"Unable to send feedback." = "フィードバックを送信できません。";
 
 /* Underline button accessibility label */
 "Underline" = "アンダーライン";

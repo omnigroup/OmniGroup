@@ -46,10 +46,10 @@ public class PrintActivity : DocumentProcessingActivity<OUIDocument> {
 
         document.print(withParentViewController: viewController) { errorOrNil in
             if let error = errorOrNil {
-                // TODO: Allow cancelling when printing multiple documents
-                print("Error printing: \(error)")
+                OUIAppController.presentError(error, from: self.processingViewController, file: #file, line: #line, cancelButtonTitle: nil, optionalActions: nil, completionHandler: completionHandler)
+            } else {
+                completionHandler()
             }
-            completionHandler()
         }
     }
     

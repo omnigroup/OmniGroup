@@ -76,12 +76,6 @@
 /* Lose unsynced changes warning: title */
 "Discard unsynced edits?" = "放弃未同步的编辑？";
 
-/* Message letting the user know that their document was moved from one folder to another. */
-"Document moved." = "文档已移动。";
-
-/* Title for alert informing user that the document has been reloaded with edits from another device */
-"Document Updated" = "文稿已更新";
-
 /* Toolbar button title for returning to list of documents. */
 "Documents <back button>" = "文档";
 
@@ -108,20 +102,14 @@
 /* Info item accessibility label */
 "Info" = "信息";
 
-/* Notice for the user about the last edit to a document (unknown device) */
-"Last edit: %@" = "上次编辑: %@";
-
-/* Notice for the user about the last edit to a document (another device) */
-"Last edit: %@ on another device" = "上次编辑: 在其他设备上编辑 %@";
-
-/* Notice for the user about the last edit to a document (this device) */
-"Last edit: %@ on this device" = "上次编辑: 在本设备上编辑 %@";
-
 /* OmniPresence sync status: prefix for the 'last sync' status */
 "Last sync" = "上次同步";
 
 /* Update news: button title */
 "Learn More" = "了解更多";
+
+/* Local Documents display name */
+"Local Documents" = "本地文稿";
 
 /* Server Account Setup label: location */
 "Location" = "位置";
@@ -190,9 +178,6 @@
 
 /* rename button title */
 "Rename" = "重命名";
-
-/* Message format for alert informing user that the document has been renamed on another device */
-"Renamed to %@." = "已重命名为 %@。";
 
 /* replace button title */
 "Replace" = "替换";

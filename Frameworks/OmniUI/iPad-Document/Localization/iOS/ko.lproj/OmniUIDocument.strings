@@ -76,12 +76,6 @@
 /* Lose unsynced changes warning: title */
 "Discard unsynced edits?" = "동기화되지 않은 편집 항목을 무시하시겠습니까?";
 
-/* Message letting the user know that their document was moved from one folder to another. */
-"Document moved." = "도큐멘트가 이동되었습니다.";
-
-/* Title for alert informing user that the document has been reloaded with edits from another device */
-"Document Updated" = "도큐멘트 업데이트";
-
 /* Toolbar button title for returning to list of documents. */
 "Documents <back button>" = "도큐멘트";
 
@@ -108,20 +102,14 @@
 /* Info item accessibility label */
 "Info" = "정보";
 
-/* Notice for the user about the last edit to a document (unknown device) */
-"Last edit: %@" = "마지막 편집: %@";
-
-/* Notice for the user about the last edit to a document (another device) */
-"Last edit: %@ on another device" = "마지막 편집: 다른 장치의 %@";
-
-/* Notice for the user about the last edit to a document (this device) */
-"Last edit: %@ on this device" = "마지막 편집: 이 장치의 %@";
-
 /* OmniPresence sync status: prefix for the 'last sync' status */
 "Last sync" = "마지막 동기화";
 
 /* Update news: button title */
 "Learn More" = "자세히 알아보기";
+
+/* Local Documents display name */
+"Local Documents" = "로컬 도큐멘트";
 
 /* Server Account Setup label: location */
 "Location" = "위치";
@@ -190,9 +178,6 @@
 
 /* rename button title */
 "Rename" = "이름 변경";
-
-/* Message format for alert informing user that the document has been renamed on another device */
-"Renamed to %@." = "%@(으)로 이름이 변경되었습니다.";
 
 /* replace button title */
 "Replace" = "바꾸기";

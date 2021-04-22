@@ -982,7 +982,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1120;
+				LastUpgradeCheck = 1130;
 				TargetAttributes = {
 					3474D9871B5EF23E0084B8AE = {
 						CreatedOnToolsVersion = 7.0;
@@ -1534,10 +1534,13 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 3474D99E1B5EF25A0084B8AE /* Touch-Framework-Debug.xcconfig */;
 			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniFileStore;
 				PRODUCT_NAME = OmniFileStore;
+				SUPPORTS_MACCATALYST = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
@@ -1545,10 +1548,13 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 3474D99F1B5EF25A0084B8AE /* Touch-Framework-Release.xcconfig */;
 			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniFileStore;
 				PRODUCT_NAME = OmniFileStore;
+				SUPPORTS_MACCATALYST = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};

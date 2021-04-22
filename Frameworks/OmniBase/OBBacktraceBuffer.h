@@ -20,6 +20,14 @@ typedef CF_ENUM(uintptr_t, OBBacktraceBufferType) {
 
 extern void OBRecordBacktrace(const char *message, OBBacktraceBufferType optype);
 extern void OBRecordBacktraceWithContext(const char *message, OBBacktraceBufferType optype, const void *context);
+
+static inline void OBRecordBacktraceWithSelector(SEL selector) {
+    OBRecordBacktrace(sel_getName(selector), OBBacktraceBuffer_PerformSelector);
+}
+static inline void  OBRecordBacktraceWithSelectorAndContext(SEL selector, const void *context) {
+    OBRecordBacktraceWithContext(sel_getName(selector), OBBacktraceBuffer_PerformSelector, context);
+}
+
 /*.doc.
  Records a backtrace for possible debugging use in the future. The input message must be a constant string. The optype must be greater than one. The context pointer is not examined at all, but just stored. This allows matching up call sites where delayed operations are enqueued with where they are performed in a crash report.
  */

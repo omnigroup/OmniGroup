@@ -76,6 +76,9 @@ typedef NS_ERROR_ENUM(OFErrorDomain, OFError) {
     
     // OFRelativeDateParser
     OFRelativeDateParserUnknownError,
+
+    // OFASCIIPropertyListSerialization
+    OFASCIIPropertyListSerializationUnsupportedContent,
 };
 
 

@@ -14,6 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 typedef NS_OPTIONS(NSUInteger, ODOSQLConnectionOptions) {
     ODOSQLConnectionAsynchronousWrites = 1 << 0,
     ODOSQLConnectionKeepTemporaryStoreInMemory = 1 << 1,
+    ODOSQLConnectionReadOnly = 1 << 2,
 };
 
 typedef void (^ODOSQLPerformBlock)(struct sqlite3 *);

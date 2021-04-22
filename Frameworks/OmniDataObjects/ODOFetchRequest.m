@@ -9,6 +9,7 @@
 
 RCS_ID("$Id$")
 
+
 @implementation ODOFetchRequest
 
 - (void)dealloc;
@@ -18,6 +19,15 @@ RCS_ID("$Id$")
     [_sortDescriptors release];
     [_reason release];
     [super dealloc];
+}
+
+- (NSMutableDictionary *)debugDictionary;
+{
+    NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
+    for (NSString *key in @[ @"entity", @"predicate", @"sortDescriptors", @"reason" ]) {
+        dictionary[key] = [self valueForKey:key] ?: [NSNull null];
+    }
+    return dictionary;
 }
 
 @end

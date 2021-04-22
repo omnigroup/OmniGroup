@@ -109,6 +109,9 @@ ODOTestCaseAllAttributeTypes_DynamicProperties;
 @implementation ODOTestCaseOptionalScalarTypes
 ODOTestCaseOptionalScalarTypes_DynamicProperties;
 @end
+@implementation ODOTestCaseOptionalDate
+ODOTestCaseOptionalDate_DynamicProperties;
+@end
 @implementation ODOTestCaseMultipleBooleans
 ODOTestCaseMultipleBooleans_DynamicProperties;
 @end

@@ -76,12 +76,6 @@
 /* Lose unsynced changes warning: title */
 "Discard unsynced edits?" = "Ignorer les modifications non synchronisées?";
 
-/* Message letting the user know that their document was moved from one folder to another. */
-"Document moved." = "Document déplacé.";
-
-/* Title for alert informing user that the document has been reloaded with edits from another device */
-"Document Updated" = "Document mis à jour";
-
 /* Toolbar button title for returning to list of documents. */
 "Documents <back button>" = "Documents";
 
@@ -108,20 +102,14 @@
 /* Info item accessibility label */
 "Info" = "Infos";
 
-/* Notice for the user about the last edit to a document (unknown device) */
-"Last edit: %@" = "Dernière modification : %@";
-
-/* Notice for the user about the last edit to a document (another device) */
-"Last edit: %@ on another device" = "Dernière modification : %@ sur un autre appareil";
-
-/* Notice for the user about the last edit to a document (this device) */
-"Last edit: %@ on this device" = "Dernière modification : %@ sur cet appareil";
-
 /* OmniPresence sync status: prefix for the 'last sync' status */
 "Last sync" = "Dernière synchronisation";
 
 /* Update news: button title */
 "Learn More" = "En savoir plus";
+
+/* Local Documents display name */
+"Local Documents" = "Documents locaux";
 
 /* Server Account Setup label: location */
 "Location" = "Emplacement";
@@ -190,9 +178,6 @@
 
 /* rename button title */
 "Rename" = "Renommer";
-
-/* Message format for alert informing user that the document has been renamed on another device */
-"Renamed to %@." = "Renommer en %@.";
 
 /* replace button title */
 "Replace" = "Remplacer";

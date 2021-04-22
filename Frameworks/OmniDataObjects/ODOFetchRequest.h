@@ -14,7 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class NSArray;
 @class ODOEntity;
 
-@interface ODOFetchRequest : OFObject
+@interface ODOFetchRequest : NSObject
 
 @property (nonatomic, nullable, strong) ODOEntity *entity;
 @property (nonatomic, nullable, copy) NSPredicate *predicate;

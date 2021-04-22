@@ -7,12 +7,13 @@
 
 #import <OmniBase/NSError-OBExtensions.h>
 
-enum {
+extern NSErrorDomain const ODAVErrorDomain;
+
+typedef NS_ERROR_ENUM(ODAVErrorDomain, ODAVError) {
     // skip zero since it means 'no error' to AppleScript (actually the first 10-ish are defined in NSScriptCommand)
-    _ODAVNoError = 0,
-    
+
     // General
-    ODAVNoFileManagerForScheme,
+    ODAVNoFileManagerForScheme = 1,
     ODAVBaseURLIsNotAbsolute,
     ODAVCannotCreateDirectory,
     ODAVCannotMove,
@@ -28,7 +29,6 @@ enum {
     ODAVInvalidPartialResponse,
 };
 
-extern NSString * const ODAVErrorDomain;
 extern BOOL ODAVShouldOfferToReportError(NSError *error);
 
 #define ODAVErrorWithInfo(error, code, description, suggestion, ...) _OBError(error, ODAVErrorDomain, code, __FILE__, __LINE__, NSLocalizedDescriptionKey, description, NSLocalizedRecoverySuggestionErrorKey, (suggestion), ## __VA_ARGS__)
@@ -40,13 +40,13 @@ extern BOOL ODAVShouldOfferToReportError(NSError *error);
 extern NSString * const ODAVURLErrorFailingURLErrorKey __attribute__((deprecated("use NSURLErrorFailingURLErrorKey")));          // > 4.0 use NSURLErrorFailingURLErrorKey
 
 // Codes are HTTP error codes.  You'd think Foundation would define such a domain...
-extern NSString * const ODAVHTTPErrorDomain;
+extern NSErrorDomain const ODAVHTTPErrorDomain;
 
 extern NSString * const ODAVHTTPErrorDataKey;
 extern NSString * const ODAVHTTPErrorDataContentTypeKey;
 extern NSString * const ODAVHTTPErrorStringKey;
 
-typedef enum {
+typedef NS_ERROR_ENUM(ODAVHTTPErrorDomain, ODAVHTTPError) {
     // Based on <apache2/httpd.h>
     ODAV_HTTP_CONTINUE = 100,
     ODAV_HTTP_SWITCHING_PROTOCOLS = 101,
@@ -97,7 +97,7 @@ typedef enum {
     ODAV_HTTP_VARIANT_ALSO_VARIES = 506,
     ODAV_HTTP_INSUFFICIENT_STORAGE = 507,
     ODAV_HTTP_NOT_EXTENDED = 510,
-} ODAVHTTPErrorCode;
+};
 
 @interface NSError (ODAVExtensions)
 

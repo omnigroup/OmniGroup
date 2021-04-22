@@ -202,6 +202,46 @@
     "platform": "Watch3,4",
     "comment": "42mm"
   },
+  "N131sAP": {
+    "name": "Apple Watch Series 4",
+    "platform": "Watch4,1",
+    "comment": "40mm"
+  },
+  "N131bAP": {
+    "name": "Apple Watch Series 4",
+    "platform": "Watch4,2",
+    "comment": "44mm"
+  },
+  "N141sAP": {
+    "name": "Apple Watch Series 4",
+    "platform": "Watch4,3",
+    "comment": "40mm cellular"
+  },
+  "N141bAP": {
+    "name": "Apple Watch Series 4",
+    "platform": "Watch4,4",
+    "comment": "44mm cellular"
+  },
+  "N144sAP": {
+    "name": "Apple Watch Series 5",
+    "platform": "Watch5,1",
+    "comment": "40mm"
+  },
+  "N144bAP": {
+    "name": "Apple Watch Series 5",
+    "platform": "Watch5,2",
+    "comment": "44mm"
+  },
+  "N146sAP": {
+    "name": "Apple Watch Series 5",
+    "platform": "Watch5,3",
+    "comment": "40mm cellular"
+  },
+  "N146bAP": {
+    "name": "Apple Watch Series 5",
+    "platform": "Watch5,4",
+    "comment": "44mm cellular"
+  },
   "K48AP": {
     "name": "iPad 1"
   },
@@ -632,7 +672,12 @@
     "name": "Mac Pro"
   },
   "MacPro6,1": {
-    "name": "Mac Pro"
+    "name": "Mac Pro",
+    "comment": "Late 2013 (trash can)"
+  },
+  "MacPro7,1": {
+    "name": "Mac Pro",
+    "comment": "December 2019"
   },
   "MacBook1,1": {
     "name": "MacBook"

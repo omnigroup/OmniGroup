@@ -162,8 +162,8 @@ OBDidLoad(^{
     static NSUInteger spacesLength;
 
     if (!spaces) {
-	spaces = [@"                " mutableCopy];
-	spacesLength = [spaces length];
+        spaces = [@"                " mutableCopy];
+        spacesLength = [spaces length];
         spacesLock = [[NSLock alloc] init];
     }
     if (spacesLength < aLength) {
@@ -175,6 +175,28 @@ OBDidLoad(^{
         [spacesLock unlock];
     }
     return [spaces substringToIndex:aLength];
+}
+
++ (NSString *)xesOfLength:(NSUInteger)aLength;
+{
+    static NSMutableString *xes = nil;
+    static NSLock *xesLock;
+    static NSUInteger xesLength;
+
+    if (!xes) {
+        xes = [@"xxxxxxxxxxxxxxxx" mutableCopy];
+        xesLength = [xes length];
+        xesLock = [[NSLock alloc] init];
+    }
+    if (xesLength < aLength) {
+        [xesLock lock];
+        while (xesLength < aLength) {
+            [xes appendString:xes];
+            xesLength += xesLength;
+        }
+        [xesLock unlock];
+    }
+    return [xes substringToIndex:aLength];
 }
 
 + (NSString *)stringWithStrings:(NSString *)first, ...

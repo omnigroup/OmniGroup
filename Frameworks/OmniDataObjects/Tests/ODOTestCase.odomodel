@@ -33,6 +33,12 @@ model "ODOTestCase" do
       attribute "float64", :float64, :optional => true
       attribute "boolean", :boolean, :optional => true
   end
+  
+  entity "OptionalDate" do
+      attribute "pk", :string, :primary => true
+      attribute "date", :date, :optional => true
+      attribute "flag", :boolean, :default => false
+  end
 
   entity "MultipleBooleans" do
     attribute "pk", :string, :primary => true

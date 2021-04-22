@@ -42,6 +42,12 @@
 		344743BF1B34A07700083FE6 /* ODAVNoCredentialsTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 344743BE1B34A07700083FE6 /* ODAVNoCredentialsTestCase.m */; };
 		344743C01B34A07700083FE6 /* ODAVNoCredentialsTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 344743BE1B34A07700083FE6 /* ODAVNoCredentialsTestCase.m */; };
 		3464810E1276674B00E8A9B4 /* ODAVAsynchronousOperation.h in Headers */ = {isa = PBXBuildFile; fileRef = 3464810D1276674B00E8A9B4 /* ODAVAsynchronousOperation.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		347196402395C57500C3CBA4 /* ODAVLink.h in Headers */ = {isa = PBXBuildFile; fileRef = 3471963E2395C57500C3CBA4 /* ODAVLink.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		347196412395C57500C3CBA4 /* ODAVLink.h in Headers */ = {isa = PBXBuildFile; fileRef = 3471963E2395C57500C3CBA4 /* ODAVLink.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		347196422395C57500C3CBA4 /* ODAVLink.h in Headers */ = {isa = PBXBuildFile; fileRef = 3471963E2395C57500C3CBA4 /* ODAVLink.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		347196432395C57500C3CBA4 /* ODAVLink.m in Sources */ = {isa = PBXBuildFile; fileRef = 3471963F2395C57500C3CBA4 /* ODAVLink.m */; };
+		347196442395C57500C3CBA4 /* ODAVLink.m in Sources */ = {isa = PBXBuildFile; fileRef = 3471963F2395C57500C3CBA4 /* ODAVLink.m */; };
+		347196452395C57500C3CBA4 /* ODAVLink.m in Sources */ = {isa = PBXBuildFile; fileRef = 3471963F2395C57500C3CBA4 /* ODAVLink.m */; };
 		349369AA16B0438200244879 /* ODAVConformanceTest.h in Headers */ = {isa = PBXBuildFile; fileRef = 349369A916B0438200244879 /* ODAVConformanceTest.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34973C9F125BCF340057E909 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34973C9E125BCF340057E909 /* Security.framework */; };
 		3498626E1A71B3C200EA7437 /* ODAVUpload.h in Headers */ = {isa = PBXBuildFile; fileRef = 3498626C1A71B3C200EA7437 /* ODAVUpload.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -424,6 +430,8 @@
 		344743BE1B34A07700083FE6 /* ODAVNoCredentialsTestCase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODAVNoCredentialsTestCase.m; sourceTree = "<group>"; };
 		345047232266A35900A4E922 /* OmniDAV-server.xcfilelist */ = {isa = PBXFileReference; lastKnownFileType = text.xcfilelist; path = "OmniDAV-server.xcfilelist"; sourceTree = "<group>"; };
 		3464810D1276674B00E8A9B4 /* ODAVAsynchronousOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODAVAsynchronousOperation.h; sourceTree = "<group>"; };
+		3471963E2395C57500C3CBA4 /* ODAVLink.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ODAVLink.h; sourceTree = "<group>"; };
+		3471963F2395C57500C3CBA4 /* ODAVLink.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ODAVLink.m; sourceTree = "<group>"; };
 		347661311EC52FA500515F67 /* OmniFoundation.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniFoundation.xcodeproj; path = OmniFoundation/OmniFoundation.xcodeproj; sourceTree = "<group>"; };
 		3478688122372CC1001914C2 /* OmniDAV-iOS.xcfilelist */ = {isa = PBXFileReference; lastKnownFileType = text.xcfilelist; path = "OmniDAV-iOS.xcfilelist"; sourceTree = "<group>"; };
 		349369A916B0438200244879 /* ODAVConformanceTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODAVConformanceTest.h; sourceTree = "<group>"; };
@@ -646,6 +654,8 @@
 				3444B05E0F71FFFF005CFD59 /* ODAVOperation.h */,
 				340ECC9617A1A16200CABA13 /* ODAVOperation-Internal.h */,
 				3444B05F0F71FFFF005CFD59 /* ODAVOperation.m */,
+				3471963E2395C57500C3CBA4 /* ODAVLink.h */,
+				3471963F2395C57500C3CBA4 /* ODAVLink.m */,
 				3444B0620F71FFFF005CFD59 /* ODAVFileInfo.h */,
 				3444B0630F71FFFF005CFD59 /* ODAVFileInfo.m */,
 				3464810D1276674B00E8A9B4 /* ODAVAsynchronousOperation.h */,
@@ -900,6 +910,7 @@
 				34D621C81B3880E000DCE250 /* OmniDAV.h in Headers */,
 				34D621DB1B38812300DCE250 /* ODAVUpload.h in Headers */,
 				34D621CB1B3880EC00DCE250 /* ODAVConnection-Subclass.h in Headers */,
+				347196412395C57500C3CBA4 /* ODAVLink.h in Headers */,
 				34D621C91B3880E400DCE250 /* ODAVFeatures.h in Headers */,
 				34D621CF1B3880F900DCE250 /* ODAVConnection_URLConnection.h in Headers */,
 				34D621CD1B3880F300DCE250 /* ODAVConnection_URLSession.h in Headers */,
@@ -922,6 +933,7 @@
 				34E88F7B1EC1173E007B918E /* ODAVFileInfo.h in Headers */,
 				34E88F7C1EC1173E007B918E /* ODAVErrors.h in Headers */,
 				34E88F7D1EC1173E007B918E /* ODAVOperation-Internal.h in Headers */,
+				347196422395C57500C3CBA4 /* ODAVLink.h in Headers */,
 				34E88F7E1EC1173E007B918E /* ODAVStaleFiles.h in Headers */,
 				34E88F7F1EC1173E007B918E /* ODAVAsynchronousOperation.h in Headers */,
 				34E88F801EC1173E007B918E /* ODAVFeatures.h in Headers */,
@@ -944,6 +956,7 @@
 				3444B0700F71FFFF005CFD59 /* ODAVFileInfo.h in Headers */,
 				3444B0BA0F72022C005CFD59 /* ODAVErrors.h in Headers */,
 				340ECC9717A1A16200CABA13 /* ODAVOperation-Internal.h in Headers */,
+				347196402395C57500C3CBA4 /* ODAVLink.h in Headers */,
 				1E558DD619E3774C0074C8EE /* ODAVStaleFiles.h in Headers */,
 				3464810E1276674B00E8A9B4 /* ODAVAsynchronousOperation.h in Headers */,
 				34201EE21464897900A45403 /* ODAVFeatures.h in Headers */,
@@ -1081,7 +1094,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1120;
+				LastUpgradeCheck = 1130;
 				TargetAttributes = {
 					34D621AE1B38807700DCE250 = {
 						CreatedOnToolsVersion = 7.0;
@@ -1430,6 +1443,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				34D621DA1B38811C00DCE250 /* ODAVErrors.m in Sources */,
+				347196442395C57500C3CBA4 /* ODAVLink.m in Sources */,
 				34D621CE1B3880F600DCE250 /* ODAVConnection_URLSession.m in Sources */,
 				34D621D71B38811400DCE250 /* ODAVFileInfo.m in Sources */,
 				34D621D21B38810300DCE250 /* ODAVConformanceTest.m in Sources */,
@@ -1446,6 +1460,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				34E88F891EC1173E007B918E /* ODAVOperation.m in Sources */,
+				347196452395C57500C3CBA4 /* ODAVLink.m in Sources */,
 				34E88F8A1EC1173E007B918E /* ODAVFileInfo.m in Sources */,
 				34E88F8B1EC1173E007B918E /* ODAVErrors.m in Sources */,
 				34E88F8C1EC1173E007B918E /* ODAVConformanceTest.m in Sources */,
@@ -1462,6 +1477,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3444B06D0F71FFFF005CFD59 /* ODAVOperation.m in Sources */,
+				347196432395C57500C3CBA4 /* ODAVLink.m in Sources */,
 				3444B0710F71FFFF005CFD59 /* ODAVFileInfo.m in Sources */,
 				3444B0BB0F72022C005CFD59 /* ODAVErrors.m in Sources */,
 				34AF4BF316AF3865005CB08F /* ODAVConformanceTest.m in Sources */,
@@ -1552,6 +1568,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 3421AE8C0F71F89C0096AADB /* Omni-Framework-Debug.xcconfig */;
 			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = NO;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDAV;
@@ -1564,6 +1581,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 3421AE8D0F71F89C0096AADB /* Omni-Framework-Release.xcconfig */;
 			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = NO;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDAV;
@@ -1690,10 +1708,13 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 34D6221A1B3881C900DCE250 /* Touch-Framework-Debug.xcconfig */;
 			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDAV;
 				PRODUCT_NAME = OmniDAV;
+				SUPPORTS_MACCATALYST = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
@@ -1701,10 +1722,13 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 34D6221B1B3881C900DCE250 /* Touch-Framework-Release.xcconfig */;
 			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDAV;
 				PRODUCT_NAME = OmniDAV;
+				SUPPORTS_MACCATALYST = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};

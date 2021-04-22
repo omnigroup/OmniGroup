@@ -282,7 +282,7 @@ BOOL OADebugTargetSelection = NO;
 
 - (BOOL)sendAction:(SEL)theAction to:(id)theTarget from:(id)sender;
 {
-    OBRecordBacktrace(sel_getName(theAction), OBBacktraceBuffer_PerformSelector);
+    OBRecordBacktraceWithSelector(theAction);
 
     if (OATargetSelection) {
         NSWindow *keyWindow = [self keyWindow];

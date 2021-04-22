@@ -26,6 +26,7 @@ typedef NS_OPTIONS(NSUInteger, OFLockFileLockOperationOptions) {
     OFLockFileLockOperationOptionsNone = (0),
     OFLockFileLockOperationOverrideLockOption = (1UL << 1),
     OFLockFileLockOperationAllowRecoveryOption = (1UL << 2), // If OFLockFileLockOperationAllowRecoveryOption, failure to acquire the lock file is treated as a soft error. The NSError instance returned will have the code OFLockUnavailable and a recovery attempter. Otherwise, OFCannotCreateLock is returned.
+    OFLockFileLockOperationIgnoreLocksFromOtherHosts = (1UL << 3),
 };
 
 @interface OFLockFile : NSObject

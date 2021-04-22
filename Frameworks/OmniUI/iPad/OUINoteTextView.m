@@ -13,6 +13,7 @@
 #import <OmniUI/OUINoteTextView.h>
 #import <OmniUI/NSTextStorage-OUIExtensions.h>
 #import <OmniUI/OUIInspectorSlice.h>
+#import <OmniUI/UIResponder-OUIExtensions.h>
 
 RCS_ID("$Id$");
 
@@ -449,6 +450,11 @@ static NSParagraphStyle *_placeholderParagraphStyle(void)
     [self setNeedsDisplay];
 }
 
+- (void)beginTextEditing;
+{
+    [self _attemptToEnableTextEditingAndBecomeFirstResponder];
+}
+
 #pragma mark Private
 
 - (void)_forceLayout
@@ -463,8 +469,7 @@ static NSParagraphStyle *_placeholderParagraphStyle(void)
         // Already handles disabling editability
         [self resignFirstResponder];
     } else {
-        [self _forceEnableTextEditing];
-        [self becomeFirstResponder];
+        [self _attemptToEnableTextEditingAndBecomeFirstResponder];
     }
 }
 
@@ -536,6 +541,32 @@ static NSParagraphStyle *_placeholderParagraphStyle(void)
     if (makeFirstResponder) {
         [self becomeFirstResponder];
     }
+}
+
+- (void)_attemptToEnableTextEditingAndBecomeFirstResponder
+{
+    UIResponder *currentFirstResponder = [UIResponder firstResponder];
+    if (currentFirstResponder == self && self.isEditable) {
+        return; // already editing, no further work to be done.
+    }
+    
+    if (self.isEditable) {
+        [self becomeFirstResponder];
+        // If we're marked editable but didn't become the first responder, revert to our non-editable state.
+        if (!self.isFirstResponder && _detectsLinks) {
+            self.editable = NO;
+            self.dataDetectorTypes = typesToDetectWithUITextView;
+        }
+        return;
+    }
+    
+    if (currentFirstResponder != nil && ![currentFirstResponder resignFirstResponder]) {
+        // Current first responder can't give up responder status, so we can't become first responder. Don't enable editing if we can't actually begin editing.
+        return;
+    }
+    
+    [self _forceEnableTextEditing];
+    [self becomeFirstResponder];
 }
 
 - (void)_forceEnableTextEditing

@@ -1,12 +1,12 @@
+/* Something open in another window alert title - the token is a short description of the activity open in the other window, for example: 'Account Setup' */
+"%@ is open in another window" = "%@ 已在另一窗口中打开";
+
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@/%2$@";
 
 /* Default title for the About menu item
    title for in app purchase - placeholder is product title */
 "About %@" = "关于 %@";
-
-/* MultiPane Back button title, when system is compact */
-"Back" = "返回";
 
 /* Bold button accessibility label */
 "Bold" = "粗体";
@@ -71,6 +71,9 @@
 
 /* increment button accessibility label */
 "Increment" = "增加";
+
+/* Feedback error reason */
+"Internal error: this app has no feedback address configured." = "内部错误：此应用程序未配置反馈地址。";
 
 /* default special URL confirm button title */
 "Invoke" = "调用";
@@ -152,8 +155,17 @@
 /* Strike Through button accessibility label */
 "Strike Through" = "删去";
 
+/* Feedback error reason */
+"This device hasn't been configured to send email." = "该设备未配置为发送电邮。";
+
 /* Certificate trust alert button title */
 "Trust Always" = "总是信任";
+
+/* Feedback error description */
+"Unable to send feedback" = "无法发送反馈";
+
+/* Feedback error description */
+"Unable to send feedback." = "无法发送反馈。";
 
 /* Underline button accessibility label */
 "Underline" = "底线";

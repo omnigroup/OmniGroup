@@ -57,20 +57,31 @@ if [ "${SCRIPT_INPUT_FILE_LIST_COUNT:-0}" != "1" ] || ! cmp --quiet "$LOCALIZABL
         echo "*** Error: Out of date localizable input file list:"
         diff "$SYMBOLIC_LOCALIZABLE_FILE_LIST" "$LOCALIZABLE_FILE_LIST" || true
     else
-        echo "*** Error: Missing localizable input file list:"
+        echo "*** Error: Missing localizable input file list"
     fi
-    
-    echo
-    echo "cp \"$LOCALIZABLE_FILE_LIST\" \"$SYMBOLIC_LOCALIZABLE_FILE_LIST\""
-    echo 
-    echo "Must also update the Build String Files shell script phase to include an input files item of:"
-    echo
-    echo "  \$(SRCROOT)/\$(TARGET_NAME).xcfilelist"
-    echo
-    echo "and an output (single) file item of:"
-    echo
-    echo "  \$(DERIVED_FILE_DIR)/\$(TARGET_NAME)-BuildStringFiles"
-    echo
+
+    if [ "$CONFIGURATION" = "Debug" ]; then
+        echo
+        echo "Attempting automatic repair for this $CONFIGURATION build."
+        echo
+        cp "$LOCALIZABLE_FILE_LIST" "$SYMBOLIC_LOCALIZABLE_FILE_LIST"
+        echo
+        if [ "$SCRIPT_INPUT_FILE_LIST_COUNT" = "1" ]; then
+            echo "Updated \"$SYMBOLIC_LOCALIZABLE_FILE_LIST\". Please be sure to include this change in your next commit."
+            echo "You may now rebuild."
+        else
+            echo "Created \"$SYMBOLIC_LOCALIZABLE_FILE_LIST\". Please be sure to include this change in your next commit."
+            echo
+            echo "You must also update the Build String Files shell script phase of $TARGET_NAME to include this file as an input files item:"
+            echo
+            echo "  \$(SRCROOT)/\$(TARGET_NAME).xcfilelist"
+            echo
+            echo "and an output (single) file item of:"
+            echo
+            echo "  \$(DERIVED_FILE_DIR)/\$(TARGET_NAME)-BuildStringFiles"
+            echo
+        fi
+    fi
     exit 1
 fi
 

@@ -1171,7 +1171,7 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
 }
 
 #else
-- (void)_checkForMessageInSoftwareUpdateData:(NSData *)data
+- (void)_checkForMessageInSoftwareUpdateData:(NSData *)data NS_EXTENSION_UNAVAILABLE_IOS("");
 {
     OSUPartialItem *oneItem = [[OSUPartialItem alloc] initWithXMLData:data];
     if (oneItem) {

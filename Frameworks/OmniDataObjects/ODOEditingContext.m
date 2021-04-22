@@ -1272,8 +1272,9 @@ BOOL ODOEditingContextObjectIsInsertedNotConsideringDeletions(ODOEditingContext 
     }
 
     NSArray *sortDescriptors = fetch.sortDescriptors;
-    if ([sortDescriptors count] > 0)
+    if ([sortDescriptors count] > 0) {
         [results sortUsingDescriptors:sortDescriptors];
+    }
     
     return results;
 }

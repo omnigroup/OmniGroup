@@ -479,13 +479,18 @@ static BOOL _fetchObjectCallback(struct sqlite3 *sqlite, ODOSQLStatement *statem
 {
     ODORowFetchContext *ctx = context;
     
-    OBASSERT(sqlite3_column_count(statement->_statement) == (int)[ctx->schemaProperties count]); // should just be the primary keys we fetched
+#if defined(OMNI_ASSERTIONS_ON)
+    int columnCount = sqlite3_column_count(statement->_statement);
+    int expectedCount = (int)[ctx->schemaProperties count];
+    OBASSERT(columnCount == expectedCount);
+#endif
     
     // Get the primary key first
     OBASSERT(ctx->primaryKeyColumnIndex <= INT_MAX); // sqlite3 sensisibly only allows a few billion columns.
     id value = nil;
-    if (!ODOSQLStatementCreateValue(sqlite, statement, (int)ctx->primaryKeyColumnIndex, &value, [ctx->primaryKeyAttribute type], [ctx->primaryKeyAttribute valueClass], outError))
+    if (!ODOSQLStatementCreateValue(sqlite, statement, (int)ctx->primaryKeyColumnIndex, &value, [ctx->primaryKeyAttribute type], [ctx->primaryKeyAttribute valueClass], outError)) {
         return NO;
+    }
     
     // Unique the fetch vs the registered objects.
     ODOObjectID *objectID = [[ODOObjectID alloc] initWithEntity:ctx->entity primaryKey:value];
@@ -747,15 +752,13 @@ NSMutableArray <__kindof ODOObject *> * _Nullable ODOFetchObjects(ODOEditingCont
     // It's unclear whether it is worthwhile caching the conversion from SQL to a statement and if so how best to do it.  Instead, we'll build a statement, use it and discard it.  Predicates can have both column expressions and constants.  To avoid quoting issues, we could try to build a SQL string with bindings ('?') and a list of constants in parallel, prepare the statement and then bind the constants.  One problem with this is the IN expression.  The rhs might have any number of values 'foo IN ("a", "b", "c")' so we would have to count the collection to get the right number of slots to bind.
     // TODO: If we *do* start caching the statements we'll need to be wary of the copy semantics for text/blob (mostly text) bindings.  Right now we are copying (safe but slower), but if we try to optimize this uncarefully, we could end up crashing (since qualifiers could be reused and the original bytes might have been deallocated).
 
-    ODOAttribute *primaryKeyAttribute = entity.primaryKeyAttribute;
-
     __block ODORowFetchContext ctx;
     memset(&ctx, 0, sizeof(ctx));
     ctx.entity = entity;
     ctx.instanceClass = entity.instanceClass;
     ctx.schemaProperties = [entity _schemaProperties];
-    ctx.primaryKeyAttribute = primaryKeyAttribute;
-    ctx.primaryKeyColumnIndex = [ctx.schemaProperties indexOfObjectIdenticalTo:primaryKeyAttribute];
+    ctx.primaryKeyAttribute = entity.primaryKeyAttribute;
+    ctx.primaryKeyColumnIndex = (int)[ctx.schemaProperties indexOfObjectIdenticalTo:ctx.primaryKeyAttribute];
     ctx.editingContext = self;
     ctx.results = [NSMutableArray array];
     ctx.fetched = [NSMutableArray array]; // Collect newly fetched objects to be send -awakeFromFetch:
@@ -817,9 +820,10 @@ NSMutableArray <__kindof ODOObject *> * _Nullable ODOFetchObjects(ODOEditingCont
 #ifdef DEBUG
     // Help make sure we don't have support for *fetching* a predicate that we'll evaluate differently in memory.
     // This won't detect the inverse case (SQL doesn't match but in memory doesn't).
-    if (predicate) {
-        for (ODOObject *object in ctx.results)
+    if (predicate != nil) {
+        for (ODOObject *object in ctx.results) {
             OBPOSTCONDITION([predicate evaluateWithObject:object]); // Might have a predicate supplying a relationship's identifier where it should supply the actual object
+        }
     }
 #endif
 

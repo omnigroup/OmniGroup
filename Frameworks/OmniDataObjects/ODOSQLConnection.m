@@ -185,7 +185,8 @@ RCS_ID("$Id$");
     
     // Even on error the output sqlite will supposedly be set and we need to close it.
     sqlite3 *sql = NULL;
-    int rc = sqlite3_open([path UTF8String], &sql);
+    int sqliteFlags = options & ODOSQLConnectionReadOnly ? SQLITE_OPEN_READONLY : (SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
+    int rc = sqlite3_open_v2([path UTF8String], &sql, sqliteFlags, NULL);
     if (rc != SQLITE_OK) {
         ODOSQLiteError(outError, rc, sql); // stack the underlying error
         sqlite3_close(sql);

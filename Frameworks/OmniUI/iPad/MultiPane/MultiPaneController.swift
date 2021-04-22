@@ -274,6 +274,11 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
         return transitionDestinationSize ?? view.bounds.size
     }
     
+    public var paneVisibilityIsReliableWithCurrentSize: Bool {
+        // If we're transitioning from one size to another, our pane visibility may change when we reach that destination size.
+        return transitionDestinationSize == view.bounds.size || transitionDestinationSize == nil
+    }
+    
     private var widthOfSidebars: CGFloat {
         return orderedPanes.reduce(0.0, { (value, pane) in
             let width = pane.configuration is Sidebar ? pane.width : 0.0
@@ -480,7 +485,7 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
     
     /// Show a pane for a given location, supplying an animation option, in the style that MultiPaneController is acustomed.
     private func showPane(at location: MultiPaneLocation, animated: Bool, completion: @escaping ()->Void) {
-        guard let pane = pane(withLocation: location) else { return }
+        guard let pane = pane(withLocation: location) else { completion(); return }
         
         // If it's currently being dismissed, try to show it again once that's done
         guard !pane.isBeingDismissed else {
@@ -490,7 +495,7 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
             return
         }
         
-        guard pane.isVisible == false else { return }
+        guard pane.isVisible == false else { completion(); return }
         
         multiPanePresenter.present(pane: pane, fromViewController: self, usingDisplayMode: displayMode, animated: animated, completion: completion)
     }

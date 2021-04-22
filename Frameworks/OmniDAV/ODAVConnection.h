@@ -68,6 +68,7 @@ typedef NS_ENUM(NSUInteger, ODAVDepth) {
 // validateCertificateForChallenge: Decide whether to trust a server (NSURLAuthenticationMethodServerTrust), and return the adjusted SecTrustRef credential if so. Returning nil is equivalent to not setting a callback in the first place, which results in NSURLSessionAuthChallengeRejectProtectionSpace. (TODO: Should it be default handling instead of reject?)
 // This callback should simply apply any stored exceptions or similar overrides, but probably shouldn't prompt the user: if it takes too long the server may drop the connection, and NSURLSession doesn't automatically handle that timeout. Instead, users of OmniDAV should run a trust dialog if an operation fails for a server-trust-related reason.
 @property(nonatomic,copy,nullable) NSURLCredential * _Nullable (^validateCertificateForChallenge)(NSURLAuthenticationChallenge *challenge);
+
 // findCredentialsForChallenge: Start an operation to get a username+password for an operation, and return it. The DAV operation will be canceled, but the NSOperation will be returned in the error block for the caller to wait on if it wants. (In the future we may want the DAV operation to wait on the NSOperation automatically.)
 @property(nonatomic,copy,nullable) NSOperation <OFCredentialChallengeDisposition> *(^findCredentialsForChallenge)(NSURLAuthenticationChallenge *challenge);
 

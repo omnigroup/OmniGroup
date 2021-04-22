@@ -1,11 +1,11 @@
+/* Something open in another window alert title - the token is a short description of the activity open in the other window, for example: 'Account Setup' */
+"%@ is open in another window" = "%@이(가) 다른 창에 열려 있음";
+
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@/%2$@";
 
 /* Default title for the About menu item */
 "About %@" = "%@ 정보";
-
-/* MultiPane Back button title, when system is compact */
-"Back" = "뒤로";
 
 /* Bold button accessibility label */
 "Bold" = "볼드체";
@@ -70,6 +70,9 @@
 
 /* increment button accessibility label */
 "Increment" = "증가";
+
+/* Feedback error reason */
+"Internal error: this app has no feedback address configured." = "내부 오류: 이 앱에 구성된 피드백 주소가 없습니다.";
 
 /* default special URL confirm button title */
 "Invoke" = "호출";
@@ -148,8 +151,17 @@
 /* Strike Through button accessibility label */
 "Strike Through" = "취소선";
 
+/* Feedback error reason */
+"This device hasn't been configured to send email." = "이 장치는 이메일을 전송하도록 구성되지 않았습니다.";
+
 /* Certificate trust alert button title */
 "Trust Always" = "항상 신뢰";
+
+/* Feedback error description */
+"Unable to send feedback" = "피드백을 전송할 수 없습니다.";
+
+/* Feedback error description */
+"Unable to send feedback." = "피드백을 전송할 수 없습니다.";
 
 /* Underline button accessibility label */
 "Underline" = "밑줄";

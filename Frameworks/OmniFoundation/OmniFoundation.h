@@ -7,6 +7,7 @@
 
 #import <OmniFoundation/OFFeatures.h>
 
+#import <OmniFoundation/OFASCIIPropertyListSerialization.h>
 #import <OmniFoundation/OFASN1Utilities.h>
 #import <OmniFoundation/OFAlias.h>
 #import <OmniFoundation/OFAsynchronousOperation.h>

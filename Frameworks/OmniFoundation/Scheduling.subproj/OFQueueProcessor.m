@@ -95,7 +95,7 @@ static OFQueueProcessor *detachingQueueProcessor;
             
             @autoreleasepool {
                 // Record a buffer with the selector name in case we crash here with a zombied object. The selector could help narrow down where this was queued.
-                OBRecordBacktraceWithContext(sel_getName(retainedInvocation.selector), OBBacktraceBuffer_PerformSelector, retainedInvocation);
+                OBRecordBacktraceWithSelectorAndContext(retainedInvocation.selector, retainedInvocation);
 
                 [retainedInvocation invoke];
             }

@@ -13,9 +13,6 @@
 /* Error message when renaming a folder and there is already a folder with the requested name. */
 "Cannot rename folder." = "Impossibile rinominare la cartella.";
 
-/* Document store scope display name */
-"Local Documents" = "Documenti locali";
-
 /* Error suggestion when renaming a file to a name that is already in use. */
 "Please choose a different name." = "Scegli un altro nome.";
 

@@ -209,7 +209,7 @@ static BOOL ODOVacuumOnDisconnect = NO;
     return _connection.URL;
 }
 
-- (BOOL)connectToURL:(NSURL *)fileURL error:(NSError **)outError;
+- (BOOL)connectToURL:(NSURL *)fileURL readonly:(BOOL)isReadonly error:(NSError **)outError;
 {
     if (ODOSQLDebugLogLevel > 0)
         NSLog(@"Connecting to %@", [fileURL absoluteURL]);
@@ -235,6 +235,9 @@ static BOOL ODOVacuumOnDisconnect = NO;
     }
     if (ODOKeepTemporaryStoreInMemory) {
         options |= ODOSQLConnectionKeepTemporaryStoreInMemory;
+    }
+    if (isReadonly) {
+        options |= ODOSQLConnectionReadOnly;
     }
     
     _connection = [[ODOSQLConnection alloc] initWithURL:fileURL options:options error:outError];
@@ -329,6 +332,11 @@ static BOOL ODOVacuumOnDisconnect = NO;
     [[NSNotificationCenter defaultCenter] postNotificationName:ODODatabaseConnectedURLChangedNotification object:self];
     
     return YES;
+}
+
+- (BOOL)connectToURL:(NSURL *)fileURL error:(NSError **)outError;
+{
+    return [self connectToURL:fileURL readonly:NO error:outError];
 }
 
 // TODO: This should poke the attached ODOEditingContext into resetting or the like.
@@ -476,6 +484,10 @@ static BOOL _fetchAttributesCallback(struct sqlite3 *sqlite, ODOSQLStatement *st
     int columnCount = sqlite3_column_count(statement->_statement);
     NSMutableArray *row = [NSMutableArray array];
     
+    if (statement.hasAggregateColumnSpecification) {
+        columnCount -= 1; // drop the aggregation column
+    }
+    
     for (int column = 0; column < columnCount; column++) {
         ODOAttribute *attribute = [callbackContext->attributes objectAtIndex:column];
         id value = nil;
@@ -497,6 +509,41 @@ static BOOL _fetchAttributesCallback(struct sqlite3 *sqlite, ODOSQLStatement *st
     NSMutableArray *results = [NSMutableArray array];
     
     ODOSQLStatement *statement = [[ODOSQLStatement alloc] initSelectProperties:attributes fromEntity:entity connection:self.connection predicate:predicate error:outError];
+    if (statement == nil) {
+        return nil;
+    }
+    
+    BOOL success = [self.connection performSQLAndWaitWithError:outError block:^BOOL(struct sqlite3 *sqlite, NSError **blockError) {
+        ODOSQLStatementCallbacks callbacks;
+        memset(&callbacks, 0, sizeof(callbacks));
+        callbacks.row = _fetchAttributesCallback;
+        
+        FetchAttributesCallbackContext context;
+        context.attributes = attributes;
+        context.results = results;
+        return ODOSQLStatementRun(sqlite, statement, callbacks, &context, blockError);
+    }];
+    
+    OBExpectDeallocation(statement);
+    [statement release];
+    return (success ? results : nil);
+}
+
+- (nullable NSArray<id> *)fetchCommittedAttributes:(NSArray<ODOAttribute *> *)attributes fromEntity:(ODOEntity *)entity havingExtremum:(ODOFetchExtremum)extremum forAttribute:(ODOAttribute *)attribute matchingPredicate:(nullable NSPredicate *)predicate error:(NSError **)outError;
+{
+    OBPRECONDITION(attributes != nil);
+    NSMutableArray *results = [NSMutableArray array];
+    
+    NSPredicate *implicitNonnullPredicate = ODOKeyPathNotEqualToValuePredicate([attribute name], nil);
+    NSPredicate *queryPredicate;
+    if (predicate != nil) {
+        queryPredicate = ODOAndPredicates(implicitNonnullPredicate, predicate, nil);
+    } else {
+        queryPredicate = implicitNonnullPredicate;
+    }
+    
+    ODOSQLFetchAggregation *aggregation = [ODOSQLFetchAggregation aggregationWithExtremum:extremum attribute:attribute];
+    ODOSQLStatement *statement = [[ODOSQLStatement alloc] initSelectProperties:attributes usingAggregation:aggregation fromEntity:entity connection:self.connection predicate:queryPredicate error:outError];
     if (statement == nil) {
         return nil;
     }

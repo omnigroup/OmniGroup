@@ -1,4 +1,4 @@
-// Copyright 2005-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,10 +16,27 @@
 #import <OmniFoundation/OFASN1Utilities.h>
 #endif
 
-RCS_ID("$Id$");
-
-
 @implementation NSBundle (OFExtensions)
+
++ (NSString *)containingApplicationBundleIdentifier;
+{
+    NSBundle *mainBundle = [NSBundle mainBundle];
+    NSString *path = mainBundle.bundlePath;
+    if ([path hasSuffix:@"app"]) {
+        return mainBundle.bundleIdentifier;
+    }
+
+    while (path != nil && path.length > 0) {
+        if ([path hasSuffix:@"app"]) {
+            NSBundle *bundle = [NSBundle bundleWithPath:path];
+            return bundle.bundleIdentifier;
+        }
+        path = [path stringByDeletingLastPathComponent];
+    }
+
+    OBASSERT_NOT_REACHED(@"Couldn't not determine containing bundle.");
+    assert(0);
+}
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 

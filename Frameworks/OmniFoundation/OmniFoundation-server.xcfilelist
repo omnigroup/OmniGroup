@@ -100,6 +100,7 @@ Formatters.subproj/OFUppercaseFormatter.m
 Formatters.subproj/OFZipCodeFormatter.m
 Keychain/OFCredentials-Mac.m
 Keychain/OFCredentials.m
+OFASCIIPropertyListSerialization.m
 OFASN1Utilities-Construction.m
 OFASN1Utilities.m
 OFBacktrace.m

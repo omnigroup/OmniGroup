@@ -214,6 +214,12 @@ static NSString *BundleIdentifierForPID(pid_t pid)
                     }
                 }
             }
+        } else if ((options & OFLockFileLockOperationIgnoreLocksFromOtherHosts) != 0) {
+            DEBUG_LOCKFILE(@"Ignoring lock written by a different host '%@'", _URL);
+            // Ignore the lock file contents -- it was written by a different host
+            [_currentLockFileContents release];
+            _currentLockFileContents = nil;
+            break;
         }
 
         if (override) {

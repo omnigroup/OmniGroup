@@ -76,12 +76,6 @@
 /* Lose unsynced changes warning: title */
 "Discard unsynced edits?" = "Niet-gesynchroniseerde bewerkingen wissen?";
 
-/* Message letting the user know that their document was moved from one folder to another. */
-"Document moved." = "Document verplaatst.";
-
-/* Title for alert informing user that the document has been reloaded with edits from another device */
-"Document Updated" = "Document bijgewerkt";
-
 /* Toolbar button title for returning to list of documents. */
 "Documents <back button>" = "Documenten";
 
@@ -108,20 +102,14 @@
 /* Info item accessibility label */
 "Info" = "Info";
 
-/* Notice for the user about the last edit to a document (unknown device) */
-"Last edit: %@" = "Laatste bewerking: %@";
-
-/* Notice for the user about the last edit to a document (another device) */
-"Last edit: %@ on another device" = "Laatste bewerking: %@ op een ander apparaat";
-
-/* Notice for the user about the last edit to a document (this device) */
-"Last edit: %@ on this device" = "Laatste bewerking: %@ op dit apparaat";
-
 /* OmniPresence sync status: prefix for the 'last sync' status */
 "Last sync" = "Laatste synchronisatie";
 
 /* Update news: button title */
 "Learn More" = "Meer informatie";
+
+/* Local Documents display name */
+"Local Documents" = "Lokale documenten";
 
 /* Server Account Setup label: location */
 "Location" = "Locatie";
@@ -190,9 +178,6 @@
 
 /* rename button title */
 "Rename" = "Wijzig naam";
-
-/* Message format for alert informing user that the document has been renamed on another device */
-"Renamed to %@." = "Naam gewijzigd naar %@.";
 
 /* replace button title */
 "Replace" = "Vervang";

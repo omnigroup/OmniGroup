@@ -865,7 +865,7 @@ static BOOL retry(NSError **outError, BOOL (^op)(NSError **))
     ODAVRequire([_connection synchronousMoveURL:main_a toMissingURL:main_c error:&error], @"Move without overwrite should succeed when moving a plain file to an empty location.");
     ODAVReject([_connection synchronousMoveURL:main_b toMissingURL:main_c error:&error], @"Move without overwrite should fail when moving a plain file to a location that is already in use.");
     
-    ODAVRequire([error hasUnderlyingErrorDomain:ODAVHTTPErrorDomain code:ODAV_HTTP_PRECONDITION_FAILED], @"Moving a file to a location which already exists should return a precondition error (%d) rather than an error in domain %@ with code %ld.", ODAV_HTTP_PRECONDITION_FAILED, error.domain, error.code);
+    ODAVRequire([error hasUnderlyingErrorDomain:ODAVHTTPErrorDomain code:ODAV_HTTP_PRECONDITION_FAILED], @"Moving a file to a location which already exists should return a precondition error (%ld) rather than an error in domain %@ with code %ld.", ODAV_HTTP_PRECONDITION_FAILED, error.domain, error.code);
     
     return YES;
 }
@@ -883,7 +883,7 @@ static BOOL retry(NSError **outError, BOOL (^op)(NSError **))
     ODAVRequire([_connection synchronousMoveURL:a toMissingURL:c error:&error], @"Move without overwrite should succeed when moving a directory to an empty location.");
     ODAVReject([_connection synchronousMoveURL:b toMissingURL:c error:&error], @"Move without overwrite should fail when moving a directory to a location that is already in use.");
     
-    ODAVRequire([error hasUnderlyingErrorDomain:ODAVHTTPErrorDomain code:ODAV_HTTP_PRECONDITION_FAILED], @"Moving a directory to a location which already exists should return a precondition error (%d) rather than an error in domain %@ with code %ld.", ODAV_HTTP_PRECONDITION_FAILED, error.domain, error.code);
+    ODAVRequire([error hasUnderlyingErrorDomain:ODAVHTTPErrorDomain code:ODAV_HTTP_PRECONDITION_FAILED], @"Moving a directory to a location which already exists should return a precondition error (%ld) rather than an error in domain %@ with code %ld.", ODAV_HTTP_PRECONDITION_FAILED, error.domain, error.code);
     
     return YES;
 }

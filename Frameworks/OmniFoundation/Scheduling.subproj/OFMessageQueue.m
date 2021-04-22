@@ -248,7 +248,7 @@ static BOOL OFMessageQueueDebug = NO;
 	NSLog(@"[%@ addQueueEntry:%@]", [self shortDescription], [aQueueEntry shortDescription]);
 
     // Log a backtrace buffer for the enqueue site of the delayed invocation (we also log one when it is invoked, so we can match up which one crashed and where it came from).
-    OBRecordBacktraceWithContext(sel_getName(aQueueEntry.selector), OBBacktraceBuffer_PerformSelector, (__bridge void *)aQueueEntry);
+    OBRecordBacktraceWithSelectorAndContext(aQueueEntry.selector, (__bridge void *)aQueueEntry);
 
     [queueLock lock];
 

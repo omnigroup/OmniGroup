@@ -33,7 +33,7 @@
 		1E1B93AA19D232A700693752 /* OFASN1Utilities.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E1B93A819D232A700693752 /* OFASN1Utilities.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1E1B93AB19D232A700693752 /* OFASN1Utilities.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E1B93A819D232A700693752 /* OFASN1Utilities.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1E1B93AC19D232A700693752 /* OFASN1Utilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E1B93A919D232A700693752 /* OFASN1Utilities.m */; };
-		1E1B93AD19D232A700693752 /* OFASN1Utilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E1B93A919D232A700693752 /* OFASN1Utilities.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		1E1B93AD19D232A700693752 /* OFASN1Utilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E1B93A919D232A700693752 /* OFASN1Utilities.m */; };
 		1E1CF54D1A520AB60068FA07 /* OFASN1-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E1CF5481A5208040068FA07 /* OFASN1-Internal.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		1E1CF54E1A520AB60068FA07 /* OFASN1-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E1CF5481A5208040068FA07 /* OFASN1-Internal.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		1E21E6251D233E5100A04AE4 /* OFCMSContentTypes.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E21E6241D233E5100A04AE4 /* OFCMSContentTypes.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
@@ -48,12 +48,12 @@
 		1E3C71B91D63EB160039813D /* OFCMS.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E3C71B81D63EB160039813D /* OFCMS.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1E3C71BF1D63EBE70039813D /* OFCMS.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E3C71B81D63EB160039813D /* OFCMS.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1E498A9D1D6BC76A00996D7D /* OF_CTR_CBCMAC_Util.h in Headers */ = {isa = PBXBuildFile; fileRef = 1EBFA41C1D344A3500771F02 /* OF_CTR_CBCMAC_Util.h */; };
-		1E498A9E1D6BC76E00996D7D /* OF_CTR_CBCMAC_Util.c in Sources */ = {isa = PBXBuildFile; fileRef = 1EBFA41B1D344A3500771F02 /* OF_CTR_CBCMAC_Util.c */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		1E498A9E1D6BC76E00996D7D /* OF_CTR_CBCMAC_Util.c in Sources */ = {isa = PBXBuildFile; fileRef = 1EBFA41B1D344A3500771F02 /* OF_CTR_CBCMAC_Util.c */; };
 		1E498A9F1D6BC77200996D7D /* OFAEADCryptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 1EBFA41E1D344A3500771F02 /* OFAEADCryptor.h */; };
-		1E498AA01D6BC77500996D7D /* OFAEADCryptor.c in Sources */ = {isa = PBXBuildFile; fileRef = 1EBFA41D1D344A3500771F02 /* OFAEADCryptor.c */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		1E498AA11D6BC77900996D7D /* OFAEADCryptorUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EB4E1FA1D400E86006D5DD7 /* OFAEADCryptorUtil.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		1E498AA21D6BC8CA00996D7D /* OFRFC3211Wrap.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E51E82B1D492BB6007037C4 /* OFRFC3211Wrap.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		1E498AA31D6BC95A00996D7D /* OFXMLMaker.m in Sources */ = {isa = PBXBuildFile; fileRef = A2DF1E3A0F782CAA0093FEFA /* OFXMLMaker.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		1E498AA01D6BC77500996D7D /* OFAEADCryptor.c in Sources */ = {isa = PBXBuildFile; fileRef = 1EBFA41D1D344A3500771F02 /* OFAEADCryptor.c */; };
+		1E498AA11D6BC77900996D7D /* OFAEADCryptorUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EB4E1FA1D400E86006D5DD7 /* OFAEADCryptorUtil.m */; };
+		1E498AA21D6BC8CA00996D7D /* OFRFC3211Wrap.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E51E82B1D492BB6007037C4 /* OFRFC3211Wrap.m */; };
+		1E498AA31D6BC95A00996D7D /* OFXMLMaker.m in Sources */ = {isa = PBXBuildFile; fileRef = A2DF1E3A0F782CAA0093FEFA /* OFXMLMaker.m */; };
 		1E51D9BA1D638C42004A6DED /* OFASN1Utilities-Construction.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E51D9B91D638C42004A6DED /* OFASN1Utilities-Construction.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		1E51D9BB1D638C42004A6DED /* OFASN1Utilities-Construction.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E51D9B91D638C42004A6DED /* OFASN1Utilities-Construction.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		1E51E82C1D492BB6007037C4 /* OFRFC3211Wrap.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E51E82B1D492BB6007037C4 /* OFRFC3211Wrap.m */; };
@@ -74,7 +74,7 @@
 		1E8A54C01CC82DC200121A8D /* NSError-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E8A54BE1CC82DC200121A8D /* NSError-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1E8A54C11CC82DC200121A8D /* NSError-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E8A54BE1CC82DC200121A8D /* NSError-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1E8A54C21CC82DC200121A8D /* NSError-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E8A54BF1CC82DC200121A8D /* NSError-OFExtensions.m */; };
-		1E8A54C31CC82DC200121A8D /* NSError-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E8A54BF1CC82DC200121A8D /* NSError-OFExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		1E8A54C31CC82DC200121A8D /* NSError-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E8A54BF1CC82DC200121A8D /* NSError-OFExtensions.m */; };
 		1E8D018E1D21EA4D008E75AE /* OFCMSUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E8D018D1D21EA4D008E75AE /* OFCMSUtilities.swift */; };
 		1E8D018F1D21EA4D008E75AE /* OFCMSUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E8D018D1D21EA4D008E75AE /* OFCMSUtilities.swift */; };
 		1E8D01941D2204E9008E75AE /* OFCMSRecipientUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E8D01931D2204E9008E75AE /* OFCMSRecipientUtilities.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
@@ -91,13 +91,13 @@
 		1EBFA4211D344A3500771F02 /* OFAEADCryptor.c in Sources */ = {isa = PBXBuildFile; fileRef = 1EBFA41D1D344A3500771F02 /* OFAEADCryptor.c */; };
 		1EBFA4221D344A3500771F02 /* OFAEADCryptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 1EBFA41E1D344A3500771F02 /* OFAEADCryptor.h */; };
 		1ECE29CF1D88DB88004DD4F5 /* Bundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E7F99681D875BCD00CD4533 /* Bundle.swift */; };
-		1EE75BD01D5BB1DE002BE8C8 /* OFXMLTextWriterSink.m in Sources */ = {isa = PBXBuildFile; fileRef = A2AC2E570F783EDD002D9BFB /* OFXMLTextWriterSink.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		1EE75BD01D5BB1DE002BE8C8 /* OFXMLTextWriterSink.m in Sources */ = {isa = PBXBuildFile; fileRef = A2AC2E570F783EDD002D9BFB /* OFXMLTextWriterSink.m */; };
 		1EE75BD61D5BB1E2002BE8C8 /* OFXMLTextWriterSink.h in Headers */ = {isa = PBXBuildFile; fileRef = A2AC2E560F783EDD002D9BFB /* OFXMLTextWriterSink.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1EE75BD71D5BC35D002BE8C8 /* OFXMLMaker.h in Headers */ = {isa = PBXBuildFile; fileRef = A2DF1E390F782CAA0093FEFA /* OFXMLMaker.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1EEA8E291D35C93D002EF965 /* GeneratedOIDs.h in Headers */ = {isa = PBXBuildFile; fileRef = 1EEA8E271D35C93D002EF965 /* GeneratedOIDs.h */; };
 		1EEA8E2A1D35C93D002EF965 /* GeneratedOIDs.h in Headers */ = {isa = PBXBuildFile; fileRef = 1EEA8E271D35C93D002EF965 /* GeneratedOIDs.h */; };
 		1EEA8E2B1D35C93D002EF965 /* GeneratedOIDs.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EEA8E281D35C93D002EF965 /* GeneratedOIDs.m */; };
-		1EEA8E2C1D35C93D002EF965 /* GeneratedOIDs.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EEA8E281D35C93D002EF965 /* GeneratedOIDs.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		1EEA8E2C1D35C93D002EF965 /* GeneratedOIDs.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EEA8E281D35C93D002EF965 /* GeneratedOIDs.m */; };
 		273257D61448B56000A26568 /* OFUTI.h in Headers */ = {isa = PBXBuildFile; fileRef = 273257D51448B56000A26568 /* OFUTI.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		273257D91448B98B00A26568 /* OFUTI.m in Sources */ = {isa = PBXBuildFile; fileRef = 273257D81448B98B00A26568 /* OFUTI.m */; };
 		3402C55715C3209000AA7DAF /* OFFeatures.h in Headers */ = {isa = PBXBuildFile; fileRef = 3402C55615C3209000AA7DAF /* OFFeatures.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -114,6 +114,10 @@
 		3409DFAD2243FAED006C6019 /* ResourceTypePredicate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3409DFAC2243FAED006C6019 /* ResourceTypePredicate.swift */; };
 		3409DFAE2243FAED006C6019 /* ResourceTypePredicate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3409DFAC2243FAED006C6019 /* ResourceTypePredicate.swift */; };
 		340CDBD6098A9E03006270CA /* ExceptionHandling.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 340CDBD5098A9E03006270CA /* ExceptionHandling.framework */; };
+		340E075823849CB900AB303D /* OFASCIIPropertyListSerializationTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 340E075723849CB900AB303D /* OFASCIIPropertyListSerializationTests.m */; };
+		340E075D23849CBE00AB303D /* OFASCIIPropertyListSerializationTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 340E075723849CB900AB303D /* OFASCIIPropertyListSerializationTests.m */; };
+		340E075F23849D4B00AB303D /* OFASCIIPropertyListSerializationTests in Resources */ = {isa = PBXBuildFile; fileRef = 340E075E23849D4A00AB303D /* OFASCIIPropertyListSerializationTests */; };
+		340E076023849D4B00AB303D /* OFASCIIPropertyListSerializationTests in Resources */ = {isa = PBXBuildFile; fileRef = 340E075E23849D4A00AB303D /* OFASCIIPropertyListSerializationTests */; };
 		341657550FEB31CD00F4CED4 /* CFData-OFCompression.h in Headers */ = {isa = PBXBuildFile; fileRef = 341657510FEB31CD00F4CED4 /* CFData-OFCompression.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		341657560FEB31CD00F4CED4 /* CFData-OFCompression.m in Sources */ = {isa = PBXBuildFile; fileRef = 341657520FEB31CD00F4CED4 /* CFData-OFCompression.m */; };
 		341657570FEB31CD00F4CED4 /* CFData-OFFileIO.h in Headers */ = {isa = PBXBuildFile; fileRef = 341657530FEB31CD00F4CED4 /* CFData-OFFileIO.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -132,7 +136,7 @@
 		341F551E0F72F08100632558 /* OFXMLParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 341F551C0F72F08100632558 /* OFXMLParser.m */; };
 		34203FBB1D594A3B005A1496 /* OFXMLParserUnparsedElementTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 34203FB91D594A3B005A1496 /* OFXMLParserUnparsedElementTests.m */; };
 		34203FBC1D594A3B005A1496 /* OFXMLParserUnparsedElementTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 34203FB91D594A3B005A1496 /* OFXMLParserUnparsedElementTests.m */; };
-		34236AB61D2C6EF800A079AE /* NSDecimalNumber-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51D24FE8AAEA611C9CC38 /* NSDecimalNumber-OFExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34236AB61D2C6EF800A079AE /* NSDecimalNumber-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51D24FE8AAEA611C9CC38 /* NSDecimalNumber-OFExtensions.m */; };
 		34236ABC1D2C6F0100A079AE /* NSDecimalNumber-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51D42FE8AAEA611C9CC38 /* NSDecimalNumber-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3423F0C116F249900057B9DD /* OFSyncClient.h in Headers */ = {isa = PBXBuildFile; fileRef = 3423F0BF16F249900057B9DD /* OFSyncClient.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3423F0C316F249900057B9DD /* OFSyncClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 3423F0C016F249900057B9DD /* OFSyncClient.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
@@ -860,7 +864,7 @@
 		34DC24AD1E9D41CB001F7A57 /* OFXMLElementParser.h in Headers */ = {isa = PBXBuildFile; fileRef = 34DC24AB1E9D41CB001F7A57 /* OFXMLElementParser.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34DC24AE1E9D41CB001F7A57 /* OFXMLElementParser.h in Headers */ = {isa = PBXBuildFile; fileRef = 34DC24AB1E9D41CB001F7A57 /* OFXMLElementParser.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34DC24AF1E9D41CB001F7A57 /* OFXMLElementParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 34DC24AC1E9D41CB001F7A57 /* OFXMLElementParser.m */; };
-		34DC24B01E9D41CB001F7A57 /* OFXMLElementParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 34DC24AC1E9D41CB001F7A57 /* OFXMLElementParser.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34DC24B01E9D41CB001F7A57 /* OFXMLElementParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 34DC24AC1E9D41CB001F7A57 /* OFXMLElementParser.m */; };
 		34DF03990B05108D00D82DFC /* OFRelativeDateFormatter.h in Headers */ = {isa = PBXBuildFile; fileRef = 34DF03970B05108D00D82DFC /* OFRelativeDateFormatter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34DF039A0B05108D00D82DFC /* OFRelativeDateFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 34DF03980B05108D00D82DFC /* OFRelativeDateFormatter.m */; };
 		34DFC147190EDE0D0080AB09 /* OFTransientObjectsTracker.h in Headers */ = {isa = PBXBuildFile; fileRef = 34DFC145190EDE0D0080AB09 /* OFTransientObjectsTracker.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -881,241 +885,241 @@
 		34F16B25194F6C3300AD9C4D /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34F16B1A194F6C3200AD9C4D /* OmniFoundation.framework */; };
 		34F16B47194F6DF000AD9C4D /* OmniFoundation.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C82FE8AAEA611C9CC38 /* OmniFoundation.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34F16B48194F6DF500AD9C4D /* OFErrors.h in Headers */ = {isa = PBXBuildFile; fileRef = 34D606DC0CCAA74100467736 /* OFErrors.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16B49194F6DFA00AD9C4D /* OFErrors.m in Sources */ = {isa = PBXBuildFile; fileRef = 344D0A891190DB4700264D89 /* OFErrors.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16B49194F6DFA00AD9C4D /* OFErrors.m in Sources */ = {isa = PBXBuildFile; fileRef = 344D0A891190DB4700264D89 /* OFErrors.m */; };
 		34F16B4A194F6DFF00AD9C4D /* OFFeatures.h in Headers */ = {isa = PBXBuildFile; fileRef = 3402C55615C3209000AA7DAF /* OFFeatures.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34F16B4B194F6E0500AD9C4D /* OmniFoundation.defaults in Resources */ = {isa = PBXBuildFile; fileRef = 341DDD0F15631D10004DDB5A /* OmniFoundation.defaults */; };
 		34F16B4C194F6E0B00AD9C4D /* OFNetChangeNotifier.h in Headers */ = {isa = PBXBuildFile; fileRef = 6C391FA2114C1B4E0049E917 /* OFNetChangeNotifier.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16B4D194F6E1000AD9C4D /* OFNetChangeNotifier.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C391FA3114C1B4E0049E917 /* OFNetChangeNotifier.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16B4D194F6E1000AD9C4D /* OFNetChangeNotifier.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C391FA3114C1B4E0049E917 /* OFNetChangeNotifier.m */; };
 		34F16B4E194F6E1200AD9C4D /* OFNetReachability.h in Headers */ = {isa = PBXBuildFile; fileRef = 34AE03CC12652796008B6FAF /* OFNetReachability.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16B4F194F6E1500AD9C4D /* OFNetReachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 34AE03CD12652796008B6FAF /* OFNetReachability.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16B4F194F6E1500AD9C4D /* OFNetReachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 34AE03CD12652796008B6FAF /* OFNetReachability.m */; };
 		34F16B54194F6E3300AD9C4D /* OFNetStateNotifier.h in Headers */ = {isa = PBXBuildFile; fileRef = 348C22D5162F28DD00EBFCB9 /* OFNetStateNotifier.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34F16B55194F6E3700AD9C4D /* OFNetStateNotifier.m in Sources */ = {isa = PBXBuildFile; fileRef = 348C22D6162F28DD00EBFCB9 /* OFNetStateNotifier.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		34F16B56194F6E3A00AD9C4D /* OFNetStateRegistration.h in Headers */ = {isa = PBXBuildFile; fileRef = 348C22D7162F28DD00EBFCB9 /* OFNetStateRegistration.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34F16B57194F6E3D00AD9C4D /* OFNetStateRegistration.m in Sources */ = {isa = PBXBuildFile; fileRef = 348C22D8162F28DD00EBFCB9 /* OFNetStateRegistration.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		34F16B58194F6E4500AD9C4D /* OFErrorRecovery.h in Headers */ = {isa = PBXBuildFile; fileRef = 345E73E40C6D06630034A811 /* OFErrorRecovery.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16B59194F6E4900AD9C4D /* OFErrorRecovery.m in Sources */ = {isa = PBXBuildFile; fileRef = 345E73E50C6D06630034A811 /* OFErrorRecovery.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16B59194F6E4900AD9C4D /* OFErrorRecovery.m in Sources */ = {isa = PBXBuildFile; fileRef = 345E73E50C6D06630034A811 /* OFErrorRecovery.m */; };
 		34F16B5A194F6E4C00AD9C4D /* OFCancelErrorRecovery.h in Headers */ = {isa = PBXBuildFile; fileRef = 34B4352A0C6D111A00874D95 /* OFCancelErrorRecovery.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16B5B194F6E5000AD9C4D /* OFCancelErrorRecovery.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B4352B0C6D111A00874D95 /* OFCancelErrorRecovery.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16B5B194F6E5000AD9C4D /* OFCancelErrorRecovery.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B4352B0C6D111A00874D95 /* OFCancelErrorRecovery.m */; };
 		34F16B5C194F6E5300AD9C4D /* OFMultipleOptionErrorRecovery.h in Headers */ = {isa = PBXBuildFile; fileRef = 34B435540C6D122600874D95 /* OFMultipleOptionErrorRecovery.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16B5D194F6E5600AD9C4D /* OFMultipleOptionErrorRecovery.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B435550C6D122600874D95 /* OFMultipleOptionErrorRecovery.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16B5D194F6E5600AD9C4D /* OFMultipleOptionErrorRecovery.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B435550C6D122600874D95 /* OFMultipleOptionErrorRecovery.m */; };
 		34F16B5E194F6E6000AD9C4D /* OFRelativeDateParser.h in Headers */ = {isa = PBXBuildFile; fileRef = 9FE23DFD0AB0EBC600E3D795 /* OFRelativeDateParser.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16B5F194F6E6300AD9C4D /* OFRelativeDateParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FE23DFE0AB0EBC600E3D795 /* OFRelativeDateParser.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16B5F194F6E6300AD9C4D /* OFRelativeDateParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FE23DFE0AB0EBC600E3D795 /* OFRelativeDateParser.m */; };
 		34F16B60194F6E6700AD9C4D /* OFRelativeDateParser-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 34E576C10E245BEB00C1F5FB /* OFRelativeDateParser-Internal.h */; };
-		34F16B61194F6E6B00AD9C4D /* OFRelativeDateParser-Internal.m in Sources */ = {isa = PBXBuildFile; fileRef = 5FE978E81912CED5003029CA /* OFRelativeDateParser-Internal.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16B61194F6E6B00AD9C4D /* OFRelativeDateParser-Internal.m in Sources */ = {isa = PBXBuildFile; fileRef = 5FE978E81912CED5003029CA /* OFRelativeDateParser-Internal.m */; };
 		34F16B62194F6E6E00AD9C4D /* OFBinding.h in Headers */ = {isa = PBXBuildFile; fileRef = 34850C820A71491100675995 /* OFBinding.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16B63194F6E7100AD9C4D /* OFBinding.m in Sources */ = {isa = PBXBuildFile; fileRef = 34850C830A71491100675995 /* OFBinding.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16B63194F6E7100AD9C4D /* OFBinding.m in Sources */ = {isa = PBXBuildFile; fileRef = 34850C830A71491100675995 /* OFBinding.m */; };
 		34F16B64194F6E7400AD9C4D /* OFBindingPoint.h in Headers */ = {isa = PBXBuildFile; fileRef = 345272C514F092EF003151CA /* OFBindingPoint.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16B65194F6E7800AD9C4D /* OFBindingPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = 345272C614F092EF003151CA /* OFBindingPoint.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16B65194F6E7800AD9C4D /* OFBindingPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = 345272C614F092EF003151CA /* OFBindingPoint.m */; };
 		34F16B66194F6E7F00AD9C4D /* OFBundleRegistry.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C70FE8AAEA611C9CC38 /* OFBundleRegistry.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16B67194F6E8300AD9C4D /* OFBundleRegistry.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C60FE8AAEA611C9CC38 /* OFBundleRegistry.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16B67194F6E8300AD9C4D /* OFBundleRegistry.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C60FE8AAEA611C9CC38 /* OFBundleRegistry.m */; };
 		34F16B68194F6E8600AD9C4D /* OFCharacterScanner.h in Headers */ = {isa = PBXBuildFile; fileRef = 3D990C72FF3658F5C697A146 /* OFCharacterScanner.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16B69194F6E8900AD9C4D /* OFCharacterScanner.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D990C74FF36598CC697A146 /* OFCharacterScanner.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16B69194F6E8900AD9C4D /* OFCharacterScanner.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D990C74FF36598CC697A146 /* OFCharacterScanner.m */; };
 		34F16B6A194F6E8F00AD9C4D /* OFCompletionMatch.h in Headers */ = {isa = PBXBuildFile; fileRef = E218273A145605170097BBFE /* OFCompletionMatch.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16B6B194F6E9300AD9C4D /* OFCompletionMatch.m in Sources */ = {isa = PBXBuildFile; fileRef = E218273B145605170097BBFE /* OFCompletionMatch.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16B6B194F6E9300AD9C4D /* OFCompletionMatch.m in Sources */ = {isa = PBXBuildFile; fileRef = E218273B145605170097BBFE /* OFCompletionMatch.m */; };
 		34F16B6C194F6E9C00AD9C4D /* OFObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C77FE8AAEA611C9CC38 /* OFObject.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16B6D194F6E9F00AD9C4D /* OFObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C64FE8AAEA611C9CC38 /* OFObject.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16B6D194F6E9F00AD9C4D /* OFObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C64FE8AAEA611C9CC38 /* OFObject.m */; };
 		34F16B6E194F6EA200AD9C4D /* OFPreference.h in Headers */ = {isa = PBXBuildFile; fileRef = 01644BAC003B34EEC697A10E /* OFPreference.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16B6F194F6EA600AD9C4D /* OFPreference.m in Sources */ = {isa = PBXBuildFile; fileRef = 01644BAD003B34EEC697A10E /* OFPreference.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16B6F194F6EA600AD9C4D /* OFPreference.m in Sources */ = {isa = PBXBuildFile; fileRef = 01644BAD003B34EEC697A10E /* OFPreference.m */; };
 		34F16B70194F6EA900AD9C4D /* OFRegularExpressionMatch.h in Headers */ = {isa = PBXBuildFile; fileRef = 34FEB25E16C6FEE8006A2651 /* OFRegularExpressionMatch.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16B71194F6EAD00AD9C4D /* OFRegularExpressionMatch.m in Sources */ = {isa = PBXBuildFile; fileRef = 34FEB25F16C6FEE8006A2651 /* OFRegularExpressionMatch.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16B71194F6EAD00AD9C4D /* OFRegularExpressionMatch.m in Sources */ = {isa = PBXBuildFile; fileRef = 34FEB25F16C6FEE8006A2651 /* OFRegularExpressionMatch.m */; };
 		34F16B72194F6EB300AD9C4D /* OFStringScanner.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C7EFE8AAEA611C9CC38 /* OFStringScanner.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16B73194F6EB700AD9C4D /* OFStringScanner.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C6AFE8AAEA611C9CC38 /* OFStringScanner.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16B73194F6EB700AD9C4D /* OFStringScanner.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C6AFE8AAEA611C9CC38 /* OFStringScanner.m */; };
 		34F16B74194F6EC100AD9C4D /* OFSaveType.h in Headers */ = {isa = PBXBuildFile; fileRef = 34E07ED0116A4D170021863D /* OFSaveType.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34F16B75194F6EC500AD9C4D /* OFGeometry.h in Headers */ = {isa = PBXBuildFile; fileRef = 3F41140E036614060297A14E /* OFGeometry.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16B76194F6EC900AD9C4D /* OFGeometry.m in Sources */ = {isa = PBXBuildFile; fileRef = 3F41140F036614060297A14E /* OFGeometry.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16B76194F6EC900AD9C4D /* OFGeometry.m in Sources */ = {isa = PBXBuildFile; fileRef = 3F41140F036614060297A14E /* OFGeometry.m */; };
 		34F16B77194F6ECC00AD9C4D /* OFUnicodeUtilities.h in Headers */ = {isa = PBXBuildFile; fileRef = 343302100D85F33300C82A0B /* OFUnicodeUtilities.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34F16B78194F6ECF00AD9C4D /* OFStringDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = 1952E656FF2502DFC697A146 /* OFStringDecoder.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16B79194F6ED300AD9C4D /* OFStringDecoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 1952E654FF24F0A8C697A146 /* OFStringDecoder.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16B79194F6ED300AD9C4D /* OFStringDecoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 1952E654FF24F0A8C697A146 /* OFStringDecoder.m */; };
 		34F16B7A194F6ED600AD9C4D /* OFUtilities.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C7FFE8AAEA611C9CC38 /* OFUtilities.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16B7B194F6EDA00AD9C4D /* OFUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C84FE8AAEA611C9CC38 /* OFUtilities.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16B7B194F6EDA00AD9C4D /* OFUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C84FE8AAEA611C9CC38 /* OFUtilities.m */; };
 		34F16B7C194F6EDC00AD9C4D /* OFSyncClient.h in Headers */ = {isa = PBXBuildFile; fileRef = 3423F0BF16F249900057B9DD /* OFSyncClient.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34F16B7D194F6EE000AD9C4D /* OFSyncClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 3423F0C016F249900057B9DD /* OFSyncClient.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		34F16B7E194F6EE300AD9C4D /* OFBacktrace.h in Headers */ = {isa = PBXBuildFile; fileRef = 343BEAAD1348F00F00F66333 /* OFBacktrace.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16B7F194F6EE700AD9C4D /* OFBacktrace.m in Sources */ = {isa = PBXBuildFile; fileRef = 343BEAAE1348F00F00F66333 /* OFBacktrace.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16B7F194F6EE700AD9C4D /* OFBacktrace.m in Sources */ = {isa = PBXBuildFile; fileRef = 343BEAAE1348F00F00F66333 /* OFBacktrace.m */; };
 		34F16B80194F6EED00AD9C4D /* EnglishToISO.strings in Resources */ = {isa = PBXBuildFile; fileRef = 1D3F8FBE03DE7CFA0097A138 /* EnglishToISO.strings */; };
 		34F16B81194F6EF000AD9C4D /* Language.strings in Resources */ = {isa = PBXBuildFile; fileRef = 1D3F8FBD03DE7CFA0097A138 /* Language.strings */; };
 		34F16B82194F6F0300AD9C4D /* OFTransientObjectsTracker.h in Headers */ = {isa = PBXBuildFile; fileRef = 34DFC145190EDE0D0080AB09 /* OFTransientObjectsTracker.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16B83194F6F0600AD9C4D /* OFTransientObjectsTracker.m in Sources */ = {isa = PBXBuildFile; fileRef = 34DFC146190EDE0D0080AB09 /* OFTransientObjectsTracker.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16B83194F6F0600AD9C4D /* OFTransientObjectsTracker.m in Sources */ = {isa = PBXBuildFile; fileRef = 34DFC146190EDE0D0080AB09 /* OFTransientObjectsTracker.m */; };
 		34F16B84194F6F0B00AD9C4D /* OFBijection.h in Headers */ = {isa = PBXBuildFile; fileRef = 3E4628B3174D38370032001F /* OFBijection.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34F16B85194F6F1200AD9C4D /* OFBijection-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 3E4628BB174D3CEF0032001F /* OFBijection-Internal.h */; };
-		34F16B86194F6F1600AD9C4D /* OFBijection.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E4628B4174D38370032001F /* OFBijection.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16B86194F6F1600AD9C4D /* OFBijection.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E4628B4174D38370032001F /* OFBijection.m */; };
 		34F16B87194F6F1C00AD9C4D /* OFByte.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51CA3FE8AAEA611C9CC38 /* OFByte.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34F16B88194F6F2300AD9C4D /* OFCharacterSet.h in Headers */ = {isa = PBXBuildFile; fileRef = 5A1D8CE10017C8DCC697A1D6 /* OFCharacterSet.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16B89194F6F2900AD9C4D /* OFCharacterSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 5A1D8CE20017C8DCC697A1D6 /* OFCharacterSet.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16B89194F6F2900AD9C4D /* OFCharacterSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 5A1D8CE20017C8DCC697A1D6 /* OFCharacterSet.m */; };
 		34F16B8A194F6F2B00AD9C4D /* OFDataBuffer.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51CA5FE8AAEA611C9CC38 /* OFDataBuffer.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16B8B194F6F2D00AD9C4D /* OFDataBuffer.m in Sources */ = {isa = PBXBuildFile; fileRef = 6737D836FF0496C4C697A12F /* OFDataBuffer.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16B8B194F6F2D00AD9C4D /* OFDataBuffer.m in Sources */ = {isa = PBXBuildFile; fileRef = 6737D836FF0496C4C697A12F /* OFDataBuffer.m */; };
 		34F16B8C194F6F3600AD9C4D /* OFEnumNameTable.h in Headers */ = {isa = PBXBuildFile; fileRef = F0EB5C23023828FE3897A113 /* OFEnumNameTable.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34F16B8D194F6F3A00AD9C4D /* OFEnumNameTable-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 3467C793189C2AFD00C70373 /* OFEnumNameTable-Internal.h */; };
-		34F16B8E194F6F3D00AD9C4D /* OFEnumNameTable.m in Sources */ = {isa = PBXBuildFile; fileRef = F0EB5C24023828FE3897A113 /* OFEnumNameTable.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16B8E194F6F3D00AD9C4D /* OFEnumNameTable.m in Sources */ = {isa = PBXBuildFile; fileRef = F0EB5C24023828FE3897A113 /* OFEnumNameTable.m */; };
 		34F16B8F194F6F4300AD9C4D /* OFEnumNameTable-OFXMLArchiving.h in Headers */ = {isa = PBXBuildFile; fileRef = 349CCB0C118F3BCC0069017B /* OFEnumNameTable-OFXMLArchiving.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16B90194F6F4700AD9C4D /* OFEnumNameTable-OFXMLArchiving.m in Sources */ = {isa = PBXBuildFile; fileRef = 349CCB0D118F3BCC0069017B /* OFEnumNameTable-OFXMLArchiving.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16B90194F6F4700AD9C4D /* OFEnumNameTable-OFXMLArchiving.m in Sources */ = {isa = PBXBuildFile; fileRef = 349CCB0D118F3BCC0069017B /* OFEnumNameTable-OFXMLArchiving.m */; };
 		34F16B91194F6F4A00AD9C4D /* OFExtent.h in Headers */ = {isa = PBXBuildFile; fileRef = 34F82719107E904600458A71 /* OFExtent.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16B92194F6F5500AD9C4D /* OFExtent.m in Sources */ = {isa = PBXBuildFile; fileRef = 34F8271A107E904600458A71 /* OFExtent.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16B92194F6F5500AD9C4D /* OFExtent.m in Sources */ = {isa = PBXBuildFile; fileRef = 34F8271A107E904600458A71 /* OFExtent.m */; };
 		34F16B93194F6F5A00AD9C4D /* OFIndexPath.h in Headers */ = {isa = PBXBuildFile; fileRef = E2182735145604D60097BBFE /* OFIndexPath.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16B94194F6F5E00AD9C4D /* OFIndexPath.m in Sources */ = {isa = PBXBuildFile; fileRef = E218272F1456049B0097BBFE /* OFIndexPath.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16B94194F6F5E00AD9C4D /* OFIndexPath.m in Sources */ = {isa = PBXBuildFile; fileRef = E218272F1456049B0097BBFE /* OFIndexPath.m */; };
 		34F16B95194F6F6100AD9C4D /* OFKnownKeyDictionaryTemplate.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51CAAFE8AAEA611C9CC38 /* OFKnownKeyDictionaryTemplate.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16B96194F6F6400AD9C4D /* OFKnownKeyDictionaryTemplate.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C8FFE8AAEA611C9CC38 /* OFKnownKeyDictionaryTemplate.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16B96194F6F6400AD9C4D /* OFKnownKeyDictionaryTemplate.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C8FFE8AAEA611C9CC38 /* OFKnownKeyDictionaryTemplate.m */; };
 		34F16B97194F6F6900AD9C4D /* OFMultiValueDictionary.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51CACFE8AAEA611C9CC38 /* OFMultiValueDictionary.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16B98194F6F6C00AD9C4D /* OFMultiValueDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C91FE8AAEA611C9CC38 /* OFMultiValueDictionary.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16B98194F6F6C00AD9C4D /* OFMultiValueDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C91FE8AAEA611C9CC38 /* OFMultiValueDictionary.m */; };
 		34F16B99194F6F6F00AD9C4D /* OFMutableBijection.h in Headers */ = {isa = PBXBuildFile; fileRef = 3E4628BC174D662A0032001F /* OFMutableBijection.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16B9A194F6F7200AD9C4D /* OFMutableBijection.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E4628BD174D662A0032001F /* OFMutableBijection.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16B9A194F6F7200AD9C4D /* OFMutableBijection.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E4628BD174D662A0032001F /* OFMutableBijection.m */; };
 		34F16B9B194F6F7500AD9C4D /* OFMutableKnownKeyDictionary.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51CADFE8AAEA611C9CC38 /* OFMutableKnownKeyDictionary.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16B9C194F6F7800AD9C4D /* OFMutableKnownKeyDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C92FE8AAEA611C9CC38 /* OFMutableKnownKeyDictionary.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16B9C194F6F7800AD9C4D /* OFMutableKnownKeyDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C92FE8AAEA611C9CC38 /* OFMutableKnownKeyDictionary.m */; };
 		34F16B9D194F6F7A00AD9C4D /* OFNull.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51CAEFE8AAEA611C9CC38 /* OFNull.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16B9E194F6F8000AD9C4D /* OFNull.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C93FE8AAEA611C9CC38 /* OFNull.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16B9E194F6F8000AD9C4D /* OFNull.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C93FE8AAEA611C9CC38 /* OFNull.m */; };
 		34F16B9F194F6F8600AD9C4D /* OFOrderedMutableDictionary.h in Headers */ = {isa = PBXBuildFile; fileRef = 3E5F997F177CAC6600E53E41 /* OFOrderedMutableDictionary.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16BA0194F6F8B00AD9C4D /* OFOrderedMutableDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E5F9980177CAC6600E53E41 /* OFOrderedMutableDictionary.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16BA0194F6F8B00AD9C4D /* OFOrderedMutableDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E5F9980177CAC6600E53E41 /* OFOrderedMutableDictionary.m */; };
 		34F16BA1194F6F8F00AD9C4D /* OFPerformanceMeasurement.h in Headers */ = {isa = PBXBuildFile; fileRef = 347CA783192FC7BA00693624 /* OFPerformanceMeasurement.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16BA2194F6F9300AD9C4D /* OFPerformanceMeasurement.m in Sources */ = {isa = PBXBuildFile; fileRef = 347CA784192FC7BA00693624 /* OFPerformanceMeasurement.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16BA2194F6F9300AD9C4D /* OFPerformanceMeasurement.m in Sources */ = {isa = PBXBuildFile; fileRef = 347CA784192FC7BA00693624 /* OFPerformanceMeasurement.m */; };
 		34F16BA3194F74EB00AD9C4D /* OFPoint.h in Headers */ = {isa = PBXBuildFile; fileRef = 348A50860571490C0097A113 /* OFPoint.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16BA4194F74EF00AD9C4D /* OFPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = 348A50870571490C0097A113 /* OFPoint.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16BA4194F74EF00AD9C4D /* OFPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = 348A50870571490C0097A113 /* OFPoint.m */; };
 		34F16BA5194F74F100AD9C4D /* OFRandom.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51CB1FE8AAEA611C9CC38 /* OFRandom.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16BA6194F74F500AD9C4D /* OFRandom.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51CBDFE8AAEA611C9CC38 /* OFRandom.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16BA6194F74F500AD9C4D /* OFRandom.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51CBDFE8AAEA611C9CC38 /* OFRandom.m */; settings = {COMPILER_FLAGS = "-fno-strict-aliasing"; }; };
 		34F16BA7194F74F700AD9C4D /* OFRationalNumber.h in Headers */ = {isa = PBXBuildFile; fileRef = A20055D108F49ACC007E98E2 /* OFRationalNumber.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16BA8194F74FA00AD9C4D /* OFRationalNumber.m in Sources */ = {isa = PBXBuildFile; fileRef = A20055D208F49ACC007E98E2 /* OFRationalNumber.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16BA8194F74FA00AD9C4D /* OFRationalNumber.m in Sources */ = {isa = PBXBuildFile; fileRef = A20055D208F49ACC007E98E2 /* OFRationalNumber.m */; };
 		34F16BA9194F74FD00AD9C4D /* OFReadWriteFileBuffer.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A8C2AB10532007004244E9 /* OFReadWriteFileBuffer.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16BAA194F750000AD9C4D /* OFReadWriteFileBuffer.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A8C2AC10532007004244E9 /* OFReadWriteFileBuffer.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16BAA194F750000AD9C4D /* OFReadWriteFileBuffer.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A8C2AC10532007004244E9 /* OFReadWriteFileBuffer.m */; };
 		34F16BAB194F750900AD9C4D /* OFVersionNumber.h in Headers */ = {isa = PBXBuildFile; fileRef = 34F4C0EB078F062000E8899E /* OFVersionNumber.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16BAC194F750D00AD9C4D /* OFVersionNumber.m in Sources */ = {isa = PBXBuildFile; fileRef = 34F4C0EC078F062000E8899E /* OFVersionNumber.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16BAC194F750D00AD9C4D /* OFVersionNumber.m in Sources */ = {isa = PBXBuildFile; fileRef = 34F4C0EC078F062000E8899E /* OFVersionNumber.m */; };
 		34F16BAD194F751A00AD9C4D /* OFAlias.h in Headers */ = {isa = PBXBuildFile; fileRef = E2FCCB3C062205A40097A11C /* OFAlias.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16BAE194F751D00AD9C4D /* OFAlias.m in Sources */ = {isa = PBXBuildFile; fileRef = E2FCCB3D062205A40097A11C /* OFAlias.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16BAE194F751D00AD9C4D /* OFAlias.m in Sources */ = {isa = PBXBuildFile; fileRef = E2FCCB3D062205A40097A11C /* OFAlias.m */; };
 		34F16BAF194F752700AD9C4D /* OFUTI.h in Headers */ = {isa = PBXBuildFile; fileRef = 273257D51448B56000A26568 /* OFUTI.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16BB0194F752900AD9C4D /* OFUTI.m in Sources */ = {isa = PBXBuildFile; fileRef = 273257D81448B98B00A26568 /* OFUTI.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16BB0194F752900AD9C4D /* OFUTI.m in Sources */ = {isa = PBXBuildFile; fileRef = 273257D81448B98B00A26568 /* OFUTI.m */; };
 		34F16BB3194F753100AD9C4D /* OFLockFile.h in Headers */ = {isa = PBXBuildFile; fileRef = 34CB8BDA17382F48006BF9DA /* OFLockFile.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16BB4194F753400AD9C4D /* OFLockFile.m in Sources */ = {isa = PBXBuildFile; fileRef = 34CB8BDB17382F48006BF9DA /* OFLockFile.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16BB4194F753400AD9C4D /* OFLockFile.m in Sources */ = {isa = PBXBuildFile; fileRef = 34CB8BDB17382F48006BF9DA /* OFLockFile.m */; };
 		34F16BB7194F754E00AD9C4D /* CFArray-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 34184171050C3E810097A113 /* CFArray-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16BB8194F755200AD9C4D /* CFArray-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 34184172050C3E810097A113 /* CFArray-OFExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16BB8194F755200AD9C4D /* CFArray-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 34184172050C3E810097A113 /* CFArray-OFExtensions.m */; };
 		34F16BB9194F755400AD9C4D /* CFData-OFCompression.h in Headers */ = {isa = PBXBuildFile; fileRef = 341657510FEB31CD00F4CED4 /* CFData-OFCompression.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16BBA194F755700AD9C4D /* CFData-OFCompression.m in Sources */ = {isa = PBXBuildFile; fileRef = 341657520FEB31CD00F4CED4 /* CFData-OFCompression.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16BBA194F755700AD9C4D /* CFData-OFCompression.m in Sources */ = {isa = PBXBuildFile; fileRef = 341657520FEB31CD00F4CED4 /* CFData-OFCompression.m */; };
 		34F16BBB194F755900AD9C4D /* CFData-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 34043BDB0DA3EFA500761C40 /* CFData-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16BBC194F755C00AD9C4D /* CFData-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 34043BDC0DA3EFA500761C40 /* CFData-OFExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16BBC194F755C00AD9C4D /* CFData-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 34043BDC0DA3EFA500761C40 /* CFData-OFExtensions.m */; };
 		34F16BBD194F755F00AD9C4D /* CFData-OFFileIO.h in Headers */ = {isa = PBXBuildFile; fileRef = 341657530FEB31CD00F4CED4 /* CFData-OFFileIO.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16BBE194F756200AD9C4D /* CFData-OFFileIO.m in Sources */ = {isa = PBXBuildFile; fileRef = 341657540FEB31CD00F4CED4 /* CFData-OFFileIO.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16BBE194F756200AD9C4D /* CFData-OFFileIO.m in Sources */ = {isa = PBXBuildFile; fileRef = 341657540FEB31CD00F4CED4 /* CFData-OFFileIO.m */; };
 		34F16BBF194F756400AD9C4D /* CFDictionary-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 1872811AFF5DF33FC697A12F /* CFDictionary-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16BC0194F756800AD9C4D /* CFDictionary-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1872811BFF5DF33FC697A12F /* CFDictionary-OFExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16BC0194F756800AD9C4D /* CFDictionary-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1872811BFF5DF33FC697A12F /* CFDictionary-OFExtensions.m */; };
 		34F16BC1194F756A00AD9C4D /* CFPropertyList-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = A2B8C03A0563FD43000AFC06 /* CFPropertyList-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16BC2194F756E00AD9C4D /* CFPropertyList-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = A2B8C03B0563FD43000AFC06 /* CFPropertyList-OFExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16BC2194F756E00AD9C4D /* CFPropertyList-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = A2B8C03B0563FD43000AFC06 /* CFPropertyList-OFExtensions.m */; };
 		34F16BC3194F757100AD9C4D /* CFSet-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 18728122FF5E2785C697A12F /* CFSet-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16BC4194F757400AD9C4D /* CFSet-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 18728123FF5E2785C697A12F /* CFSet-OFExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16BC4194F757400AD9C4D /* CFSet-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 18728123FF5E2785C697A12F /* CFSet-OFExtensions.m */; };
 		34F16BC5194F757700AD9C4D /* CFString-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 06DB16D5FF5DC915C697A12F /* CFString-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16BC6194F757A00AD9C4D /* CFString-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 06DB16D6FF5DC915C697A12F /* CFString-OFExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16BC6194F757A00AD9C4D /* CFString-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 06DB16D6FF5DC915C697A12F /* CFString-OFExtensions.m */; };
 		34F16BC7194F757C00AD9C4D /* OFCFCallbacks.h in Headers */ = {isa = PBXBuildFile; fileRef = F0109F80023E8CB83897A113 /* OFCFCallbacks.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16BC8194F758000AD9C4D /* OFCFCallbacks.m in Sources */ = {isa = PBXBuildFile; fileRef = F0109F81023E8CB83897A113 /* OFCFCallbacks.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16BC8194F758000AD9C4D /* OFCFCallbacks.m in Sources */ = {isa = PBXBuildFile; fileRef = F0109F81023E8CB83897A113 /* OFCFCallbacks.m */; };
 		34F16BC9194F765600AD9C4D /* OFDateFormatConversion.h in Headers */ = {isa = PBXBuildFile; fileRef = 34562BE711AB1278005F186D /* OFDateFormatConversion.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16BCA194F765A00AD9C4D /* OFDateFormatConversion.m in Sources */ = {isa = PBXBuildFile; fileRef = 34562BE811AB1278005F186D /* OFDateFormatConversion.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16BCA194F765A00AD9C4D /* OFDateFormatConversion.m in Sources */ = {isa = PBXBuildFile; fileRef = 34562BE811AB1278005F186D /* OFDateFormatConversion.m */; };
 		34F16BCB194F766200AD9C4D /* OFRelativeDateFormatter.h in Headers */ = {isa = PBXBuildFile; fileRef = 34DF03970B05108D00D82DFC /* OFRelativeDateFormatter.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16BCC194F766700AD9C4D /* OFRelativeDateFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 34DF03980B05108D00D82DFC /* OFRelativeDateFormatter.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16BCC194F766700AD9C4D /* OFRelativeDateFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 34DF03980B05108D00D82DFC /* OFRelativeDateFormatter.m */; };
 		34F16BCD194F766D00AD9C4D /* OFTimeSpan.h in Headers */ = {isa = PBXBuildFile; fileRef = 6C8D1730097D84D500DD3EAE /* OFTimeSpan.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16BCE194F767100AD9C4D /* OFTimeSpan.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C8D1731097D84D500DD3EAE /* OFTimeSpan.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16BCE194F767100AD9C4D /* OFTimeSpan.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C8D1731097D84D500DD3EAE /* OFTimeSpan.m */; };
 		34F16BCF194F767300AD9C4D /* OFTimeSpanFormatter.h in Headers */ = {isa = PBXBuildFile; fileRef = 28C3E2D2FEF0F1AAC697A12D /* OFTimeSpanFormatter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34F16BD0194F767700AD9C4D /* OFTimeSpanFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 28C3E2D1FEF0F1AAC697A12D /* OFTimeSpanFormatter.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		34F16BD1194F768B00AD9C4D /* NSArray-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51D28FE8AAEA611C9CC38 /* NSArray-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16BD2194F768E00AD9C4D /* NSArray-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51D0CFE8AAEA611C9CC38 /* NSArray-OFExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16BD2194F768E00AD9C4D /* NSArray-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51D0CFE8AAEA611C9CC38 /* NSArray-OFExtensions.m */; };
 		34F16BD3194F769000AD9C4D /* NSAttributedString-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51D29FE8AAEA611C9CC38 /* NSAttributedString-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16BD4194F769400AD9C4D /* NSAttributedString-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51D0DFE8AAEA611C9CC38 /* NSAttributedString-OFExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16BD4194F769400AD9C4D /* NSAttributedString-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51D0DFE8AAEA611C9CC38 /* NSAttributedString-OFExtensions.m */; };
 		34F16BD5194F769D00AD9C4D /* NSData-OFCompression.h in Headers */ = {isa = PBXBuildFile; fileRef = 3416584B0FEB4B7400F4CED4 /* NSData-OFCompression.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16BD6194F76A100AD9C4D /* NSData-OFCompression.m in Sources */ = {isa = PBXBuildFile; fileRef = 3416584C0FEB4B7400F4CED4 /* NSData-OFCompression.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16BD6194F76A100AD9C4D /* NSData-OFCompression.m in Sources */ = {isa = PBXBuildFile; fileRef = 3416584C0FEB4B7400F4CED4 /* NSData-OFCompression.m */; };
 		34F16BD7194F76A300AD9C4D /* NSData-OFEncoding.h in Headers */ = {isa = PBXBuildFile; fileRef = 346DE9E90D861EA7000C9E97 /* NSData-OFEncoding.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16BD8194F76A600AD9C4D /* NSData-OFEncoding.m in Sources */ = {isa = PBXBuildFile; fileRef = 346DE9EA0D861EA7000C9E97 /* NSData-OFEncoding.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16BD8194F76A600AD9C4D /* NSData-OFEncoding.m in Sources */ = {isa = PBXBuildFile; fileRef = 346DE9EA0D861EA7000C9E97 /* NSData-OFEncoding.m */; };
 		34F16BD9194F76AB00AD9C4D /* NSData-OFSignature.h in Headers */ = {isa = PBXBuildFile; fileRef = 3472CB4C12E3BF1B00F646AE /* NSData-OFSignature.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16BDA194F76AF00AD9C4D /* NSData-OFSignature.m in Sources */ = {isa = PBXBuildFile; fileRef = 3472CB4D12E3BF1B00F646AE /* NSData-OFSignature.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16BDA194F76AF00AD9C4D /* NSData-OFSignature.m in Sources */ = {isa = PBXBuildFile; fileRef = 3472CB4D12E3BF1B00F646AE /* NSData-OFSignature.m */; };
 		34F16BDB194F76B400AD9C4D /* NSDate-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51D2DFE8AAEA611C9CC38 /* NSDate-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16BDC194F76B900AD9C4D /* NSDate-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51D11FE8AAEA611C9CC38 /* NSDate-OFExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16BDC194F76B900AD9C4D /* NSDate-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51D11FE8AAEA611C9CC38 /* NSDate-OFExtensions.m */; };
 		34F16BDD194F76BD00AD9C4D /* NSDictionary-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51D2FFE8AAEA611C9CC38 /* NSDictionary-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16BDE194F76C000AD9C4D /* NSDictionary-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51D12FE8AAEA611C9CC38 /* NSDictionary-OFExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16BDE194F76C000AD9C4D /* NSDictionary-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51D12FE8AAEA611C9CC38 /* NSDictionary-OFExtensions.m */; };
 		34F16BDF194F76C600AD9C4D /* NSFileCoordinator-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 34BED7D116E124C300FCE296 /* NSFileCoordinator-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16BE0194F76C900AD9C4D /* NSFileCoordinator-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 34BED7D216E124C300FCE296 /* NSFileCoordinator-OFExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16BE0194F76C900AD9C4D /* NSFileCoordinator-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 34BED7D216E124C300FCE296 /* NSFileCoordinator-OFExtensions.m */; };
 		34F16BE1194F76CD00AD9C4D /* NSFileManager-OFSimpleExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 3455B52E11116CCA00074705 /* NSFileManager-OFSimpleExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16BE2194F76D000AD9C4D /* NSFileManager-OFSimpleExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 3455B52F11116CCA00074705 /* NSFileManager-OFSimpleExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16BE2194F76D000AD9C4D /* NSFileManager-OFSimpleExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 3455B52F11116CCA00074705 /* NSFileManager-OFSimpleExtensions.m */; };
 		34F16BE3194F76D200AD9C4D /* NSFileManager-OFTemporaryPath.h in Headers */ = {isa = PBXBuildFile; fileRef = 34AD4CB30DF846B8008974EB /* NSFileManager-OFTemporaryPath.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16BE4194F76D500AD9C4D /* NSFileManager-OFTemporaryPath.m in Sources */ = {isa = PBXBuildFile; fileRef = 34AD4CB40DF846B8008974EB /* NSFileManager-OFTemporaryPath.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16BE4194F76D500AD9C4D /* NSFileManager-OFTemporaryPath.m in Sources */ = {isa = PBXBuildFile; fileRef = 34AD4CB40DF846B8008974EB /* NSFileManager-OFTemporaryPath.m */; };
 		34F16BE5194F76DA00AD9C4D /* NSIndexSet-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = A2C67D810D91A4BB00BD7911 /* NSIndexSet-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16BE6194F76DE00AD9C4D /* NSIndexSet-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = A2C67D820D91A4BB00BD7911 /* NSIndexSet-OFExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16BE6194F76DE00AD9C4D /* NSIndexSet-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = A2C67D820D91A4BB00BD7911 /* NSIndexSet-OFExtensions.m */; };
 		34F16BE7194F76E000AD9C4D /* NSInvocation-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51D33FE8AAEA611C9CC38 /* NSInvocation-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16BE8194F76E400AD9C4D /* NSInvocation-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51D16FE8AAEA611C9CC38 /* NSInvocation-OFExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16BE8194F76E400AD9C4D /* NSInvocation-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51D16FE8AAEA611C9CC38 /* NSInvocation-OFExtensions.m */; };
 		34F16BE9194F76E600AD9C4D /* NSMutableArray-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51D34FE8AAEA611C9CC38 /* NSMutableArray-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16BEA194F76E800AD9C4D /* NSMutableArray-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51D17FE8AAEA611C9CC38 /* NSMutableArray-OFExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16BEA194F76E800AD9C4D /* NSMutableArray-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51D17FE8AAEA611C9CC38 /* NSMutableArray-OFExtensions.m */; };
 		34F16BEB194F76EA00AD9C4D /* NSMutableAttributedString-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 34E9110B05FE19A40097A113 /* NSMutableAttributedString-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16BEC194F76EE00AD9C4D /* NSMutableAttributedString-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 34E9110C05FE19A40097A113 /* NSMutableAttributedString-OFExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16BEC194F76EE00AD9C4D /* NSMutableAttributedString-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 34E9110C05FE19A40097A113 /* NSMutableAttributedString-OFExtensions.m */; };
 		34F16BED194F76F200AD9C4D /* NSMutableDictionary-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51D36FE8AAEA611C9CC38 /* NSMutableDictionary-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16BEE194F76F600AD9C4D /* NSMutableDictionary-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51D19FE8AAEA611C9CC38 /* NSMutableDictionary-OFExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16BEE194F76F600AD9C4D /* NSMutableDictionary-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51D19FE8AAEA611C9CC38 /* NSMutableDictionary-OFExtensions.m */; };
 		34F16BEF194F76F800AD9C4D /* NSMutableSet-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = F0532697023D5B173897A113 /* NSMutableSet-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16BF0194F76FB00AD9C4D /* NSMutableSet-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = F0532698023D5B173897A113 /* NSMutableSet-OFExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16BF0194F76FB00AD9C4D /* NSMutableSet-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = F0532698023D5B173897A113 /* NSMutableSet-OFExtensions.m */; };
 		34F16BF1194F76FD00AD9C4D /* NSMutableString-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51D37FE8AAEA611C9CC38 /* NSMutableString-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16BF2194F770100AD9C4D /* NSMutableString-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51D1AFE8AAEA611C9CC38 /* NSMutableString-OFExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16BF2194F770100AD9C4D /* NSMutableString-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51D1AFE8AAEA611C9CC38 /* NSMutableString-OFExtensions.m */; };
 		34F16BF3194F770600AD9C4D /* NSNumber-OFExtensions-CGTypes.h in Headers */ = {isa = PBXBuildFile; fileRef = A25B32520E3519AC00072E39 /* NSNumber-OFExtensions-CGTypes.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16BF4194F770A00AD9C4D /* NSNumber-OFExtensions-CGTypes.m in Sources */ = {isa = PBXBuildFile; fileRef = A25B32530E3519AC00072E39 /* NSNumber-OFExtensions-CGTypes.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16BF4194F770A00AD9C4D /* NSNumber-OFExtensions-CGTypes.m in Sources */ = {isa = PBXBuildFile; fileRef = A25B32530E3519AC00072E39 /* NSNumber-OFExtensions-CGTypes.m */; };
 		34F16BF5194F770D00AD9C4D /* NSNumber-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51D3AFE8AAEA611C9CC38 /* NSNumber-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16BF6194F771000AD9C4D /* NSNumber-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51D1DFE8AAEA611C9CC38 /* NSNumber-OFExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16BF6194F771000AD9C4D /* NSNumber-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51D1DFE8AAEA611C9CC38 /* NSNumber-OFExtensions.m */; };
 		34F16BF7194F771200AD9C4D /* NSObject-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51D3BFE8AAEA611C9CC38 /* NSObject-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16BF8194F771500AD9C4D /* NSObject-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51D1EFE8AAEA611C9CC38 /* NSObject-OFExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16BF8194F771500AD9C4D /* NSObject-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51D1EFE8AAEA611C9CC38 /* NSObject-OFExtensions.m */; };
 		34F16BF9194F771900AD9C4D /* NSRange-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 3486599F183A9D1D00BA9994 /* NSRange-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16BFA194F771D00AD9C4D /* NSRange-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 348659A0183A9D1D00BA9994 /* NSRange-OFExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16BFA194F771D00AD9C4D /* NSRange-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 348659A0183A9D1D00BA9994 /* NSRange-OFExtensions.m */; };
 		34F16BFB194F771F00AD9C4D /* NSRegularExpression-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 34FEB25816C6FEB2006A2651 /* NSRegularExpression-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16BFC194F772200AD9C4D /* NSRegularExpression-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 34FEB25916C6FEB2006A2651 /* NSRegularExpression-OFExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16BFC194F772200AD9C4D /* NSRegularExpression-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 34FEB25916C6FEB2006A2651 /* NSRegularExpression-OFExtensions.m */; };
 		34F16BFD194F772700AD9C4D /* NSSet-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = A28D43B50916EAFC006D5336 /* NSSet-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16BFE194F772A00AD9C4D /* NSSet-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = A28D43B60916EAFC006D5336 /* NSSet-OFExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16BFE194F772A00AD9C4D /* NSSet-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = A28D43B60916EAFC006D5336 /* NSSet-OFExtensions.m */; };
 		34F16BFF194F772E00AD9C4D /* NSString-OFCharacterEnumeration.h in Headers */ = {isa = PBXBuildFile; fileRef = 347DB8870D864B9200338653 /* NSString-OFCharacterEnumeration.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34F16C00194F773100AD9C4D /* NSString-OFConversion.h in Headers */ = {isa = PBXBuildFile; fileRef = 3433031C0D86097E00C82A0B /* NSString-OFConversion.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16C01194F773600AD9C4D /* NSString-OFConversion.m in Sources */ = {isa = PBXBuildFile; fileRef = 3433031D0D86097E00C82A0B /* NSString-OFConversion.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16C01194F773600AD9C4D /* NSString-OFConversion.m in Sources */ = {isa = PBXBuildFile; fileRef = 3433031D0D86097E00C82A0B /* NSString-OFConversion.m */; };
 		34F16C02194F773800AD9C4D /* NSString-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51D3EFE8AAEA611C9CC38 /* NSString-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16C03194F773B00AD9C4D /* NSString-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51D21FE8AAEA611C9CC38 /* NSString-OFExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16C03194F773B00AD9C4D /* NSString-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51D21FE8AAEA611C9CC38 /* NSString-OFExtensions.m */; };
 		34F16C04194F773D00AD9C4D /* NSString-OFPathExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51D3FFE8AAEA611C9CC38 /* NSString-OFPathExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16C05194F774000AD9C4D /* NSString-OFPathExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51D22FE8AAEA611C9CC38 /* NSString-OFPathExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16C05194F774000AD9C4D /* NSString-OFPathExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51D22FE8AAEA611C9CC38 /* NSString-OFPathExtensions.m */; };
 		34F16C06194F774200AD9C4D /* NSString-OFReplacement.h in Headers */ = {isa = PBXBuildFile; fileRef = 343301CA0D85F09000C82A0B /* NSString-OFReplacement.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16C07194F774500AD9C4D /* NSString-OFReplacement.m in Sources */ = {isa = PBXBuildFile; fileRef = 343301CB0D85F09000C82A0B /* NSString-OFReplacement.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16C07194F774500AD9C4D /* NSString-OFReplacement.m in Sources */ = {isa = PBXBuildFile; fileRef = 343301CB0D85F09000C82A0B /* NSString-OFReplacement.m */; };
 		34F16C08194F774A00AD9C4D /* NSString-OFSimpleMatching.h in Headers */ = {isa = PBXBuildFile; fileRef = 343301A30D85EEBF00C82A0B /* NSString-OFSimpleMatching.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16C09194F774F00AD9C4D /* NSString-OFSimpleMatching.m in Sources */ = {isa = PBXBuildFile; fileRef = 343301A40D85EEBF00C82A0B /* NSString-OFSimpleMatching.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16C09194F774F00AD9C4D /* NSString-OFSimpleMatching.m in Sources */ = {isa = PBXBuildFile; fileRef = 343301A40D85EEBF00C82A0B /* NSString-OFSimpleMatching.m */; };
 		34F16C0A194F775100AD9C4D /* NSString-OFUnicodeCharacters.h in Headers */ = {isa = PBXBuildFile; fileRef = 343301920D85ED6100C82A0B /* NSString-OFUnicodeCharacters.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16C0B194F775500AD9C4D /* NSString-OFUnicodeCharacters.m in Sources */ = {isa = PBXBuildFile; fileRef = 343301930D85ED6100C82A0B /* NSString-OFUnicodeCharacters.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16C0B194F775500AD9C4D /* NSString-OFUnicodeCharacters.m in Sources */ = {isa = PBXBuildFile; fileRef = 343301930D85ED6100C82A0B /* NSString-OFUnicodeCharacters.m */; };
 		34F16C0C194F775800AD9C4D /* NSString-OFURLEncoding.h in Headers */ = {isa = PBXBuildFile; fileRef = 347DB7890D863F3B00338653 /* NSString-OFURLEncoding.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16C0D194F775B00AD9C4D /* NSString-OFURLEncoding.m in Sources */ = {isa = PBXBuildFile; fileRef = 347DB78A0D863F3B00338653 /* NSString-OFURLEncoding.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16C0D194F775B00AD9C4D /* NSString-OFURLEncoding.m in Sources */ = {isa = PBXBuildFile; fileRef = 347DB78A0D863F3B00338653 /* NSString-OFURLEncoding.m */; };
 		34F16C0E194F776100AD9C4D /* NSUndoManager-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 467ADC25003CE443C697A14B /* NSUndoManager-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16C0F194F776500AD9C4D /* NSUndoManager-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 467ADC26003CE443C697A14B /* NSUndoManager-OFExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16C0F194F776500AD9C4D /* NSUndoManager-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 467ADC26003CE443C697A14B /* NSUndoManager-OFExtensions.m */; };
 		34F16C10194F776800AD9C4D /* NSUserDefaults-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51D43FE8AAEA611C9CC38 /* NSUserDefaults-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16C11194F776B00AD9C4D /* NSUserDefaults-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51D25FE8AAEA611C9CC38 /* NSUserDefaults-OFExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16C11194F776B00AD9C4D /* NSUserDefaults-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51D25FE8AAEA611C9CC38 /* NSUserDefaults-OFExtensions.m */; };
 		34F16C12194F776D00AD9C4D /* NSURL-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 344AD00A172740D2004B30B1 /* NSURL-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34F16C13194F777200AD9C4D /* NSURL-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 344AD00B172740D2004B30B1 /* NSURL-OFExtensions.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		34F16C14194F778E00AD9C4D /* OFBackgroundActivity.h in Headers */ = {isa = PBXBuildFile; fileRef = 3448244B17AB148200889E8F /* OFBackgroundActivity.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16C15194F779100AD9C4D /* OFBackgroundActivity.m in Sources */ = {isa = PBXBuildFile; fileRef = 3448244C17AB148200889E8F /* OFBackgroundActivity.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16C15194F779100AD9C4D /* OFBackgroundActivity.m in Sources */ = {isa = PBXBuildFile; fileRef = 3448244C17AB148200889E8F /* OFBackgroundActivity.m */; };
 		34F16C16194F779C00AD9C4D /* OFCredentials.h in Headers */ = {isa = PBXBuildFile; fileRef = 34BA2B8D15B6200E00228508 /* OFCredentials.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16C17194F779F00AD9C4D /* OFCredentials.m in Sources */ = {isa = PBXBuildFile; fileRef = 344E6C9015DB026800830145 /* OFCredentials.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16C17194F779F00AD9C4D /* OFCredentials.m in Sources */ = {isa = PBXBuildFile; fileRef = 344E6C9015DB026800830145 /* OFCredentials.m */; };
 		34F16C18194F77A100AD9C4D /* OFCredentials-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 344E6C9315DB028B00830145 /* OFCredentials-Internal.h */; };
-		34F16C19194F77A400AD9C4D /* OFCredentials-iOS.m in Sources */ = {isa = PBXBuildFile; fileRef = 34BA2B8B15B6200E00228508 /* OFCredentials-iOS.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16C19194F77A400AD9C4D /* OFCredentials-iOS.m in Sources */ = {isa = PBXBuildFile; fileRef = 34BA2B8B15B6200E00228508 /* OFCredentials-iOS.m */; };
 		34F16C1A194F77AC00AD9C4D /* OFWeakReference.h in Headers */ = {isa = PBXBuildFile; fileRef = 346E324F163B131E00CEC076 /* OFWeakReference.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34F16C1B194F77AF00AD9C4D /* OFWeakReference.m in Sources */ = {isa = PBXBuildFile; fileRef = 346E3250163B131E00CEC076 /* OFWeakReference.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		34F16C1C194F77B200AD9C4D /* OFXMLIdentifierRegistryObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 34F1CADB066244350097A113 /* OFXMLIdentifierRegistryObject.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34F16C1D194F77B700AD9C4D /* OFXMLIdentifier.h in Headers */ = {isa = PBXBuildFile; fileRef = 34D5F9F50E9EF0420055E958 /* OFXMLIdentifier.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16C1E194F77BB00AD9C4D /* OFXMLIdentifier.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D5F9F60E9EF0420055E958 /* OFXMLIdentifier.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16C1E194F77BB00AD9C4D /* OFXMLIdentifier.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D5F9F60E9EF0420055E958 /* OFXMLIdentifier.m */; };
 		34F16C1F194F77BE00AD9C4D /* OFXMLIdentifierRegistry.h in Headers */ = {isa = PBXBuildFile; fileRef = B58A47670662B2E30097A154 /* OFXMLIdentifierRegistry.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16C20194F77C100AD9C4D /* OFXMLIdentifierRegistry.m in Sources */ = {isa = PBXBuildFile; fileRef = B58A47680662B2E30097A154 /* OFXMLIdentifierRegistry.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16C20194F77C100AD9C4D /* OFXMLIdentifierRegistry.m in Sources */ = {isa = PBXBuildFile; fileRef = B58A47680662B2E30097A154 /* OFXMLIdentifierRegistry.m */; };
 		34F16C21194F77C400AD9C4D /* OFXMLDocument.h in Headers */ = {isa = PBXBuildFile; fileRef = 344F2BF5050A921B0097A113 /* OFXMLDocument.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16C22194F77C800AD9C4D /* OFXMLDocument.m in Sources */ = {isa = PBXBuildFile; fileRef = 344F2BF6050A921B0097A113 /* OFXMLDocument.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16C22194F77C800AD9C4D /* OFXMLDocument.m in Sources */ = {isa = PBXBuildFile; fileRef = 344F2BF6050A921B0097A113 /* OFXMLDocument.m */; };
 		34F16C23194F77CA00AD9C4D /* OFXMLBuffer.h in Headers */ = {isa = PBXBuildFile; fileRef = 3476E4EE07C3BDBA0097A113 /* OFXMLBuffer.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16C24194F77CD00AD9C4D /* OFXMLBuffer.m in Sources */ = {isa = PBXBuildFile; fileRef = 3476E4EF07C3BDBA0097A113 /* OFXMLBuffer.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16C24194F77CD00AD9C4D /* OFXMLBuffer.m in Sources */ = {isa = PBXBuildFile; fileRef = 3476E4EF07C3BDBA0097A113 /* OFXMLBuffer.m */; };
 		34F16C25194F77CF00AD9C4D /* OFXMLCursor.h in Headers */ = {isa = PBXBuildFile; fileRef = 341841F9050CF7800097A113 /* OFXMLCursor.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16C26194F77D200AD9C4D /* OFXMLCursor.m in Sources */ = {isa = PBXBuildFile; fileRef = 341841FA050CF7800097A113 /* OFXMLCursor.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16C26194F77D200AD9C4D /* OFXMLCursor.m in Sources */ = {isa = PBXBuildFile; fileRef = 341841FA050CF7800097A113 /* OFXMLCursor.m */; };
 		34F16C27194F795F00AD9C4D /* OFXMLWhitespaceBehavior.h in Headers */ = {isa = PBXBuildFile; fileRef = 344F2E1A050ABDE60097A113 /* OFXMLWhitespaceBehavior.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16C28194F796300AD9C4D /* OFXMLWhitespaceBehavior.m in Sources */ = {isa = PBXBuildFile; fileRef = 344F2E1B050ABDE60097A113 /* OFXMLWhitespaceBehavior.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16C28194F796300AD9C4D /* OFXMLWhitespaceBehavior.m in Sources */ = {isa = PBXBuildFile; fileRef = 344F2E1B050ABDE60097A113 /* OFXMLWhitespaceBehavior.m */; };
 		34F16C29194F796500AD9C4D /* OFXMLElement.h in Headers */ = {isa = PBXBuildFile; fileRef = 344F2BF9050A924C0097A113 /* OFXMLElement.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16C2A194F796900AD9C4D /* OFXMLElement.m in Sources */ = {isa = PBXBuildFile; fileRef = 344F2BFA050A924C0097A113 /* OFXMLElement.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16C2A194F796900AD9C4D /* OFXMLElement.m in Sources */ = {isa = PBXBuildFile; fileRef = 344F2BFA050A924C0097A113 /* OFXMLElement.m */; };
 		34F16C2D194F797100AD9C4D /* OFXMLUnparsedElement.h in Headers */ = {isa = PBXBuildFile; fileRef = 347EFD7A0DD4D7C900D6F347 /* OFXMLUnparsedElement.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16C2E194F797500AD9C4D /* OFXMLUnparsedElement.m in Sources */ = {isa = PBXBuildFile; fileRef = 347EFD7B0DD4D7C900D6F347 /* OFXMLUnparsedElement.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16C2E194F797500AD9C4D /* OFXMLUnparsedElement.m in Sources */ = {isa = PBXBuildFile; fileRef = 347EFD7B0DD4D7C900D6F347 /* OFXMLUnparsedElement.m */; };
 		34F16C2F194F797700AD9C4D /* OFXMLString.h in Headers */ = {isa = PBXBuildFile; fileRef = 344F2EA0050ADFBF0097A113 /* OFXMLString.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16C30194F797C00AD9C4D /* OFXMLString.m in Sources */ = {isa = PBXBuildFile; fileRef = 344F2EA1050ADFBF0097A113 /* OFXMLString.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16C30194F797C00AD9C4D /* OFXMLString.m in Sources */ = {isa = PBXBuildFile; fileRef = 344F2EA1050ADFBF0097A113 /* OFXMLString.m */; };
 		34F16C31194F798000AD9C4D /* OFXMLComment.h in Headers */ = {isa = PBXBuildFile; fileRef = 34AF16C80C4FE9BE00ADC170 /* OFXMLComment.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16C32194F798500AD9C4D /* OFXMLComment.m in Sources */ = {isa = PBXBuildFile; fileRef = 34AF16C90C4FE9BE00ADC170 /* OFXMLComment.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16C32194F798500AD9C4D /* OFXMLComment.m in Sources */ = {isa = PBXBuildFile; fileRef = 34AF16C90C4FE9BE00ADC170 /* OFXMLComment.m */; };
 		34F16C33194F798700AD9C4D /* OFXMLParserTarget.h in Headers */ = {isa = PBXBuildFile; fileRef = 349950A80F72FF8C007C0BC9 /* OFXMLParserTarget.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34F16C34194F798B00AD9C4D /* OFXMLParser.h in Headers */ = {isa = PBXBuildFile; fileRef = 341F551B0F72F08100632558 /* OFXMLParser.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16C35194F798E00AD9C4D /* OFXMLParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 341F551C0F72F08100632558 /* OFXMLParser.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16C35194F798E00AD9C4D /* OFXMLParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 341F551C0F72F08100632558 /* OFXMLParser.m */; };
 		34F16C36194F799100AD9C4D /* OFXMLReader.h in Headers */ = {isa = PBXBuildFile; fileRef = 343BA6FC0F740AB100329C2F /* OFXMLReader.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16C37194F799400AD9C4D /* OFXMLReader.m in Sources */ = {isa = PBXBuildFile; fileRef = 343BA6FD0F740AB100329C2F /* OFXMLReader.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16C37194F799400AD9C4D /* OFXMLReader.m in Sources */ = {isa = PBXBuildFile; fileRef = 343BA6FD0F740AB100329C2F /* OFXMLReader.m */; };
 		34F16C38194F799600AD9C4D /* OFXMLError.h in Headers */ = {isa = PBXBuildFile; fileRef = 343BAA010F7440C300329C2F /* OFXMLError.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16C39194F799C00AD9C4D /* OFXMLError.m in Sources */ = {isa = PBXBuildFile; fileRef = 343BAA020F7440C300329C2F /* OFXMLError.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16C39194F799C00AD9C4D /* OFXMLError.m in Sources */ = {isa = PBXBuildFile; fileRef = 343BAA020F7440C300329C2F /* OFXMLError.m */; };
 		34F16C3A194F799F00AD9C4D /* OFXMLInternedStringTable.h in Headers */ = {isa = PBXBuildFile; fileRef = 343BA7F70F74169D00329C2F /* OFXMLInternedStringTable.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16C3B194F79A200AD9C4D /* OFXMLInternedStringTable.m in Sources */ = {isa = PBXBuildFile; fileRef = 343BA7F80F74169D00329C2F /* OFXMLInternedStringTable.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16C3B194F79A200AD9C4D /* OFXMLInternedStringTable.m in Sources */ = {isa = PBXBuildFile; fileRef = 343BA7F80F74169D00329C2F /* OFXMLInternedStringTable.m */; };
 		34F16C3C194F79A500AD9C4D /* OFXMLQName.h in Headers */ = {isa = PBXBuildFile; fileRef = 343E5FB90F77E69500F9982D /* OFXMLQName.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F16C3D194F79A800AD9C4D /* OFXMLQName.m in Sources */ = {isa = PBXBuildFile; fileRef = 343E5FBA0F77E69500F9982D /* OFXMLQName.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F16C3D194F79A800AD9C4D /* OFXMLQName.m in Sources */ = {isa = PBXBuildFile; fileRef = 343E5FBA0F77E69500F9982D /* OFXMLQName.m */; };
 		34F7C0B90D82354A007E383C /* libxml2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 34F7C0B80D82354A007E383C /* libxml2.dylib */; };
 		34F8271B107E904600458A71 /* OFExtent.h in Headers */ = {isa = PBXBuildFile; fileRef = 34F82719107E904600458A71 /* OFExtent.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34F8271C107E904600458A71 /* OFExtent.m in Sources */ = {isa = PBXBuildFile; fileRef = 34F8271A107E904600458A71 /* OFExtent.m */; };
@@ -1129,12 +1133,12 @@
 		34FEB26016C6FEE8006A2651 /* OFRegularExpressionMatch.h in Headers */ = {isa = PBXBuildFile; fileRef = 34FEB25E16C6FEE8006A2651 /* OFRegularExpressionMatch.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34FEB26216C6FEE8006A2651 /* OFRegularExpressionMatch.m in Sources */ = {isa = PBXBuildFile; fileRef = 34FEB25F16C6FEE8006A2651 /* OFRegularExpressionMatch.m */; };
 		3E0D6C721AE18052000633A5 /* NSData-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51D2CFE8AAEA611C9CC38 /* NSData-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		3E0D6C771AE1805F000633A5 /* NSData-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51D10FE8AAEA611C9CC38 /* NSData-OFExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		3E0D6C771AE1805F000633A5 /* NSData-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51D10FE8AAEA611C9CC38 /* NSData-OFExtensions.m */; };
 		3E2EE08D1D930A0700FB00AF /* OFHashTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A2177C9704FEB5350097A146 /* OFHashTests.m */; };
 		3E378DE31DDCB78E007F6BC4 /* OFSymmetricKeywrap.h in Headers */ = {isa = PBXBuildFile; fileRef = 3E378DE11DDCB78E007F6BC4 /* OFSymmetricKeywrap.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		3E378DE41DDCB78E007F6BC4 /* OFSymmetricKeywrap.h in Headers */ = {isa = PBXBuildFile; fileRef = 3E378DE11DDCB78E007F6BC4 /* OFSymmetricKeywrap.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		3E378DE51DDCB78E007F6BC4 /* OFSymmetricKeywrap.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E378DE21DDCB78E007F6BC4 /* OFSymmetricKeywrap.m */; };
-		3E378DE61DDCB78E007F6BC4 /* OFSymmetricKeywrap.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E378DE21DDCB78E007F6BC4 /* OFSymmetricKeywrap.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		3E378DE61DDCB78E007F6BC4 /* OFSymmetricKeywrap.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E378DE21DDCB78E007F6BC4 /* OFSymmetricKeywrap.m */; };
 		3E40D5961D77554B005E7E38 /* OFTimeSpanFormatterTest.m in Sources */ = {isa = PBXBuildFile; fileRef = F220577008CF6059004B6007 /* OFTimeSpanFormatterTest.m */; };
 		3E4628B5174D38370032001F /* OFBijection.h in Headers */ = {isa = PBXBuildFile; fileRef = 3E4628B3174D38370032001F /* OFBijection.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3E4628B6174D38370032001F /* OFBijection.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E4628B4174D38370032001F /* OFBijection.m */; };
@@ -1153,17 +1157,17 @@
 		3E9EBCAE1CAC31C300BB3F24 /* NSFileManager-OFExtendedAttributes.h in Headers */ = {isa = PBXBuildFile; fileRef = 3E9EBCAC1CAC31C300BB3F24 /* NSFileManager-OFExtendedAttributes.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3E9EBCAF1CAC31C300BB3F24 /* NSFileManager-OFExtendedAttributes.h in Headers */ = {isa = PBXBuildFile; fileRef = 3E9EBCAC1CAC31C300BB3F24 /* NSFileManager-OFExtendedAttributes.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3E9EBCB01CAC31C300BB3F24 /* NSFileManager-OFExtendedAttributes.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E9EBCAD1CAC31C300BB3F24 /* NSFileManager-OFExtendedAttributes.m */; };
-		3E9EBCB11CAC31C300BB3F24 /* NSFileManager-OFExtendedAttributes.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E9EBCAD1CAC31C300BB3F24 /* NSFileManager-OFExtendedAttributes.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		3E9EBCB11CAC31C300BB3F24 /* NSFileManager-OFExtendedAttributes.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E9EBCAD1CAC31C300BB3F24 /* NSFileManager-OFExtendedAttributes.m */; };
 		3E9EBCB81CAC33A400BB3F24 /* NSFileManagerExtendedAttributesTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E9EBCB71CAC33A400BB3F24 /* NSFileManagerExtendedAttributesTests.m */; };
 		3E9EBCB91CAC33A400BB3F24 /* NSFileManagerExtendedAttributesTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E9EBCB71CAC33A400BB3F24 /* NSFileManagerExtendedAttributesTests.m */; };
 		3EA69E522257E289006D4DCA /* OFMultiValueDictionaryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3EA69E512257E289006D4DCA /* OFMultiValueDictionaryTests.m */; };
 		3EA69E532257E289006D4DCA /* OFMultiValueDictionaryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3EA69E512257E289006D4DCA /* OFMultiValueDictionaryTests.m */; };
 		3EAA8C721DAC4A4F00F61578 /* NSBundle-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 342877B108EC788400D89442 /* NSBundle-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		3EAA8C781DAC4AA000F61578 /* NSBundle-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 342877B208EC788400D89442 /* NSBundle-OFExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		3EAA8C781DAC4AA000F61578 /* NSBundle-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 342877B208EC788400D89442 /* NSBundle-OFExtensions.m */; };
 		420E8D011DF8BE7400F7F774 /* NSProcessInfo-OFExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 420E8D001DF8BE7400F7F774 /* NSProcessInfo-OFExtensions.swift */; };
 		420E8D021DF8BE7400F7F774 /* NSProcessInfo-OFExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 420E8D001DF8BE7400F7F774 /* NSProcessInfo-OFExtensions.swift */; };
 		42DB7D6F1C8F8BC0008100E4 /* OFBundledClass.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C6FFE8AAEA611C9CC38 /* OFBundledClass.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		42DB7D751C8F8BCB008100E4 /* OFBundledClass.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C5FFE8AAEA611C9CC38 /* OFBundledClass.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		42DB7D751C8F8BCB008100E4 /* OFBundledClass.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C5FFE8AAEA611C9CC38 /* OFBundledClass.m */; };
 		42F109771F704375003D3BDD /* OFDocumentEncryption-Inspection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E3184A81DADE35D0022430C /* OFDocumentEncryption-Inspection.swift */; };
 		49C39BFE18109E8A005B4248 /* OFNumberFormatter.h in Headers */ = {isa = PBXBuildFile; fileRef = 49C39BFC18109E8A005B4248 /* OFNumberFormatter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		49C39BFF18109E8A005B4248 /* OFNumberFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 49C39BFD18109E8A005B4248 /* OFNumberFormatter.m */; };
@@ -1425,12 +1429,18 @@
 		4A4E07FB08AA72B10098FF0F /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A4E075308AA72B10098FF0F /* OmniFoundation.framework */; };
 		4A4E07FC08AA72B10098FF0F /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A4E075308AA72B10098FF0F /* OmniFoundation.framework */; };
 		4A4E07FD08AA72B10098FF0F /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A4E075308AA72B10098FF0F /* OmniFoundation.framework */; };
+		4A8CA6F92381D5CE0095A6A1 /* OFASCIIPropertyListSerialization.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A8CA6F72381D5CE0095A6A1 /* OFASCIIPropertyListSerialization.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4A8CA6FA2381D5CE0095A6A1 /* OFASCIIPropertyListSerialization.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A8CA6F72381D5CE0095A6A1 /* OFASCIIPropertyListSerialization.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4A8CA6FB2381D5CE0095A6A1 /* OFASCIIPropertyListSerialization.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A8CA6F72381D5CE0095A6A1 /* OFASCIIPropertyListSerialization.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4A8CA6FC2381D5CE0095A6A1 /* OFASCIIPropertyListSerialization.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A8CA6F82381D5CE0095A6A1 /* OFASCIIPropertyListSerialization.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		4A8CA6FD2381D5CE0095A6A1 /* OFASCIIPropertyListSerialization.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A8CA6F82381D5CE0095A6A1 /* OFASCIIPropertyListSerialization.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		4A8CA6FE2381D5CE0095A6A1 /* OFASCIIPropertyListSerialization.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A8CA6F82381D5CE0095A6A1 /* OFASCIIPropertyListSerialization.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		4A8D11E11F2FB4CE00030070 /* OFHTTPHeaderDictionary.h in Headers */ = {isa = PBXBuildFile; fileRef = 3418409E167E683C0023D41C /* OFHTTPHeaderDictionary.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4A8D11E71F2FB4D600030070 /* OFHTTPHeaderDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 3418409F167E683C0023D41C /* OFHTTPHeaderDictionary.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4A8D11E71F2FB4D600030070 /* OFHTTPHeaderDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 3418409F167E683C0023D41C /* OFHTTPHeaderDictionary.m */; };
 		4A8D11E81F2FB83400030070 /* OFDataCursor.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51CA6FE8AAEA611C9CC38 /* OFDataCursor.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4A8D11E91F2FBA8B00030070 /* OFDataCursor.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C8BFE8AAEA611C9CC38 /* OFDataCursor.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4A8D11E91F2FBA8B00030070 /* OFDataCursor.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C8BFE8AAEA611C9CC38 /* OFDataCursor.m */; };
 		4A8D11EA1F2FBB2D00030070 /* OFByteSet.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51CA4FE8AAEA611C9CC38 /* OFByteSet.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4A8D11EB1F2FBB3400030070 /* OFByteSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C8AFE8AAEA611C9CC38 /* OFByteSet.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4A8D11EB1F2FBB3400030070 /* OFByteSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C8AFE8AAEA611C9CC38 /* OFByteSet.m */; };
 		4AA353BA08AA7FFB002BAE3E /* OFVersionNumber.m in Sources */ = {isa = PBXBuildFile; fileRef = 34F4C0EC078F062000E8899E /* OFVersionNumber.m */; };
 		4ADA019A093F3EEE00F5F615 /* OFVersionNumber.h in Headers */ = {isa = PBXBuildFile; fileRef = 34F4C0EB078F062000E8899E /* OFVersionNumber.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4D18FAA01700C1E10087C230 /* OFThreeValuedMask.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D18FA9E1700C1E10087C230 /* OFThreeValuedMask.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -1449,7 +1459,7 @@
 		5F094D9B1912B6120023588B /* zh-Hans.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 5F094D931912B6120023588B /* zh-Hans.lproj */; };
 		5F24DAD8146B09A900A43E30 /* OFDynamicStoreListener.m in Sources */ = {isa = PBXBuildFile; fileRef = 5FA4956A1211DE83006BB2BF /* OFDynamicStoreListener.m */; };
 		5F24DAD9146B09CA00A43E30 /* OFDynamicStoreListenerPrivate.m in Sources */ = {isa = PBXBuildFile; fileRef = 5FA4956C1211DE83006BB2BF /* OFDynamicStoreListenerPrivate.m */; };
-		5F49123E1AC3285000254CCC /* OFResultHolder.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51D5DFE8AAEA611C9CC38 /* OFResultHolder.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		5F49123E1AC3285000254CCC /* OFResultHolder.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51D5DFE8AAEA611C9CC38 /* OFResultHolder.m */; };
 		5F4912431AC3286100254CCC /* OFResultHolder.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51D76FE8AAEA611C9CC38 /* OFResultHolder.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		5F7213D81695F35B00024A7B /* OFStringValueTransformers.h in Headers */ = {isa = PBXBuildFile; fileRef = 5F7213D41695F35B00024A7B /* OFStringValueTransformers.h */; };
 		5F7213D91695F35B00024A7B /* OFStringValueTransformers.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F7213D51695F35B00024A7B /* OFStringValueTransformers.m */; };
@@ -1460,7 +1470,7 @@
 		5FD243A41D12189F009AB347 /* NSCache-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 5FD243A21D12189F009AB347 /* NSCache-OFExtensions.h */; };
 		5FD243A51D12189F009AB347 /* NSCache-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 5FD243A21D12189F009AB347 /* NSCache-OFExtensions.h */; };
 		5FD243A61D12189F009AB347 /* NSCache-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 5FD243A31D12189F009AB347 /* NSCache-OFExtensions.m */; };
-		5FD243A71D12189F009AB347 /* NSCache-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 5FD243A31D12189F009AB347 /* NSCache-OFExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		5FD243A71D12189F009AB347 /* NSCache-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 5FD243A31D12189F009AB347 /* NSCache-OFExtensions.m */; };
 		5FE978E91912CED5003029CA /* OFRelativeDateParser-Internal.m in Sources */ = {isa = PBXBuildFile; fileRef = 5FE978E81912CED5003029CA /* OFRelativeDateParser-Internal.m */; };
 		6C391FA4114C1B4E0049E917 /* OFNetChangeNotifier.h in Headers */ = {isa = PBXBuildFile; fileRef = 6C391FA2114C1B4E0049E917 /* OFNetChangeNotifier.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		6C391FA5114C1B4E0049E917 /* OFNetChangeNotifier.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C391FA3114C1B4E0049E917 /* OFNetChangeNotifier.m */; };
@@ -2022,6 +2032,8 @@
 		340B4E361C1259A6006C40D8 /* Watch-Framework-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Framework-Debug.xcconfig"; sourceTree = "<group>"; };
 		340B4E371C1259A6006C40D8 /* Watch-Framework-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Framework-Release.xcconfig"; sourceTree = "<group>"; };
 		340CDBD5098A9E03006270CA /* ExceptionHandling.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ExceptionHandling.framework; path = System/Library/Frameworks/ExceptionHandling.framework; sourceTree = SDKROOT; };
+		340E075723849CB900AB303D /* OFASCIIPropertyListSerializationTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = OFASCIIPropertyListSerializationTests.m; sourceTree = "<group>"; };
+		340E075E23849D4A00AB303D /* OFASCIIPropertyListSerializationTests */ = {isa = PBXFileReference; lastKnownFileType = folder; name = OFASCIIPropertyListSerializationTests; path = Inputs/OFASCIIPropertyListSerializationTests; sourceTree = "<group>"; };
 		341657510FEB31CD00F4CED4 /* CFData-OFCompression.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CFData-OFCompression.h"; sourceTree = "<group>"; };
 		341657520FEB31CD00F4CED4 /* CFData-OFCompression.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "CFData-OFCompression.m"; sourceTree = "<group>"; };
 		341657530FEB31CD00F4CED4 /* CFData-OFFileIO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CFData-OFFileIO.h"; sourceTree = "<group>"; };
@@ -2431,6 +2443,8 @@
 		4A4E080B08AA73400098FF0F /* Omni-Framework-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Release.xcconfig"; sourceTree = "<group>"; };
 		4A4E080D08AA73400098FF0F /* Omni-Tool-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Debug.xcconfig"; sourceTree = "<group>"; };
 		4A4E080E08AA73400098FF0F /* Omni-Tool-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Release.xcconfig"; sourceTree = "<group>"; };
+		4A8CA6F72381D5CE0095A6A1 /* OFASCIIPropertyListSerialization.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OFASCIIPropertyListSerialization.h; sourceTree = "<group>"; };
+		4A8CA6F82381D5CE0095A6A1 /* OFASCIIPropertyListSerialization.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = OFASCIIPropertyListSerialization.m; sourceTree = "<group>"; };
 		4AB8F38808AD0CA100DBB061 /* Omni-Bundle-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Debug.xcconfig"; sourceTree = "<group>"; };
 		4AB8F38908AD0CA100DBB061 /* Omni-Bundle-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Release.xcconfig"; sourceTree = "<group>"; };
 		4AB8F38B08AD0CA100DBB061 /* Omni-Global-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Debug.xcconfig"; sourceTree = "<group>"; };
@@ -3277,6 +3291,8 @@
 				A2102AA2093BCC57006D0DFC /* OFUnit.m */,
 				A2102A9A093BCC0A006D0DFC /* OFUnits.h */,
 				A2102A9B093BCC0A006D0DFC /* OFUnits.m */,
+				4A8CA6F72381D5CE0095A6A1 /* OFASCIIPropertyListSerialization.h */,
+				4A8CA6F82381D5CE0095A6A1 /* OFASCIIPropertyListSerialization.m */,
 			);
 			name = "General Classes";
 			sourceTree = "<group>";
@@ -3773,6 +3789,8 @@
 				346BD82F163B6A420043F736 /* OFWeakReferenceTest.m */,
 				349E02571649AE5400E466F5 /* OFXMLParsingTest */,
 				344E6C8B15DAF33E00830145 /* OFCredentialsTests.m */,
+				340E075723849CB900AB303D /* OFASCIIPropertyListSerializationTests.m */,
+				340E075E23849D4A00AB303D /* OFASCIIPropertyListSerializationTests */,
 				A2BEE38705AB534E0097A146 /* XML */,
 				34B2F63D17188539000E45DF /* OFXMLIdHash */,
 				342691D917C578F700B1372F /* OFNetStateNotifier */,
@@ -4131,6 +4149,7 @@
 				34A061951EC110A60099028D /* OFIObjectSelectorObject.h in Headers */,
 				34A061961EC110A60099028D /* OFIObjectSelectorObjectInt.h in Headers */,
 				34A061971EC110A60099028D /* OFIObjectSelectorObjectObject.h in Headers */,
+				4A8CA6FB2381D5CE0095A6A1 /* OFASCIIPropertyListSerialization.h in Headers */,
 				34A061981EC110A60099028D /* OFFileTypeDescription.h in Headers */,
 				34A061991EC110A60099028D /* OFIObjectSelectorObjectObjectObject.h in Headers */,
 				34A0619A1EC110A60099028D /* OFInvocation.h in Headers */,
@@ -4311,6 +4330,7 @@
 				34F16B8F194F6F4300AD9C4D /* OFEnumNameTable-OFXMLArchiving.h in Headers */,
 				34F16B9B194F6F7500AD9C4D /* OFMutableKnownKeyDictionary.h in Headers */,
 				34F16B8D194F6F3A00AD9C4D /* OFEnumNameTable-Internal.h in Headers */,
+				4A8CA6FA2381D5CE0095A6A1 /* OFASCIIPropertyListSerialization.h in Headers */,
 				34F16B91194F6F4A00AD9C4D /* OFExtent.h in Headers */,
 				34F16BD1194F768B00AD9C4D /* NSArray-OFExtensions.h in Headers */,
 				34F16BC5194F757700AD9C4D /* CFString-OFExtensions.h in Headers */,
@@ -4573,6 +4593,7 @@
 				4A4E06A508AA72B10098FF0F /* OFXMLString.h in Headers */,
 				4A4E06A608AA72B10098FF0F /* OFXMLWhitespaceBehavior.h in Headers */,
 				342A9EC808C89683006AA532 /* NSComparisonPredicate-OFExtensions.h in Headers */,
+				4A8CA6F92381D5CE0095A6A1 /* OFASCIIPropertyListSerialization.h in Headers */,
 				342877B308EC788400D89442 /* NSBundle-OFExtensions.h in Headers */,
 				A28D43B70916EAFC006D5336 /* NSSet-OFExtensions.h in Headers */,
 				A28161B309351CA20086A1EF /* OFRationalNumber.h in Headers */,
@@ -4960,7 +4981,7 @@
 			attributes = {
 				LastSwiftUpdateCheck = 0730;
 				LastTestingUpgradeCheck = 0510;
-				LastUpgradeCheck = 1120;
+				LastUpgradeCheck = 1130;
 				TargetAttributes = {
 					34F16B19194F6C3200AD9C4D = {
 						CreatedOnToolsVersion = 6.0;
@@ -5139,6 +5160,7 @@
 				A27407452279258200C8A8EB /* xml-stylesheet.b64.bz2 in Resources */,
 				34DAC7D6194F86DA00499116 /* 0004-utf16.xml in Resources */,
 				34DAC7DE194F86EE00499116 /* OFXMLIdentifierTests in Resources */,
+				340E075F23849D4B00AB303D /* OFASCIIPropertyListSerializationTests in Resources */,
 				34DAC7DB194F86E900499116 /* w3c_microsoft_ecc_p521_sha512_c14n.xml in Resources */,
 				34DAC7D9194F86E900499116 /* w3c_microsoft_ecc_p256_sha256_c14n.xml in Resources */,
 				A274074B227927FA00C8A8EB /* rfc3161.txt.bz2 in Resources */,
@@ -5182,6 +5204,7 @@
 				A27407462279258300C8A8EB /* xml-stylesheet.b64.bz2 in Resources */,
 				A2D50A990F7ACD63006D5764 /* 0002-abcs.xml in Resources */,
 				A20070B70F7ADF63002B76AF /* 0003-attrs.xml in Resources */,
+				340E076023849D4B00AB303D /* OFASCIIPropertyListSerializationTests in Resources */,
 				A20071570F7AECF0002B76AF /* 0004-utf16.xml in Resources */,
 				A22D987C101E5851005FF4FF /* 01-merlin-xmldsig-twenty-three.tar.gz in Resources */,
 				A274074C227927FB00C8A8EB /* rfc3161.txt.bz2 in Resources */,
@@ -5564,6 +5587,7 @@
 				34A062EE1EC110A60099028D /* NSLocking-OFExtensions.swift in Sources */,
 				34A062F01EC110A60099028D /* OFEnumNameTable-OFXMLArchiving.m in Sources */,
 				34A062F11EC110A60099028D /* OFErrors.m in Sources */,
+				4A8CA6FE2381D5CE0095A6A1 /* OFASCIIPropertyListSerialization.m in Sources */,
 				34A062F21EC110A60099028D /* Bundle.swift in Sources */,
 				34A062F31EC110A60099028D /* OFDateFormatConversion.m in Sources */,
 				34A062F41EC110A60099028D /* OFNetReachability.m in Sources */,
@@ -5692,6 +5716,7 @@
 				34F16B8B194F6F2D00AD9C4D /* OFDataBuffer.m in Sources */,
 				34F16BD4194F769400AD9C4D /* NSAttributedString-OFExtensions.m in Sources */,
 				34F16B7B194F6EDA00AD9C4D /* OFUtilities.m in Sources */,
+				4A8CA6FD2381D5CE0095A6A1 /* OFASCIIPropertyListSerialization.m in Sources */,
 				34F16C26194F77D200AD9C4D /* OFXMLCursor.m in Sources */,
 				34F16BEA194F76E800AD9C4D /* NSMutableArray-OFExtensions.m in Sources */,
 				3406EC851D1C8F7A00D41DC9 /* OFFileTypeDescription.m in Sources */,
@@ -5801,6 +5826,7 @@
 				34CC9F511D5A6EC600FFA233 /* OFXMLElementTests.m in Sources */,
 				34D9EED41950D671003EAF74 /* OFDateXMLTests.m in Sources */,
 				34DAC7E6194F87E900499116 /* OFTestCase.m in Sources */,
+				340E075D23849CBE00AB303D /* OFASCIIPropertyListSerializationTests.m in Sources */,
 				34DAC7E3194F875A00499116 /* OFWeakReferenceTest.m in Sources */,
 				34D9EED21950D671003EAF74 /* OFDateTestCase.m in Sources */,
 				34203FBB1D594A3B005A1496 /* OFXMLParserUnparsedElementTests.m in Sources */,
@@ -5913,6 +5939,7 @@
 				4A4E071A08AA72B10098FF0F /* NSNumber-OFExtensions.m in Sources */,
 				A25B32550E3519AC00072E39 /* NSNumber-OFExtensions-CGTypes.m in Sources */,
 				1EEA8E2B1D35C93D002EF965 /* GeneratedOIDs.m in Sources */,
+				4A8CA6FC2381D5CE0095A6A1 /* OFASCIIPropertyListSerialization.m in Sources */,
 				4A4E071B08AA72B10098FF0F /* NSObject-OFExtensions.m in Sources */,
 				4A4E071C08AA72B10098FF0F /* NSProcessInfo-OFExtensions.m in Sources */,
 				4A4E071D08AA72B10098FF0F /* NSScanner-OFExtensions.m in Sources */,
@@ -6119,6 +6146,7 @@
 				3483FB47192D2EAC0072D3FE /* OFTrieTests.m in Sources */,
 				3482890B0A93A29F0064561B /* CFArrayExtensionsTests.m in Sources */,
 				9FFE05E20B0E7A7900C5E063 /* OFRelativeDateParserTests.m in Sources */,
+				340E075823849CB900AB303D /* OFASCIIPropertyListSerializationTests.m in Sources */,
 				E264C0930AEFDE9B004948CB /* OFScannerTests.m in Sources */,
 				34B051970B2750400095EA0A /* OFDateXMLTests.m in Sources */,
 				34203FBC1D594A3B005A1496 /* OFXMLParserUnparsedElementTests.m in Sources */,
@@ -6448,7 +6476,6 @@
 			baseConfigurationReference = 34F16B45194F6C6100AD9C4D /* Touch-Framework-Debug.xcconfig */;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
-				CLANG_ENABLE_OBJC_ARC = YES;
 				INFOPLIST_FILE = Info.plist;
 				MODULEMAP_FILE = OmniFoundation.modulemap;
 				OTHER_LDFLAGS = (
@@ -6465,7 +6492,6 @@
 			baseConfigurationReference = 34F16B46194F6C6100AD9C4D /* Touch-Framework-Release.xcconfig */;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
-				CLANG_ENABLE_OBJC_ARC = YES;
 				INFOPLIST_FILE = Info.plist;
 				MODULEMAP_FILE = OmniFoundation.modulemap;
 				OTHER_LDFLAGS = (

@@ -221,6 +221,11 @@
 		34F34585201134970058D760 /* ODOChangeActions.m in Sources */ = {isa = PBXBuildFile; fileRef = 34F34581201134970058D760 /* ODOChangeActions.m */; };
 		34F34586201134970058D760 /* ODOChangeActions.m in Sources */ = {isa = PBXBuildFile; fileRef = 34F34581201134970058D760 /* ODOChangeActions.m */; };
 		34F34587201134970058D760 /* ODOChangeActions.m in Sources */ = {isa = PBXBuildFile; fileRef = 34F34581201134970058D760 /* ODOChangeActions.m */; };
+		3E1F887B239B115500B886BE /* ODOFetchAggregationTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E1F887A239B115500B886BE /* ODOFetchAggregationTests.m */; };
+		3E1F887C239B115500B886BE /* ODOFetchAggregationTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E1F887A239B115500B886BE /* ODOFetchAggregationTests.m */; };
+		3E478A37239FFAE800064665 /* ODOFetchExtremum.h in Headers */ = {isa = PBXBuildFile; fileRef = 3E478A1F239FFAC400064665 /* ODOFetchExtremum.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3E478A38239FFAE900064665 /* ODOFetchExtremum.h in Headers */ = {isa = PBXBuildFile; fileRef = 3E478A1F239FFAC400064665 /* ODOFetchExtremum.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3E478A39239FFAEA00064665 /* ODOFetchExtremum.h in Headers */ = {isa = PBXBuildFile; fileRef = 3E478A1F239FFAC400064665 /* ODOFetchExtremum.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3EA806CD1EA7B58C008DE258 /* ODOSQLConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = 3EA806CB1EA7B58C008DE258 /* ODOSQLConnection.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		3EA806CE1EA7B58C008DE258 /* ODOSQLConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = 3EA806CB1EA7B58C008DE258 /* ODOSQLConnection.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		3EA806CF1EA7B58C008DE258 /* ODOSQLConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 3EA806CC1EA7B58C008DE258 /* ODOSQLConnection.m */; };
@@ -613,6 +618,8 @@
 		34ED2D9E19467D00005643C9 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		34F34580201134970058D760 /* ODOChangeActions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ODOChangeActions.h; sourceTree = "<group>"; };
 		34F34581201134970058D760 /* ODOChangeActions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ODOChangeActions.m; sourceTree = "<group>"; };
+		3E1F887A239B115500B886BE /* ODOFetchAggregationTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ODOFetchAggregationTests.m; sourceTree = "<group>"; };
+		3E478A1F239FFAC400064665 /* ODOFetchExtremum.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ODOFetchExtremum.h; sourceTree = "<group>"; };
 		3EA806CB1EA7B58C008DE258 /* ODOSQLConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODOSQLConnection.h; sourceTree = "<group>"; };
 		3EA806CC1EA7B58C008DE258 /* ODOSQLConnection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODOSQLConnection.m; sourceTree = "<group>"; };
 		3ED87D45215C3F8F006E343A /* ODOSQLStorageTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ODOSQLStorageTests.m; sourceTree = "<group>"; };
@@ -798,6 +805,7 @@
 				344FB1BF0D89979200AA63FE /* ODODatabase.m */,
 				344FB1A90D89973500AA63FE /* ODOFetchRequest.h */,
 				344FB1BB0D89979200AA63FE /* ODOFetchRequest.m */,
+				3E478A1F239FFAC400064665 /* ODOFetchExtremum.h */,
 				348ECFF50D8F78BE007ADAC9 /* ODOPredicate-SQL.h */,
 				348ECFF60D8F78BE007ADAC9 /* ODOPredicate-SQL.m */,
 				348ED05B0D8F7AD9007ADAC9 /* ODOPredicate.h */,
@@ -823,6 +831,7 @@
 				3EDF28881EA9322B00AA6824 /* ODOSQLThreadingTests.m */,
 				3EE81748211A286900AD48A7 /* ODOEditingContextTests.m */,
 				3ED87D45215C3F8F006E343A /* ODOSQLStorageTests.m */,
+				3E1F887A239B115500B886BE /* ODOFetchAggregationTests.m */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -1067,6 +1076,7 @@
 				34019FA71B62ED9F003A5BE4 /* ODOFetchRequest.h in Headers */,
 				34F34583201134970058D760 /* ODOChangeActions.h in Headers */,
 				34019F801B62ED90003A5BE4 /* ODOInternal.h in Headers */,
+				3E478A38239FFAE900064665 /* ODOFetchExtremum.h in Headers */,
 				34019F7F1B62ED90003A5BE4 /* ODOFeatures.h in Headers */,
 				34019F9C1B62ED9B003A5BE4 /* ODOObject-Accessors.h in Headers */,
 				34019F8E1B62ED96003A5BE4 /* ODOModel.h in Headers */,
@@ -1107,6 +1117,7 @@
 				34B77C121EC10F6C00BBBA65 /* ODOAttribute.h in Headers */,
 				34F34584201134970058D760 /* ODOChangeActions.h in Headers */,
 				34B77C131EC10F6C00BBBA65 /* ODOEntity.h in Headers */,
+				3E478A39239FFAEA00064665 /* ODOFetchExtremum.h in Headers */,
 				34B77C141EC10F6C00BBBA65 /* ODOFetchRequest.h in Headers */,
 				34B77C151EC10F6C00BBBA65 /* ODOObject.h in Headers */,
 				34B77C161EC10F6C00BBBA65 /* ODOModel-SQL.h in Headers */,
@@ -1147,6 +1158,7 @@
 				344FB1B00D89973500AA63FE /* ODOAttribute.h in Headers */,
 				34F34582201134970058D760 /* ODOChangeActions.h in Headers */,
 				344FB1B10D89973500AA63FE /* ODOEntity.h in Headers */,
+				3E478A37239FFAE800064665 /* ODOFetchExtremum.h in Headers */,
 				344FB1B20D89973500AA63FE /* ODOFetchRequest.h in Headers */,
 				344FB1B30D89973500AA63FE /* ODOObject.h in Headers */,
 				3441C4BF19C8E66800A2FAAE /* ODOModel-SQL.h in Headers */,
@@ -1313,7 +1325,7 @@
 			attributes = {
 				CLASSPREFIX = ODO;
 				LastTestingUpgradeCheck = 0600;
-				LastUpgradeCheck = 1120;
+				LastUpgradeCheck = 1130;
 				TargetAttributes = {
 					34019F641B62ECB4003A5BE4 = {
 						CreatedOnToolsVersion = 7.0;
@@ -1631,6 +1643,7 @@
 				"$(DERIVED_FILE_DIR)/ODOTestCaseCalculatedProperty-Properties.swift",
 				"$(DERIVED_FILE_DIR)/ODOTestCaseInterleavedSizeScalars-Properties.h",
 				"$(DERIVED_FILE_DIR)/ODOTestCaseInterleavedSizeScalars-Properties.swift",
+				"$(DERIVED_FILE_DIR)/ODOTestCaseOptionalDate-Properties.h",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -1721,6 +1734,7 @@
 				"$(DERIVED_FILE_DIR)/ODOTestCaseCalculatedProperty-Properties.swift",
 				"$(DERIVED_FILE_DIR)/ODOTestCaseInterleavedSizeScalars-Properties.h",
 				"$(DERIVED_FILE_DIR)/ODOTestCaseInterleavedSizeScalars-Properties.swift",
+				"$(DERIVED_FILE_DIR)/ODOTestCaseOptionalDate-Properties.h",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -1766,6 +1780,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3E1F887B239B115500B886BE /* ODOFetchAggregationTests.m in Sources */,
 				340D5DED0DAAD03500BF27F8 /* ODOUndoTests.m in Sources */,
 				3EE81749211A286900AD48A7 /* ODOEditingContextTests.m in Sources */,
 				340D5DFD0DAAD0EF00BF27F8 /* ODOTestCase.m in Sources */,
@@ -1785,6 +1800,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3E1F887C239B115500B886BE /* ODOFetchAggregationTests.m in Sources */,
 				343BD2E71B62F391002D09C6 /* ODODeleteTests.m in Sources */,
 				3EE8174A211A286900AD48A7 /* ODOEditingContextTests.m in Sources */,
 				343BD2E61B62F38E002D09C6 /* ODOUndoTests.m in Sources */,
@@ -1979,6 +1995,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 34019F7B1B62ECC8003A5BE4 /* Touch-Framework-Debug.xcconfig */;
 			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_MODULES = YES;
 				DEFINES_MODULE = YES;
 				INFOPLIST_FILE = Info.plist;
@@ -1990,6 +2007,7 @@
 				MODULEMAP_FILE = OmniDataObjects.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDataObjects;
 				PRODUCT_NAME = OmniDataObjects;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
@@ -1997,6 +2015,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 34019F7C1B62ECC8003A5BE4 /* Touch-Framework-Release.xcconfig */;
 			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_MODULES = YES;
 				DEFINES_MODULE = YES;
 				INFOPLIST_FILE = Info.plist;
@@ -2008,6 +2027,7 @@
 				MODULEMAP_FILE = OmniDataObjects.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDataObjects;
 				PRODUCT_NAME = OmniDataObjects;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};

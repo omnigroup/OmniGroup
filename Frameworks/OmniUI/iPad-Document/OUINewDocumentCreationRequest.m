@@ -54,7 +54,7 @@ static NSString *PathExtensionForFileType(NSString *fileType, BOOL *outIsPackage
 
 - (void)runWithInternalTemplateDelegate:(nullable id <OUIInternalTemplateDelegate>)internalTemplateDelegate;
 {
-    [OUIDocumentAppController.controller unlockCreateNewDocumentWithCompletion:^(BOOL isUnlocked) {
+    [OUIDocumentAppController.controller unlockCreateNewDocumentInViewController:_parentViewController withCompletionHandler:^(BOOL isUnlocked) {
         // Stay alive until a template is picked or cancelled.
         OBStrongRetain(self);
 
@@ -126,7 +126,7 @@ static NSString *PathExtensionForFileType(NSString *fileType, BOOL *outIsPackage
 {
     completion = [completion copy];
     
-    [OUIDocumentAppController.controller unlockCreateNewDocumentWithCompletion:^(BOOL isUnlocked) {
+    [OUIDocumentAppController.controller unlockCreateNewDocumentInViewController:_parentViewController withCompletionHandler:^(BOOL isUnlocked) {
         if (isUnlocked) {
             [self _newDocumentWithContext:context completion:completion];
         } else {

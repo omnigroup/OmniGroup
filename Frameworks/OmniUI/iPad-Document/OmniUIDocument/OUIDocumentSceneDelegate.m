@@ -24,7 +24,7 @@
 #import "OUIDocumentSyncActivityObserver.h"
 #import "OUINewDocumentCreationRequest.h"
 
-@interface OUIDocumentSceneDelegate ()
+@interface OUIDocumentSceneDelegate () <OJSEnvironmentProviderType>
 @property (nonatomic, strong) OUIAppControllerSceneHelper *sceneHelper;
 @end
 
@@ -261,6 +261,7 @@ static OFPreference *showFileExtensionsPreference;
 
     if (_document != nil) {
         self.windowScene.title = nil;
+        [self.userActivity resignCurrent];
         self.userActivity = nil;
         [[NSNotificationCenter defaultCenter] removeObserver:self name:UIDocumentStateChangedNotification object:_document];
         [_document didClose];
@@ -270,6 +271,7 @@ static OFPreference *showFileExtensionsPreference;
 
     if (document != nil) {
         self.userActivity = [self _createUserActivityForDocument:document];
+        [self.userActivity becomeCurrent];
         self.windowScene.title = document.name;
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_documentStateChanged:) name:UIDocumentStateChangedNotification object:_document];
     } else {
@@ -1020,6 +1022,16 @@ static OFPreference *showFileExtensionsPreference;
     [window makeKeyAndVisible];
 }
 
+- (void)sceneDidBecomeActive:(UIScene *)scene;
+{
+    [self.userActivity becomeCurrent];
+}
+
+- (void)sceneWillResignActive:(UIScene *)scene;
+{
+    [self.userActivity resignCurrent];
+}
+
 - (void)sceneWillEnterForeground:(UIScene *)scene;
 {
     if (self.document == nil) {
@@ -1230,6 +1242,11 @@ static OFPreference *showFileExtensionsPreference;
     }
 }
 
+- (void)scene:(UIScene *)scene continueUserActivity:(NSUserActivity *)userActivity;
+{
+    [self _restoreStateFromUserActivity:userActivity];
+}
+
 #pragma mark -
 
 - (NSArray <UIBarButtonItem *> *)currentBrowserToolbarItems;
@@ -1368,6 +1385,13 @@ static OFPreference *showFileExtensionsPreference;
 - (NSArray<__kindof UIActivity *> *)documentBrowser:(UIDocumentBrowserViewController *)controller applicationActivitiesForDocumentURLs:(NSArray <NSURL *> *)documentURLs;
 {
     return _exporter.supportedActivities;
+}
+
+#pragma mark - OJSEnvironmentProviderType
+
+- (OJSEnvironment * _Nullable)scriptingEnvironment;
+{
+    return [_document scriptingEnvironment];
 }
 
 #pragma mark - OUIUndoBarButtonItemTarget

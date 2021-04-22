@@ -317,7 +317,7 @@ BOOL OFInvokeMethod(id object, SEL selector, OFInvokeMethodHandler provideArgume
         return NO;
     }
 
-    OBRecordBacktraceWithContext(sel_getName(selector), OBBacktraceBuffer_PerformSelector, (__bridge const void *)object);
+    OBRecordBacktraceWithSelectorAndContext(selector, (__bridge const void *)object);
 
     NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:methodSignature];
     [invocation setTarget:object];
