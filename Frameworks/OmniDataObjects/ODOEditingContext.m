@@ -43,6 +43,8 @@
 
 RCS_ID("$Id$")
 
+OFDeclareDebugLogLevel(ODOEditingContextOwnershipCheckingDisabled);
+
 NS_ASSUME_NONNULL_BEGIN
 
 @implementation ODOEditingContext
@@ -74,6 +76,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)dealloc;
 {
+    OBPRECONDITION(_owningQueue == NULL);
     OBPRECONDITION(_saveDate == nil);
     OBINVARIANT([self _checkInvariants]);
 
@@ -108,18 +111,89 @@ NS_ASSUME_NONNULL_BEGIN
     [super dealloc];
 }
 
+- (void)assumeOwnershipWithQueue:(dispatch_queue_t)queue;
+{
+    if (ODOEditingContextOwnershipCheckingDisabled > 0) {
+        return;
+    }
+
+    OBRecordBacktraceWithContext("Assume ownership", OBBacktraceBuffer_Generic, self);
+
+    assert(_owningQueue == NULL);
+    assert(queue != NULL);
+    dispatch_assert_queue(queue);
+    dispatch_retain(queue);
+    _owningQueue = queue;
+}
+
+- (void)relinquishOwnerhip;
+{
+    if (ODOEditingContextOwnershipCheckingDisabled > 0) {
+        return;
+    }
+
+    OBRecordBacktraceWithContext("Relinquish ownership", OBBacktraceBuffer_Generic, self);
+
+    assert(_owningQueue != NULL);
+    dispatch_assert_queue(_owningQueue);
+    dispatch_release(_owningQueue);
+    _owningQueue = NULL;
+}
+
+void ODOEditingContextAssertOwnership(ODOEditingContext *context)
+{
+    if (ODOEditingContextOwnershipCheckingDisabled > 0) {
+        return;
+    }
+    dispatch_assert_queue(context->_owningQueue);
+}
+
+BOOL ODOEditingContextExecuteWithOwnership(ODOEditingContext *self, dispatch_queue_t temporaryOwner, BOOL (^ NS_NOESCAPE action)(void))
+{
+    if (ODOEditingContextOwnershipCheckingDisabled > 0) {
+        return action();
+    }
+
+    // This could be done with methods above, but this will log fewer backtrace buffers and will be slightly more efficient, if it matters.
+//    OBRecordBacktraceWithContext("Yield ownership", OBBacktraceBuffer_Generic, self);
+
+    // Make sure we start out on the current owning queue and then swap in the new owner.
+    // We *probably* don't need to retain the temporary owner, but will for now.
+    dispatch_queue_t originalQueue = self->_owningQueue; // still retained
+    dispatch_assert_queue(originalQueue);
+
+    self->_owningQueue = temporaryOwner;
+    dispatch_retain(temporaryOwner);
+
+    // This is assumed to dispatch to the temporary owner queue to do some work and synchronously wait for the result.
+    BOOL result = action();
+
+    dispatch_release(temporaryOwner);
+    self->_owningQueue = originalQueue; // still retained from above
+
+    return result;
+}
+
+- (BOOL)executeWithTemporaryOwnership:(dispatch_queue_t)temporaryOwner operation:(BOOL (^)(void))operation;
+{
+    return ODOEditingContextExecuteWithOwnership(self, temporaryOwner, operation);
+}
+
 - (ODODatabase *)database;
 {
+    ODOEditingContextAssertOwnership(self);
     OBPRECONDITION(_database);
     return _database;
 }
 
 - (nullable NSUndoManager *)undoManager;
 {
+    ODOEditingContextAssertOwnership(self);
     return _undoManager;
 }
 - (void)setUndoManager:(nullable NSUndoManager *)undoManager;
 {
+    ODOEditingContextAssertOwnership(self);
     if (_undoManager != nil) {
         [_undoManager removeAllActionsWithTarget:self];
         [_undoManager release];
@@ -131,11 +205,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)automaticallyProcessPendingChanges;
 {
+    ODOEditingContextAssertOwnership(self);
     return _runLoopObserver != NULL;
 }
 
 - (void)setAutomaticallyProcessPendingChanges:(BOOL)automaticallyProcessPendingChanges;
 {
+    ODOEditingContextAssertOwnership(self);
     if (automaticallyProcessPendingChanges && _runLoopObserver == NULL) {
         [self _addRunLoopObserver];
     } else if (!automaticallyProcessPendingChanges && _runLoopObserver != NULL) {
@@ -146,6 +222,7 @@ NS_ASSUME_NONNULL_BEGIN
 // Empties the reciever of all objects.
 - (void)reset;
 {
+    ODOEditingContextAssertOwnership(self);
     OBINVARIANT([self _checkInvariants]);
 
     // This cleanup can cause us to be deallocated if there are no other strong references
@@ -196,6 +273,10 @@ NS_ASSUME_NONNULL_BEGIN
         for (ODOObject *object in [_registeredObjectByID objectEnumerator])
             [object _invalidate];
         [_registeredObjectByID removeAllObjects];
+
+        if (_runLoopObserver) {
+            [self _removeRunLoopObserver];
+        }
     } @finally {
         _isResetting = NO;
     }
@@ -219,13 +300,13 @@ static void ODOEditingContextInternalInsertObject(ODOEditingContext *self, ODOOb
     OBPRECONDITION(![self->_recentlyDeletedObjects member:object]);
     
     // TODO: Verify that the object being inserted isn't some old dead invalidated object (previously deleted and a save happened since then).
-    
+
     // Check to see if we are re-inserting something which was previously marked for deletion
     
     ODOObject *previouslyRegisteredObject = [self->_registeredObjectByID objectForKey:[object objectID]];
     if (previouslyRegisteredObject != nil) {
-        // Assert that the object we are trying to "replace" has been deleted
-        OBASSERT([self->_recentlyDeletedObjects containsObject:previouslyRegisteredObject] || [self->_processedDeletedObjects containsObject:previouslyRegisteredObject]);
+        // Assert that the object we are trying to "replace" has been deleted. If this is not the case, we'll be severely messing up the lifecycle messages, so this is a hard assert.
+        assert([self->_recentlyDeletedObjects containsObject:previouslyRegisteredObject] || [self->_processedDeletedObjects containsObject:previouslyRegisteredObject]);
         
         [self->_recentlyDeletedObjects removeObject:previouslyRegisteredObject];
         [self->_processedDeletedObjects removeObject:previouslyRegisteredObject];
@@ -267,6 +348,7 @@ static void ODOEditingContextInternalInsertObject(ODOEditingContext *self, ODOOb
 // This is the global first-time insertion hook.  This should only be called with *new* objects.  That is, the undo of a delete should *not* go through here since that would re-call the -awakeFromInsert method.
 - (void)insertObject:(ODOObject *)object;
 {
+    ODOEditingContextAssertOwnership(self);
     OBINVARIANT([self _checkInvariants]);
     
     // If we want an undeletable object, we need to make sure it can't be deleted via undo of this insert
@@ -413,14 +495,16 @@ static void _traceToOneRelationship(ODOObject *object, ODORelationship *rel, Tra
     
     if (rule == ODORelationshipDeleteRuleNullify) {
         if ([inverseRel isToMany]) {
-            // We have a to-one and we need to remove ourselves from the inverse to-many.  We do this by clearing *our* to-one after faulting the inverse to-many.  Later it might be worth exploring ways to avoid doing this faulting.  Hopefully we can just clear our to-one and then any future fetches will do the right thing.
+            // We have a to-one and we need to remove ourselves from the inverse to-many. In the past, we used to force clearing the inverse to-many fault, even if our to-one itself was a fault. But, if our to-one is still a fault, it can't hold a reference back to us (and any future fetches will get filtered vs. the deleted objects). Forcing the inverse to-many to be cleared may not be necessary here either.
             ODOObject *dest = [object valueForKey:forwardKey];
             if (dest) {
+                if (![dest isFault]) {
 #ifdef OMNI_ASSERTIONS_ON
-                NSSet *inverseSet =
+                    NSSet *inverseSet =
 #endif
-                [dest valueForKey:inverseKey]; // clears the fault
-                OBASSERT([inverseSet member:object] == object);
+                    [dest valueForKey:inverseKey]; // clears the fault
+                    OBASSERT([inverseSet member:object] == object);
+                }
                 
                 _addNullify(object, forwardKey, ctx->relationshipsToNullifyByObjectID);
             }
@@ -621,6 +705,9 @@ static void ODOEditingContextInternalDeleteObjects(ODOEditingContext *self, NSSe
     
     // If someone calls back into -processPendingChanges, we're going to try to register undos for objects from our set of recently deleted objects.  Those undos will need to reference snapshots, so we'd better add those snapshots now.  Fixes <bug:///99138> (Regression: Exception when trying to syncing after deleting an inbox task (Assert failed: requires snapshot) [_registerUndoForRecentChanges]).
     for (ODOObject *object in toDelete) {
+        // Record the pointers of objects being deleted in case someone accesses one soon and crashes
+        OBRecordBacktraceWithContext(class_getName(object_getClass(object)), OBBacktraceBuffer_Generic, (const void *)object);
+
         [self _snapshotObjectPropertiesIfNeeded:object];
     }
     
@@ -645,6 +732,7 @@ static void ODOEditingContextInternalDeleteObjects(ODOEditingContext *self, NSSe
 // Since we do delete propagation immediately, and since there is no other good point, we have an out NSError argument here for the results from -validateForDelete:.
 - (BOOL)deleteObject:(ODOObject *)object error:(NSError **)outError;
 {
+    ODOEditingContextAssertOwnership(self);
     DEBUG_DELETE(@"DELETE: object:%@", [object shortDescription]);
     
     OBINVARIANT([self _checkInvariants]);
@@ -654,7 +742,7 @@ static void ODOEditingContextInternalDeleteObjects(ODOEditingContext *self, NSSe
     OBPRECONDITION([object editingContext] == self);
     OBPRECONDITION([_registeredObjectByID objectForKey:[object objectID]] == object); // has to be registered
     OBPRECONDITION(![_undoManager isUndoingOrRedoing]); // this public API shouldn't be called to undo/redo.  Only to 'do'.
-    
+
     // Bail on objects that are already deleted or invalid instead of crashing.  This can easily happen if UI code can select both a parent and child and delete them w/o knowing that the deletion of the parent will get the child too.  Nice if the UI handles it, but shouldn't crash or do something crazy otherwise.
     if (!object || [object isInvalid] || [object isDeleted]) {
         DEBUG_DELETE(@"DELETE: %@ already invalid:%d deleted:%d -- bailing", [object shortDescription], [object isInvalid], [object isDeleted]);
@@ -962,6 +1050,7 @@ static NSDictionary *_createChangeSetNotificationUserInfo(NSSet * _Nullable inse
 
 - (BOOL)processPendingChanges;
 {
+    ODOEditingContextAssertOwnership(self);
     OBINVARIANT([self _checkInvariants]);
     OBPRECONDITION(!_isSendingWillSave); // See -_sendWillSave:
     OBPRECONDITION(!_isValidatingAndWritingChanges); // Can't call -processPendingChanges while validating.  Would be pointless anyway since it has already been called and we don't allow making edits paste -_sendWillSave:
@@ -990,6 +1079,8 @@ static NSDictionary *_createChangeSetNotificationUserInfo(NSSet * _Nullable inse
 // These reflect the total current set of unsaved edits, including unprocessed changes.  Note that since we need to send 'updated' notifications when an inserted object gets further edits, the recently updated set might contain inserted objects.  This doesn't mean the object is in the inserted state as far as what will happen when -save: is called, though.
 - (NSSet *)insertedObjects;
 {
+    ODOEditingContextAssertOwnership(self);
+
     if (!_recentlyInsertedObjects && !_recentlyDeletedObjects) {
         if (!_processedInsertedObjects)
             return [NSSet set]; // return nil, or at least a shared instance?
@@ -1006,6 +1097,8 @@ static NSDictionary *_createChangeSetNotificationUserInfo(NSSet * _Nullable inse
 // This one is tricky since, as noted above, the recent updates might include objects that are really inserted.
 - (NSSet *)updatedObjects;
 {
+    ODOEditingContextAssertOwnership(self);
+
     if (!_recentlyUpdatedObjects && !_recentlyDeletedObjects) {
         if (!_processedUpdatedObjects)
             return [NSSet set]; // return nil, or at least a shared instance?
@@ -1023,6 +1116,8 @@ static NSDictionary *_createChangeSetNotificationUserInfo(NSSet * _Nullable inse
 
 - (NSSet *)deletedObjects;
 {
+    ODOEditingContextAssertOwnership(self);
+
     // Deleted objects can't become alive again w/o an undo, so we don't need to check the recent updates or inserts here.
     if (!_recentlyDeletedObjects) {
         if (!_processedDeletedObjects)
@@ -1039,17 +1134,23 @@ static NSDictionary *_createChangeSetNotificationUserInfo(NSSet * _Nullable inse
 
 - (NSDictionary *)registeredObjectByID;
 {
+    ODOEditingContextAssertOwnership(self);
+
     // Deleted objects shouldn't be unregistered until the save.
     return [NSDictionary dictionaryWithDictionary:_registeredObjectByID];
 }
 
 BOOL ODOEditingContextObjectIsInsertedNotConsideringDeletions(ODOEditingContext *self, ODOObject *object)
 {
+    ODOEditingContextAssertOwnership(self);
+
     return _queryUniqueSet(self->_processedInsertedObjects, object) || _queryUniqueSet(self->_recentlyInsertedObjects, object);
 }
 
 - (BOOL)isInserted:(ODOObject *)object;
 {
+    ODOEditingContextAssertOwnership(self);
+
     // Pending delete that might kill the insert when processed?
     if (_queryUniqueSet(_recentlyDeletedObjects, object))
         return NO;
@@ -1059,6 +1160,8 @@ BOOL ODOEditingContextObjectIsInsertedNotConsideringDeletions(ODOEditingContext 
 // As with -updatedObjects, this is tricky since processed inserts can be recently updated for notification/undo purposes.
 - (BOOL)isUpdated:(ODOObject *)object;
 {
+    ODOEditingContextAssertOwnership(self);
+
     // Pending delete that might kill the update when processed?
     if (_queryUniqueSet(_recentlyDeletedObjects, object))
         return NO;
@@ -1073,12 +1176,15 @@ BOOL ODOEditingContextObjectIsInsertedNotConsideringDeletions(ODOEditingContext 
 
 - (BOOL)isDeleted:(ODOObject *)object;
 {
+    ODOEditingContextAssertOwnership(self);
+
     // Objects can't be reinserted or updated once they have been deleted without an undo.  So our recent inserts/updates aren't relevant here.
     return _queryUniqueSet(_processedDeletedObjects, object) || _queryUniqueSet(_recentlyDeletedObjects, object);
 }
 
 - (BOOL)isRegistered:(ODOObject *)object;
 {
+    ODOEditingContextAssertOwnership(self);
     OBPRECONDITION(object);
     
     ODOObjectID *objectID = [object objectID];
@@ -1089,11 +1195,14 @@ BOOL ODOEditingContextObjectIsInsertedNotConsideringDeletions(ODOEditingContext 
 
 - (BOOL)shouldSetSaveDates;
 {
+    ODOEditingContextAssertOwnership(self);
+
     return !_avoidSettingSaveDates;
 }
 
 - (void)setShouldSetSaveDates:(BOOL)shouldSetSaveDates;
 {
+    ODOEditingContextAssertOwnership(self);
     OBPRECONDITION(_saveDate == nil); // Don't set this in the middle of -save:
     
     // Store the inverse so that the default BOOL of NO preserves the right behavior
@@ -1102,6 +1211,7 @@ BOOL ODOEditingContextObjectIsInsertedNotConsideringDeletions(ODOEditingContext 
 
 - (BOOL)saveWithDate:(NSDate *)saveDate error:(NSError **)outError;
 {
+    ODOEditingContextAssertOwnership(self);
     OBPRECONDITION(_saveDate == nil);
     OBINVARIANT([self _checkInvariants]);
 
@@ -1150,34 +1260,39 @@ BOOL ODOEditingContextObjectIsInsertedNotConsideringDeletions(ODOEditingContext 
         NSNotification *note = [NSNotification notificationWithName:ODOEditingContextDidSaveNotification object:self userInfo:userInfo];
         [userInfo release];
 
+        //
         // Ask ODODatabase to write (but not clear) its _pendingMetadataChanges
-        BOOL transactionSuccess = [_database _performTransactionWithError:outError block:^(struct sqlite3 *sqlite, NSError **blockError) {
-            NSError *databaseError = nil;
-            if (![_database _queue_writeMetadataChangesToSQLite:sqlite error:&databaseError]) {
-                // <bug:///102226> (Discussion: Are at least some of the recent SQL error reports being caused by Clean My Mac, MacKeeper, etc.?)
-                NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to save changes to database", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
-                NSString *reason;
-                BOOL underlyingErrorRequiresReopen = [databaseError hasUnderlyingErrorDomain:ODOSQLiteErrorDomain code:SQLITE_IOERR];
-                if (underlyingErrorRequiresReopen)
-                    reason = NSLocalizedStringFromTableInBundle(@"The cache database was removed while it was still open. Close and reopen the database to recover.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason");
-                else
-                    reason = [databaseError localizedFailureReason];
-                
-                NSInteger code = (underlyingErrorRequiresReopen ? ODOUnableToSaveTryReopen : ODOUnableToSave);
-                ODOError(&databaseError, code, description, reason);
-                if (blockError != NULL)
-                    *blockError = databaseError;
-                
-                return NO;
-            }
+        //
+
+        BOOL transactionSuccess = ODOEditingContextExecuteWithOwnership(self, _database.connectionQueue, ^{
+            return [_database _performTransactionWithError:outError block:^(struct sqlite3 *sqlite, NSError **blockError) {
+                NSError *databaseError = nil;
+                if (![_database _queue_writeMetadataChangesToSQLite:sqlite error:&databaseError]) {
+                    // <bug:///102226> (Discussion: Are at least some of the recent SQL error reports being caused by Clean My Mac, MacKeeper, etc.?)
+                    NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to save changes to database", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
+                    NSString *reason;
+                    BOOL underlyingErrorRequiresReopen = [databaseError hasUnderlyingErrorDomain:ODOSQLiteErrorDomain code:SQLITE_IOERR];
+                    if (underlyingErrorRequiresReopen)
+                        reason = NSLocalizedStringFromTableInBundle(@"The cache database was removed while it was still open. Close and reopen the database to recover.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason");
+                    else
+                        reason = [databaseError localizedFailureReason];
+
+                    NSInteger code = (underlyingErrorRequiresReopen ? ODOUnableToSaveTryReopen : ODOUnableToSave);
+                    ODOError(&databaseError, code, description, reason);
+                    if (blockError != NULL)
+                        *blockError = databaseError;
+
+                    return NO;
+                }
             
-            if (![self _queue_writeProcessedEditsToSQLite:sqlite error:blockError]) {
-                return NO;
-            }
-            
-            return YES;
-        }];
-        
+                if (![self _queue_writeProcessedEditsToSQLite:sqlite error:blockError]) {
+                    return NO;
+                }
+
+                return YES;
+            }];
+        });
+
         if (!transactionSuccess) {
             OBINVARIANT([self _checkInvariants]);
             return NO;
@@ -1241,12 +1356,15 @@ BOOL ODOEditingContextObjectIsInsertedNotConsideringDeletions(ODOEditingContext 
 
 - (NSDate *)saveDate;
 {
+    ODOEditingContextAssertOwnership(self);
     OBPRECONDITION(_saveDate); // Set only during -saveWithDate:error:; shouldn't be called outside of that method
     return _saveDate;
 }
 
 - (BOOL)hasChanges;
 {
+    ODOEditingContextAssertOwnership(self);
+
     // This might lie if we've had a insert followed by a delete that got rid of it w/o a -processPendingChanges.  Does CoreData handle that?
     if (_recentlyInsertedObjects || _recentlyUpdatedObjects || _recentlyDeletedObjects)
         return YES;
@@ -1257,6 +1375,8 @@ BOOL ODOEditingContextObjectIsInsertedNotConsideringDeletions(ODOEditingContext 
 
 - (BOOL)hasUnprocessedChanges;
 {
+    ODOEditingContextAssertOwnership(self);
+
     if (_recentlyInsertedObjects || _recentlyUpdatedObjects || _recentlyDeletedObjects)
         return YES;
     return NO;
@@ -1264,11 +1384,15 @@ BOOL ODOEditingContextObjectIsInsertedNotConsideringDeletions(ODOEditingContext 
 
 - (nullable ODOObject *)objectRegisteredForID:(ODOObjectID *)objectID;
 {
+    ODOEditingContextAssertOwnership(self);
+
     return [_registeredObjectByID objectForKey:objectID];
 }
 
 - (nullable NSArray *)executeFetchRequest:(ODOFetchRequest *)fetch error:(NSError **)outError;
 {
+    ODOEditingContextAssertOwnership(self);
+
     NSMutableArray <__kindof ODOObject *> *results = ODOFetchObjects(self, fetch.entity, fetch.predicate, fetch.reason, outError);
     if (!results) {
         return nil;
@@ -1284,6 +1408,8 @@ BOOL ODOEditingContextObjectIsInsertedNotConsideringDeletions(ODOEditingContext 
 
 - (__kindof ODOObject *)insertObjectWithEntityName:(NSString *)entityName;
 {
+    ODOEditingContextAssertOwnership(self);
+
     ODOEntity *entity = [self.database.model entityNamed:entityName];
     ODOObject *object = [[[entity instanceClass] alloc] initWithEntity:entity primaryKey:nil insertingIntoEditingContext:self];
     return [object autorelease];
@@ -1291,6 +1417,7 @@ BOOL ODOEditingContextObjectIsInsertedNotConsideringDeletions(ODOEditingContext 
 
 - (nullable __kindof ODOObject *)fetchObjectWithObjectID:(ODOObjectID *)objectID error:(NSError **)outError;
 {
+    ODOEditingContextAssertOwnership(self);
     OBPRECONDITION(objectID);
     
     ODOObject * (^missingObjectErrorReturn)(void) = ^{
@@ -1360,6 +1487,8 @@ BOOL ODOEditingContextObjectIsInsertedNotConsideringDeletions(ODOEditingContext 
 
 - (ODOEditingContextFaultErrorRecovery)handleFaultFulfillmentError:(NSError *)error;
 {
+    ODOEditingContextAssertOwnership(self);
+
     // Don't attempt anything in the base class. Subclasses can try to recover in an app-specific manner.
     return ODOEditingContextFaultErrorUnhandled;
 }
@@ -1393,6 +1522,8 @@ static void _runLoopObserverCallBack(CFRunLoopObserverRef observer, CFRunLoopAct
 {
     // End-of-event processing.  This will provoke an undo group if one isn't already open.
     ODOEditingContext *self = info;
+    ODOEditingContextAssertOwnership(self);
+
     if (self->_recentlyInsertedObjects || self->_recentlyUpdatedObjects || self->_recentlyDeletedObjects)
         [self processPendingChanges];
 }
@@ -1430,11 +1561,15 @@ static void _runLoopObserverCallBack(CFRunLoopObserverRef observer, CFRunLoopAct
 
 - (void)_databaseConnectionDidChange:(NSNotification *)note;
 {
+    ODOEditingContextAssertOwnership(self);
+
     [self reset];
 }
 
 - (BOOL)_sendWillSave:(NSError **)outError;
 {
+    ODOEditingContextAssertOwnership(self);
+
     // Inform the inserted and updated object that they -willSave.  The deleted objects are dead, dead, dead (unless undo happens) so they don't get a -willSave.  Edits are allowed in -willSave, though CoreData says that they should only use the primitive setters.  Let's not have that weird restriction.
     
     BOOL success = YES;
@@ -1871,6 +2006,8 @@ static void _updateRelationshipsForUndo(ODOObject *object, ODOEntity *entity, OD
 
 - (void)_undoWithObjectIDsAndSnapshotsToInsert:(nullable NSArray *)objectIDsAndSnapshotsToInsert updates:(nullable NSArray *)updates objectIDsToDelete:(nullable NSArray *)objectIDsToDelete;
 {
+    ODOEditingContextAssertOwnership(self);
+
     DEBUG_UNDO(@"Performing %@ operation:", [_undoManager isUndoing] ? @"undo" : ([_undoManager isRedoing] ? @"redo" : @"WTF?"));
     if (objectIDsAndSnapshotsToInsert) {
         DEBUG_UNDO(@"objectIDsAndSnapshotsToInsert = %@", [(id)CFCopyDescription(objectIDsAndSnapshotsToInsert) autorelease]);

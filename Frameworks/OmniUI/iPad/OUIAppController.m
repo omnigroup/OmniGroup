@@ -21,6 +21,7 @@
 #import <OmniFoundation/OFPointerStack.h>
 #import <OmniFoundation/OFPreference.h>
 #import <OmniFoundation/OFVersionNumber.h>
+#import <OmniFoundation/OFBacktrace.h>
 #import <OmniUI/OmniUI-Swift.h>
 #import <OmniUI/OUIAppController+SpecialURLHandling.h>
 #import <OmniUI/OUIAppControllerSceneHelper.h>
@@ -47,6 +48,84 @@ OFDeclareDebugLogLevel(OUIApplicationStateDebug);
     if (OUIApplicationStateDebug >= (level)) \
         NSLog(@"APP STATE: " format, ## __VA_ARGS__); \
     } while (0)
+
+
+#if defined(DEBUG_bungi)
+
+static void TrackBackgroundTasks(void) __attribute__((constructor));
+
+static NSLock *BackgroundTasksLock;
+static NSMutableDictionary *RegisteredBackgroundTaskIdentifierToStartingBacktrace;
+
+static UIBackgroundTaskIdentifier (*original_beginBackgroundTaskWithName)(UIApplication *self, SEL _cmd, NSString *taskName, void (^handler)(void));
+static void (*original_endBackgroundTask)(UIApplication *self, SEL _cmd, UIBackgroundTaskIdentifier taskIdentifier);
+
+static UIBackgroundTaskIdentifier replacement_beginBackgroundTaskWithName(UIApplication *self, SEL _cmd, NSString *taskName, void (^handler)(void))
+{
+    __block UIBackgroundTaskIdentifier taskIdentifier = UIBackgroundTaskInvalid;
+
+    void (^expirationWrapper)(void) = ^{
+        NSNumber *identifier = @(taskIdentifier);
+
+        [BackgroundTasksLock lock];
+        NSString *backtrace = RegisteredBackgroundTaskIdentifierToStartingBacktrace[identifier];
+        RegisteredBackgroundTaskIdentifierToStartingBacktrace[identifier] = nil; // Not sure if UIKit will actually reuse the identifier after this?
+        [BackgroundTasksLock unlock];
+
+        NSLog(@"BACKGROUND: Task expired %ld, created from:\n%@", taskIdentifier, backtrace);
+
+        if (handler) {
+            handler();
+        }
+    };
+
+    taskIdentifier = original_beginBackgroundTaskWithName(self, _cmd, taskName, expirationWrapper);
+
+    NSUInteger count;
+    NSNumber *identifier = @(taskIdentifier);
+    NSString *backtrace = OFCopySymbolicBacktrace();
+    [BackgroundTasksLock lock];
+    {
+        OBASSERT(RegisteredBackgroundTaskIdentifierToStartingBacktrace[identifier] == nil);
+        RegisteredBackgroundTaskIdentifierToStartingBacktrace[identifier] = backtrace;
+        count = [RegisteredBackgroundTaskIdentifierToStartingBacktrace count];
+    }
+    [BackgroundTasksLock unlock];
+
+    NSLog(@"BACKGROUND: Begin task: %@ -> %ld (%ld)", taskName, taskIdentifier, count);
+    return taskIdentifier;
+}
+
+static void replacement_endBackgroundTask(UIApplication *self, SEL _cmd, UIBackgroundTaskIdentifier taskIdentifier)
+{
+    NSUInteger count;
+    NSNumber *identifier = @(taskIdentifier);
+
+    [BackgroundTasksLock lock];
+    {
+        OBASSERT(RegisteredBackgroundTaskIdentifierToStartingBacktrace[identifier] != nil);
+        [RegisteredBackgroundTaskIdentifierToStartingBacktrace removeObjectForKey:identifier];
+        count = [RegisteredBackgroundTaskIdentifierToStartingBacktrace count];
+    }
+    [BackgroundTasksLock unlock];
+
+    NSLog(@"BACKGROUND: End task: %ld (%ld)", taskIdentifier, count);
+
+    original_endBackgroundTask(self, _cmd, taskIdentifier);
+}
+
+static void TrackBackgroundTasks(void)
+{
+    Class cls = objc_getClass("UIApplication");
+
+    BackgroundTasksLock = [[NSLock alloc] init];
+    RegisteredBackgroundTaskIdentifierToStartingBacktrace = [[NSMutableDictionary alloc] init];
+
+    original_beginBackgroundTaskWithName = (typeof(original_beginBackgroundTaskWithName))OBReplaceMethodImplementation(cls, @selector(beginBackgroundTaskWithName:expirationHandler:), (IMP)replacement_beginBackgroundTaskWithName);
+    original_endBackgroundTask = (typeof(original_endBackgroundTask))OBReplaceMethodImplementation(cls, @selector(endBackgroundTask:), (IMP)replacement_endBackgroundTask);
+}
+
+#endif
 
 // Private storage class used to manage enqueued controllers
 @interface OUIEnqueueableInteractionControllerContext: NSObject
@@ -1010,6 +1089,12 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
 - (void)sendMailTo:(NSArray<NSString *> *)recipients withComposeController:(MFMailComposeViewController *)mailComposeController inScene:(nullable UIScene *)scene
 {
     [self sendMailTo:recipients withComposeController:mailComposeController inScene:scene completion:nil];
+}
+
+- (void)showSettingsFromViewController:(UIViewController *)viewController prefPaneToPush:(UIViewController *) paneToPush potentialDismissViewHandler:(void (^)(void))dismissHandler;
+{
+    // for subclasses
+    return;
 }
 
 - (void)sendMailTo:(NSArray<NSString *> *)recipients withComposeController:(MFMailComposeViewController *)mailComposeController inScene:(nullable UIScene *)scene completion:(void (^ _Nullable)(void))mailInteractionCompletionHandler;

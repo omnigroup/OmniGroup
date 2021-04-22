@@ -1,4 +1,4 @@
-// Copyright 2015-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -53,6 +53,10 @@ RCS_ID("$Id$")
 
         OIAutoLayoutInspectorController *controller = [[OIAutoLayoutInspectorController alloc] initWithInspector:inspector inspectorRegistry:inspectorRegistry];
         controller.interfaceType = OIInspectorInterfaceTypeEmbedded;
+        if ([slicePlist objectForKey:@"expanded"])
+            controller.isExpanded = [dict boolForKey:@"expanded"];
+        else
+            controller.isExpanded = YES;
         
         if (!controller)
             continue;
@@ -167,7 +171,6 @@ RCS_ID("$Id$")
         NSString *identifier = inspectorController.inspectorIdentifier;
         
         [inspectorController loadInterface];
-        [inspectorController setExpanded:YES withNewTopLeftPoint:NSZeroPoint]; // top left point should be ignored for embedded inspectors
         
         [inspectorContainerView setTranslatesAutoresizingMaskIntoConstraints:NO];
         [self.containerStackView addView:inspectorContainerView inGravity:NSStackViewGravityTop];

@@ -1,4 +1,4 @@
-// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,8 +17,6 @@
 #import "ODOEditingContext-Internal.h"
 
 @import Foundation;
-
-RCS_ID("$Id$")
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -569,7 +567,7 @@ _Nullable CFArrayRef ODOObjectCreateDifferenceRecordFromSnapshot(ODOObject *self
                 newValue = [[newValue objectID] primaryKey];
         }
         
-        if (OFNOTEQUAL(oldValue, newValue)) {
+        if (!_ODOIsEqual(oldValue, newValue)) {
             // encode nil as NSNull so that we can 'po' these.  Foundation blows up otherwise.
             if (oldValue == nil) {
                 oldValue = [NSNull null];

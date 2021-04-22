@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2010, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,6 +11,7 @@
 
 #import <Foundation/Foundation.h>
 #import <OmniBase/OmniBase.h>
+
 #import <XCTest/XCTest.h>
 
 #include <sys/socket.h>
@@ -139,7 +140,17 @@ RCS_ID("$Id$");
     sin6.sin6_port = htons(4243);
     bcopy((const void *)someV4encBytes, (void *)&(sin6.sin6_addr), sizeof(sin6.sin6_addr));
     someV4enc = [ONHostAddress hostAddressWithSocketAddress:(void *)&sin6];
-    XCTAssertEqualObjects([someV4enc stringValue], @"2002:d827:893a:101::50:ba08:d61");
+
+    if ([[NSProcessInfo processInfo] isOperatingSystemAtLeastVersion:(NSOperatingSystemVersion){10, 15, 0}]) {
+        // `inet_ntop` stopped returning an empty string for the 0 component
+        XCTAssertEqualObjects([someV4enc stringValue], @"2002:d827:893a:101:0:50:ba08:d61");
+
+        // Make sure that it still parses the empty component in this case though.
+        XCTAssertEqualObjects(someV4enc, [ONHostAddress hostAddressWithNumericString:@"2002:d827:893a:101:0:50:ba08:d61"]);
+    } else {
+        XCTAssertEqualObjects([someV4enc stringValue], @"2002:d827:893a:101::50:ba08:d61");
+    }
+
     XCTAssertEqualObjects(someV4enc, [ONHostAddress hostAddressWithNumericString:@"2002:D827:893A:101:0000:0050:ba08:0D61"]);
     XCTAssertEqualObjects(someV4enc, [ONHostAddress hostAddressWithNumericString:@"2002.d827.893a.101..50.ba08.d61"]);
     XCTAssertEqualObjects(someV4enc, [ONHostAddress hostAddressWithNumericString:@"2002.d827.893a.101.0.50.ba08.d61"]);

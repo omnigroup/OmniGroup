@@ -1,4 +1,4 @@
-// Copyright 2008-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,7 @@
 
 #import <OmniDAV/ODAVAsynchronousOperation.h>
 
+@class NSMutableArray;
 @class ODAVRedirect;
 
 NS_ASSUME_NONNULL_BEGIN

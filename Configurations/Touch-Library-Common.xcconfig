@@ -1,4 +1,4 @@
-// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the terms in the file OmniSourceLicense.html, which should be distributed with this project and can also be found at <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 // $Id$
@@ -30,8 +30,9 @@ HEADER_SEARCH_PATHS = $(value) $(CONFIGURATION_BUILD_DIR)/include $(CONFIGURATIO
 // Claim that we are building a framework, though it is a 'static' framework.
 // The point of this is that OmniBase/macros.h will make errors if we use the
 // main-bundle localized string lookup macros.
-OMNI_TARGET_COMMON_PREPROCESSOR_DEFINITIONS = OMNI_BUILDING_FOR_IOS OMNI_BUILDING_FRAMEWORK_OR_BUNDLE
-OMNI_TARGET_COMMON_SWIFT_FLAGS = -DOMNI_BUILDING_FOR_IOS -DOMNI_BUILDING_FRAMEWORK_OR_BUNDLE
+OMNI_TARGET_GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS = OMNI_BUILDING_FRAMEWORK_OR_BUNDLE
+OMNI_TARGET_COMMON_PREPROCESSOR_DEFINITIONS = OMNI_BUILDING_FOR_IOS
+OMNI_TARGET_COMMON_SWIFT_FLAGS = -DOMNI_BUILDING_FOR_IOS
 
 // This isn't defined for the library target for some reason
 TEST_FRAMEWORK_SEARCH_PATHS=$(PLATFORM_DIR)/Developer/Library/Frameworks $(SDKROOT)/Developer/Library/Frameworks

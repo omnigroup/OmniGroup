@@ -36,6 +36,22 @@ fi
 typeset -a EXPECTED_STRINGS_FILES
 EXPECTED_STRINGS_FILES=($*)
 
+case "$PRODUCT_TYPE" in
+	com.apple.product-type.application)	;;
+	com.apple.product-type.app-extension) ;;
+	com.apple.product-type.watchkit2-extension) ;;
+
+	*)
+	for f in $EXPECTED_STRINGS_FILES; do
+		if [ "$f" = "Localizable" ]; then
+			# This helps ensure that frameworks and bundles don't use NSLocalizableString or NSLocalizedStringFromTable, which would emit a string into Localizable.strings in the bundle target, but at run time would look it up in the main bundle.
+	        echo "*** Error: Only application targets should use the \"Localizable\" strings table, but building a product of type $PRODUCT_TYPE"
+			exit 1
+		fi
+	done
+esac
+
+
 LOCALIZABLE_FILE_LIST="$TMP_OUTPUT"/localizable-files
 
 mkdir -p "$STRINGS_DIR"

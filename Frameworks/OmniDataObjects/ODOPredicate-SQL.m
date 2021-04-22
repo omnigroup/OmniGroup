@@ -1,4 +1,4 @@
-// Copyright 2008-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,6 +13,7 @@
 #import <OmniDataObjects/ODORelationship.h>
 #import <OmniDataObjects/ODOEntity.h>
 #import <OmniDataObjects/ODOPredicate-SQL.h>
+#import <OmniFoundation/OFBinding.h>
 
 @import Foundation;
 
@@ -25,18 +26,20 @@ const char * const ODOComparisonPredicateStartsWithFunctionName = ODO_STARTS_WIT
 #define ODO_CONTAINS "ODOContains"
 const char * const ODOComparisonPredicateContainsFunctionName = ODO_CONTAINS;
 
-#define ODO_SUBQUERY_SUPPORT 0
-
 @implementation ODOSQLTable
 {
+    __unsafe_unretained ODOEntity *_currentEntity; // retained by model/caller
     NSUInteger _nextAliasIndex;
-    __unsafe_unretained ODOEntity *_currentEntity; // These are all retained by the model/caller.
+    NSMutableDictionary <NSString *, NSString *> *_entityNameToAlias;
 }
 
 - initWithEntity:(ODOEntity *)entity;
 {
-    _currentEntity = entity;
-    _currentAlias = @"t0";
+    self = [super init];
+    
+    _currentEntity = entity; // unretained.
+    _entityNameToAlias = [[NSMutableDictionary alloc] init];
+    _entityNameToAlias[entity.name] = @"t0";
     _nextAliasIndex = 1;
     return self;
 }
@@ -44,26 +47,42 @@ const char * const ODOComparisonPredicateContainsFunctionName = ODO_CONTAINS;
 - (void)dealloc;
 {
     // _currentEntity is unretained
-    [_currentAlias release]; // Should really be the "t0" constant string...
+    [_entityNameToAlias release];
     [super dealloc];
 }
 
-- (void)withEntity:(ODOEntity *)entity perform:(void (NS_NOESCAPE ^)(void))action;
+- (void)withEntities:(NSArray <ODOEntity *> *)entities perform:(void (NS_NOESCAPE ^)(void))action;
 {
+    for (ODOEntity *entity in entities) {
+        NSString *alias = [[NSString alloc] initWithFormat:@"t%ld", _nextAliasIndex];
+        _nextAliasIndex++;
+
+        OBASSERT(_entityNameToAlias[entity.name] == nil);
+        _entityNameToAlias[entity.name] = alias;
+
+        [alias release];
+    }
+
     ODOEntity *previousEntity = _currentEntity;
-    NSString *previousAlias = _currentAlias;
-
-    NSString *newAlias = [[NSString alloc] initWithFormat:@"t%ld", _nextAliasIndex];
-    _nextAliasIndex++;
-
-    _currentAlias = newAlias;
-    _currentEntity = entity;
+    _currentEntity = [entities lastObject];
 
     action();
 
-    [newAlias release];
-    _currentAlias = previousAlias;
     _currentEntity = previousEntity;
+
+    for (ODOEntity *entity in entities) {
+        [_entityNameToAlias removeObjectForKey:entity.name];
+    }
+}
+
+- (NSString *)currentAlias;
+{
+    return [self aliasForEntity:_currentEntity];
+}
+
+- (nullable NSString *)aliasForEntity:(ODOEntity *)entity;
+{
+    return _entityNameToAlias[entity.name];
 }
 
 @end
@@ -360,6 +379,14 @@ static BOOL _appendStringCompareFunction(NSComparisonPredicate *self, NSMutableS
                 constant = [NSNull null];
             else if ([constant isKindOfClass:[ODOObject class]])
                 constant = [[(ODOObject *)constant objectID] primaryKey];
+            else if ([constant isKindOfClass:[ODOProperty class]]) {
+                // Not really a constant but an attribute reference in place of a key path (so that we can have expression with attributes joining across entities).
+                ODOProperty *property = (ODOProperty *)constant;
+                [sql appendString:[table aliasForEntity:property.entity]];
+                [sql appendString:@"."];
+                [sql appendString:property.name];
+                return YES;
+            }
 
             [constants addObject:constant];
             [sql appendString:@"?"];
@@ -369,15 +396,6 @@ static BOOL _appendStringCompareFunction(NSComparisonPredicate *self, NSMutableS
             [sql appendString:[[table.currentEntity primaryKeyAttribute] name]];
             return YES;
         }
-
-#if ODO_SUBQUERY_SUPPORT
-        case NSFunctionExpressionType: {
-            if ([self _appendFunctionExpressionSQL:sql entity:entity constants:constants outError:outError]) {
-                return YES;
-            }
-            // Fall through to error case.
-        }
-#endif
 
         default:
             break;
@@ -390,72 +408,15 @@ static BOOL _appendStringCompareFunction(NSComparisonPredicate *self, NSMutableS
     return NO;
 }
 
-// A start on supporting SQL subqueries generated with 'SUBQUERY(someRelationship, $item, $item predicate)'
-// Destructuring the expression/predicate tree that NSPredicate +predicateWithFormat: builds is not super pleasant, and it isn't clear that Foundation will always encode the predicate the same way. In particular, when the subquery is used in an expression involving `@count`, the expressionType is set to an enum value that doesn't have a public entry in NSExpressionType. We could maybe build an expression at initialization type and extract the value, but this is all getting too fragile seeming for how common subqueries are. Instead, it will probably be better to hand-code the very few needed.
-#if ODO_SUBQUERY_SUPPORT
-
-- (BOOL)_appendFunctionExpressionSQL:(NSMutableString *)sql entity:(ODOEntity *)entity constants:(NSMutableArray *)constants outError:(NSError **)outError;
-{
-    OBPRECONDITION(self.expressionType == NSFunctionExpressionType);
-
-    // Limited subquery support.
-    NSString *function = self.function; // valueForKeyPath:
-    if (![function isEqual:@"valueForKeyPath:"]) {
-        return NO;
-    }
-
-    NSArray <NSExpression *> *arguments = self.arguments; // [@count]
-    if ([arguments count] != 1) {
-        return NO;
-    }
-    NSExpression *argument = arguments[0];
-    if (argument.expressionType != 10 /* there is no public value for this!!? */) {
-        return NO;
-    }
-    if (![argument.keyPath isEqual:@"@count"]) {
-        return NO;
-    }
-    NSExpression *operand = self.operand; // NSSubqueryExpression
-    if (operand.expressionType != NSSubqueryExpressionType) {
-        return NO;
-    }
-
-    // SUBQUERY(items, $x, $x.foo in %@)
-    NSLog(@"operand = %@", operand);
-    id collection = operand.collection; // items key path expression
-    if (![collection isKindOfClass:[NSExpression class]]) {
-        return NO;
-    }
-    NSExpression *collectionExpression = collection;
-    if (collectionExpression.expressionType != NSKeyPathExpressionType) {
-        return NO;
-    }
-    NSString *relationshipKey = collectionExpression.keyPath;
-    ODORelationship *relationship = [entity relationshipsByName][relationshipKey];
-    if (!relationship) {
-        return NO;
-    }
-
-    NSString *variable = operand.variable; // "x"
-    NSLog(@"variable = %@", variable);
-    NSPredicate *predicate = operand.predicate; // $x.foo in %@
-    NSLog(@"predicate = %@", predicate);
-
-    // The predicate for '$x.foo in %@' has a NSFunctionExpressionType with `function` of `valueForKeyPath:`, operand of an NSVariableExpressionType ($x) and arguments of ["foo"].
-
-    return [predicate appendSQL:sql entity:relationship.destinationEntity constants:constants error:outError];
-}
-
-#endif
-
 @end
 
 @implementation ODORelationshipMatchingCountPredicate
 
-- initWithRelationshipKey:(NSString *)relationshipKey predicate:(nullable NSPredicate *)predicate comparison:(NSPredicateOperatorType)comparison comparisonValue:(NSUInteger)comparisonValue;
+- initWithSourceEntity:(ODOEntity *)sourceEntity relationshipKeyPath:(NSString *)relationshipKeyPath destinationPredicate:(nullable NSPredicate *)destinationPredicate comparison:(NSPredicateOperatorType)comparison comparisonValue:(NSUInteger)comparisonValue;
 {
-    _relationshipKey = [relationshipKey copy];
-    _relationshipPredicate = [predicate copy];
+    _sourceEntity = [sourceEntity retain];
+    _relationshipKeyPath = [relationshipKeyPath copy];
+    _destinationPredicate = [destinationPredicate copy];
     _comparison = comparison;
     _comparisonValue = comparisonValue;
 
@@ -464,66 +425,107 @@ static BOOL _appendStringCompareFunction(NSComparisonPredicate *self, NSMutableS
 
 - (void)dealloc;
 {
-    [_relationshipKey release];
-    [_relationshipPredicate release];
+    [_sourceEntity release];
+    [_relationshipKeyPath release];
+    [_destinationPredicate release];
     [super dealloc];
+}
+
+static NSString * _Nullable _opString(NSPredicateOperatorType op)
+{
+    switch (op) {
+        case NSLessThanPredicateOperatorType:
+            return @" < ";
+        case NSLessThanOrEqualToPredicateOperatorType:
+            return @" <= ";
+        case NSGreaterThanPredicateOperatorType:
+            return @" > ";
+        case NSGreaterThanOrEqualToPredicateOperatorType:
+            return @" >= ";
+        case NSEqualToPredicateOperatorType:
+            return ODOEqualOp;
+        case NSNotEqualToPredicateOperatorType:
+            return ODONotEqualOp;
+        default:
+            OBASSERT_NOT_REACHED("Unsupported predicate operator");
+            return nil;
+    }
 }
 
 - (BOOL)appendSQL:(NSMutableString *)sql table:(ODOSQLTable *)table constants:(NSMutableArray *)constants error:(NSError **)outError;
 {
-    ODOEntity *parentEntity = table.currentEntity;
-    NSString *parentAlias = table.currentAlias;
+    NSMutableArray <ODOEntity *> *entities = [NSMutableArray array];
+    NSMutableArray <NSPredicate *> *joinPredicates = [NSMutableArray array];
 
-    ODORelationship *relationship = [parentEntity relationshipsByName][_relationshipKey];
-    ODOEntity *destinationEntity = relationship.destinationEntity;
-    assert(relationship);
+    // We should have an alias for the current entity already. Collect intermediate entities to make aliases for and build join predicates.
+    ODOEntity *currentEntity = _sourceEntity;
+    OBASSERT([table aliasForEntity:currentEntity] != nil);
+
+    for (NSString *key in OFKeysForKeyPath(_relationshipKeyPath)) {
+        ODORelationship *relationship = currentEntity.relationshipsByName[key];
+        assert(relationship);
+
+        ODOProperty *foreignKeyProperty;
+        ODOProperty *primaryKeyProperty;
+
+        if (relationship.isToMany) {
+            foreignKeyProperty = relationship.destinationEntity.relationshipsByName[relationship.inverseRelationship.name];
+            primaryKeyProperty = currentEntity.primaryKeyAttribute;
+        } else {
+            foreignKeyProperty = currentEntity.relationshipsByName[relationship.name];
+            primaryKeyProperty = relationship.destinationEntity.primaryKeyAttribute;
+        }
+
+        // Our predicate SQL generation will handle attributes instead of key paths for this case.
+        assert(foreignKeyProperty);
+        assert(primaryKeyProperty);
+        [joinPredicates addObject:[NSPredicate predicateWithFormat:@"%@ = %@", primaryKeyProperty, foreignKeyProperty]];
+
+        currentEntity = relationship.destinationEntity;
+        [entities addObject:currentEntity];
+    }
+
 
     __block BOOL success = YES;
 
-    [table withEntity:destinationEntity perform:^{
+    [table withEntities:entities perform:^{
         // TODO: for "> 0", write "EXISTS (SELECT ...)"? sqlite's optimizer might do this automatically.
-        OBASSERT(table.currentEntity == destinationEntity);
+        [sql appendString:@"(SELECT COUNT(*) FROM"];
 
-        NSString *destinationAlias = table.currentAlias;
-        [sql appendFormat:@"(SELECT count(*) FROM %@ %@ WHERE %@.%@ = %@.%@",
-         destinationEntity.name,
-         destinationAlias,
-         parentAlias,
-         parentEntity.primaryKeyAttribute.name,
-         destinationAlias,
-         relationship.inverseRelationship.name];
+        BOOL firstEntity = YES;
+        for (ODOEntity *entity in entities) {
+            if (firstEntity) {
+                firstEntity = NO;
+                [sql appendFormat:@" %@ %@", entity.name, [table aliasForEntity:entity]];
+            } else {
+                [sql appendFormat:@", %@ %@", entity.name, [table aliasForEntity:entity]];
+            }
+        }
 
-        if (_relationshipPredicate) {
+        [sql appendString:@" WHERE "];
+
+        NSPredicate *joinPredicate;
+        if (joinPredicates.count > 0) {
+            joinPredicate = [NSCompoundPredicate andPredicateWithSubpredicates:joinPredicates];
+        } else {
+            joinPredicate = joinPredicates.firstObject;
+        }
+        success = [joinPredicate appendSQL:sql table:table constants:constants error:outError];
+        if (!success) {
+            return;
+        }
+
+        if (_destinationPredicate) {
             [sql appendString:@" AND ("];
-            success = [_relationshipPredicate appendSQL:sql table:table constants:constants error:outError];
+            success = [_destinationPredicate appendSQL:sql table:table constants:constants error:outError];
             [sql appendString:@")"];
         }
         [sql appendString:@")"];
 
-        NSString *opString;
-        switch (_comparison) {
-            case NSLessThanPredicateOperatorType:
-                opString = @" < ";
-                break;
-            case NSLessThanOrEqualToPredicateOperatorType:
-                opString = @" <= ";
-                break;
-            case NSGreaterThanPredicateOperatorType:
-                opString = @" > ";
-                break;
-            case NSGreaterThanOrEqualToPredicateOperatorType:
-                opString = @" >= ";
-                break;
-            case NSEqualToPredicateOperatorType:
-                opString = ODOEqualOp;
-                break;
-            case NSNotEqualToPredicateOperatorType:
-                opString = ODONotEqualOp;
-                break;
-            default:
-                OBASSERT_NOT_REACHED("Unsupported predicate operator");
-                success = NO;
-                return;
+        NSString *opString = _opString(_comparison);
+        if (!opString) {
+            success = NO;
+            return;
         }
 
         [sql appendFormat:@"%@ ?", opString];
@@ -535,7 +537,53 @@ static BOOL _appendStringCompareFunction(NSComparisonPredicate *self, NSMutableS
 
 - (BOOL)evaluateWithObject:(nullable id)object substitutionVariables:(nullable NSDictionary<NSString *,id> *)bindings;
 {
-    OBFinishPorting;
+    NSSet *destinationObjects = [object valueForKeyPath:_relationshipKeyPath];
+
+    NSUInteger destinationCount;
+    if (_destinationPredicate) {
+        destinationCount = 0;
+        for (id destinationObject in destinationObjects) {
+            if ([_destinationPredicate evaluateWithObject:destinationObject]) {
+                destinationCount++;
+            }
+        }
+    } else {
+        destinationCount = [destinationObjects count];
+    }
+
+    switch (_comparison) {
+        case NSLessThanPredicateOperatorType:
+            return destinationCount < _comparisonValue;
+
+        case NSLessThanOrEqualToPredicateOperatorType:
+            return destinationCount <= _comparisonValue;
+
+        case NSGreaterThanPredicateOperatorType:
+            return destinationCount > _comparisonValue;
+
+        case NSGreaterThanOrEqualToPredicateOperatorType:
+            return destinationCount >= _comparisonValue;
+
+        case NSEqualToPredicateOperatorType:
+            return destinationCount == _comparisonValue;
+
+        case NSNotEqualToPredicateOperatorType:
+            return destinationCount != _comparisonValue;
+
+        default:
+            OBASSERT_NOT_REACHED("Unsupported predicate operator %ld", _comparison);
+            return NO;
+    }
+}
+
+- (NSString *)predicateFormat;
+{
+    return [NSString stringWithFormat:@"ODO_RELATIONSHIP_MATCHING_COUNT(%@.%@ (%@) %@ %ld)",
+            _sourceEntity.name,
+            _relationshipKeyPath,
+            _destinationPredicate,
+            _opString(_comparison),
+            _comparisonValue];
 }
 
 @end

@@ -1,4 +1,4 @@
-// Copyright 2002-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -1316,14 +1316,6 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
         [self _inspectWindow:nil queue:YES onlyIfVisible:YES updateInspectors:YES];
 }
 
-- (void)_applicationDidActivate:(NSNotification *)note;
-{
-    if (lastMainWindowBeforeAppSwitch) {
-        [self _inspectWindow:lastMainWindowBeforeAppSwitch queue:YES onlyIfVisible:YES updateInspectors:YES];
-	lastMainWindowBeforeAppSwitch = nil;
-    }
-}
-
 - (void)_applicationWillResignActive:(NSNotification *)notification;
 {
     lastMainWindowBeforeAppSwitch = [[NSApplication sharedApplication] mainWindow];
@@ -1357,8 +1349,6 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
 
         NSApplication *app = [NSApplication sharedApplication];
         
-	// Since we bail on updating the UI if the window isn't visible, and since panels aren't visible when the app isn't active, we need to try again when the app activates
-	[defaultNotificationCenter addObserver:self selector:@selector(_applicationDidActivate:) name:NSApplicationDidBecomeActiveNotification object:app];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_appWillTerminate:) name:NSApplicationWillTerminateNotification object:nil];
 
         // While the Inspector is visible, watch for any window to become main.  When that happens, determine if that window's delegate responds to the OAInspectableControllerProtocol, and act accordingly.

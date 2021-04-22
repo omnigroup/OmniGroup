@@ -1,4 +1,4 @@
-// Copyright 2006-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,7 +8,7 @@
 #import <OmniAppKit/OADatePickerTextField.h>
 
 #import <OmniAppKit/OAPopupDatePicker.h>
-#import "OADatePickerTextFieldCell.h"
+#import <OmniAppKit/OADatePickerTextFieldCell.h>
 
 #import <Foundation/Foundation.h>
 #import <OmniBase/OmniBase.h>

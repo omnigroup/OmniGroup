@@ -1,4 +1,4 @@
-// Copyright 2016-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -180,7 +180,7 @@ OB_REQUIRE_ARC;
 {
     NSDictionary *expectedPlist = @{
                                     @"TopLevelFloat": @(1),
-                                    @"Color": @{@"space": @"srgb", @"r": @(0.42), @"g": @(0.42), @"b": @(0.42), @"a": @(1)},
+                                    @"Color": @{@"space": @"srgb", @"r": @(0.5), @"g": @(0.25), @"b": @(0.125), @"a": @(1)},
                                     @"EdgeInsets": @{@"top": @(42), @"left": @(42), @"bottom": @(42), @"right": @(42), },
                                     @"OverriddenFloat": @(-1),
                                     @"Nested": @{@"Float": @(1)},

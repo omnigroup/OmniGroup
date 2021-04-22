@@ -1,4 +1,4 @@
-// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -84,6 +84,9 @@ static BOOL _appendColumnWithNameAndType(NSMutableString *str, ODOEntity *entity
             break;
         case ODOAttributeTypeDate:
             typeString = @"timestamp"; // will result in 'real', but this at least encodes our intention
+            break;
+        case ODOAttributeTypeXMLDateTime:
+            typeString = @"datetime";
             break;
         case ODOAttributeTypeFloat32:
             typeString = @"real";
@@ -204,6 +207,9 @@ static BOOL _bindAttributeValue(struct sqlite3 *sqlite, ODOSQLStatement *stateme
         case ODOAttributeTypeDate:
             OBASSERT([value isKindOfClass:[NSDate class]]);
             return ODOSQLStatementBindDate(sqlite, statement, oneBasedPropertyIndex, value, outError);
+        case ODOAttributeTypeXMLDateTime:
+            OBASSERT([value isKindOfClass:[NSDate class]]);
+            return ODOSQLStatementBindXMLDateTime(sqlite, statement, oneBasedPropertyIndex, value, outError);
         case ODOAttributeTypeData:
             OBASSERT([value isKindOfClass:[NSData class]]);
             return ODOSQLStatementBindData(sqlite, statement, oneBasedPropertyIndex, value, outError);

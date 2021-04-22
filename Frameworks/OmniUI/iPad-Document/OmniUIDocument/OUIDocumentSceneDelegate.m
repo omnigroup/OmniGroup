@@ -24,7 +24,7 @@
 #import "OUIDocumentSyncActivityObserver.h"
 #import "OUINewDocumentCreationRequest.h"
 
-@interface OUIDocumentSceneDelegate () <OJSEnvironmentProviderType>
+@interface OUIDocumentSceneDelegate ()
 @property (nonatomic, strong) OUIAppControllerSceneHelper *sceneHelper;
 @end
 
@@ -1387,13 +1387,6 @@ static OFPreference *showFileExtensionsPreference;
 - (NSArray<__kindof UIActivity *> *)documentBrowser:(UIDocumentBrowserViewController *)controller applicationActivitiesForDocumentURLs:(NSArray <NSURL *> *)documentURLs;
 {
     return _exporter.supportedActivities;
-}
-
-#pragma mark - OJSEnvironmentProviderType
-
-- (OJSEnvironment * _Nullable)scriptingEnvironment;
-{
-    return [_document scriptingEnvironment];
 }
 
 #pragma mark - OUIUndoBarButtonItemTarget

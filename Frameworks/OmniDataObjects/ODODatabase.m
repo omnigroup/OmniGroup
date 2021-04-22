@@ -11,6 +11,7 @@
 #import <OmniDataObjects/ODOEditingContext.h>
 #import <OmniDataObjects/ODOEntity.h>
 #import <OmniDataObjects/ODOFetchRequest.h>
+#import <OmniDataObjects/ODOPredicate-SQL.h>
 #import <OmniDataObjects/ODORelationship.h>
 #import <OmniDataObjects/ODOSQLConnection.h>
 #import <OmniDataObjects/NSPredicate-ODOExtensions.h>
@@ -21,7 +22,6 @@
 #import "ODOEntity-Internal.h"
 #import "ODOModel-SQL.h"
 #import "ODOSQLStatement.h"
-#import "ODOPredicate-SQL.h"
 
 #import <sqlite3.h>
 
@@ -391,7 +391,8 @@ static BOOL ODOVacuumOnDisconnect = NO;
 
 - (BOOL)writePendingMetadataChanges:(NSError **)outError;
 {
-    OBPRECONDITION(_pendingMetadataChanges != nil, @"bug:///139901 (Mac-OmniFocus Engineering: Precondition failure writing metadata changes before desync correction)");
+    if (_pendingMetadataChanges == nil)
+        return YES; // This used to be a precondition, but it's much easier for us to determine whether this work is necessary than it is for a caller.
     
     BOOL transactionSuccess = [self _performTransactionWithError:outError block:^BOOL(struct sqlite3 *sqlite, NSError **blockError) {
         return [self _queue_writeMetadataChangesToSQLite:sqlite error:blockError];
@@ -693,6 +694,11 @@ static BOOL _populateCachedMetadataRowCallback(struct sqlite3 *sqlite, ODOSQLSta
 @end
 
 @implementation ODODatabase (Internal)
+
+- (dispatch_queue_t)connectionQueue;
+{
+    return _connection.queue;
+}
 
 - (id)_generatePrimaryKeyForEntity:(ODOEntity *)entity;
 {

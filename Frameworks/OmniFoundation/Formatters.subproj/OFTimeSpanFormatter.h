@@ -1,4 +1,4 @@
-// Copyright 2000-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,21 +26,6 @@ typedef NS_ENUM(NSUInteger, OFTimeSpanFormatterUnit) {
 @class OFTimeSpan;
 
 @interface OFTimeSpanFormatter : NSFormatter
-{
-    NSNumberFormatter *numberFormatter;
-    BOOL shouldUseVerboseFormat;
-    float hoursPerDay, hoursPerWeek, hoursPerMonth, hoursPerYear;
-    float roundingInterval;
-    
-    struct {
-	unsigned int returnNumber : 1;
-	unsigned int displayUnmodifiedTimeSpan : 1;
-	unsigned int floatValuesInSeconds : 1;
-	unsigned int displayUnits : 7; /* Bits should match UNITS_COUNT */
-        unsigned int usesArchiveUnitStrings : 1;
-        unsigned int allowsElapsedUnits: 1;
-    } _flags;
-}
 
 + (NSString *)localizedPluralStringForUnits:(OFTimeSpanFormatterUnit)unit;
 + (NSString *)localizedSingularStringForUnits:(OFTimeSpanFormatterUnit)unit;

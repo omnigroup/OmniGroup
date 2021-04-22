@@ -1,4 +1,4 @@
-// Copyright 2016-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -413,7 +413,7 @@ class OFCMSFileWrapper {
         
         if input.isRegularFile {
             // Extract the password hint, if any
-            var fileAttributes = input.fileAttributes
+            let fileAttributes = input.fileAttributes
             if shouldSupportLegacyHints && passwordHint == nil, let xattrs = fileAttributes[NSFileExtendedAttributes] as? [String:Any],
                let pwhint = xattrs[OFCMSFileWrapper.hintFileXattr] {
                 if let pwhint_data = pwhint as? Data {
@@ -932,7 +932,7 @@ class OFCMSFileWrapper {
                                 ])
                     }
                     var memberOptions : OFCMSOptions = []
-                    if let optionality = try reader.getAttributeValue(fileOptionalAttr), (optionality as NSString).boolValue {
+                    if let optionality = try reader.getAttributeValue(fileOptionalAttr), (optionality as NSString).boolValue() {
                         memberOptions.formUnion(OFCMSOptions.fileIsOptional)
                     }
                     files.append(PackageIndex.FileEntry(realName: memberName, storedName: memberLocation, options: memberOptions))

@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,6 +20,11 @@ static const CGFloat kButtonWidth = 57;
 @interface OUISegmentedControl (/*Private*/)
 - (void)_segmentPressed:(OUISegmentedControlButton *)segment;
 @end
+#if defined(__IPHONE_13_4) && __IPHONE_13_4 >= __IPHONE_OS_VERSION_MIN_REQUIRED
+@interface OUISegmentedControl (/*Private*/) <UIPointerInteractionDelegate>
+@end
+#endif
+
 
 @implementation OUISegmentedControl
 {
@@ -283,6 +288,16 @@ static id _commonInit(OUISegmentedControl *self)
     }
 }
 
+#if defined(__IPHONE_13_4) && __IPHONE_13_4 >= __IPHONE_OS_VERSION_MIN_REQUIRED
+- (void)didMoveToSuperview
+{
+    [super didMoveToSuperview];
+    if (@available(iOS 13.4, *)) {
+        [self addInteraction:[[UIPointerInteraction alloc] initWithDelegate:self]];
+    }
+}
+#endif
+
 - (void)setSegmentFont:(UIFont *)font;
 {
     OBPRECONDITION(font != nil);
@@ -293,6 +308,26 @@ static id _commonInit(OUISegmentedControl *self)
     for (OUISegmentedControlButton *segment in _segments)
         segment.titleLabel.font = font;
 }
+
+#if defined(__IPHONE_13_4) && __IPHONE_13_4 >= __IPHONE_OS_VERSION_MIN_REQUIRED
+#pragma mark -
+#pragma mark UIPointerInteractionDelegate
+
+- (nullable UIPointerRegion *)pointerInteraction:(UIPointerInteraction *)interaction regionForRequest:(UIPointerRegionRequest *)request defaultRegion:(UIPointerRegion *)defaultRegion API_AVAILABLE(ios(13.4));
+{
+    UIView *segment = [self hitTest:request.location withEvent:nil];
+    OBASSERT([self indexOfSegment:(OUISegmentedControlButton *)segment] != NSNotFound);
+    return [UIPointerRegion regionWithRect:segment.frame identifier:segment];
+}
+
+
+- (nullable UIPointerStyle *)pointerInteraction:(UIPointerInteraction *)interaction styleForRegion:(UIPointerRegion *)region API_AVAILABLE(ios(13.4));
+{
+    UIView *segmentButton = OB_CHECKED_CAST(UIView, region.identifier);
+    UIPointerHighlightEffect *segmentHighlightEffect = [UIPointerHighlightEffect effectWithPreview:[[UITargetedPreview alloc] initWithView:segmentButton]];
+    return [UIPointerStyle styleWithEffect:segmentHighlightEffect shape:nil];
+}
+#endif
 
 #pragma mark -
 #pragma mark UIAccessibility

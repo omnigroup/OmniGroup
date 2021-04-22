@@ -71,6 +71,7 @@ OpenStepExtensions.subproj/NSPopUpButton-OAExtensions.m
 OpenStepExtensions.subproj/NSResponder-OAExtensions.m
 OpenStepExtensions.subproj/NSScriptCommand-OAExtensions.m
 OpenStepExtensions.subproj/NSScrollView-OAExtensions.m
+OpenStepExtensions.subproj/NSSegmentedControl-OAExtensions.m
 OpenStepExtensions.subproj/NSSliderCell-OAExtensions.m
 OpenStepExtensions.subproj/NSSplitView-OAExtensions.m
 OpenStepExtensions.subproj/NSStackView-OAExtensions.m

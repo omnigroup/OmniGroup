@@ -1,4 +1,4 @@
-// Copyright 2001-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -98,6 +98,9 @@ typedef NS_OPTIONS(NSUInteger, OFPreferenceRegistrationOptions) {
 
 /// Returns a shared instance of OFPreferenceWrapper that operates on the process's standard user defaults domain.
 + (OFPreferenceWrapper *)sharedPreferenceWrapper;
+
+/// Returns a shared instance of OFPreferenceWrapper that operates on a group identifier prefixed suite named for `-[NSBundle(OFExtensions containingApplicationBundleIdentifier]`.
++ (OFPreferenceWrapper *)groupContainerIdentifierForContainingApplicationBundleIdentifierPreferenceWrapper;
 
 /// Returns a shared instance of OFPreferenceWrapper that operates on the given suite.
 + (OFPreferenceWrapper *)preferenceWrapperWithSuiteName:(NSString *)suiteName;

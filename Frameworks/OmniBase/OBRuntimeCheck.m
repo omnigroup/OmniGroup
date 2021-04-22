@@ -1,4 +1,4 @@
-// Copyright 1997-2019 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -844,18 +844,7 @@ static void _checkCopyWithZoneImplementationForClass(Class cls, SEL copySel)
 
 static void _checkCopyWithZoneImplementations(void)
 {
-    // Get the class list
-    int classIndex, classCount = 0, newClassCount;
-    Class *classes = NULL;
-    newClassCount = objc_getClassList(NULL, 0);
-    while (classCount < newClassCount) {
-        classCount = newClassCount;
-        classes = realloc(classes, sizeof(Class) * classCount);
-        newClassCount = objc_getClassList(classes, classCount);
-    }
-    
-    for (classIndex = 0; classIndex < classCount; classIndex++) {
-        Class cls = classes[classIndex];
+    OBEachClass(^(Class cls){
         // Some classes (that aren't our problem) don't asplode if they try to dynamically create setters when asked about 'copyWithZone:'.
         const char *clsName = class_getName(cls);
         if (strcmp(clsName, "_NSWindowAnimator") == 0 ||
@@ -886,9 +875,7 @@ static void _checkCopyWithZoneImplementations(void)
         
         _checkCopyWithZoneImplementationForClass(cls, @selector(copyWithZone:));
         _checkCopyWithZoneImplementationForClass(cls, @selector(mutableCopyWithZone:));
-    }
-    
-    free(classes);
+    });
 }
 #endif // defined(OB_CHECK_COPY_WITH_ZONE)
 
@@ -931,26 +918,14 @@ static void _OBPerformRuntimeChecks(void)
         // Check that the macro actually worked and that (at least some of) the __attribute__((constructor)) invocations have run.
         OBASSERT(DeprecatedClassSelectors && CFSetGetCount(DeprecatedClassSelectors) > 0);
         OBASSERT(DeprecatedInstanceSelectors && CFSetGetCount(DeprecatedInstanceSelectors) > 0);
-        
-        int classIndex, classCount = 0, newClassCount;
-        Class *classes = NULL;
 
-        newClassCount = objc_getClassList(NULL, 0);
-        while (classCount < newClassCount) {
-            classCount = newClassCount;
-            classes = (Class *)realloc(classes, sizeof(Class) * classCount);
-            newClassCount = objc_getClassList(classes, classCount);
-        }
-
-        for (classIndex = 0; classIndex < classCount; classIndex++) {
-            Class cls = classes[classIndex];
-
+        OBEachClass(^(Class cls){
             // Skip Swift classes. Swift has stronger type checking at compile time, makes different decisions about Int signedness that can cause spurious reports here, and most importantly in Xcode 10.1 (at least), particular configurations of Swift subclasses of ObjC classes can cause heap corruption. Radar 47529318.
             {
                 const char *name = class_getName(cls);
                 if (strchr(name, '.') != NULL) {
                     //fprintf(stderr, "Skipping Swift class %s\n", name);
-                    continue;
+                    return;
                 }
             }
 
@@ -962,7 +937,7 @@ static void _OBPerformRuntimeChecks(void)
 #ifdef OB_CHECK_COPY_WITH_ZONE
             _checkCopyWithZoneImplementations(cls, isSystemClass);
 #endif
-        }
+        });
 
 
         // We should find zero conflicts!
@@ -973,8 +948,6 @@ static void _OBPerformRuntimeChecks(void)
 //            NSLog(@"Warning: Suppressed %u messages about problems in system frameworks", SuppressedConflictCount);
 
         // OBASSERT(DeprecatedMethodImplementationCount == 0);
-
-        free(classes);
 
 #ifdef OB_COUNT_SEL_OCCURANCES
         NSMutableArray *selectorNames = [[NSMutableArray alloc] init];

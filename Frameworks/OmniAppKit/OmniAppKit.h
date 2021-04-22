@@ -1,4 +1,4 @@
-// Copyright 1997-2019 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -62,6 +62,7 @@
 #import <OmniAppKit/NSPasteboard-OAExtensions.h>
 #import <OmniAppKit/NSPopUpButton-OAExtensions.h>
 #import <OmniAppKit/NSResponder-OAExtensions.h>
+#import <OmniAppKit/NSSegmentedControl-OAExtensions.h>
 #import <OmniAppKit/NSScrollView-OAExtensions.h>
 #import <OmniAppKit/NSSliderCell-OAExtensions.h>
 #import <OmniAppKit/NSSplitView-OAExtensions.h>
@@ -105,6 +106,7 @@
 #import <OmniAppKit/OAController.h>
 #import <OmniAppKit/OADataSourceTableColumn.h>
 #import <OmniAppKit/OADatePickerTextField.h>
+#import <OmniAppKit/OADatePickerTextFieldCell.h>
 #import <OmniAppKit/OADefaultSettingIndicatorButton.h>
 #import <OmniAppKit/OADisclosureButton.h>
 #import <OmniAppKit/OADisclosureButtonCell.h>

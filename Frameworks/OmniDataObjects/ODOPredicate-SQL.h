@@ -8,6 +8,7 @@
 #import <OmniDataObjects/ODOPredicate.h>
 #import <Foundation/NSComparisonPredicate.h>
 
+@class NSArray, NSError, NSString, NSMutableString;
 @class ODOEntity;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -17,10 +18,13 @@ NS_ASSUME_NONNULL_BEGIN
 - init NS_UNAVAILABLE;
 - initWithEntity:(ODOEntity *)entity;
 
+// The most recently added entity
 @property(nonnull,nonatomic,readonly) ODOEntity *currentEntity;
 @property(nonnull,nonatomic,readonly) NSString *currentAlias;
 
-- (void)withEntity:(ODOEntity *)entity perform:(void (NS_NOESCAPE ^)(void))action;
+- (void)withEntities:(NSArray <ODOEntity *> *)entities perform:(void (NS_NOESCAPE ^)(void))action;
+
+- (nullable NSString *)aliasForEntity:(ODOEntity *)entity;
 
 @end
 
@@ -34,10 +38,11 @@ NS_ASSUME_NONNULL_BEGIN
 //
 @interface ODORelationshipMatchingCountPredicate : NSPredicate
 
-- initWithRelationshipKey:(NSString *)relationshipKey predicate:(nullable NSPredicate *)predicate comparison:(NSPredicateOperatorType)comparison comparisonValue:(NSUInteger)comparisonValue;
+- initWithSourceEntity:(ODOEntity *)sourceEntity relationshipKeyPath:(NSString *)relationshipKeyPath destinationPredicate:(nullable NSPredicate *)destinationPredicate comparison:(NSPredicateOperatorType)comparison comparisonValue:(NSUInteger)comparisonValue;
 
-@property(nonatomic,readonly) NSString *relationshipKey;
-@property(nullable,nonatomic,readonly) NSPredicate *relationshipPredicate;
+@property(nonatomic,readonly) ODOEntity *sourceEntity;
+@property(nonatomic,readonly) NSString *relationshipKeyPath;
+@property(nullable,nonatomic,readonly) NSPredicate *destinationPredicate;
 @property(nonatomic,readonly) NSPredicateOperatorType comparison;
 @property(nonatomic,readonly) NSUInteger comparisonValue;
 

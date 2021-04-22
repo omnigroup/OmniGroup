@@ -25,32 +25,6 @@ module Xcode
 			return regular_backquote(cmd)
 		end
 	end
-	
-  # Pathname.realpath requires the whole path to exist and .realdirpath requires the parent directory to exist (only the last path component can be missing).
-  def self.real_relative_path(p)
-    fail "Empty path" if p == ""
-  
-    # This should handle the base case of "/" and "."
-    if File.exist?(p)
-      Pathname.new(p).realpath.to_s
-    else
-      real_relative_path(File.dirname(p)) + "/" + File.basename(p)
-    end
-  end
-  
-  # Support for checking out workspaces and projects in a shared cache under the control of a calling script
-  $CheckoutLocationBlock = nil
-  def self.checkout_location_block=(block)
-    $CheckoutLocationBlock = block
-  end
-  def self.checkout_location(path)
-    if $CheckoutLocationBlock
-      $CheckoutLocationBlock.call(path)
-    else
-      path
-    end
-  end
-  
-  
+
 end
 

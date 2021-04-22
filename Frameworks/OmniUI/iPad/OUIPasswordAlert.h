@@ -1,4 +1,4 @@
-// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -40,6 +40,9 @@ extern NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder;
 
 @property (nonatomic, copy, nullable) NSString *username;
 @property (nonatomic, copy, nullable) NSString *password;
+
+// Shown in addition to the username or message. A newline is added between the preceding string and the error message.
+@property (nonatomic, copy, nullable) NSString *errorMessage;
 
 @property (nonatomic, readonly, getter=isUsingObfuscatedPasswordPlaceholder) BOOL usingObfuscatedPasswordPlaceholder;
 @property (nonatomic, assign) NSUInteger minimumPasswordLength;

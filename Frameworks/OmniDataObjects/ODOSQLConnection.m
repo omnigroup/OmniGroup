@@ -71,6 +71,13 @@ RCS_ID("$Id$");
 
 #pragma mark API
 
+- (dispatch_queue_t)queue;
+{
+    dispatch_queue_t queue = _operationQueue.underlyingQueue;
+    OBASSERT(queue);
+    return queue;
+}
+
 - (void)close;
 {
     __block int rc;
@@ -170,6 +177,21 @@ RCS_ID("$Id$");
     return success;
 }
 
+- (BOOL)executeSQLIgnoringResults:(NSString *)sql error:(NSError **)outError;
+{
+    ODOSQLStatement *statement = [[ODOSQLStatement alloc] initWithConnection:self sql:sql error:outError];
+    if (!statement)
+        return NO;
+
+    BOOL success = [self performSQLAndWaitWithError:outError block:^BOOL(struct sqlite3 *sqlite, NSError **blockError) {
+        return ODOSQLStatementRunIgnoringResults(sqlite, statement, blockError);
+    }];
+
+    OBExpectDeallocation(statement);
+    [statement release];
+    return success;
+}
+
 #pragma mark Private
 
 - (BOOL)_init_connectWithOptions:(ODOSQLConnectionOptions)options error:(NSError **)outError;
@@ -185,7 +207,8 @@ RCS_ID("$Id$");
     
     // Even on error the output sqlite will supposedly be set and we need to close it.
     sqlite3 *sql = NULL;
-    int sqliteFlags = options & ODOSQLConnectionReadOnly ? SQLITE_OPEN_READONLY : (SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
+    BOOL isReadOnly = options & ODOSQLConnectionReadOnly;
+    int sqliteFlags = isReadOnly ? SQLITE_OPEN_READONLY : (SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
     int rc = sqlite3_open_v2([path UTF8String], &sql, sqliteFlags, NULL);
     if (rc != SQLITE_OK) {
         ODOSQLiteError(outError, rc, sql); // stack the underlying error
@@ -197,7 +220,7 @@ RCS_ID("$Id$");
     }
     
     _sqlite = sql;
-    
+
     if (options & ODOSQLConnectionAsynchronousWrites) {
         if (![self executeSQLWithoutResults:@"PRAGMA synchronous = off" error:outError])
             return NO;
@@ -214,6 +237,13 @@ RCS_ID("$Id$");
     if (![self executeSQLWithoutResults:@"PRAGMA auto_vacuum = none" error:outError]) // According to the sqlite documentation: "Auto-vacuum does not defragment the database nor repack individual database pages the way that the VACUUM command does. In fact, because it moves pages around within the file, auto-vacuum can actually make fragmentation worse."
         return NO;
     
+    if (!isReadOnly) {
+        if (![self executeSQLIgnoringResults:@"PRAGMA journal_mode=wal" error:outError])
+            return NO;
+        if (![self executeSQLIgnoringResults:@"PRAGMA wal_autocheckpoint=25" error:outError]) // 25 pages is ~0.1MB
+            return NO;
+    }
+
 #if 0
     // "The maximum size of any string or BLOB or table row."
     int blobSize = sqlite3_limit(_sqlite, SQLITE_LIMIT_LENGTH, -1/* negative means to not change*/);

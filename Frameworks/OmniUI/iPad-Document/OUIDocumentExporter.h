@@ -41,6 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 
 - (NSArray *)availableInAppPurchaseExportTypesForFileURL:(NSURL *)fileURL;
+- (void)purchaseExportType:(NSString *)fileUTI scene:(UIScene *)scene;
 - (void)purchaseExportType:(NSString *)fileUTI navigationController:(UINavigationController *)navigationController;  // not sure we should really have the navigation controller here.  it might need to just be generic view controller (our hostController).  also, it might turn out this can be implemented on the superclass instead of the subclasses.
 - (NSString *)purchaseDescriptionForExportType:(NSString *)fileUTI;
 

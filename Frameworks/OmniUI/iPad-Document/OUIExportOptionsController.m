@@ -1,4 +1,4 @@
-// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,6 +10,7 @@
 #import <OmniUIDocument/OUIDocumentExporter.h>
 #import <OmniUIDocument/OUIDocumentAppController.h>
 #import <OmniUIDocument/OUIDocument.h>
+#import <OmniUI/UIViewController-OUIExtensions.h>
 
 @import OmniFoundation;
 
@@ -443,9 +444,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)exportOptionPickerPerformInAppPurchase:(OUIExportOptionPickerViewController *)optionPicker;
 {
+    // the activity finishing will release the navigation controller, so lets grab our scene before we let that happen, so we know what scene needs the purchase UI.
+    UIScene *scene = [_navigationController containingScene];
+    [_activity activityDidFinish:YES];
     _optionPickerView = nil;
     _optionPickerRect = CGRectNull;
-    [_exporter purchaseExportType:_cachedPurchaseOption.fileType navigationController:_navigationController];
+    [_exporter purchaseExportType:_cachedPurchaseOption.fileType scene:scene];
 }
 
 @end

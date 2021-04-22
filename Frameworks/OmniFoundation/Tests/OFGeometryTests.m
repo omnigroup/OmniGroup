@@ -1,4 +1,4 @@
-// Copyright 2010-2011, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,6 +14,10 @@
 
 RCS_ID("$Id$");
 
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+    #define NSStringFromPoint NSStringFromCGPoint
+#endif
+
 @interface OFGeometryTests :  OFTestCase
 @end
 
@@ -25,34 +29,34 @@ static CGFloat _randomCoord(OFRandomState *r)
     return (CGFloat)(200 * t - 100); // -100 .. 100
 }
 
-static NSPoint _randomPoint(OFRandomState *r)
+static CGPoint _randomPoint(OFRandomState *r)
 {
-    return NSMakePoint(_randomCoord(r), _randomCoord(r));
+    return CGPointMake(_randomCoord(r), _randomCoord(r));
 }
 
-static NSPoint _deltaPoint(NSPoint a, NSPoint b)
+static CGPoint _deltaPoint(CGPoint a, CGPoint b)
 {
-    return NSMakePoint(a.x - b.x, a.y - b.y);
+    return CGPointMake(a.x - b.x, a.y - b.y);
 }
 
-static double _vectorLength(NSPoint v)
+static double _vectorLength(CGPoint v)
 {
     return sqrt(v.x*v.x + v.y*v.y);
 }
 
-static double _distanceBetweenPoints(NSPoint a, NSPoint b)
+static double _distanceBetweenPoints(CGPoint a, CGPoint b)
 {
-    NSPoint d = _deltaPoint(a, b);
+    CGPoint d = _deltaPoint(a, b);
     return _vectorLength(d);
 }
 
-static NSPoint _normalizedVector(NSPoint v)
+static CGPoint _normalizedVector(CGPoint v)
 {
     double length = _vectorLength(v);
-    return NSMakePoint((CGFloat)(v.x/length), (CGFloat)(v.y/length));
+    return CGPointMake((CGFloat)(v.x/length), (CGFloat)(v.y/length));
 }
 
-static double _vectorDot(NSPoint v1, NSPoint v2)
+static double _vectorDot(CGPoint v1, CGPoint v2)
 {
     return v1.x * v2.x + v1.y * v2.y;
 }
@@ -70,23 +74,23 @@ static double _vectorDot(NSPoint v1, NSPoint v2)
     double overallMaxDiff = 0;
     
     do {
-        NSPoint pt1 = _randomPoint(r);
-        NSPoint pt2 = _randomPoint(r);
-        NSPoint pt3 = _randomPoint(r);
+        CGPoint pt1 = _randomPoint(r);
+        CGPoint pt2 = _randomPoint(r);
+        CGPoint pt3 = _randomPoint(r);
         
         if (_distanceBetweenPoints(pt1, pt2) < minDistance ||
             _distanceBetweenPoints(pt1, pt3) < minDistance ||
             _distanceBetweenPoints(pt2, pt3) < minDistance)
             continue; // too close; try again.
         
-        NSPoint v1 = _normalizedVector(_deltaPoint(pt1, pt2));
-        NSPoint v2 = _normalizedVector(_deltaPoint(pt1, pt3));
+        CGPoint v1 = _normalizedVector(_deltaPoint(pt1, pt2));
+        CGPoint v2 = _normalizedVector(_deltaPoint(pt1, pt3));
         double dot = _vectorDot(v1, v2);
         if (fabs(dot) > 0.99)
-            // too colinear; center will be a long way away and the accuracy will suffer (especially since we pass stuff through NSPoint which is just floats on 32-bit).            
+            // too colinear; center will be a long way away and the accuracy will suffer (especially since we pass stuff through CGPoint which is just floats on 32-bit).
             continue;
 
-        NSPoint center = OFCenterOfCircleFromThreePoints(pt1, pt2, pt3);
+        CGPoint center = OFCenterOfCircleFromThreePoints(pt1, pt2, pt3);
         
         // All the inputs should be about the same distance from the center
         double d1 = _distanceBetweenPoints(pt1, center);

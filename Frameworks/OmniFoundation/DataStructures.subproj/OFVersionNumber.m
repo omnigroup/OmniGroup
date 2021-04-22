@@ -1,4 +1,4 @@
-// Copyright 2004-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,8 +17,6 @@
 #import <CoreServices/CoreServices.h>
 #endif
 #import <Foundation/NSValueTransformer.h>
-
-RCS_ID("$Id$");
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -265,21 +263,9 @@ static BOOL isOperatingSystemAtLeastVersionString(NSString *versionString)
     return _cleanVersionString;
 }
 
-- (NSString *)prettyVersionString; // NB: This version string can't be parsed back into an OFVersionNumber. For display only!
+- (NSString *)prettyVersionString; // NB: There is no guarantee that this version string can be parsed back into an OFVersionNumber. For display only!
 {
-    // The current Omni convention is to append the SVN revision number to the version number at build time, so that we don't have to explicitly increment things for nightlies and so on. This is ugly, though, so let's not display it like that.
-    if (_componentCount >= 3 && _components[_componentCount-2] == 0 && _components[_componentCount-1] > 100) {
-        NSMutableString *buf = [NSMutableString string];
-        for(NSUInteger component = 0; component < (_componentCount-2); component ++) {
-            if (component > 0)
-                [buf appendString:@"."];
-            [buf appendFormat:@"%u", (unsigned int)_components[component]];
-        }
-        [buf appendFormat:@" r%u", (unsigned int)_components[_componentCount-1]];
-        return buf;
-    } else {
-        return [self cleanVersionString];
-    }
+    return [self cleanVersionString];
 }
 
 - (NSUInteger)componentCount;

@@ -1,4 +1,4 @@
-// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -484,6 +484,7 @@ static size_t ODOPropertyStorageSize(ODOProperty *prop)
         case ODOAttributeTypeUndefined: // Transient objects
         case ODOAttributeTypeString:
         case ODOAttributeTypeDate:
+        case ODOAttributeTypeXMLDateTime:
         case ODOAttributeTypeData:
             return sizeof(intptr_t);
 

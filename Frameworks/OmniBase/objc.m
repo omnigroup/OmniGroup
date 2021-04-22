@@ -1,4 +1,4 @@
-// Copyright 2016-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,6 +13,26 @@
 RCS_ID("$Id$")
 
 NS_ASSUME_NONNULL_BEGIN
+
+void OBEachClass(void (NS_NOESCAPE ^action)(Class cls))
+{
+    // Get the class list
+    int classIndex, classCount = 0, newClassCount;
+    Class *classes = NULL;
+    newClassCount = objc_getClassList(NULL, 0);
+    while (classCount < newClassCount) {
+        classCount = newClassCount;
+        classes = (Class *)realloc(classes, sizeof(Class) * classCount);
+        newClassCount = objc_getClassList(classes, classCount);
+    }
+
+    for (classIndex = 0; classIndex < classCount; classIndex++) {
+        Class cls = classes[classIndex];
+        action(cls);
+    }
+
+    free(classes);
+}
 
 void OBEnumerateProtocolsForClassConformingToProtocol(Class cls, Protocol * _Nullable conformingToProtocol, OBProtocolAction action)
 {

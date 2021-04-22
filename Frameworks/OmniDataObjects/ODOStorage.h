@@ -1,4 +1,4 @@
-// Copyright 2008-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -49,7 +49,7 @@ static inline void _ODOStorageCheckObjectType(ODOEntity *entity, ODOStorageKey s
         OBASSERT(![attr isPrimaryKey]);
 
         ODOAttributeType type = attr.type;
-        OBASSERT(type == ODOAttributeTypeUndefined || type == ODOAttributeTypeString || type == ODOAttributeTypeDate || type == ODOAttributeTypeData);
+        OBASSERT(type == ODOAttributeTypeUndefined || type == ODOAttributeTypeString || type == ODOAttributeTypeDate || type == ODOAttributeTypeXMLDateTime || type == ODOAttributeTypeData);
     }
 #endif
 }

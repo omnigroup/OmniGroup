@@ -1,4 +1,4 @@
-// Copyright 2007-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -299,16 +299,23 @@ RCS_ID("$Id$");
     
     NSUInteger knownCount = [[_availableItems filteredArrayUsingPredicate:[OSUItem availableAndNotSupersededPredicate]] count];
     NSUInteger downgradesCount = [[displayedItems filteredArrayUsingPredicate:[OSUItem availableOldStablePredicate]] count];
-    
+
+#ifdef DEBUG_kc
+    OB_UNUSED_VALUE(knownCount);
+    BOOL newerVersionsAvailable = NO;
+#else
     BOOL newerVersionsAvailable = (knownCount > downgradesCount);
+#endif
     
-    NSString *format, *formatted;
+    NSString *format, *currentOS = @"";
     if (!newerVersionsAvailable && ![[self valueForKey:OSUAvailableUpdateControllerCheckInProgressBinding] boolValue]) {
-        format = NSLocalizedStringFromTableInBundle(@"You are currently running %@, which is the newest version.", @"OmniSoftwareUpdate", OMNI_BUNDLE, "detail message of new versions available dialog. placeholder is application version number. further text may be appended");
+        // format = NSLocalizedStringFromTableInBundle(@"You are currently running %@, which is the newest version.", @"OmniSoftwareUpdate", OMNI_BUNDLE, "detail message of new versions available dialog. placeholder is application version number. further text may be appended");
+        format = NSLocalizedStringFromTableInBundle(@"You are currently running %@, which is the newest version available for your current operating system (%@).", @"OmniSoftwareUpdate", OMNI_BUNDLE, "detail message of new versions available dialog. placeholder is application version number. further text may be appended");
+        currentOS = [NSString stringWithFormat:@"macOS %@", OFVersionNumber.userVisibleOperatingSystemVersionNumber.cleanVersionString];
     } else {
         format = NSLocalizedStringFromTableInBundle(@"You are currently running %@.", @"OmniSoftwareUpdate", OMNI_BUNDLE, "detail message of new versions available dialog. placeholder is application version number. further text may be appended");
     }
-    formatted = [NSString stringWithFormat:format, version];
+    NSString *formatted = [NSString stringWithFormat:format, version, currentOS];
     
     if (downgradesCount > 0) {
         format = NSLocalizedStringFromTableInBundle(@"If you wish, you can downgrade to an older, but possibly more stable, version.", @"OmniSoftwareUpdate", OMNI_BUNDLE, "detail message of new versions available dialog: appended when it is possible to downgrade to an older version");

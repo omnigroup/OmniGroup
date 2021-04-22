@@ -1,4 +1,4 @@
-// Copyright 2006-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -247,18 +247,21 @@ static NSString *_stringForDate(NSDate *date)
     return [dateFormatter stringFromDate:date];
 }
 
-#define parseDate(string, expectedDate, baseDate, dateFormat, timeFormat) \
-do { \
-    NSDate *result = nil; \
-    if (dateFormat == nil && timeFormat == nil) { \
-        [[OFRelativeDateParser sharedParser] getDateValue:&result forString:string fromStartingDate:baseDate useEndOfDuration:NO defaultTimeDateComponents:nil calendar:calendar error:NULL]; \
-    } else { \
-        [[OFRelativeDateParser sharedParser] getDateValue:&result forString:string fromStartingDate:baseDate calendar:calendar withShortDateFormat:dateFormat withMediumDateFormat:dateFormat withLongDateFormat:dateFormat withTimeFormat:timeFormat error:nil]; \
-    } \
-    if (expectedDate && ![result isEqualTo:expectedDate]) \
-        NSLog( @"FAILURE-> String: %@, locale:%@, result:%@, expected: %@ dateFormat:%@, timeFormat:%@", string, [[[OFRelativeDateParser sharedParser] locale] localeIdentifier], _stringForDate(result), _stringForDate(expectedDate), dateFormat, timeFormat); \
-    XCTAssertEqualObjects(result, expectedDate); \
-} while(0)
+static void _parseDate(OFRelativeDateParserTests *self, NSString *string, NSDate *expectedDate, NSDate *baseDate, NSString *dateFormat, NSString *timeFormat)
+{
+    NSDate *result = nil;
+    if (dateFormat == nil && timeFormat == nil) {
+        [[OFRelativeDateParser sharedParser] getDateValue:&result forString:string fromStartingDate:baseDate useEndOfDuration:NO defaultTimeDateComponents:nil calendar:self->calendar error:NULL];
+    } else {
+        [[OFRelativeDateParser sharedParser] getDateValue:&result forString:string fromStartingDate:baseDate calendar:self->calendar withShortDateFormat:dateFormat withMediumDateFormat:dateFormat withLongDateFormat:dateFormat withTimeFormat:timeFormat error:nil];
+    }
+    if (expectedDate && ![result isEqual:expectedDate]) {
+        NSLog( @"FAILURE-> String: %@, locale:%@, result:%@, expected: %@ dateFormat:%@, timeFormat:%@", string, [[[OFRelativeDateParser sharedParser] locale] localeIdentifier], _stringForDate(result), _stringForDate(expectedDate), dateFormat, timeFormat);
+    }
+    XCTAssertEqualObjects(result, expectedDate);
+}
+#define parseDate(string, expectedDate, baseDate, dateFormat, timeFormat) _parseDate(self, (string), (expectedDate), (baseDate), (dateFormat), (timeFormat))
+
 //NSLog( @"string: %@, expected: %@, result: %@", string, expectedDate, result );
 
 - (void)testDayWeekCodes;
@@ -511,7 +514,7 @@ do { \
     // NSString *longFormat = [[formatter dateFormat] copy];
     // NSString *longDateString = [NSString stringWithFormat:@"%@ %@", [formatter stringFromDate:originalDate], timeString];
 
-    NSLog(@"Testing round trip dates in [%@]", localeIdentifier);
+    NSLog(@"Testing round trip dates in [%@], time [%@] [%@], short [%@] [%@], medium [%@] [%@]", localeIdentifier, timeFormat, timeString, shortFormat, shortDateString, mediumFormat, mediumDateString);
     parseDate(shortDateString, originalDate, originalDate, shortFormat, timeFormat);
     parseDate(mediumDateString, originalDate, originalDate, mediumFormat, timeFormat);
     // parseDate(longDateString, originalDate, originalDate, longFormat, timeFormat);
@@ -524,8 +527,14 @@ do { \
 - (void)testRoundtripDatesInAllLocales;
 {
     NSDate *originalDate = _dateFromYear(2014, 9, 21, 16, 52, 0, calendar);
-    for (NSString *localeIdentifier in [NSLocale availableLocaleIdentifiers])
+    for (NSString *localeIdentifier in [NSLocale availableLocaleIdentifiers]) {
+        if ([localeIdentifier hasPrefix:@"mi"]) {
+            // <bug:///182592> (Frameworks-Mac Bug: -[OFRelativeDateParserTests testRoundtripDatesInAllLocales] fails for `mi` locales on Catalina 10.15.4 betas)
+            NSLog(@"Skipping locale %@, since NSDateFormatter incorrectly formats past-noon hours on 10.15.4 betas (FB7601856)", localeIdentifier);
+            continue;
+        }
         [self _testRoundtripDate:originalDate inLocaleIdentifier:localeIdentifier];
+    }
 }
 
 - (void)testBasicRoundtripDate;
@@ -1288,7 +1297,7 @@ do { \
     NSDate *result = nil;
     NSString *string = @"4.20.16";
     [[OFRelativeDateParser sharedParser] getDateValue:&result forString:string fromStartingDate:baseDate useEndOfDuration:NO defaultTimeDateComponents:defaultTimeComponents calendar:calendar withCustomFormat:@"MM/dd/yy" error:NULL];
-    if (expectedDate && ![result isEqualTo:expectedDate])
+    if (expectedDate && ![result isEqual:expectedDate])
         NSLog( @"FAILURE-> String: %@, locale:%@, result:%@, expected: %@", string, [[[OFRelativeDateParser sharedParser] locale] localeIdentifier], _stringForDate(result), _stringForDate(expectedDate));
     XCTAssertEqualObjects(result, expectedDate);
 }

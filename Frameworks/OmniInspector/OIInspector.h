@@ -99,6 +99,7 @@ typedef NS_ENUM(NSUInteger, OIInspectorInterfaceType) {
 // If the inspector has any need to know its controller, it can implement this method
 - (CGFloat)inspectorWillResizeToHeight:(CGFloat)height; // height of window content rect, excluding header button view
 @property(nonatomic,readwrite) CGFloat inspectorMinimumHeight; // returns minimum height of window content rect
+- (void)enqueueResizeToFittingSizeBeforeAnyWindowDisplayWithInspectorController:(OIInspectorController *)inspectorController;
 - (id)windowTitle;
 // If implemented, this will be used instead of -inspectorName, to let the window title be dynamic. NSAttributedString or NSString are ok.
 

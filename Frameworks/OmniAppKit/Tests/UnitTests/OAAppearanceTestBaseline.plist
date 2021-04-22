@@ -24,11 +24,11 @@
 	<key>Color</key>
 	<dict>
 		<key>r</key>
-		<real>0.42</real>
+		<real>0.5</real>
 		<key>g</key>
-		<real>0.42</real>
+		<real>0.25</real>
 		<key>b</key>
-		<real>0.42</real>
+		<real>0.125</real>
 		<key>a</key>
 		<real>1</real>
 	</dict>

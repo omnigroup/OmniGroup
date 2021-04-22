@@ -24,8 +24,6 @@
 #import "ODOProperty-Internal.h"
 #import "ODOInternal.h"
 
-RCS_ID("$Id$")
-
 @class _ODOObjectEmptyToManySetEnumerator;
 
 NSSet *_ODOEmptyToManySet;
@@ -420,26 +418,36 @@ void ODOObjectDidChangeValueForProperty(ODOObject *object, ODOProperty *property
 - (void)willChangeValueForKey:(NSString *)key withSetMutation:(NSKeyValueSetMutationKind)inMutationKind usingObjects:(NSSet *)inObjects;
 {
     OBPRECONDITION(self->_flags.changeProcessingDisabled == NO, "Do we need to handle the case of mutations in -awakeFromFetch here too?");
-    
-    ODOProperty *prop = [[self entity] propertyNamed:key];
 
-    // These get called as we update inverse to-many relationships due to edits to to-one relationships.  ODO doesn't snapshot to-many relationships in -changedValues, so we track this here.  This adds one more reason that undo/redo needs to provide correct KVO notifiactions.
-    if (prop != nil && !_flags.hasChangedModifyingToManyRelationshipSinceLastSave) {
-        
-        // Only to-many relationship keys should go through here.
-        OBASSERT([prop isKindOfClass:[ODORelationship class]]);
-        OBASSERT([(ODORelationship *)prop isToMany]);
-        
-        if ([[[self entity] nonDateModifyingPropertyNameSet] member:[prop name]] == nil) {
-            _flags.hasChangedModifyingToManyRelationshipSinceLastSave = YES;
-#if 0 && defined(DEBUG_bungi)
-            NSLog(@"Setting %@._hasChangedNonDerivedToManyRelationshipSinceLastSave for change to %@", [self shortDescription], [prop name]);
-#endif
-        }
-    }
+    ODOEntity *entity = self.entity;
+    ODOProperty *prop = [entity propertyNamed:key];
 
+    // These get called as we update inverse to-many relationships due to edits to to-one relationships.  ODO doesn't snapshot to-many relationships in -changedValues, so we track this here.  This adds one more reason that undo/redo needs to provide correct KVO notifications.
     if (prop != nil) {
-        _ODOObjectWillChangeValueForProperty(self, prop, key);
+        BOOL shouldCallWillChange = YES;
+
+        if (!_flags.hasChangedModifyingToManyRelationshipSinceLastSave) {
+            // Only to-many relationship keys should go through here.
+            OBASSERT([prop isKindOfClass:[ODORelationship class]]);
+            OBASSERT([(ODORelationship *)prop isToMany]);
+
+            if ([[entity nonDateModifyingPropertyNameSet] member:[prop name]] == nil) {
+                _flags.hasChangedModifyingToManyRelationshipSinceLastSave = YES;
+#if 0 && defined(DEBUG_bungi)
+                NSLog(@"Setting %@._hasChangedNonDerivedToManyRelationshipSinceLastSave for change to %@", [self shortDescription], [prop name]);
+#endif
+            } else {
+                // If we are a fault, the relationship is to-many, and we are removing objects, and this is a non-date modifying relationship, avoid clearing the fault. If the fault is later cleared, we'll get filtered out due to being updated/deleted.
+                // On this branch, we've already checked that this is non-date modifying, and that the property is to-many relationship.
+                if (inMutationKind == NSKeyValueMinusSetMutation && [self isFault]) {
+                    shouldCallWillChange = NO;
+                }
+            }
+        }
+
+        if (shouldCallWillChange) {
+            _ODOObjectWillChangeValueForProperty(self, prop, key);
+        }
     }
     
     [super willChangeValueForKey:key withSetMutation:inMutationKind usingObjects:inObjects];
@@ -450,10 +458,18 @@ void ODOObjectDidChangeValueForProperty(ODOObject *object, ODOProperty *property
 {
     OBPRECONDITION(self->_flags.changeProcessingDisabled == NO, "Do we need to handle the case of mutations in -awakeFromFetch here too?");
 
-    if ([[self->_objectID entity] propertyNamed:key])
-        OBASSERT(!_flags.isFault); // Cleared in 'will'
-    [super didChangeValueForKey:key withSetMutation:inMutationKind usingObjects:inObjects];
+    ODOEntity *entity = self.entity;
+    ODOProperty *prop = [entity propertyNamed:key];
+
+    if (prop) {
+        if (inMutationKind == NSKeyValueMinusSetMutation && [prop isKindOfClass:[ODORelationship class]] && [(ODORelationship *)prop isToMany]) {
+            // We might not have cleared a fault in this case; see the 'will' method above
+        } else {
+            OBASSERT(!_flags.isFault); // Cleared in 'will'
+        }
     }
+    [super didChangeValueForKey:key withSetMutation:inMutationKind usingObjects:inObjects];
+}
 #endif
 
 
@@ -522,7 +538,7 @@ void ODOObjectDidChangeValueForProperty(ODOObject *object, ODOProperty *property
 - (void)invalidateCalculatedValueForKey:(NSString *)key;
 {
     OBPRECONDITION(![self isDeleted] && ![self isInvalid]);
-    if ([self isDeleted] || [self isInvalid]) {
+    if ([self isDeleted] || [self isInvalid] || [self isFault]) {
         return;
     }
 
@@ -1070,20 +1086,23 @@ static void _validateRelatedObjectClass(const void *value, void *context)
 // This tries to answer the question "will this explode if I do something that would unfault it".  This can happen due to deleting the object and saving, or invalidating the managed object context.
 - (BOOL)hasBeenDeletedOrInvalidated;
 {
+    // If an object is invalid, make a note of it, in case we crash soon. Ideally this would never be hit since containers would observe editing context notifications and to-many KVO to remove objects.
+    uintptr_t invalidationReason;
+
     if (_flags.invalid) {
-        return YES;
+        invalidationReason = 0x1;
+    } else if (_editingContext == nil) {
+        // This can be the case when the context has been invalidated.
+        invalidationReason = 0x2;
+    } else if ([_editingContext isDeleted:self] || _flags.lastSaveWasDeletion) {
+        // In the process of being deleted or already done
+        invalidationReason = 0x3;
+    } else {
+        return NO;
     }
 
-    // This can be the case when the context has been invalidated.
-    if (_editingContext == nil)
-        return YES;
-
-
-    // In the process of being deleted or already done
-    if ([_editingContext isDeleted:self] || _flags.lastSaveWasDeletion)
-        return YES;
-
-    return NO;
+    OBRecordBacktraceWithContext(class_getName(object_getClass(self)), OBBacktraceBuffer_Generic, (const void *)((uintptr_t)self | invalidationReason));
+    return YES;
 }
 
 // Possibly faster alternative to -changedValues (for small numbers of keys).  Returns NO if the object is inserted, YES if deleted (though a previously nil property might be "nil" after deletion in some sense, it is a whole new level of nil).  The deleted case probably shouldn't happen anyway.
@@ -1201,7 +1220,7 @@ static void _validateRelatedObjectClass(const void *value, void *context)
         id newValue = ODOStorageGetObjectValue(entity, _valueStorage, storageKey);
         
         // early bail on equality
-        if (OFISEQUAL(oldValue, newValue))
+        if (_ODOIsEqual(oldValue, newValue))
             continue;
         
         if (flags.relationship) {
@@ -1476,7 +1495,7 @@ BOOL ODOSetPropertyIfChanged(ODOObject *object, NSString *key, _Nullable id valu
     if (outOldValue)
         *outOldValue = [[oldValue retain] autorelease];
     
-    if (OFISEQUAL(value, oldValue))
+    if (_ODOIsEqual(value, oldValue))
         return NO;
     
     [object setValue:value forKey:key];
@@ -1525,8 +1544,9 @@ BOOL ODOSetPrimitivePropertyIfChanged(ODOObject *object, ODOProperty *prop, _Nul
     if (outOldValue)
         *outOldValue = [[oldValue retain] autorelease];
 
-    if (OFISEQUAL(value, oldValue))
+    if (_ODOIsEqual(value, oldValue)) {
         return NO;
+    }
 
     ODOObjectWillChangeValueForProperty(object, prop);
     ODOObjectSetPrimitiveValueForProperty(object, value, prop);
@@ -1534,7 +1554,6 @@ BOOL ODOSetPrimitivePropertyIfChanged(ODOObject *object, ODOProperty *prop, _Nul
 
     return YES;
 }
-
 
 @end
 

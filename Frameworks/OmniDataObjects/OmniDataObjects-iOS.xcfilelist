@@ -10,6 +10,7 @@ ODOEditingContext.swift
 ODOEntity-SQL.m
 ODOEntity.m
 ODOFetchRequest.m
+ODOFloatingDate.m
 ODOModel-SQL.m
 ODOModel.m
 ODOObject-Accessors.m

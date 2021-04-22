@@ -196,6 +196,7 @@ extern NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey; // @"
 - (void)signUpForOmniNewsletterFromViewController:(UIViewController *)viewController NS_EXTENSION_UNAVAILABLE_IOS("Extensions cannot sign up for the Omni newsletter");
 - (MFMailComposeViewController * _Nullable)newMailComposeController;
 - (void)sendMailTo:(NSArray<NSString *> *)recipients withComposeController:(MFMailComposeViewController *)mailComposeController inScene:(nullable UIScene *)scene;
+- (void)showSettingsFromViewController:(UIViewController *)viewController prefPaneToPush:(UIViewController *) paneToPush potentialDismissViewHandler:(void (^)(void))dismissHandler;
 
 @property(nonatomic,readonly) UIImage *appMenuImage;
 @property(nonatomic,readonly) UIImage *aboutMenuImage;

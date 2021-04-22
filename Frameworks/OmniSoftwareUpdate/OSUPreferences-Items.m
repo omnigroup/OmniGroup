@@ -1,4 +1,4 @@
-// Copyright 2001-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,14 +7,10 @@
 
 #import "OSUPreferences-Items.h"
 
-#if OSU_FULL // Not including OSUItem on iOS/MAS currently
-
 #import <OmniFoundation/OFVersionNumber.h>
 #import <OmniFoundation/OFPreference.h>
 
 #import "OSUItem.h"
-
-RCS_ID("$Id$");
 
 @implementation OSUPreferences (Items)
 
@@ -57,5 +53,3 @@ RCS_ID("$Id$");
 }
 
 @end
-
-#endif

@@ -1,4 +1,4 @@
-// Copyright 2004-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -32,7 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property(nonatomic,readonly) NSString *originalVersionString;
 @property(nonatomic,readonly) NSString *cleanVersionString;
-@property(nonatomic,readonly) NSString *prettyVersionString; // NB: This version string can't be parsed back into an OFVersionNumber. For display only!
+@property(nonatomic,readonly) NSString *prettyVersionString; // NB: There is no guarantee that this version string can be parsed back into an OFVersionNumber. For display only!
 
 @property(nonatomic,readonly) NSUInteger componentCount;
 - (NSUInteger)componentAtIndex:(NSUInteger)componentIndex;

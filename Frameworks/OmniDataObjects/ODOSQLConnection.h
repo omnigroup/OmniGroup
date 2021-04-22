@@ -1,4 +1,4 @@
-// Copyright 2008-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -27,6 +27,8 @@ typedef BOOL (^ODOSQLFailablePerformBlock)(struct sqlite3 *, NSError **);
 
 @property (nonatomic, readonly) NSURL *URL;
 
+@property(nonatomic,readonly) dispatch_queue_t queue;
+
 /// Closes the connection and blocks until it is actually closed.
 - (void)close;
 
@@ -38,6 +40,9 @@ typedef BOOL (^ODOSQLFailablePerformBlock)(struct sqlite3 *, NSError **);
 
 /// Convenience for calling -performSQLAndWaitWithError:block:, invoking the given SQL string instead of taking a block. The SQL query should be a single statement, already quoted properly, that returns no result rows.
 - (BOOL)executeSQLWithoutResults:(NSString *)sql error:(NSError **)outError;
+
+/// Convenience for calling -performSQLAndWaitWithError:block:, invoking the given SQL string instead of taking a block. Results are ignored.
+- (BOOL)executeSQLIgnoringResults:(NSString *)sql error:(NSError **)outError;
 
 @end
 

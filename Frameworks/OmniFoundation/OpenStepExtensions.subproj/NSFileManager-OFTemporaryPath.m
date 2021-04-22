@@ -1,4 +1,4 @@
-// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,8 +9,10 @@
 
 RCS_ID("$Id$")
 
-#import <OmniFoundation/OFErrors.h>
 #import <OmniBase/NSError-OBExtensions.h>
+#import <OmniFoundation/NSRegularExpression-OFExtensions.h>
+#import <OmniFoundation/OFErrors.h>
+#import <OmniFoundation/OFRegularExpressionMatch.h>
 #import <OmniFoundation/OFXMLIdentifier.h>
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
@@ -333,14 +335,18 @@ static BOOL _tryUniqueFilename(NSFileManager *self, NSString *candidate, BOOL cr
     // We either aren't allowing the original, or it exists.
     NSString *directory = [filename stringByDeletingLastPathComponent];
     NSString *name = [filename lastPathComponent];
-    NSRange periodRange = [name rangeOfString:@"."];
-    
+    OFCreateRegularExpression(splitNameAndExtensionsRegex, @"^(.*?)(\\.[^0-9].*)?$"); // Don't match N.M version numbers in download strings
+    OFRegularExpressionMatch *match = [splitNameAndExtensionsRegex of_firstMatchInString:name];
     NSString *nameWithHashes;
-    if (periodRange.length != 0)
-        nameWithHashes = [NSString stringWithFormat:@"%@-######.%@", [name substringToIndex:periodRange.location], [name substringFromIndex:periodRange.location + 1]];
-    else
+    if (match != nil) {
+        NSString *prefix = [match captureGroupAtIndex:0];
+        NSString *extension = [match captureGroupAtIndex:1];
+        if (extension == nil)
+            extension = @"";
+        nameWithHashes = [NSString stringWithFormat:@"%@-######%@", prefix, extension];
+    } else {
         nameWithHashes = [NSString stringWithFormat:@"%@-######", name];
-    
+    }
     NSString *pathWithHashes = [directory stringByAppendingPathComponent:nameWithHashes];
     
     unsigned int triesLeft = 10;

@@ -1,4 +1,4 @@
-// Copyright 2015-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -145,6 +145,11 @@ static BOOL DocumentClassSubclasses(Class cls, SEL sel) {
 {
     NSMutableArray *exportTypes = [NSMutableArray array];
     return exportTypes;
+}
+
+- (void)purchaseExportType:(NSString *)fileUTI scene:(UIScene *)scene;
+{
+    OBRequestConcreteImplementation(self, _cmd);
 }
 
 - (void)purchaseExportType:(NSString *)fileUTI navigationController:(UINavigationController *)navigationController;

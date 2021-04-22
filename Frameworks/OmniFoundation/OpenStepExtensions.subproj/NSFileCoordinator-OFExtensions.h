@@ -1,4 +1,4 @@
-// Copyright 2013-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,6 +22,9 @@ typedef BOOL (^OFFileAccessor)(NSURL *newURL, NSError **outError);
 
 // A coordinated move of the source to some uncoordinated location (like a temporary folder or trash). The accessor should NOT call -itemAtURL:didMoveToURL:. It will be called by this method, based on the returned URL.
 - (BOOL)moveItemAtURL:(NSURL *)sourceURL error:(NSError **)outError byAccessor:(nullable NSURL * (NS_NOESCAPE ^)(NSURL *newURL, NSError **outError))accessor;
+
+- (BOOL)copyItemAtURL:(NSURL *)sourceURL withChanges:(BOOL)withChanges toURL:(NSURL *)destinationURL createIntermediateDirectories:(BOOL)createIntermediateDirectories error:(NSError **)outError success:(void (NS_NOESCAPE ^ _Nullable)(NSURL *resultURL))successHandler;
+- (BOOL)copyItemAtURL:(NSURL *)sourceURL withChanges:(BOOL)withChanges toURL:(NSURL *)destinationURL createIntermediateDirectories:(BOOL)createIntermediateDirectories error:(NSError **)outError; // Passes nil for successHandler
 
 - (BOOL)removeItemAtURL:(NSURL *)fileURL error:(NSError **)outError byAccessor:(NS_NOESCAPE OFFileAccessor)accessor;
 

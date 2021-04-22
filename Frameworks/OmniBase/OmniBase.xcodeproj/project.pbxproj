@@ -125,6 +125,7 @@
 		34C40F6C194F4923001A4399 /* objc.h in Headers */ = {isa = PBXBuildFile; fileRef = 34BBACA80BA76AA2002DA71E /* objc.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34C40F6D194F4928001A4399 /* OBLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = 4DA2E34D17A064420073144A /* OBLogger.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34C40F6E194F492C001A4399 /* OBLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 4DA2E34E17A064420073144A /* OBLogger.m */; };
+		34C437A523F4C244009DD271 /* objc.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A53C4F1C7E42EA00A0D22E /* objc.m */; };
 		34ECC9681CCAED44000287D4 /* OBCasting.m in Sources */ = {isa = PBXBuildFile; fileRef = 34ECC9671CCAED44000287D4 /* OBCasting.m */; };
 		34ECC9691CCAED44000287D4 /* OBCasting.m in Sources */ = {isa = PBXBuildFile; fileRef = 34ECC9671CCAED44000287D4 /* OBCasting.m */; };
 		34ED2D9D194679C6005643C9 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34ED2D9C194679C6005643C9 /* XCTest.framework */; };
@@ -1356,6 +1357,7 @@
 				3E34A6061F7D6E3C008E5A99 /* OBUtilities.swift in Sources */,
 				345D4150239B1EE50031C5F9 /* OBLog.swift in Sources */,
 				5FE81E7A1B62E34D0056756C /* NSError-OBExtensions.m in Sources */,
+				34C437A523F4C244009DD271 /* objc.m in Sources */,
 				5FE81E791B62E3470056756C /* assertions.m in Sources */,
 				5FE81E781B62E3420056756C /* OBExpectedDeallocation.m in Sources */,
 				793CD9281DD2410100949CBF /* OBLogger.swift in Sources */,

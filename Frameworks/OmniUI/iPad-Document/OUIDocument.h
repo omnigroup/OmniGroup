@@ -16,7 +16,7 @@
 
 @protocol OUIDocumentViewController;
 
-@interface OUIDocument : UIDocument <OFCMSKeySource, OJSEnvironmentProviderType>
+@interface OUIDocument : UIDocument <OFCMSKeySource>
 
 // Can be overridden to provide a file inside the app wrapper to read into a new document. Returns nil by default.
 + (NSURL *)builtInBlankTemplateURL;

@@ -7,6 +7,8 @@
 
 #import "ODOSQLStatement.h"
 
+#import <OmniFoundation/NSDate-OFExtensions.h> // For -[NSDate xmlString]
+#import <OmniDataObjects/ODOFloatingDate.h>
 #import <OmniDataObjects/ODOProperty.h>
 #import <OmniDataObjects/ODORelationship.h>
 #import <OmniDataObjects/ODOSQLConnection.h>
@@ -150,7 +152,7 @@ RCS_ID("$Id$")
     }
 
     ODOSQLTable *table = [[ODOSQLTable alloc] initWithEntity:rootEntity];
-    [sql appendFormat:@" FROM %@ %@", table.currentEntity.name, table.currentAlias];
+    [sql appendFormat:@" FROM %@ %@", rootEntity.name, [table aliasForEntity:rootEntity]];
     
     ODOSQLStatement *result = [self _initSelectStatement:sql fromTable:table connection:connection predicate:predicate error:outError];
 
@@ -163,7 +165,7 @@ RCS_ID("$Id$")
     OBPRECONDITION(rootEntity != nil);
 
     ODOSQLTable *table = [[ODOSQLTable alloc] initWithEntity:rootEntity];
-    NSMutableString *sql = [NSMutableString stringWithFormat:@"SELECT COUNT(*) FROM %@ %@", table.currentEntity.name, table.currentAlias];
+    NSMutableString *sql = [NSMutableString stringWithFormat:@"SELECT COUNT(*) FROM %@ %@", rootEntity.name, [table aliasForEntity:rootEntity]];
     ODOSQLStatement *result = [self _initSelectStatement:sql fromTable:table connection:connection predicate:predicate error:outError];
     [table release];
     return result;
@@ -373,20 +375,43 @@ BOOL ODOSQLStatementBindDate(struct sqlite3 *sqlite, ODOSQLStatement *statement,
 {
     OBPRECONDITION(date); // use Null otherwise
     OBPRECONDITION([date isKindOfClass:[NSDate class]]);
-    
+
     // Avoid float-returning message to nil.
     if (!date)
         return ODOSQLStatementBindNull(sqlite, statement, bindIndex, outError);
-    
+
     NSTimeInterval ti = [date timeIntervalSinceReferenceDate];
-    
+
     int rc = sqlite3_bind_double(statement->_statement, bindIndex, ti);
     if (rc == SQLITE_OK)
         return YES;
-    
+
     ODOSQLiteError(outError, rc, sqlite); // stack the underlying error
     NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to bind value to SQL statement.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
     NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable bind date to slot %d of statement with SQL '%@'.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), bindIndex, statement->_sql];
+    ODOError(outError, ODOUnableToCreateSQLStatement, description, reason);
+    return NO;
+}
+
+BOOL ODOSQLStatementBindXMLDateTime(struct sqlite3 *sqlite, ODOSQLStatement *statement, int bindIndex, NSDate *date, NSError **outError)
+{
+    OBPRECONDITION(date); // use Null otherwise
+    OBPRECONDITION([date isKindOfClass:[NSDate class]]);
+
+    // Avoid float-returning message to nil.
+    if (!date)
+        return ODOSQLStatementBindNull(sqlite, statement, bindIndex, outError);
+
+    NSString *xmlString = [date xmlString];
+
+    // TODO: Performance; SQLITE_TRANSIENT causes SQLite to make a copy.  But, we should typically be binding and then executing immediately.  To be sure, we could always clear values after executing.
+    int rc = sqlite3_bind_text(statement->_statement, bindIndex, [xmlString UTF8String], -1, SQLITE_TRANSIENT);
+    if (rc == SQLITE_OK)
+        return YES;
+
+    ODOSQLiteError(outError, rc, sqlite); // stack the underlying error
+    NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to bind value to SQL statement.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
+    NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable bind XML date/time to slot %d of statement with SQL '%@'.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), bindIndex, statement->_sql];
     ODOError(outError, ODOUnableToCreateSQLStatement, description, reason);
     return NO;
 }
@@ -507,6 +532,31 @@ BOOL ODOSQLStatementCreateValue(struct sqlite3 *sqlite, ODOSQLStatement *stateme
             return YES;
         }
 
+        case ODOAttributeTypeXMLDateTime: {
+            const uint8_t *utf8 = sqlite3_column_text(statement->_statement, columnIndex);
+            if (utf8 == NULL) {
+                OBASSERT_NOT_REACHED("Should have been caught by the SQLITE_NULL check");
+                *value = nil;
+                return YES;
+            }
+
+            int byteCount = sqlite3_column_bytes(statement->_statement, columnIndex); // sqlite3.h says this includes the NUL, but it doesn't seem to.
+            OBASSERT(utf8[byteCount] == 0); // Check that the null is where we expected, since there is some confusion
+            NSString *xmlString = [[NSString alloc] initWithBytes:utf8 length:byteCount encoding:NSUTF8StringEncoding];
+            Class dateParsingClass = [ODOFloatingDate class];
+            NSDate *result = [[dateParsingClass alloc] initWithXMLString:xmlString];
+            [xmlString release];
+            if (result == nil)
+                *value = result;
+            else if ([result isKindOfClass:valueClass])
+                *value = result;
+            else {
+                *value = [[valueClass alloc] initWithTimeIntervalSinceReferenceDate:result.timeIntervalSinceReferenceDate];
+                [result release];
+            }
+            return YES;
+        }
+
         case ODOAttributeTypeFloat32: // No independent float32 value in sqlite3
         case ODOAttributeTypeFloat64: {
             double f = sqlite3_column_double(statement->_statement, columnIndex);
@@ -550,7 +600,7 @@ void ODOSQLStatementLogSQL(NSString *format, ...)
     va_start(args, format);
     NSString *sql = [[NSString alloc] initWithFormat:format arguments:args];
     va_end(args);
-    
+
     if ([sql length] > 0) {
         CFDataRef data = CFStringCreateExternalRepresentation(kCFAllocatorDefault, (CFStringRef)sql, kCFStringEncodingUTF8, '?');
         OBASSERT(data);
@@ -631,6 +681,11 @@ BOOL ODOSQLStatementIgnoreUnexpectedRow(struct sqlite3 *sqlite, ODOSQLStatement 
     return YES;
 }
 
+BOOL ODOSQLStatementIgnoreExpectedRow(struct sqlite3 *sqlite, ODOSQLStatement *statement, void *context, NSError **outError)
+{
+    return YES;
+}
+
 #ifdef OMNI_ASSERTIONS_ON
 BOOL ODOSQLStatementCheckForSingleChangedRow(struct sqlite3 *sqlite, ODOSQLStatement *statement, void *context, NSError **outError)
 {
@@ -649,6 +704,14 @@ BOOL ODOSQLStatementRunWithoutResults(struct sqlite3 *sqlite, ODOSQLStatement *s
     return ODOSQLStatementRun(sqlite, statement, callbacks, NULL, outError);
 }
 
+BOOL ODOSQLStatementRunIgnoringResults(struct sqlite3 *sqlite, ODOSQLStatement *statement, NSError **outError)
+{
+    ODOSQLStatementCallbacks callbacks;
+    memset(&callbacks, 0, sizeof(callbacks));
+    callbacks.row = ODOSQLStatementIgnoreExpectedRow;
+
+    return ODOSQLStatementRun(sqlite, statement, callbacks, NULL, outError);
+}
 
 BOOL ODOExtractNonPrimaryKeySchemaPropertiesFromRowIntoObject(struct sqlite3 *sqlite, ODOSQLStatement *statement, ODOObject *object, NSArray <ODOProperty *> *schemaProperties, NSUInteger primaryKeyColumnIndex, NSError **outError)
 {

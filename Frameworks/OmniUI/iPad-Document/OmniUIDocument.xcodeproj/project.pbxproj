@@ -115,7 +115,9 @@
 		4AF15245231D3DDC00B8A58F /* OUIDocumentBrowserWelcomeAppIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AF15244231D3DDC00B8A58F /* OUIDocumentBrowserWelcomeAppIntegration.swift */; };
 		4AF15246231D437100B8A58F /* OUIDocumentBrowserWelcome.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AF15239231D39DF00B8A58F /* OUIDocumentBrowserWelcome.swift */; };
 		4AF15248231D470600B8A58F /* OUIDocumentBrowserWelcome.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4AF15247231D470600B8A58F /* OUIDocumentBrowserWelcome.xcassets */; };
-		50C5059B23EE18410074DCB6 /* OUITemplateResourceBookmarks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50C5059A23EE18410074DCB6 /* OUITemplateResourceBookmarks.swift */; };
+		50A4B2302405BAE00074AD6B /* OUILinkedFolderPreferenceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50A4B22F2405BAE00074AD6B /* OUILinkedFolderPreferenceViewController.swift */; };
+		50A4B2322405DDCC0074AD6B /* OUILinkedFolderPreferenceView.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 50A4B2312405DDCC0074AD6B /* OUILinkedFolderPreferenceView.storyboard */; };
+		50C5059B23EE18410074DCB6 /* OUIApplicationResourceBookmarks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50C5059A23EE18410074DCB6 /* OUIApplicationResourceBookmarks.swift */; };
 		6C34CDC81B73DB1200692269 /* CoreSpotlight.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6C34CDC71B73DB1200692269 /* CoreSpotlight.framework */; };
 		FB847DAF1BED5C65004E6BD7 /* OUIDocumentExporter.h in Headers */ = {isa = PBXBuildFile; fileRef = FB847DAD1BED5C65004E6BD7 /* OUIDocumentExporter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FB847DB01BED5C65004E6BD7 /* OUIDocumentExporter.m in Sources */ = {isa = PBXBuildFile; fileRef = FB847DAE1BED5C65004E6BD7 /* OUIDocumentExporter.m */; };
@@ -336,7 +338,9 @@
 		4AF15239231D39DF00B8A58F /* OUIDocumentBrowserWelcome.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OUIDocumentBrowserWelcome.swift; sourceTree = "<group>"; };
 		4AF15244231D3DDC00B8A58F /* OUIDocumentBrowserWelcomeAppIntegration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OUIDocumentBrowserWelcomeAppIntegration.swift; sourceTree = "<group>"; };
 		4AF15247231D470600B8A58F /* OUIDocumentBrowserWelcome.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = OUIDocumentBrowserWelcome.xcassets; sourceTree = "<group>"; };
-		50C5059A23EE18410074DCB6 /* OUITemplateResourceBookmarks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OUITemplateResourceBookmarks.swift; sourceTree = "<group>"; };
+		50A4B22F2405BAE00074AD6B /* OUILinkedFolderPreferenceViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OUILinkedFolderPreferenceViewController.swift; sourceTree = "<group>"; };
+		50A4B2312405DDCC0074AD6B /* OUILinkedFolderPreferenceView.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = OUILinkedFolderPreferenceView.storyboard; sourceTree = "<group>"; };
+		50C5059A23EE18410074DCB6 /* OUIApplicationResourceBookmarks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OUIApplicationResourceBookmarks.swift; sourceTree = "<group>"; };
 		50C8ED811A2E721E00BAD9EB /* OUIExportOptionsCollectionViewLayout.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIExportOptionsCollectionViewLayout.h; sourceTree = SOURCE_ROOT; };
 		50C8ED821A2E721E00BAD9EB /* OUIExportOptionsCollectionViewLayout.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIExportOptionsCollectionViewLayout.m; sourceTree = SOURCE_ROOT; };
 		6C34CDC71B73DB1200692269 /* CoreSpotlight.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreSpotlight.framework; path = System/Library/Frameworks/CoreSpotlight.framework; sourceTree = SDKROOT; };
@@ -577,7 +581,9 @@
 				420E6FA01FCD3D4700CF7191 /* OUINewDocumentCreationContext.swift */,
 				345E077522EF9CF00050ABBB /* OUITemplatePickerDelegate.h */,
 				4287BA0E1FC3EDED00981669 /* OUITemplatePicker.swift */,
-				50C5059A23EE18410074DCB6 /* OUITemplateResourceBookmarks.swift */,
+				50C5059A23EE18410074DCB6 /* OUIApplicationResourceBookmarks.swift */,
+				50A4B22F2405BAE00074AD6B /* OUILinkedFolderPreferenceViewController.swift */,
+				50A4B2312405DDCC0074AD6B /* OUILinkedFolderPreferenceView.storyboard */,
 				4225BCBB1FCCC3830024E9CF /* OUILanguagePicker.swift */,
 				4287BA191FC3F5C300981669 /* OUITemplatePicker.storyboard */,
 				42E515761FC49DDF00B0AB2D /* OUITemplatePickerHeader.swift */,
@@ -878,6 +884,7 @@
 				15D93DE01B5ED67400D3D355 /* es.lproj in Resources */,
 				3458F07F1B5D709B000011A6 /* OUIExportOptions.xib in Resources */,
 				3458F0931B5D70D7000011A6 /* OmniUIDocument.keycommands in Resources */,
+				50A4B2322405DDCC0074AD6B /* OUILinkedFolderPreferenceView.storyboard in Resources */,
 				15D93DDF1B5ED67400D3D355 /* de.lproj in Resources */,
 				3458F07E1B5D7098000011A6 /* OUIExportOptionViewCell.xib in Resources */,
 				15D93DE51B5ED67400D3D355 /* ru.lproj in Resources */,
@@ -919,6 +926,7 @@
 				3458F0911B5D70D1000011A6 /* OUIErrors.m in Sources */,
 				4A9C27232310AF2300519656 /* OUIDocumentServerAccountFileListView.swift in Sources */,
 				4AF15246231D437100B8A58F /* OUIDocumentBrowserWelcome.swift in Sources */,
+				50A4B2302405BAE00074AD6B /* OUILinkedFolderPreferenceViewController.swift in Sources */,
 				3415ED6F1FCF83140012A91A /* OUIExportProgressViewController.m in Sources */,
 				4225BCBC1FCCC3830024E9CF /* OUILanguagePicker.swift in Sources */,
 				3458F0891B5D70B1000011A6 /* OUIToolbarTitleButton.m in Sources */,
@@ -940,7 +948,7 @@
 				3458F0361B5D6FD7000011A6 /* OUIDocumentInbox.m in Sources */,
 				3446131322F24BA80090B387 /* DocumentConversionActivity.swift in Sources */,
 				4A7CC9C022F2508200A5741C /* OUIDocumentSceneDelegate.m in Sources */,
-				50C5059B23EE18410074DCB6 /* OUITemplateResourceBookmarks.swift in Sources */,
+				50C5059B23EE18410074DCB6 /* OUIApplicationResourceBookmarks.swift in Sources */,
 				3458F0961B5D70E1000011A6 /* OmniUIDocumentAppearance.m in Sources */,
 				34B54AE022E27D6E008AABC6 /* OUIServerAccountsViewController.m in Sources */,
 				420E6FA11FCD3D4700CF7191 /* OUINewDocumentCreationContext.swift in Sources */,

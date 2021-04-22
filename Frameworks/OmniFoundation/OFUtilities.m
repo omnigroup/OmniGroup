@@ -1,4 +1,4 @@
-// Copyright 1997-2019 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -289,6 +289,16 @@ BOOL OFIsRunningInInstruments(void)
     });
 
     return _IsRunningInInstruments;
+}
+
+BOOL OFIsRunningInAppExtension(void)
+{
+    static BOOL isRunningInAppExtension;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        isRunningInAppExtension = [[[[NSBundle mainBundle] bundleURL] pathExtension] isEqual:@"appex"];
+    });
+    return isRunningInAppExtension;
 }
 
 NSString *OFUniqueMachineIdentifier(void)

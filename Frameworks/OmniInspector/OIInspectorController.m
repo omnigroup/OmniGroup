@@ -1,4 +1,4 @@
-// Copyright 2002-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,6 +18,7 @@
 #import <OmniInspector/OIInspectorRegistry.h>
 #import <OmniInspector/OIInspectorWindow.h>
 #import <OmniInspector/OIWorkspace.h>
+#import <OmniInspector/OIInspectionSet.h>
 #include <sys/sysctl.h>
 
 #import "OIInspectorController-Internal.h"
@@ -354,6 +355,7 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
         // Don't update the inspector if the list of objects to inspect hasn't changed. -inspectedObjectsOfClass: returns a pointer-sorted list of objects, so we can just to 'identical' on the array.
         OIInspectorRegistry *inspectorRegistry = self.inspectorRegistry;
         NSArray *newInspectedObjects = [inspectorRegistry copyObjectsInterestingToInspector:inspector];
+        newInspectedObjects = [inspectorRegistry.inspectionSet objectsSortedByInsertionOrder:newInspectedObjects];
         NSString *newInspectionIdentifier = [inspectorRegistry inspectionIdentifierForCurrentInspectionSet];
         if (OFISEQUAL(currentInspectionIdentifier, newInspectionIdentifier) && ((newInspectedObjects == nil && currentlyInspectedObjects == nil) || [newInspectedObjects isIdenticalToArray:currentlyInspectedObjects])) {
             return;

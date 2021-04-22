@@ -1,4 +1,4 @@
-// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -84,7 +84,7 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
     BOOL showUsername = (_options & OUIPasswordAlertOptionShowUsername) != 0;
     BOOL allowEditingUsername = (_options & OUIPasswordAlertOptionAllowsEditingUsername) != 0;
     
-    _alertController = [OUIEnqueueableAlertController alertControllerWithTitle:_title message:self.message preferredStyle:UIAlertControllerStyleAlert];
+    _alertController = [OUIEnqueueableAlertController alertControllerWithTitle:_title message:[self _completeMessage] preferredStyle:UIAlertControllerStyleAlert];
     __weak typeof(self) weakSelf = self;
     
     // Username field
@@ -142,8 +142,16 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
     if (![_message isEqualToString:message]) {
         _message = [message copy];
         if ((_options & OUIPasswordAlertOptionShowUsername) == 0) {
-            self.alertController.message = message;
+            self.alertController.message = [self _completeMessage];;
         }
+    }
+}
+
+- (void)setErrorMessage:(NSString *)errorMessage
+{
+    if (![_errorMessage isEqualToString:errorMessage]) {
+        _errorMessage = [errorMessage copy];
+        self.alertController.message = [self _completeMessage];;
     }
 }
 
@@ -163,7 +171,7 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
     BOOL showUsername = (_options & OUIPasswordAlertOptionShowUsername) != 0;
     
     if (showUsername && self.usernameTextField == nil) {
-        self.alertController.message = username;
+        self.alertController.message = [self _completeMessage];;
     }
 
     self.usernameTextField.text = username;
@@ -268,6 +276,27 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
 }
 
 #pragma mark Internal
+
+- (NSString *)_completeMessage
+{
+    BOOL showUsername = (_options & OUIPasswordAlertOptionShowUsername) != 0;
+    NSString *baseMessage;
+    if (showUsername) {
+        baseMessage = _username;
+    } else {
+        baseMessage = _message;
+    }
+    
+    if (![NSString isEmptyString:_errorMessage]) {
+        if (![NSString isEmptyString:baseMessage]) {
+            return [baseMessage stringByAppendingFormat:@"\n%@", _errorMessage];
+        } else {
+            return _errorMessage;
+        }
+    } else {
+        return baseMessage;
+    }
+}
 
 - (BOOL)canLogIn;
 {

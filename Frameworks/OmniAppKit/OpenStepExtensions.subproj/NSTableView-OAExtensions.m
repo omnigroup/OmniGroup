@@ -1,4 +1,4 @@
-// Copyright 1997-2019 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -628,17 +628,21 @@ OBDidLoad(^{
 
 - (BOOL)_canCopyToPasteboard;
 {
+    if (self.numberOfSelectedRows == 0) {
+        return NO;
+    }
+
     if ([self isKindOfClass:[NSOutlineView class]]) {
         NSOutlineView *outlineView = (id)self;
         id <NSOutlineViewDataSource> dataSource = outlineView.dataSource;
-        if (self.numberOfSelectedRows > 0 && [dataSource respondsToSelector:@selector(outlineView:writeItems:toPasteboard:)]) {
+        if ([dataSource respondsToSelector:@selector(outlineView:pasteboardWriterForItem:)]) {
+            return YES;
+        }
+        if ([dataSource respondsToSelector:@selector(outlineView:writeItems:toPasteboard:)]) {
             return YES;
         }
     } else {
         id <NSTableViewDataSource> dataSource = self.dataSource;
-        if (self.numberOfSelectedRows == 0) {
-            return NO;
-        }
         if ([dataSource respondsToSelector:@selector(tableView:pasteboardWriterForRow:)]) {
             return YES;
         }

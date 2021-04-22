@@ -1,4 +1,4 @@
-// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,6 +10,15 @@
 #import <OmniBase/OmniBase.h>
 
 RCS_ID("$Id$")
+
+static void OBSleepAfterTestRun(void)
+{
+    // Good place to collect a memory graph in Xcode
+    NSLog(@"Sleeping forever");
+    while (1) {
+        sleep(1e8);
+    }
+}
 
 #ifdef COVERAGE
 #import <crt_externs.h>
@@ -56,10 +65,15 @@ void _OBReportUnexpectedError(NSError *error)
 + (void)initialize;
 {
     OBINITIALIZE;
+
 #ifdef COVERAGE
     atexit(OBTestCaseReportCoverage);
 #endif
-    
+
+    if (getenv("OBSleepAfterTestRun")) {
+        atexit(OBSleepAfterTestRun);
+    }
+
     // Let OBObject get set up, which will run OBInvokeRegisteredLoadActions().
     [OBObject class];
 }

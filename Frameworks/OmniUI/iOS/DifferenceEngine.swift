@@ -341,7 +341,7 @@ public struct Difference {
             }
         }
 
-        OBRecordBacktrace("Start tableView update", .generic)
+        OBRecordBacktraceS("Start tableView update", .generic)
         tableView.performBatchUpdates({
             tableView.deleteSections(IndexSet(from: sectionChanges.deletions), with: animations.sectionDeletion)
             tableView.insertSections(IndexSet(from: sectionChanges.insertions), with: animations.sectionInsertion)
@@ -358,9 +358,9 @@ public struct Difference {
             otherUpdates?()
         }, completion: { finished in
             if finished {
-                OBRecordBacktrace("End tableView update", .generic)
+                OBRecordBacktraceS("End tableView update", .generic)
             } else {
-                OBRecordBacktrace("Interrupted tableView update", .generic)
+                OBRecordBacktraceS("Interrupted tableView update", .generic)
             }
             completion?(finished)
         })

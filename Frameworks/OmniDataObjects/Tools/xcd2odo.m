@@ -1,4 +1,4 @@
-// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -47,6 +47,7 @@ static OFEnumNameTable *ODOAttributeTypeEnumNameTable(void)
         [table setName:@"string" forEnumValue:ODOAttributeTypeString];
         [table setName:@"boolean" forEnumValue:ODOAttributeTypeBoolean];
         [table setName:@"date" forEnumValue:ODOAttributeTypeDate];
+        [table setName:@"xmldatetime" forEnumValue:ODOAttributeTypeXMLDateTime];
         [table setName:@"data" forEnumValue:ODOAttributeTypeData];
     }
     

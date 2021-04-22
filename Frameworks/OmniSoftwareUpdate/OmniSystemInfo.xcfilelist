@@ -7,7 +7,6 @@ OSUChecker.m
 OSUErrors.m
 OSULinkButton.m
 OSUPartialItem.m
-OSUPreferences-Items.m
 OSUPreferences.m
 OSUPrivacyAlertWindowController.m
 OSUProbe.m

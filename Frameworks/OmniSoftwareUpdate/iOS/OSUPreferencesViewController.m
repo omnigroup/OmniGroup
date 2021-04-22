@@ -22,6 +22,14 @@
 #import <OmniSoftwareUpdate/OSUProbe.h>
 #import "OSURunOperation.h"
 
+#if OSU_FULL
+#import <OmniSoftwareUpdate/OSUReportKeys.h>
+#elif defined(OMNI_BUILDING_FRAMEWORK_OR_BUNDLE)
+#import <OmniSystemInfo/OSUReportKeys.h>
+#else
+#import "OSUReportKeys.h" // Non-framework import intentional. Building the OSUCheckService; hopefully avoids a dependency cycle in Xcode 10.
+#endif
+
 #import <mach-o/arch.h>
 
 RCS_ID("$Id$");

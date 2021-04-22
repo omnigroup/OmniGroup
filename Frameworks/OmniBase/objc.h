@@ -1,4 +1,4 @@
-// Copyright 2007-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -137,6 +137,8 @@ static inline BOOL OBSendBoolReturnMessageWithObjectObject(id self, SEL _cmd, id
 //
 // Runtime enumeration
 //
+
+extern void OBEachClass(void (NS_NOESCAPE ^action)(Class cls));
 
 typedef void (^OBProtocolAction)(Protocol * _Nonnull protocol);
 extern void OBEnumerateProtocolsForClassConformingToProtocol(Class cls, Protocol * _Nullable conformingToProtocol, OBProtocolAction action);

@@ -38,6 +38,7 @@ OB_REQUIRE_ARC;
     _undoManager = [[NSUndoManager alloc] init];
     
     _editingContext = [[ODOEditingContext alloc] initWithDatabase:_database];
+    [_editingContext assumeOwnershipWithQueue:dispatch_get_main_queue()];
     [_editingContext setUndoManager:_undoManager];
     
     [super setUp];
@@ -46,8 +47,7 @@ OB_REQUIRE_ARC;
 - (void)tearDown;
 {
     [_editingContext reset];
-    _editingContext = nil;
-    
+
     [_undoManager removeAllActions];
     _undoManager = nil;
     
@@ -58,6 +58,9 @@ OB_REQUIRE_ARC;
     }
     _database = nil;
     
+    [_editingContext relinquishOwnerhip];
+    _editingContext = nil;
+
     if (_databasePath) {
         NSError *error = nil;
         if (![[NSFileManager defaultManager] removeItemAtPath:_databasePath error:&error])

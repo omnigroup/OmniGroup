@@ -1,4 +1,4 @@
-// Copyright 2013-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -88,6 +88,43 @@ static BOOL _ensureParentDirectory(NSURL *url, NSError **outError)
         success = YES;
     }];
     return success;
+}
+
+- (BOOL)copyItemAtURL:(NSURL *)sourceURL withChanges:(BOOL)withChanges toURL:(NSURL *)destinationURL createIntermediateDirectories:(BOOL)createIntermediateDirectories error:(NSError **)outError success:(void (NS_NOESCAPE ^ _Nullable)(NSURL *resultURL))successHandler;
+{
+    __block BOOL success = NO;
+
+    NSFileCoordinatorReadingOptions options = withChanges ? 0 : NSFileCoordinatorReadingWithoutChanges;
+
+    [self coordinateReadingItemAtURL:sourceURL options:options
+                    writingItemAtURL:destinationURL options:NSFileCoordinatorWritingForMerging error:outError
+                          byAccessor:
+     ^(NSURL *newURL1, NSURL *newURL2){
+         if (createIntermediateDirectories && !_ensureParentDirectory(destinationURL, outError)) {
+             OBChainError(outError);
+             return;
+         }
+
+         NSError *moveError = nil;
+         if (![[NSFileManager defaultManager] copyItemAtURL:newURL1 toURL:newURL2 error:&moveError]) {
+             //NSLog(@"Error moving %@ to %@: %@", newURL1, newURL2, [moveError toPropertyList]);
+             if (outError)
+                 *outError = moveError;
+             return;
+         }
+
+         if (successHandler)
+             successHandler(destinationURL);
+
+         success = YES;
+    }];
+
+    return success;
+}
+
+- (BOOL)copyItemAtURL:(NSURL *)sourceURL withChanges:(BOOL)withChanges toURL:(NSURL *)destinationURL createIntermediateDirectories:(BOOL)createIntermediateDirectories error:(NSError **)outError; // Passes nil for successHandler
+{
+    return [self copyItemAtURL:sourceURL withChanges:withChanges toURL:destinationURL createIntermediateDirectories:createIntermediateDirectories error:outError success:nil];
 }
 
 - (BOOL)removeItemAtURL:(NSURL *)fileURL error:(NSError **)outError byAccessor:(NS_NOESCAPE OFFileAccessor)accessor;

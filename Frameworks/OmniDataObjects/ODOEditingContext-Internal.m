@@ -556,21 +556,24 @@ static BOOL FetchObjectFaultWithContext(ODOEditingContext *self, ODOObject *obje
     id primaryKey = [objectID primaryKey];
     OBASSERT(primaryKey);
 
-    BOOL success = [database.connection performSQLAndWaitWithError:outError block:^BOOL(struct sqlite3 *sqlite, NSError **blockError) {
-        ODOSQLStatement *query = [ctx->entity _queryByPrimaryKeyStatement:blockError database:database sqlite:sqlite];
-        if (!query)
-            return NO;
-        
-        if (!PrepareQueryByKey(query, sqlite, primaryKey, blockError))
-            return NO;
-        
-        ODOSQLStatementCallbacks callbacks;
-        memset(&callbacks, 0, sizeof(callbacks));
-        callbacks.row = _fetchObjectCallback;
-        
-        return ODOSQLStatementRun(sqlite, query, callbacks, ctx, blockError);
-    }];
-    
+    ODOSQLConnection *connection = database.connection;
+    BOOL success = ODOEditingContextExecuteWithOwnership(self, connection.queue, ^{
+        return [connection performSQLAndWaitWithError:outError block:^BOOL(struct sqlite3 *sqlite, NSError **blockError) {
+            ODOSQLStatement *query = [ctx->entity _queryByPrimaryKeyStatement:blockError database:database sqlite:sqlite];
+            if (!query)
+                return NO;
+
+            if (!PrepareQueryByKey(query, sqlite, primaryKey, blockError))
+                return NO;
+
+            ODOSQLStatementCallbacks callbacks;
+            memset(&callbacks, 0, sizeof(callbacks));
+            callbacks.row = _fetchObjectCallback;
+
+            return ODOSQLStatementRun(sqlite, query, callbacks, ctx, blockError);
+        }];
+    });
+
     if (!success) {
         return NO;
     }
@@ -656,20 +659,25 @@ static BOOL FetchSetFaultWithContext(ODOEditingContext *self, ODOObject *owner, 
 
     ODORelationship *inverseToOneRelationship = rel.inverseRelationship;
 
-    return [database.connection performSQLAndWaitWithError:outError block:^BOOL(struct sqlite3 *sqlite, NSError **blockError) {
-        ODOSQLStatement *query = [ctx->entity _queryByForeignKeyStatement:blockError relationship:inverseToOneRelationship database:database sqlite:sqlite];
-        if (!query)
-            return NO;
+    ODOSQLConnection *connection = database.connection;
+    BOOL success = ODOEditingContextExecuteWithOwnership(self, connection.queue, ^{
+        return [connection performSQLAndWaitWithError:outError block:^BOOL(struct sqlite3 *sqlite, NSError **blockError) {
+            ODOSQLStatement *query = [ctx->entity _queryByForeignKeyStatement:blockError relationship:inverseToOneRelationship database:database sqlite:sqlite];
+            if (!query)
+                return NO;
 
-        if (!PrepareQueryByKey(query, sqlite, ownerPrimaryKey, blockError))
-            return NO;
-        
-        ODOSQLStatementCallbacks callbacks;
-        memset(&callbacks, 0, sizeof(callbacks));
-        callbacks.row = _fetchObjectCallback;
+            if (!PrepareQueryByKey(query, sqlite, ownerPrimaryKey, blockError))
+                return NO;
 
-        return ODOSQLStatementRun(sqlite, query, callbacks, ctx, blockError);
-    }];
+            ODOSQLStatementCallbacks callbacks;
+            memset(&callbacks, 0, sizeof(callbacks));
+            callbacks.row = _fetchObjectCallback;
+
+            return ODOSQLStatementRun(sqlite, query, callbacks, ctx, blockError);
+        }];
+    });
+
+    return success;
 }
 
 // Fetches the objects across a to-many relationship, uniquing against previously registered objects, and updating the results for in progress edits.
@@ -781,14 +789,17 @@ NSMutableArray <__kindof ODOObject *> * _Nullable ODOFetchObjects(ODOEditingCont
             return nil;
         }
 
-        BOOL success = [database.connection performSQLAndWaitWithError:outError block:^BOOL(struct sqlite3 *sqlite, NSError **blockError) {
-            // TODO: Append the sort descriptors as a 'order by'?  Can't if they have non-schema properties, so for now we can just sort in memory.
-            ODOSQLStatementCallbacks callbacks;
-            memset(&callbacks, 0, sizeof(callbacks));
-            callbacks.row = _fetchObjectCallback;
+        ODOSQLConnection *connection = database.connection;
+        BOOL success = ODOEditingContextExecuteWithOwnership(self, connection.queue, ^{
+            return [connection performSQLAndWaitWithError:outError block:^BOOL(struct sqlite3 *sqlite, NSError **blockError) {
+                // TODO: Append the sort descriptors as a 'order by'?  Can't if they have non-schema properties, so for now we can just sort in memory.
+                ODOSQLStatementCallbacks callbacks;
+                memset(&callbacks, 0, sizeof(callbacks));
+                callbacks.row = _fetchObjectCallback;
 
-            return ODOSQLStatementRun(sqlite, query, callbacks, &ctx, blockError);
-        }];
+                return ODOSQLStatementRun(sqlite, query, callbacks, &ctx, blockError);
+            }];
+        });
 
         [query invalidate];
         [query release];

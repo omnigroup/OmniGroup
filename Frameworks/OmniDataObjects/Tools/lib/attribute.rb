@@ -32,7 +32,12 @@ module OmniDataObjects
     end
 
     def objcTypeEnum
-      "ODOAttributeType#{type.to_s.capitalize_first}"
+      case type
+      when :xmldatetime
+        "ODOAttributeTypeXMLDateTime"
+      else
+        "ODOAttributeType#{type.to_s.capitalize_first}"
+      end
     end
     
     def customGetter?
@@ -117,7 +122,7 @@ module OmniDataObjects
         "NSNumber"
       when :string
         "NSString"
-      when :date
+      when :date, :xmldatetime
         "NSDate"
       when :data
         "NSData"
@@ -174,7 +179,7 @@ module OmniDataObjects
         "Float64"
       when :string
         "String"
-      when :date
+      when :date, :xmldatetime
         "Date"
       when :data
         "Data"

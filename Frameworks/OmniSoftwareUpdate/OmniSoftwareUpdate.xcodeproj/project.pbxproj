@@ -71,7 +71,6 @@
 		348A788B1B583D340082D55D /* OSUErrors.m in Sources */ = {isa = PBXBuildFile; fileRef = 34F300701263A6850044AB52 /* OSUErrors.m */; };
 		348A788C1B583D380082D55D /* OSUPreferences.h in Headers */ = {isa = PBXBuildFile; fileRef = 34D5FE6F1264F09D00FDFEBB /* OSUPreferences.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		348A788D1B583D3C0082D55D /* OSUPreferences.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D5FE701264F09D00FDFEBB /* OSUPreferences.m */; };
-		348A788E1B583D410082D55D /* OSUPreferences-Items.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A2E0E7184F9363009E0D9F /* OSUPreferences-Items.m */; };
 		348A788F1B583D440082D55D /* OSUCheckerTarget.h in Headers */ = {isa = PBXBuildFile; fileRef = 3409FDF712664BD600BA898D /* OSUCheckerTarget.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		348A78901B583D490082D55D /* OSUChecker.h in Headers */ = {isa = PBXBuildFile; fileRef = 34821EFE0634074F0097A113 /* OSUChecker.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		348A78911B583D4D0082D55D /* OSUChecker.m in Sources */ = {isa = PBXBuildFile; fileRef = 34821EFF0634074F0097A113 /* OSUChecker.m */; };
@@ -114,7 +113,6 @@
 		34A00BF11B20DC740095B511 /* OSUReportKeys.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A00BEE1B20DC740095B511 /* OSUReportKeys.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34A2E0E8184F9363009E0D9F /* OSUPreferences-Items.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A2E0E6184F9363009E0D9F /* OSUPreferences-Items.h */; };
 		34A2E0E9184F9363009E0D9F /* OSUPreferences-Items.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A2E0E7184F9363009E0D9F /* OSUPreferences-Items.m */; };
-		34A2E0EB184F9375009E0D9F /* OSUPreferences-Items.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A2E0E7184F9363009E0D9F /* OSUPreferences-Items.m */; };
 		34A5F506184E474C00E8BA9A /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */; };
 		34A5F510184E474C00E8BA9A /* Preferences.strings in Resources */ = {isa = PBXBuildFile; fileRef = 34A5F50E184E474C00E8BA9A /* Preferences.strings */; };
 		34A5F53F184E519C00E8BA9A /* OSUErrors.m in Sources */ = {isa = PBXBuildFile; fileRef = 34F300701263A6850044AB52 /* OSUErrors.m */; };
@@ -2295,7 +2293,6 @@
 				348A788D1B583D3C0082D55D /* OSUPreferences.m in Sources */,
 				348A788B1B583D340082D55D /* OSUErrors.m in Sources */,
 				FB0929B01C3B356400469860 /* OSUPartialItem.m in Sources */,
-				348A788E1B583D410082D55D /* OSUPreferences-Items.m in Sources */,
 				348A789B1B583DA30082D55D /* OSUController.m in Sources */,
 				348A78911B583D4D0082D55D /* OSUChecker.m in Sources */,
 				42943F961CBC2A3C005E9862 /* OSUDeviceDetails.m in Sources */,
@@ -2326,7 +2323,6 @@
 				34F2A19B1A3106AB00B2E8BD /* OSUProbe.m in Sources */,
 				4228B70B1CAC545D00A4D1AB /* NSApplication-OSUNewsSupport.m in Sources */,
 				34A5F53F184E519C00E8BA9A /* OSUErrors.m in Sources */,
-				34A2E0EB184F9375009E0D9F /* OSUPreferences-Items.m in Sources */,
 				34A5F540184E519C00E8BA9A /* OSUPreferences.m in Sources */,
 				FB79E6611C3C6F5200A5ACD4 /* OSUPartialItem.m in Sources */,
 				34CEC66A18565B530030515C /* OSULinkButton.m in Sources */,
@@ -2680,11 +2676,11 @@
 			baseConfigurationReference = 348A78871B583C830082D55D /* Touch-Framework-Debug.xcconfig */;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
-				INFOPLIST_FILE = Info.plist;
-				OTHER_CFLAGS = (
-					"-DOSU_FULL=0",
+				GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS = (
+					"OSU_FULL=0",
 					"$(value)",
 				);
+				INFOPLIST_FILE = Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniSoftwareUpdate;
 				PRODUCT_NAME = OmniSoftwareUpdate;
 				SUPPORTS_MACCATALYST = NO;
@@ -2697,11 +2693,11 @@
 			baseConfigurationReference = 348A78881B583C830082D55D /* Touch-Framework-Release.xcconfig */;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
-				INFOPLIST_FILE = Info.plist;
-				OTHER_CFLAGS = (
-					"-DOSU_FULL=0",
+				GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS = (
+					"OSU_FULL=0",
 					"$(value)",
 				);
+				INFOPLIST_FILE = Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniSoftwareUpdate;
 				PRODUCT_NAME = OmniSoftwareUpdate;
 				SUPPORTS_MACCATALYST = NO;
@@ -2751,11 +2747,11 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4A102C1808AB00D00059F5BD /* Omni-Framework-Debug.xcconfig */;
 			buildSettings = {
-				INFOPLIST_FILE = "OmniSystemInfo/OmniSystemInfo-Info.plist";
-				OTHER_CFLAGS = (
-					"-DOSU_FULL=0",
+				GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS = (
+					"OSU_FULL=0",
 					"$(value)",
 				);
+				INFOPLIST_FILE = "OmniSystemInfo/OmniSystemInfo-Info.plist";
 				OTHER_LDFLAGS = (
 					"$(OTHER_LDFLAGS)",
 					"$(OMNIWEB_WEBKIT_LDFLAGS)",
@@ -2769,11 +2765,11 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4A102C1908AB00D00059F5BD /* Omni-Framework-Release.xcconfig */;
 			buildSettings = {
-				INFOPLIST_FILE = "OmniSystemInfo/OmniSystemInfo-Info.plist";
-				OTHER_CFLAGS = (
-					"-DOSU_FULL=0",
+				GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS = (
+					"OSU_FULL=0",
 					"$(value)",
 				);
+				INFOPLIST_FILE = "OmniSystemInfo/OmniSystemInfo-Info.plist";
 				OTHER_LDFLAGS = (
 					"$(OTHER_LDFLAGS)",
 					"$(OMNIWEB_WEBKIT_LDFLAGS)",
@@ -2812,14 +2808,14 @@
 			baseConfigurationReference = 4AB8F42D08AD27BF00DBB061 /* Omni-Global-Debug.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
+				GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS = (
+					"$(value)",
+					"OSUInstallerPrivilegedHelperVersion=$(OSUInstallerPrivilegedHelperVersion)",
+					"OSUInstallerPrivilegedHelperIdentifier=com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.$(OSUInstallerPrivilegedHelperVersion)",
+				);
 				HEADER_SEARCH_PATHS = /usr/include/libxml2;
 				INFOPLIST_OTHER_PREPROCESSOR_FLAGS = "$(value) -DOSUInstallerPrivilegedHelperVersion=$(OSUInstallerPrivilegedHelperVersion) -DOSUInstallerPrivilegedHelperIdentifier=com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.$(OSUInstallerPrivilegedHelperVersion)";
 				OSUInstallerPrivilegedHelperVersion = 7;
-				OTHER_CFLAGS = (
-					"$(value)",
-					"-DOSUInstallerPrivilegedHelperVersion=$(OSUInstallerPrivilegedHelperVersion)",
-					"-DOSUInstallerPrivilegedHelperIdentifier=com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.$(OSUInstallerPrivilegedHelperVersion)",
-				);
 			};
 			name = Debug;
 		};
@@ -2828,14 +2824,14 @@
 			baseConfigurationReference = 4AB8F42E08AD27BF00DBB061 /* Omni-Global-Release.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
+				GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS = (
+					"$(value)",
+					"OSUInstallerPrivilegedHelperVersion=$(OSUInstallerPrivilegedHelperVersion)",
+					"OSUInstallerPrivilegedHelperIdentifier=com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.$(OSUInstallerPrivilegedHelperVersion)",
+				);
 				HEADER_SEARCH_PATHS = /usr/include/libxml2;
 				INFOPLIST_OTHER_PREPROCESSOR_FLAGS = "$(value) -DOSUInstallerPrivilegedHelperVersion=$(OSUInstallerPrivilegedHelperVersion) -DOSUInstallerPrivilegedHelperIdentifier=com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.$(OSUInstallerPrivilegedHelperVersion)";
 				OSUInstallerPrivilegedHelperVersion = 7;
-				OTHER_CFLAGS = (
-					"$(value)",
-					"-DOSUInstallerPrivilegedHelperVersion=$(OSUInstallerPrivilegedHelperVersion)",
-					"-DOSUInstallerPrivilegedHelperIdentifier=com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.$(OSUInstallerPrivilegedHelperVersion)",
-				);
 			};
 			name = Release;
 		};
@@ -2844,11 +2840,11 @@
 			baseConfigurationReference = 4A102C1808AB00D00059F5BD /* Omni-Framework-Debug.xcconfig */;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
-				INFOPLIST_FILE = Info.plist;
-				OTHER_CFLAGS = (
-					"-DOSU_FULL=1",
+				GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS = (
+					"OSU_FULL=1",
 					"$(value)",
 				);
+				INFOPLIST_FILE = Info.plist;
 				OTHER_LDFLAGS = (
 					"$(OTHER_LDFLAGS)",
 					"$(OMNIWEB_WEBKIT_LDFLAGS)",
@@ -2863,11 +2859,11 @@
 			baseConfigurationReference = 4A102C1908AB00D00059F5BD /* Omni-Framework-Release.xcconfig */;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
-				INFOPLIST_FILE = Info.plist;
-				OTHER_CFLAGS = (
-					"-DOSU_FULL=1",
+				GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS = (
+					"OSU_FULL=1",
 					"$(value)",
 				);
+				INFOPLIST_FILE = Info.plist;
 				OTHER_LDFLAGS = (
 					"$(OTHER_LDFLAGS)",
 					"$(OMNIWEB_WEBKIT_LDFLAGS)",

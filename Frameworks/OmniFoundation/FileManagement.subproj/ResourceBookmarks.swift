@@ -1,4 +1,4 @@
-// Copyright 2013-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,7 +14,7 @@ import Foundation
     private let preferenceKey: String
 
     @objc public private(set) var bookmarkedResourceLocations = [ResourceLocation]()
-    public let resourceTypes: [String:ResourceTypePredicate]
+    public private(set) var resourceTypes: [String:ResourceTypePredicate]
 
     public init(preferenceKey: String, resourceTypes: [String:ResourceTypePredicate]) {
         self.preferenceKey = preferenceKey
@@ -27,6 +27,13 @@ import Foundation
 
     deinit {
         bookmarkedResourceLocations.forEach { $0.invalidate() }
+    }
+
+    @objc public func add(resourceType: String, withPredicate predicate: ResourceTypePredicate) {
+        resourceTypes.updateValue(predicate, forKey: resourceType)
+        for location in bookmarkedResourceLocations {
+            location.add(resourceType: resourceType, withPredicate: predicate)
+        }
     }
 
     @objc open func isResourceInKnownResourceLocation(_ resourceURL: URL) -> Bool {

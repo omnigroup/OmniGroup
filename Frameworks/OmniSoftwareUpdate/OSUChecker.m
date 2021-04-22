@@ -1,4 +1,4 @@
-// Copyright 2001-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -46,6 +46,15 @@
 #if (defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE)
 #import <OmniUI/OUIAppController.h>
 #endif
+
+#if OSU_FULL
+#import <OmniSoftwareUpdate/OSUReportKeys.h>
+#elif defined(OMNI_BUILDING_FRAMEWORK_OR_BUNDLE)
+#import <OmniSystemInfo/OSUReportKeys.h>
+#else
+#import "OSUReportKeys.h" // Non-framework import intentional. Building the OSUCheckService; hopefully avoids a dependency cycle in Xcode 10.
+#endif
+
 
 RCS_ID("$Id$");
 

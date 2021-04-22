@@ -8,6 +8,7 @@
 #import <OmniFoundation/NSUserDefaults-OFExtensions.h>
 
 #import <OmniFoundation/NSBundle-OFExtensions.h>
+#import <OmniFoundation/NSFileManager-OFSimpleExtensions.h> // For group container identifier utility
 #import <OmniFoundation/OFPreference.h>
 
 NS_ASSUME_NONNULL_BEGIN
@@ -43,38 +44,70 @@ NSString * const OFUserDefaultsMigrationKeysKey = @"keys";
         wrapper = [OFPreferenceWrapper preferenceWrapperWithGroupIdentifier:itemName];
     }
 
-    [wrapper registerDefaults:description options:OFPreferenceRegistrationPreserveExistingRegistrations];
+    [wrapper registerDefaults:description options:OFPreferenceRegistrationOptionNone];
 }
 
 // OFBundleMigrationTarget protocol
 
+static NSUserDefaults *_sourceUserDefault(NSString *sourceMarker)
+{
+    if ([sourceMarker isEqualToString:OFUserDefaultsRegistrationItemName]) {
+        return [NSUserDefaults standardUserDefaults];
+    } else if ([sourceMarker isEqualToString:OFContainingApplicationBundleIdentifierRegistrationItemName]) {
+        NSString *containingApplicationBundleIdentifier = NSBundle.containingApplicationBundleIdentifier;
+        NSString *groupContainerApplicationBundleIdentifier = [[NSFileManager defaultManager] groupContainerIdentifierForBaseIdentifier:containingApplicationBundleIdentifier];
+        return [[[NSUserDefaults alloc] initWithSuiteName:groupContainerApplicationBundleIdentifier] autorelease];
+    } else {
+        NSString *groupContainerForBaseIdentifier = [[NSFileManager defaultManager] groupContainerIdentifierForBaseIdentifier:sourceMarker];
+        return [[[NSUserDefaults alloc] initWithSuiteName:groupContainerForBaseIdentifier] autorelease];
+    }
+}
+
+static OFPreferenceWrapper *_destinationPreferenceWrapper(NSString *destinationMarker)
+{
+    if ([destinationMarker isEqualToString:OFUserDefaultsRegistrationItemName]) {
+        return [OFPreferenceWrapper sharedPreferenceWrapper];
+    } else if ([destinationMarker isEqualToString:OFContainingApplicationBundleIdentifierRegistrationItemName]) {
+        NSString *containingApplicationBundleIdentifier = NSBundle.containingApplicationBundleIdentifier;
+        return [OFPreferenceWrapper preferenceWrapperWithGroupIdentifier:containingApplicationBundleIdentifier];
+    } else {
+        return [OFPreferenceWrapper preferenceWrapperWithGroupIdentifier:destinationMarker];
+    }
+}
+
 + (void)migrateItems:(NSArray <NSDictionary <NSString *, NSString *> *> *)items bundle:(NSBundle *)bundle;
 {
+    // App Extensions can not access standard user defaults and should not attempt to perform migrations in case that's the migration's source/destination.
+    OBPRECONDITION(!OFIsRunningInAppExtension());
+    if (OFIsRunningInAppExtension()) {
+        return;
+    }
+
     for (NSDictionary *item in items) {
+        NSString *sourceMarker = item[OFUserDefaultsMigrationSourceKey];
+        NSString *destinationMarker = item[OFUserDefaultsMigrationDestinationKey];
+        if ([NSString isEmptyString:sourceMarker] || [NSString isEmptyString:destinationMarker]) {
+            OBASSERT_NOT_REACHED("Item: %@ failed to register a source and/or destination for the migration", item);
+            continue;
+        }
 
-        NSString *sourceKey = item[OFUserDefaultsMigrationSourceKey];
-        (void)sourceKey;
-        NSString *destinationKey = item[OFUserDefaultsMigrationDestinationKey];
-        (void)destinationKey;
         NSArray <NSString *> *migrationKeys = item[OFUserDefaultsMigrationKeysKey];
+        if ([migrationKeys count] == 0) {
+            continue;
+        }
 
-        // <bug:///182130> (iOS-OmniFocus Feature: Write a migration for preferences moved from standard user defaults to "containingApplicationBundleIdentifier" suite): Whine and continue if anything is wrong so far.
-
-        // <bug:///182130> (iOS-OmniFocus Feature: Write a migration for preferences moved from standard user defaults to "containingApplicationBundleIdentifier" suite): Don't arbitrarily choose source and destination. Actually look at the migration.
-
-        NSUserDefaults *sourceUserDefaults = [NSUserDefaults standardUserDefaults];
-
-        NSString *containingApplicationBundleIdentifier = NSBundle.containingApplicationBundleIdentifier;
-        OFPreferenceWrapper *destinationWrapper = [OFPreferenceWrapper preferenceWrapperWithGroupIdentifier:containingApplicationBundleIdentifier];
+        NSUserDefaults *sourceUserDefaults = _sourceUserDefault(sourceMarker);
+        OFPreferenceWrapper *destinationWrapper = _destinationPreferenceWrapper(destinationMarker);
         
         for (NSString *key in migrationKeys) {
-            // Always clear out a migration object if found in the source domain
+            // Be sure to clear out a migration object if found in the source domain.
+            // Otherwise, consider a case where an unwanted value resurfaces when: a migration is performed, reset to registrations in preference pane, re-run the migration finds the pre-migration value.
             id sourceObject = [sourceUserDefaults objectForKey:key];
             [sourceUserDefaults removeObjectForKey:key];
 
             OFPreference *destinationPreference = [destinationWrapper preferenceForKey:key];
             if ([destinationPreference hasNonDefaultValue]) {
-                // No additional work needed for source key
+                // Never perform a migration if the destination preference wrapper already has a non-default value for the key.
                 continue;
             }
 

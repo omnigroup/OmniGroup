@@ -20,3 +20,4 @@ OpenStepExtensions.subproj/OATextAttachmentCell.m
 OpenStepExtensions.subproj/OATextAttributes.m
 OpenStepExtensions.subproj/OATextStorage.m
 Tools/OASignificantTimeChangeObserver.m
+UIFont-OAExtensions.swift

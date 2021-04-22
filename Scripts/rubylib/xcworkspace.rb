@@ -128,19 +128,16 @@ module Xcode
       @@AllowMissing = value
     end
     
-    attr_reader :path, :checkout_location, :root
+    attr_reader :path, :root
     attr_reader :autocreate_schemes
     attr_accessor :allow_missing
     
-    # The path is the nominal location, while @checkout_location is the real path on disk (possibly a cache)
     def initialize(path, options = {})
-      @checkout_location = Pathname.new(Xcode::checkout_location(path)).realpath.to_s
-      fail "#{path} is not a directory\n" unless File.directory?(@checkout_location)
-      
-      @path = Xcode::real_relative_path(path) # Allow missing path here since we might have a different checkout location
+      fail "#{path} is not a directory\n" unless File.directory?(path)
+      @path = Pathname.new(path).realpath.to_s
 
-      xml_file = @checkout_location + "/contents.xcworkspacedata"
-      fail "no contents.xcworkspacedata file in #{@checkout_location}\n" unless File.exist?(xml_file)
+      xml_file = @path + "/contents.xcworkspacedata"
+      fail "no contents.xcworkspacedata file in #{@path}\n" unless File.exist?(xml_file)
       
       doc = REXML::Document.new(File.read(xml_file))
       fail "Unable to read '#{xml_file}'\n" if (doc.nil? || doc.root.nil?)
@@ -151,7 +148,7 @@ module Xcode
       @root = Xcode::Workspace::Group.from_xml(self, doc.root)
       
       @autocreate_schemes = true
-      settings_path = @checkout_location + "/xcshareddata/WorkspaceSettings.xcsettings"
+      settings_path = @path + "/xcshareddata/WorkspaceSettings.xcsettings"
       if File.exist?(settings_path)
         settings = Plist::parse_xml(Xcode.read_only_command("plutil -convert xml1 -o - \"#{settings_path}\""))
 

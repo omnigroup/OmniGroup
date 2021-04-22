@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="dark"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Linked Folder Preference View Controller-->
+        <scene sceneID="fS3-8V-5CM">
+            <objects>
+                <tableViewController storyboardIdentifier="linkedFolders" id="AXT-Ah-kdJ" customClass="OUILinkedFolderPreferenceViewController" sceneMemberID="viewController">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" sectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="aYa-P5-KVA">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" systemColor="secondarySystemBackgroundColor" red="0.94901960780000005" green="0.94901960780000005" blue="0.96862745100000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <view key="tableHeaderView" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="NdR-Qr-rhi">
+                            <rect key="frame" x="0.0" y="0.0" width="414" height="120"/>
+                            <subviews>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" misplaced="YES" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="3" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="F9v-fJ-42U">
+                                    <rect key="frame" x="20" y="30" width="374" height="61"/>
+                                    <string key="text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus lectus est, lobortis sit amet leo non, consectetur finibus felis.</string>
+                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                    <nil key="textColor"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                            </subviews>
+                            <accessibility key="accessibilityConfiguration">
+                                <accessibilityTraits key="traits" header="YES"/>
+                            </accessibility>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="120" id="0Am-pv-5Uf"/>
+                                <constraint firstItem="F9v-fJ-42U" firstAttribute="centerY" secondItem="NdR-Qr-rhi" secondAttribute="centerY" id="Usj-Px-FRD"/>
+                                <constraint firstItem="F9v-fJ-42U" firstAttribute="leading" secondItem="NdR-Qr-rhi" secondAttribute="leading" constant="20" symbolic="YES" id="VLm-8U-4Ru">
+                                    <string key="userLabel">Aut a qui est harum. Neque non sapiente sequi minus. Est eum debitis inventore dolor. Libero error autem odio nemo. Eum et consequatur error aut ipsam. Hic corrupti ipsa accusamus enim expedita fugiat necessitatibus aut. Porro deleniti expedita excepturi repellat assumenda enim facilis..leading = leading</string>
+                                </constraint>
+                                <constraint firstAttribute="trailing" secondItem="F9v-fJ-42U" secondAttribute="trailing" constant="20" symbolic="YES" id="igd-TO-uIX"/>
+                            </constraints>
+                        </view>
+                        <button key="tableFooterView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="hIq-yu-r6I">
+                            <rect key="frame" x="0.0" y="219.5" width="414" height="44"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            <state key="normal" title="Add Location"/>
+                            <connections>
+                                <action selector="addLinkedFolder:" destination="AXT-Ah-kdJ" eventType="touchUpInside" id="a4S-aQ-aUP"/>
+                            </connections>
+                        </button>
+                        <prototypes>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" id="3I0-c5-av0">
+                                <rect key="frame" x="0.0" y="148" width="414" height="43.5"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="3I0-c5-av0" id="7nR-Iu-c8N">
+                                    <rect key="frame" x="0.0" y="0.0" width="414" height="43.5"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                </tableViewCellContentView>
+                            </tableViewCell>
+                        </prototypes>
+                        <connections>
+                            <outlet property="dataSource" destination="AXT-Ah-kdJ" id="opk-wY-cm8"/>
+                            <outlet property="delegate" destination="AXT-Ah-kdJ" id="Jve-8k-A6Q"/>
+                        </connections>
+                    </tableView>
+                    <connections>
+                        <outlet property="headerLabel" destination="F9v-fJ-42U" id="u3T-qs-k1D"/>
+                    </connections>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="ci5-UB-U1B" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="124.6376811594203" y="-3.3482142857142856"/>
+        </scene>
+    </scenes>
+</document>

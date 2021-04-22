@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14868" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15505" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina4_0" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14824"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15510"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -97,7 +97,7 @@
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                     <subviews>
                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aYH-id-mRN">
-                                            <rect key="frame" x="8" y="20.5" width="42" height="21"/>
+                                            <rect key="frame" x="50" y="14.5" width="42" height="21"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <nil key="textColor"/>
                                             <nil key="highlightedColor"/>
@@ -109,16 +109,30 @@
                                                 <constraint firstAttribute="height" constant="0.5" id="xem-Ik-aOw"/>
                                             </constraints>
                                         </view>
+                                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="Rdn-vu-Lns">
+                                            <rect key="frame" x="8" y="8" width="34" height="34"/>
+                                            <constraints>
+                                                <constraint firstAttribute="width" secondItem="Rdn-vu-Lns" secondAttribute="height" multiplier="1:1" id="ejh-kL-pdL"/>
+                                            </constraints>
+                                        </imageView>
                                     </subviews>
                                     <constraints>
+                                        <constraint firstItem="Rdn-vu-Lns" firstAttribute="centerY" secondItem="6y7-4e-0pf" secondAttribute="centerY" id="489-SK-tFn"/>
+                                        <constraint firstItem="Rdn-vu-Lns" firstAttribute="leading" secondItem="6y7-4e-0pf" secondAttribute="leading" constant="8" id="EQx-sL-e5Y"/>
+                                        <constraint firstItem="aYH-id-mRN" firstAttribute="centerY" secondItem="6y7-4e-0pf" secondAttribute="centerY" id="G1U-df-0wy"/>
+                                        <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="aYH-id-mRN" secondAttribute="bottom" constant="8" id="Hsm-29-4w3"/>
                                         <constraint firstAttribute="bottom" secondItem="c2w-CS-aP2" secondAttribute="bottom" id="kEz-2O-3jj"/>
+                                        <constraint firstAttribute="bottom" secondItem="Rdn-vu-Lns" secondAttribute="bottom" constant="8" id="lLn-mG-C9E"/>
                                         <constraint firstAttribute="trailing" secondItem="c2w-CS-aP2" secondAttribute="trailing" id="ouF-sp-aVK"/>
-                                        <constraint firstItem="c2w-CS-aP2" firstAttribute="top" secondItem="aYH-id-mRN" secondAttribute="bottom" constant="8" id="pGN-b8-jdo"/>
+                                        <constraint firstItem="aYH-id-mRN" firstAttribute="leading" secondItem="6y7-4e-0pf" secondAttribute="leading" priority="750" constant="8" id="qFA-Jh-MAK"/>
                                         <constraint firstItem="c2w-CS-aP2" firstAttribute="leading" secondItem="6y7-4e-0pf" secondAttribute="leading" id="qZm-yY-Puv"/>
-                                        <constraint firstItem="aYH-id-mRN" firstAttribute="leading" secondItem="6y7-4e-0pf" secondAttribute="leadingMargin" id="uts-oG-4YT"/>
+                                        <constraint firstItem="aYH-id-mRN" firstAttribute="leading" secondItem="Rdn-vu-Lns" secondAttribute="trailing" constant="8" id="uts-oG-4YT"/>
+                                        <constraint firstItem="Rdn-vu-Lns" firstAttribute="top" secondItem="6y7-4e-0pf" secondAttribute="top" constant="8" id="xiA-7j-J46"/>
                                     </constraints>
                                     <connections>
+                                        <outlet property="icon" destination="Rdn-vu-Lns" id="YU6-Lt-a7d"/>
                                         <outlet property="label" destination="aYH-id-mRN" id="E2c-tV-ard"/>
+                                        <outlet property="labelToIconConstraint" destination="uts-oG-4YT" id="4gG-f0-UZx"/>
                                     </connections>
                                 </collectionReusableView>
                                 <connections>

@@ -638,6 +638,7 @@ id ODOGetScalarValueForProperty(ODOObject *object, ODOProperty *prop)
         case ODOAttributeTypeUndefined:
         case ODOAttributeTypeString:
         case ODOAttributeTypeDate:
+        case ODOAttributeTypeXMLDateTime:
         case ODOAttributeTypeData: {
             typedef id (*ObjectGetter)(ODOObject *object, SEL _cmd);
             ObjectGetter getter = (ObjectGetter)attr->_imp.get;
@@ -709,6 +710,7 @@ void ODOSetScalarValueForProperty(ODOObject *object, ODOProperty *prop, _Nullabl
         case ODOAttributeTypeUndefined:
         case ODOAttributeTypeString:
         case ODOAttributeTypeDate:
+        case ODOAttributeTypeXMLDateTime:
         case ODOAttributeTypeData: {
             typedef void (*ObjectSetter)(ODOObject *object, SEL _cmd, _Nullable id value);
             ObjectSetter setter = (ObjectSetter)attr->_imp.set;
@@ -895,6 +897,7 @@ static const char * _ODOGetterSignatureForAttributeType(ODOAttributeType attrTyp
         GetterSignatures[ODOAttributeTypeString] = _SignatureForSelector(@selector(_object_getter_signature));
         GetterSignatures[ODOAttributeTypeBoolean] = _SignatureForSelector(@selector(_bool_getter_signature));
         GetterSignatures[ODOAttributeTypeDate] = _SignatureForSelector(@selector(_object_getter_signature));
+        GetterSignatures[ODOAttributeTypeXMLDateTime] = _SignatureForSelector(@selector(_object_getter_signature));
         GetterSignatures[ODOAttributeTypeData] = _SignatureForSelector(@selector(_object_getter_signature));
     });
 
@@ -939,6 +942,7 @@ const char * ODOSetterSignatureForProperty(ODOProperty *prop)
         SetterSignatures[ODOAttributeTypeString] = _SignatureForSelector(@selector(_object_setter_signature:));
         SetterSignatures[ODOAttributeTypeBoolean] = _SignatureForSelector(@selector(_bool_setter_signature:));
         SetterSignatures[ODOAttributeTypeDate] = _SignatureForSelector(@selector(_object_setter_signature:));
+        SetterSignatures[ODOAttributeTypeXMLDateTime] = _SignatureForSelector(@selector(_object_setter_signature:));
         SetterSignatures[ODOAttributeTypeData] = _SignatureForSelector(@selector(_object_setter_signature:));
     });
     
@@ -984,6 +988,7 @@ const char * ODOPropertyAttributesForProperty(ODOProperty *prop)
         PropertyAttributes[ODOAttributeTypeString] = _AttributesForProperty(@selector(_object_property));
         PropertyAttributes[ODOAttributeTypeBoolean] = _AttributesForProperty(@selector(_bool_property));
         PropertyAttributes[ODOAttributeTypeDate] = _AttributesForProperty(@selector(_object_property));
+        PropertyAttributes[ODOAttributeTypeXMLDateTime] = _AttributesForProperty(@selector(_object_property));
         PropertyAttributes[ODOAttributeTypeData] = _AttributesForProperty(@selector(_object_property));
     });
 
@@ -1072,6 +1077,7 @@ IMP ODOGetterForProperty(ODOProperty *prop)
                 }
 
                 case ODOAttributeTypeDate:
+                case ODOAttributeTypeXMLDateTime:
                 case ODOAttributeTypeData: {
                     getter = (IMP)accessors->attribute.get;
                     break;
@@ -1102,6 +1108,7 @@ IMP ODOGetterForProperty(ODOProperty *prop)
                 UnknownOffsetAccessors[ODOAttributeTypeString] = (IMP)ODOGetterForUnknownOffset;
                 UnknownOffsetAccessors[ODOAttributeTypeBoolean] = (IMP)ODOBoolGetterForUnknownOffset;
                 UnknownOffsetAccessors[ODOAttributeTypeDate] = (IMP)ODOGetterForUnknownOffset;
+                UnknownOffsetAccessors[ODOAttributeTypeXMLDateTime] = (IMP)ODOGetterForUnknownOffset;
                 UnknownOffsetAccessors[ODOAttributeTypeData] = (IMP)ODOGetterForUnknownOffset;
             });
 
@@ -1133,6 +1140,7 @@ IMP ODOSetterForProperty(ODOProperty *prop)
         Setters[ODOAttributeTypeString] = (IMP)ODOSetterForUnknownOffset;
         Setters[ODOAttributeTypeBoolean] = (IMP)ODOBoolSetterForUnknownOffset;
         Setters[ODOAttributeTypeDate] = (IMP)ODOSetterForUnknownOffset;
+        Setters[ODOAttributeTypeXMLDateTime] = (IMP)ODOSetterForUnknownOffset;
         Setters[ODOAttributeTypeData] = (IMP)ODOSetterForUnknownOffset;
     });
     

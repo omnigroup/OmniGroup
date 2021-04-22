@@ -1,4 +1,4 @@
-// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,5 +13,7 @@
 @property(nonatomic,readonly,class) UIImage *OmniUIDocument_MenuItemTemplate NS_SWIFT_NAME(OmniUIDocument_MenuItemTemplate);
 
 @property(nonatomic,readonly,class) UIImage *OmniUIDocument_ServerAccountValidationSuccessImage NS_SWIFT_NAME(OmniUIDocument_ServerAccountValidationSuccessImage);
+
+@property(nonatomic,readonly,class) UIImage *OmniUIDocument_LinkedFolderImage NS_SWIFT_NAME(OmniUIDocument_LinkedFolderImage);
 
 @end

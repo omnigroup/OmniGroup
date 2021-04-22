@@ -294,7 +294,14 @@ static NSString *PathExtensionForFileType(NSString *fileType, BOOL *outIsPackage
 
 - (NSArray<NSString *> *)templateUTIs;
 {
-    return [_weak_delegate templateUTIs];
+    id <OUIDocumentCreationRequestDelegate> delegate = _weak_delegate;
+//    if ([delegate respondsToSelector:@selector(templateUTIs)]) {
+//        return [delegate templateUTIs];
+   if ([delegate respondsToSelector:@selector(templateFileTypes)]) {
+        return [delegate performSelector:@selector(templateFileTypes)];
+    } else {
+        return @[];
+    }
 }
 
 @end

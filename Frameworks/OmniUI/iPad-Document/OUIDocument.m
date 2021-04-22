@@ -1444,13 +1444,6 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
     return !self.forPreviewGeneration;
 }
 
-#pragma mark - OJSEnvironmentProviderType
-
-- (OJSEnvironment * _Nullable)scriptingEnvironment;
-{
-    return nil; // Subclasses can override this to return an appropriate scripting environment
-}
-
 @end
 
 @implementation OUIDocumentEncryptionPassphrasePromptOperation

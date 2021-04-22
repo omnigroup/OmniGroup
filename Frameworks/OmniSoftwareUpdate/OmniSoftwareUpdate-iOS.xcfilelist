@@ -6,7 +6,6 @@ OSUCheckService/OSURunOperationParameters.m
 OSUChecker.m
 OSUErrors.m
 OSUPartialItem.m
-OSUPreferences-Items.m
 OSUPreferences.m
 OSUProbe.m
 OSURunTime.m

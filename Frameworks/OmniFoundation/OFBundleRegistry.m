@@ -1,4 +1,4 @@
-// Copyright 1997-2019 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -45,6 +45,7 @@ NB also, if this dictionary changes, the OmniBundlePreferences bundle (in OmniCo
 NS_ASSUME_NONNULL_BEGIN
 
 static NSString * const PathBundleDescriptionKey = @"path";
+static NSString * const RegisterBundlesMigrationsKey = @"migrations";
 
 static NSMutableSet *registeredBundleNames;
 static NSMutableDictionary *softwareVersionDictionary;
@@ -632,17 +633,19 @@ static NSString *_normalizedPath(NSString *path)
             NSLog(@"OFBundleRegistry warning: registration class '%@' from bundle '%@' not found.", registrationClassName, bundlePath);
             continue;
         }
-        OBASSERT([registrationClass conformsToProtocol:@protocol(OFBundleRegistryTarget)], "The class %@ should conform to the OFBundleRegistryTarget protocol.", registrationClass);
 
-        if (![registrationClass respondsToSelector:@selector(registerItemName:bundle:description:)]) {
-            NSLog(@"OFBundleRegistry warning: registration class '%@' from bundle '%@' doesn't accept registrations", registrationClassName, bundlePath);
+        OBASSERT([registrationClass conformsToProtocol:@protocol(OFBundleRegistryTarget)], "The class %@ should conform to the OFBundleRegistryTarget protocol.", registrationClass);
+        if (![registrationClass conformsToProtocol:@protocol(OFBundleRegistryTarget)]) {
+            NSLog(@"OFBundleRegistry warning: registration class '%@' from bundle '%@' doesn't conform OFBundleRegistryTarget to accept registrations", registrationClassName, bundlePath);
             continue;
         }
 
-        // Be sure to perform the migrations last
+        // .registrations can include an array of migrations to perform from a source suite name to destination suite name for a list of keys.
+        // Its inclusion here reads a little awkwardly, but has a key benefit: it doesn't force an additional scan for a separate file extension (e.g. .migrations) in every bundle for little benefit; rather piggyback on the scan for .registrations that will already occur.
+        // Capture migrations for separate processing. If found, OFBundleRegistry should perform the migrations last.
         __block NSArray <NSDictionary <NSString *, NSString *> *> *postRegistrationMigrations = nil;
         [registrationDictionary enumerateKeysAndObjectsUsingBlock:^(id _Nonnull key, id _Nonnull obj, BOOL * _Nonnull stop) {
-            if ([key isKindOfClass:[NSString class]] && [key isEqual:@"migrations"]) {
+            if ([key isEqual:RegisterBundlesMigrationsKey]) {
                 postRegistrationMigrations = obj;
                 return;
             }
@@ -654,14 +657,15 @@ static NSString *_normalizedPath(NSString *path)
             };
         }];
         
-        if (postRegistrationMigrations == nil) {
+        // App Extensions can not access standard user defaults and should not attempt to perform migrations in case that's the migration's source/destination.
+        // REVIEW: If needed, an additional check to ensure that migrations only happen once per bundle version can be added. This currently doesn't seem worth the extra complexity.
+        if (postRegistrationMigrations == nil || OFIsRunningInAppExtension()) {
             continue;
         }
 
         OBASSERT([registrationClass conformsToProtocol:@protocol(OFBundleMigrationTarget)], "The class %@ should conform to the OFBundleMigrationTarget protocol if its registering for migrations.", registrationClass);
-
-        if (![registrationClass respondsToSelector:@selector(migrateItems:bundle:)]) {
-            NSLog(@"OFBundleRegistry warning: registration class '%@' from bundle '%@' doesn't accept migrations", registrationClassName, bundlePath);
+        if (![registrationClass conformsToProtocol:@protocol(OFBundleMigrationTarget)]) {
+            NSLog(@"OFBundleRegistry warning: registration class '%@' from bundle '%@' doesn't conform to OFBundleMigrationTarget to accept migrations", registrationClassName, bundlePath);
             continue;
         }
 

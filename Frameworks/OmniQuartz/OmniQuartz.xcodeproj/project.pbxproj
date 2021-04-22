@@ -40,7 +40,6 @@
 		34CEA14C10465F710016EC37 /* CALayer-OQExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 34CEA14A10465F710016EC37 /* CALayer-OQExtensions.m */; };
 		34DA3504107E95F7003E5BB6 /* OQHoleLayer.h in Headers */ = {isa = PBXBuildFile; fileRef = 34DA3502107E95F7003E5BB6 /* OQHoleLayer.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34DA3505107E95F7003E5BB6 /* OQHoleLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 34DA3503107E95F7003E5BB6 /* OQHoleLayer.m */; };
-		34DB338808C62AE900BC2748 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34DB338608C62AE900BC2748 /* OpenGL.framework */; };
 		34DB338908C62AE900BC2748 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34DB338708C62AE900BC2748 /* QuartzCore.framework */; };
 		34DB339C08C62C6C00BC2748 /* NSView-OQExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 34DB339A08C62C6C00BC2748 /* NSView-OQExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34DB339D08C62C6C00BC2748 /* NSView-OQExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 34DB339B08C62C6C00BC2748 /* NSView-OQExtensions.m */; };
@@ -347,7 +346,6 @@
 		34DB337008C62ABA00BC2748 /* Omni-Global-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; path = "Omni-Global-Release.xcconfig"; sourceTree = "<group>"; };
 		34DB337208C62ABA00BC2748 /* Omni-Tool-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Debug.xcconfig"; sourceTree = "<group>"; };
 		34DB337308C62ABA00BC2748 /* Omni-Tool-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Release.xcconfig"; sourceTree = "<group>"; };
-		34DB338608C62AE900BC2748 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		34DB338708C62AE900BC2748 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		34DB339A08C62C6C00BC2748 /* NSView-OQExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSView-OQExtensions.h"; sourceTree = "<group>"; };
 		34DB339B08C62C6C00BC2748 /* NSView-OQExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSView-OQExtensions.m"; sourceTree = "<group>"; };
@@ -384,7 +382,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				8DC2EF570486A6940098B216 /* Cocoa.framework in Frameworks */,
-				34DB338808C62AE900BC2748 /* OpenGL.framework in Frameworks */,
 				34DB338908C62AE900BC2748 /* QuartzCore.framework in Frameworks */,
 				34DB33A408C62CE000BC2748 /* OmniBase.framework in Frameworks */,
 				34DB33F208C62FBA00BC2748 /* OmniFoundation.framework in Frameworks */,
@@ -499,7 +496,6 @@
 			children = (
 				1058C7B2FEA5585E11CA2CBB /* Other Frameworks */,
 				1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */,
-				34DB338608C62AE900BC2748 /* OpenGL.framework */,
 				34DB338708C62AE900BC2748 /* QuartzCore.framework */,
 			);
 			name = Mac;

@@ -1,4 +1,4 @@
-// Copyright 2001-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,6 +11,7 @@
 
 #import <OmniFoundation/OFEnumNameTable.h>
 #import <OmniFoundation/OFNull.h>
+#import <OmniFoundation/NSBundle-OFExtensions.h> // For -containingApplicationBundleIdentifier
 #import <OmniFoundation/NSDate-OFExtensions.h> // For -initWithXMLString:
 #import <OmniFoundation/OFErrors.h>
 #import <OmniFoundation/OFBindingPoint.h>
@@ -973,6 +974,12 @@ static void _setValue(OFPreference *self, OB_STRONG id *_value, NSString *key, _
 static NSMutableDictionary <NSString *, OFPreferenceWrapper *> *PreferenceWrapperBySuiteName;
 static NSLock *PreferenceWrapperLock;
 
++ (OFPreferenceWrapper *)groupContainerIdentifierForContainingApplicationBundleIdentifierPreferenceWrapper;
+{
+    NSString *containingApplicationBundleIdentifier = NSBundle.containingApplicationBundleIdentifier;
+    return [self preferenceWrapperWithGroupIdentifier:containingApplicationBundleIdentifier];
+}
+
 + (OFPreferenceWrapper *)preferenceWrapperWithSuiteName:(NSString *)suiteName;
 {
     OBPRECONDITION(suiteName != nil);
@@ -1080,7 +1087,9 @@ static NSLock *PreferenceWrapperLock;
     };
 
     if (registrationDictionary.count == 1) {
-        if (shouldRegisterDefaultForKey(registrationDictionary.allKeys.firstObject)) {
+        NSString *key = registrationDictionary.allKeys.firstObject;
+        if (shouldRegisterDefaultForKey(key)) {
+            OBASSERT(_preferencesByKey[key] == nil, "Registering defaults for key %@ that was already accessed via OFPreference.", key);
             [_userDefaults registerDefaults:registrationDictionary];
             [self recacheRegisteredKeys];
         }
@@ -1088,11 +1097,14 @@ static NSLock *PreferenceWrapperLock;
         NSMutableArray<NSString *> *filteredKeys = nil;
 
         for (NSString *key in registrationDictionary) {
+
             if (!shouldRegisterDefaultForKey(key)) {
                 if (filteredKeys == nil) {
                     filteredKeys = [NSMutableArray array];
                 }
                 [filteredKeys addObject:key];
+            } else {
+                OBASSERT(_preferencesByKey[key] == nil, "Registering defaults for key %@ that was already accessed via OFPreference.", key);
             }
         }
 

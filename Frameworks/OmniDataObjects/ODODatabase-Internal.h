@@ -1,4 +1,4 @@
-// Copyright 2008-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,6 +15,8 @@ extern NSString * const ODODatabaseMetadataKeyColumnName;
 extern NSString * const ODODatabaseMetadataPlistColumnName;
 
 @interface ODODatabase (Internal)
+
+@property(nonatomic,readonly) dispatch_queue_t connectionQueue;
 
 - (id)_generatePrimaryKeyForEntity:(ODOEntity *)entity;
 

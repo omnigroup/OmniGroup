@@ -1,4 +1,4 @@
-// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -27,6 +27,7 @@ extern UIImage *OUIContextMenuCopyStyleIcon(void);
 extern UIImage *OUIContextMenuPasteStyleIcon(void);
 extern UIImage *OUIContextMenuSelectAllIcon(void);
 extern UIImage *OUIContextMenuCopyAsJavaScriptIcon(void);
+extern UIImage *OUIContextMenuShareIcon(void);
 
 @interface OUIImageLocation : NSObject
 

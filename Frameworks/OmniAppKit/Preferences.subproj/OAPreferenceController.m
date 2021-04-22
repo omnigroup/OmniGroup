@@ -1,4 +1,4 @@
-// Copyright 1997-2019 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -1005,10 +1005,12 @@ static NSString * const IdealWidthConstraintIdentifier = @"OAPreferenceControlle
 
 - (void)_defaultsDidChange:(NSNotification *)notification;
 {
-    if ([_window isVisible]) {
-        // Do this later since this gets called inside a lock that we need
-        [self queueSelector:@selector(validateRestoreDefaultsButton)];
-    }
+    OFMainThreadPerformBlock(^{
+        if ([_window isVisible]) {
+            // Do this later since this gets called inside a lock that we need
+            [self queueSelector:@selector(validateRestoreDefaultsButton)];
+        }
+    });
 }
 
 - (void)_modifierFlagsChanged:(NSNotification *)note;

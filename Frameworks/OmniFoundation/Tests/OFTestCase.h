@@ -1,4 +1,4 @@
-// Copyright 2008-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,7 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-#define OFDataShouldBeEqual(expected, actual) XCTAssertEqual(expected, actual)
+#define OFDataShouldBeEqual(expected, actual) XCTAssertEqualObjects(expected, actual)
 #else
 extern void OFDiffData(XCTestCase *testCase, NSData *expected, NSData *actual);
 extern void OFDiffDataFiles(XCTestCase *testCase, NSString *expectedPath, NSString *actualPath);

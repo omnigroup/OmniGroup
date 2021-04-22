@@ -1,4 +1,4 @@
-// Copyright 2004-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -322,6 +322,7 @@ static NSString *unpair(NSString *str, NSRange *where, void *dummy)
     }
 }
 
+#if !OMNI_BUILDING_FOR_IOS
 - (void)testFourCharCodes
 {
     FourCharCode fcc, fcc_bg;
@@ -353,6 +354,7 @@ static NSString *unpair(NSString *str, NSRange *where, void *dummy)
         }
     }
 }
+#endif
 
 static NSString *fromutf8(const unsigned char *u, unsigned int length)
 {
@@ -553,6 +555,7 @@ static NSString *fromutf8(const unsigned char *u, unsigned int length)
     XCTAssertEqualObjects([@"/biff/boof/zik/zak/zik/" relativePathToFilename:@"/biff/boof/"], @"../../..");
 }
 
+#if !OMNI_BUILDING_FOR_IOS
 - (void)testFancySubpath
 {
     NSString *relative;
@@ -609,5 +612,6 @@ static NSString *fromutf8(const unsigned char *u, unsigned int length)
 
     system([[NSString stringWithFormat:@"rm -r '%@'", scratchMe] UTF8String]);
 }
+#endif
 
 @end

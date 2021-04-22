@@ -1,4 +1,4 @@
-// Copyright 2008-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,6 +13,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ODOEditingContext () {
   @private
+
+    // When non-NULL, only the owning queue may access this context. When NULL, the only allowed operation should be to assume ownership of the context.
+    dispatch_queue_t _owningQueue;
+
     ODODatabase *_database;
     NSUndoManager *_undoManager;
     
@@ -46,7 +50,11 @@ NS_ASSUME_NONNULL_BEGIN
     BOOL _avoidSettingSaveDates;
     NSDate *_saveDate;
 }
+
 @end
+
+// Temporarily yield's ownership to invoke the block and then reassumes ownership.
+extern BOOL ODOEditingContextExecuteWithOwnership(ODOEditingContext *self, dispatch_queue_t temporaryOwner, BOOL (^ NS_NOESCAPE action)(void));
 
 @interface ODOEditingContext (Internal)
 #ifdef OMNI_ASSERTIONS_ON

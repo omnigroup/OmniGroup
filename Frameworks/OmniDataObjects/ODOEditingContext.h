@@ -9,6 +9,7 @@
 
 #import <CoreFoundation/CFRunLoop.h>
 #import <OmniDataObjects/ODOFeatures.h>
+#import <dispatch/queue.h>
 
 #import <Foundation/NSNotification.h>
 
@@ -20,6 +21,10 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ODOEditingContext : NSObject
 
 - (instancetype)initWithDatabase:(ODODatabase *)database;
+
+- (void)assumeOwnershipWithQueue:(dispatch_queue_t)queue;
+- (void)relinquishOwnerhip;
+- (BOOL)executeWithTemporaryOwnership:(dispatch_queue_t)temporaryOwner operation:(BOOL (^)(void))operation;
 
 @property (nonatomic, readonly) ODODatabase *database;
 
@@ -65,6 +70,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic,readonly) NSUInteger objectDidChangeCounter;
 
 @end
+
+extern void ODOEditingContextAssertOwnership(ODOEditingContext *context);
 
 /// Sent from `-deleteObject:error:` and undo of `-insertObject:`, passing the objects to be deleted in the `ODODeletedObjectsKey` user info key, including those any propagated deletes. The object passed to `-deleteObject:error:` will have already been sent `prepareForDeletion`, but will not have relationships nullfied or report itself as deleted.
 extern NSNotificationName const ODOEditingContextObjectsPreparingToBeDeletedNotification;

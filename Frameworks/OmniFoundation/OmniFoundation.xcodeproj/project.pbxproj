@@ -776,6 +776,24 @@
 		34A2CE8C0D865E9200219E36 /* OFCharacterScanner-OFTrie.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A2CE8A0D865E9200219E36 /* OFCharacterScanner-OFTrie.m */; };
 		34A4C3F1224AD4C4002E5942 /* ResourceBookmarks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34A4C3F0224AD4C4002E5942 /* ResourceBookmarks.swift */; };
 		34A4C3F2224AD4C4002E5942 /* ResourceBookmarks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34A4C3F0224AD4C4002E5942 /* ResourceBookmarks.swift */; };
+		34A6B27D2433FAEA00E64BF1 /* OFCMSTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EFB29CB1D495D72005DC7B3 /* OFCMSTest.swift */; };
+		34A6B2822433FB9500E64BF1 /* OFCMSTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EFB29CB1D495D72005DC7B3 /* OFCMSTest.swift */; };
+		34A6B2832433FBB500E64BF1 /* OFPointerStackTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10455AD0230B27E40046AD5E /* OFPointerStackTests.swift */; };
+		34A6B2842433FBB500E64BF1 /* OFPointerStackTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10455AD0230B27E40046AD5E /* OFPointerStackTests.swift */; };
+		34A6B2862433FBEA00E64BF1 /* OFErrorExtensionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 346149EF08EB0D2F00F4853E /* OFErrorExtensionTests.m */; };
+		34A6B2882433FC0100E64BF1 /* OFIndexSetTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A2C67D890D91AF9100BD7911 /* OFIndexSetTests.m */; };
+		34A6B2892433FC0B00E64BF1 /* OFLowerCaseTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 06DB16D9FF5DCC3BC697A12F /* OFLowerCaseTest.m */; };
+		34A6B28A2433FC1200E64BF1 /* OFMutableAttributedStringExtensionsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 34DC612F06CD08E30097A113 /* OFMutableAttributedStringExtensionsTest.m */; };
+		34A6B28B2433FC1900E64BF1 /* OFMutableBijectionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E4628C1174D671D0032001F /* OFMutableBijectionTests.m */; };
+		34A6B28C2433FC2000E64BF1 /* OFMutableStringExtensionsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = E290847B1CC735450029DC85 /* OFMutableStringExtensionsTest.m */; };
+		34A6B28D2433FC2A00E64BF1 /* OFRationalTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A211EB0A09327540002B603D /* OFRationalTests.m */; };
+		34A6B28E2433FC2F00E64BF1 /* OFRelativeDateParserTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FFE05E10B0E7A7900C5E063 /* OFRelativeDateParserTests.m */; };
+		34A6B28F2433FC3400E64BF1 /* OFSearchingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A28A5337060113A70097A146 /* OFSearchingTests.m */; };
+		34A6B2902433FC3700E64BF1 /* OFSetTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A26BB40D092A42F700ECCDEE /* OFSetTests.m */; };
+		34A6B2922433FC3D00E64BF1 /* OFStringEncodingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A2821CC104FFF0BE0097A146 /* OFStringEncodingTests.m */; };
+		34A6B2932433FC4200E64BF1 /* OFStringExtensionsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A4978706498FE80097A113 /* OFStringExtensionsTest.m */; };
+		34A6B2962433FC4F00E64BF1 /* OFVersionNumberTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 34F4C0F1078F065E00E8899E /* OFVersionNumberTests.m */; };
+		34A6B2972433FC5900E64BF1 /* OFGeometryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 342535A9128CB9AD009EFAC0 /* OFGeometryTests.m */; };
 		34A6BB7E1BFD3B9E00817661 /* NSBundle-OFExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34A6BB7D1BFD3B9E00817661 /* NSBundle-OFExtensions.swift */; };
 		34A6BB7F1BFD3B9E00817661 /* NSBundle-OFExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34A6BB7D1BFD3B9E00817661 /* NSBundle-OFExtensions.swift */; };
 		34A8C2AD10532007004244E9 /* OFReadWriteFileBuffer.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A8C2AB10532007004244E9 /* OFReadWriteFileBuffer.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -5821,27 +5839,43 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				34A6B2972433FC5900E64BF1 /* OFGeometryTests.m in Sources */,
 				34DAC7E2194F874300499116 /* OFRangeExtensionsTests.m in Sources */,
 				1E71649D1D92FD0B001B2FBB /* OFCryptoTest-AEAD.m in Sources */,
 				34DAC7DF194F873000499116 /* OFIndexPathTests.m in Sources */,
+				34A6B2922433FC3D00E64BF1 /* OFStringEncodingTests.m in Sources */,
+				34A6B2882433FC0100E64BF1 /* OFIndexSetTests.m in Sources */,
+				34A6B28E2433FC2F00E64BF1 /* OFRelativeDateParserTests.m in Sources */,
 				3E2EE08D1D930A0700FB00AF /* OFHashTests.m in Sources */,
+				34A6B2962433FC4F00E64BF1 /* OFVersionNumberTests.m in Sources */,
+				34A6B28C2433FC2000E64BF1 /* OFMutableStringExtensionsTest.m in Sources */,
+				34A6B28A2433FC1200E64BF1 /* OFMutableAttributedStringExtensionsTest.m in Sources */,
+				34A6B2932433FC4200E64BF1 /* OFStringExtensionsTest.m in Sources */,
+				34A6B2902433FC3700E64BF1 /* OFSetTests.m in Sources */,
 				34DAC7E5194F87DA00499116 /* OFNetStateMock.m in Sources */,
 				34DAC7E4194F876000499116 /* OFCredentialsTests.m in Sources */,
 				3E9EBCB81CAC33A400BB3F24 /* NSFileManagerExtendedAttributesTests.m in Sources */,
 				34DAC7E0194F873B00499116 /* OFMutableKnownKeyDictionaryTests.m in Sources */,
 				343BFCFE1D59201D0074DFAD /* OFXMLParserNamespaceTests.m in Sources */,
 				34DAC7E1194F874000499116 /* OFOrderedMutableDictionaryTest.m in Sources */,
+				34A6B2822433FB9500E64BF1 /* OFCMSTest.swift in Sources */,
+				34A6B28F2433FC3400E64BF1 /* OFSearchingTests.m in Sources */,
 				34CC9F511D5A6EC600FFA233 /* OFXMLElementTests.m in Sources */,
 				34D9EED41950D671003EAF74 /* OFDateXMLTests.m in Sources */,
 				34DAC7E6194F87E900499116 /* OFTestCase.m in Sources */,
+				34A6B2892433FC0B00E64BF1 /* OFLowerCaseTest.m in Sources */,
 				340E075D23849CBE00AB303D /* OFASCIIPropertyListSerializationTests.m in Sources */,
+				34A6B2832433FBB500E64BF1 /* OFPointerStackTests.swift in Sources */,
 				34DAC7E3194F875A00499116 /* OFWeakReferenceTest.m in Sources */,
+				34A6B2862433FBEA00E64BF1 /* OFErrorExtensionTests.m in Sources */,
 				34D9EED21950D671003EAF74 /* OFDateTestCase.m in Sources */,
 				34203FBB1D594A3B005A1496 /* OFXMLParserUnparsedElementTests.m in Sources */,
+				34A6B28D2433FC2A00E64BF1 /* OFRationalTests.m in Sources */,
 				3E40D5961D77554B005E7E38 /* OFTimeSpanFormatterTest.m in Sources */,
 				34DAC7CF194F7E6A00499116 /* OBTestCase.m in Sources */,
 				3EA69E522257E289006D4DCA /* OFMultiValueDictionaryTests.m in Sources */,
 				1EB9F9FB1A64627E00222BFD /* OFCryptoTest.m in Sources */,
+				34A6B28B2433FC1900E64BF1 /* OFMutableBijectionTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -6135,6 +6169,7 @@
 				4A4E07BA08AA72B10098FF0F /* OFSearchingTests.m in Sources */,
 				1E71649E1D92FD0C001B2FBB /* OFCryptoTest-AEAD.m in Sources */,
 				4A4E07BC08AA72B10098FF0F /* OFStringScannerTest.m in Sources */,
+				34A6B2842433FBB500E64BF1 /* OFPointerStackTests.swift in Sources */,
 				4A4E07BD08AA72B10098FF0F /* OFAliasTests.m in Sources */,
 				4A4E07BE08AA72B10098FF0F /* OFCompressionTest.m in Sources */,
 				4A4E07BF08AA72B10098FF0F /* OFStringExtensionsTest.m in Sources */,
@@ -6175,6 +6210,7 @@
 				346BD830163B6A420043F736 /* OFWeakReferenceTest.m in Sources */,
 				344E6C8D15DAF33E00830145 /* OFCredentialsTests.m in Sources */,
 				34CE1617169DEA0D00219574 /* OFIndexPathTests.m in Sources */,
+				34A6B27D2433FAEA00E64BF1 /* OFCMSTest.swift in Sources */,
 				34BDC53117134B0400F4E9C4 /* OFXMLIdentifierTests.m in Sources */,
 				347CA782192EB43000693624 /* OFXMLMakerTests.m in Sources */,
 				3E4628BA174D39800032001F /* OFBijectionTests.m in Sources */,

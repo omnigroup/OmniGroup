@@ -1,4 +1,4 @@
-// Copyright 2008-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,6 +11,7 @@
 #import <OmniDataObjects/ODOProperty.h>
 #import <OmniDataObjects/ODOAttribute.h>
 #import <OmniDataObjects/ODOEditingContext.h>
+#import <OmniDataObjects/ODOFloatingDate.h>
 
 #import <Foundation/NSUndoManager.h>
 
@@ -189,6 +190,20 @@ static inline BOOL _ODOObjectIsUndeletable(ODOObject *self)
 {
     OBPRECONDITION([self isKindOfClass:[ODOObject class]]);
     return self->_flags.undeletable;
+}
+
+static inline BOOL _ODOIsEqual(_Nullable id value1, _Nullable id value2)
+{
+    if (!OFISEQUAL(value1, value2))
+        return NO;
+
+    if (value1 != nil && [value1 isKindOfClass:[NSDate class]]) {
+        NSDate *date1 = value1;
+        NSDate *date2 = value2;
+        return date1.isFloating == date2.isFloating;
+    } else {
+        return YES;
+    }
 }
 
 @class ODORelationship;

@@ -83,6 +83,7 @@ extern NSURL *OFUserDocumentsDirectoryURL(void);
 
 #if OMNI_BUILDING_FOR_IOS
 // iOS uses an 'Inbox' folder in the app's ~/Documents for opening files from other applications
+extern BOOL OFIsInboxFolder(NSURL *url);
 extern BOOL OFIsInInbox(NSURL *url);
 
 extern OFScanDirectoryFilter OFScanDirectoryExcludeSytemFolderItemsFilter(void);
