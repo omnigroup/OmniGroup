@@ -1,4 +1,4 @@
-// Copyright 2014-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -251,6 +251,12 @@ static BOOL errorIndicatesPlaintext(NSError *err);
     } else {
         return [underlying fileInfoAtURL:url error:outError];
     }
+}
+
+- (ODAVFileInfo *)fileInfoAtURL:(NSURL *)url collectingRedirects:(NSMutableArray *)redirects error:(NSError **)outError;
+{
+    // No redirects here, so just return the value from the simpler method.
+    return [self fileInfoAtURL:url error:outError];
 }
 
 - (NSArray<ODAVFileInfo *> *)directoryContentsAtURL:(NSURL *)url havingExtension:(NSString *)extension error:(NSError **)outError;

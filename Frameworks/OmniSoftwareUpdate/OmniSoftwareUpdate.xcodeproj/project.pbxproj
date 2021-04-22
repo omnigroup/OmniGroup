@@ -2843,6 +2843,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4A102C1808AB00D00059F5BD /* Omni-Framework-Debug.xcconfig */;
 			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
 				INFOPLIST_FILE = Info.plist;
 				OTHER_CFLAGS = (
 					"-DOSU_FULL=1",
@@ -2861,6 +2862,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4A102C1908AB00D00059F5BD /* Omni-Framework-Release.xcconfig */;
 			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
 				INFOPLIST_FILE = Info.plist;
 				OTHER_CFLAGS = (
 					"-DOSU_FULL=1",

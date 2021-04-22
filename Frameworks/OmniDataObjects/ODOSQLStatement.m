@@ -1,4 +1,4 @@
-// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,12 +10,12 @@
 #import <OmniDataObjects/ODOProperty.h>
 #import <OmniDataObjects/ODORelationship.h>
 #import <OmniDataObjects/ODOSQLConnection.h>
+#import <OmniDataObjects/ODOPredicate-SQL.h>
 
 #import "ODOObject-Accessors.h"
 #import "ODOObject-Internal.h"
 #import "ODOEntity-SQL.h"
 #import "ODODatabase-Internal.h"
-#import "ODOPredicate-SQL.h"
 
 #import <sqlite3.h>
 
@@ -78,7 +78,7 @@ RCS_ID("$Id$")
 @property (nonatomic, strong, readwrite) ODOSQLConnection *connection;
 @property (nonatomic, copy) NSArray *bindingConstants;
 
-- (id)_initSelectStatement:(NSMutableString *)mutableSQL fromEntity:(ODOEntity *)rootEntity connection:(ODOSQLConnection *)connection predicate:(NSPredicate *)predicate error:(NSError **)outError;
+- (instancetype)_initSelectStatement:(NSMutableString *)mutableSQL fromTable:(ODOSQLTable *)table connection:(ODOSQLConnection *)connection predicate:(NSPredicate *)predicate error:(NSError **)outError;
 
 @end
 
@@ -148,23 +148,30 @@ RCS_ID("$Id$")
         [sql appendString:[aggregation _sqliteAggregateColumnSpecification]];
         _hasAggregateColumnSpecification = YES;
     }
+
+    ODOSQLTable *table = [[ODOSQLTable alloc] initWithEntity:rootEntity];
+    [sql appendFormat:@" FROM %@ %@", table.currentEntity.name, table.currentAlias];
     
-    [sql appendFormat:@" FROM %@", [rootEntity name]];
-    
-    return [self _initSelectStatement:sql fromEntity:rootEntity connection:connection predicate:predicate error:outError];
+    ODOSQLStatement *result = [self _initSelectStatement:sql fromTable:table connection:connection predicate:predicate error:outError];
+
+    [table release];
+    return result;
 }
 
 - (instancetype)initRowCountFromEntity:(ODOEntity *)rootEntity connection:(ODOSQLConnection *)connection predicate:(NSPredicate *)predicate error:(NSError **)outError;
 {
     OBPRECONDITION(rootEntity != nil);
 
-    NSMutableString *sql = [NSMutableString stringWithFormat:@"SELECT COUNT(*) FROM %@", [rootEntity name]];
-    return [self _initSelectStatement:sql fromEntity:rootEntity connection:connection predicate:predicate error:outError];
+    ODOSQLTable *table = [[ODOSQLTable alloc] initWithEntity:rootEntity];
+    NSMutableString *sql = [NSMutableString stringWithFormat:@"SELECT COUNT(*) FROM %@ %@", table.currentEntity.name, table.currentAlias];
+    ODOSQLStatement *result = [self _initSelectStatement:sql fromTable:table connection:connection predicate:predicate error:outError];
+    [table release];
+    return result;
 }
 
-- (instancetype)_initSelectStatement:(NSMutableString *)mutableSQL fromEntity:(ODOEntity *)rootEntity connection:(ODOSQLConnection *)connection predicate:(NSPredicate *)predicate error:(NSError **)outError;
+- (instancetype)_initSelectStatement:(NSMutableString *)mutableSQL fromTable:(ODOSQLTable *)table connection:(ODOSQLConnection *)connection predicate:(NSPredicate *)predicate error:(NSError **)outError;
 {
-    OBPRECONDITION(rootEntity != nil);
+    OBPRECONDITION(table != nil);
     OBPRECONDITION(connection != nil);
     
     // TODO: Not handling joins until we actually need them.
@@ -173,7 +180,7 @@ RCS_ID("$Id$")
     if (predicate) {
         constants = [NSMutableArray array];
         [mutableSQL appendString:@" WHERE "];
-        if (![predicate _appendSQL:mutableSQL entity:rootEntity constants:constants error:outError]) {
+        if (![predicate appendSQL:mutableSQL table:table constants:constants error:outError]) {
             [self release];
             return nil;
         }

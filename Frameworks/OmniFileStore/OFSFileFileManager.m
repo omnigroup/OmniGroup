@@ -1,4 +1,4 @@
-// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -79,6 +79,12 @@ static ODAVFileInfo *_createFileInfoAtPath(NSString *path)
     OBLog(OFSFileManagerLogger, 1, @"    --> %@", info);
     
     return info;
+}
+
+- (ODAVFileInfo *)fileInfoAtURL:(NSURL *)url collectingRedirects:(NSMutableArray *)redirects error:(NSError **)outError;
+{
+    // No redirects here, so just return the value from the simpler method.
+    return [self fileInfoAtURL:url error:outError];
 }
 
 - (NSArray<ODAVFileInfo *> *)directoryContentsAtURL:(NSURL *)url havingExtension:(NSString *)extension error:(NSError **)outError;

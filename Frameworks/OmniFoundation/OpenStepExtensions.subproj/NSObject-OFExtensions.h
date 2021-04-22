@@ -26,11 +26,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 extern void OFAfterDelayPerformBlock(NSTimeInterval delay, void (^block)(void));
 
-// Makes a one-shot NSOperationQueue to run the specified block. Use this instead of performSelectorInBackground:withObject:.
-extern void OFPerformInBackground(void (^block)(void));
+// Makes a serial dispatch queue to run the specified block, and passes the queue to the block when it is run. Use this instead of performSelectorInBackground:withObject:.
+extern void OFPerformInBackground(void (^block)(dispatch_queue_t queue));
 
 extern void OFMainThreadPerformBlock(void (^block)(void));
 extern void OFMainThreadPerformBlockSynchronously(void (^block)(void));
+
+extern void OFRunLoopPerformBlockAndWait(CFRunLoopRef runLoop, CFTypeRef mode, void (^block)(void));
 
 typedef NS_ENUM(NSUInteger, OFRunLoopRunType) {
     OFRunLoopRunTypeBlocking,

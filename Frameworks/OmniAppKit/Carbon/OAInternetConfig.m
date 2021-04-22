@@ -1,4 +1,4 @@
-// Copyright 2000-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,8 +16,8 @@ RCS_ID("$Id$")
 
 static NSString *OAFragmentedAppleScriptStringForString(NSString *string);
 
-NSString *OAAppleMailBundleIdentifier = @"com.apple.mail";
-NSString *OAMailSmithBundleIdentifier = @"com.barebones.mailsmith";
+NSString * const OAAppleMailBundleIdentifier = @"com.apple.mail";
+NSString * const OAMailSmithBundleIdentifier = @"com.barebones.mailsmith";
 
 @implementation OAInternetConfig
 

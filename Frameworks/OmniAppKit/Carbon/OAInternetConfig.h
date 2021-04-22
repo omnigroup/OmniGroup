@@ -1,4 +1,4 @@
-// Copyright 2000-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -35,8 +35,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)launchMailTo:(nullable NSString *)receiver carbonCopy:(nullable NSString *)carbonCopy subject:(nullable NSString *)subject body:(nullable NSString *)body error:(NSError **)outError;
 - (BOOL)launchMailTo:(nullable NSString *)receiver carbonCopy:(nullable NSString *)carbonCopy blindCarbonCopy:(nullable NSString *)blindCarbonCopy subject:(nullable NSString *)subject body:(nullable NSString *)body error:(NSError **)outError;
 
-extern NSString *OAAppleMailBundleIdentifier;
-extern NSString *OAMailSmithBundleIdentifier;
+extern NSString * const OAAppleMailBundleIdentifier;
+extern NSString * const OAMailSmithBundleIdentifier;
 
 @end
 

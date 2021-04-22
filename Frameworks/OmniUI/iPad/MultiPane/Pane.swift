@@ -1,4 +1,4 @@
-// Copyright 2016-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -78,6 +78,10 @@ import UIKit
     /// Is this Pane currently pinned.
     public var isPinned: Bool {
         return environment?.presentationMode == .embedded && configuration.isPinned
+    }
+    
+    @objc public var isPresentedInOverlay: Bool {
+        return environment?.presentationMode == .overlaid && isVisible
     }
 
     // describes the type of pane, where it lives, and how it behaves in the curent environment

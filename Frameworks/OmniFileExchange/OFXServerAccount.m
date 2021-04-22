@@ -1,4 +1,4 @@
-// Copyright 2013-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -782,6 +782,9 @@ static BOOL _validateWithinSandboxedDocumentsFolder(NSURL *url, NSError **outErr
     
     if (!success) {
         [resolveError log:@"Error resolving local documents URL"];
+        if (outError) {
+            *outError = resolveError;
+        }
         return NO;
     }
     return YES;

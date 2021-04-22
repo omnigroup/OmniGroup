@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="15505" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14490.70"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="15505"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -21,7 +21,7 @@
                     <rect key="frame" x="10" y="12" width="13" height="13"/>
                     <buttonCell key="cell" type="disclosureTriangle" bezelStyle="disclosure" imagePosition="above" alignment="left" controlSize="small" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="KrV-PV-DN0" customClass="OIDisclosureButtonCell">
                         <behavior key="behavior" pushIn="YES" changeBackground="YES" changeGray="YES" lightByContents="YES"/>
-                        <font key="font" metaFont="smallSystem"/>
+                        <font key="font" metaFont="message" size="11"/>
                     </buttonCell>
                     <userDefinedRuntimeAttributes>
                         <userDefinedRuntimeAttribute type="string" keyPath="tintColorDarkThemeKey" value="DarkInspectorDisclosureTintColor"/>
@@ -35,6 +35,9 @@
                 </button>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="l1N-o3-NPs" customClass="OALabelField">
                     <rect key="frame" x="25" y="11" width="35" height="14"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="14" id="Q4h-fL-q7r"/>
+                    </constraints>
                     <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Label" id="3Ks-xo-e09">
                         <font key="font" metaFont="smallSystemBold"/>
                         <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -54,6 +57,7 @@
                 <outlet property="disclosureButton" destination="HXT-Ox-RWt" id="kqm-sv-r1c"/>
                 <outlet property="titleLabel" destination="l1N-o3-NPs" id="LMe-Ag-ifs"/>
             </connections>
+            <point key="canvasLocation" x="140" y="155"/>
         </customView>
     </objects>
     <resources>

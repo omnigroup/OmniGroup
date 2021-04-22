@@ -1,4 +1,4 @@
-// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -242,7 +242,7 @@ static NSString *PathExtensionForFileType(NSString *fileType, BOOL *outIsPackage
     [self newDocumentWithContext:context completion:completion];
 }
 
-- (NSString *)documentTypeForNewFiles;
+- (nullable NSString *)documentTypeForNewFiles;
 {
     id <OUIDocumentCreationRequestDelegate> delegate = _weak_delegate;
 
@@ -260,7 +260,7 @@ static NSString *PathExtensionForFileType(NSString *fileType, BOOL *outIsPackage
     return nil;
 }
 
-- (NSURL *)temporaryURLForCreatingNewDocumentNamed:(nullable NSString *)documentName;
+- (nullable NSURL *)temporaryURLForCreatingNewDocumentNamed:(nullable NSString *)documentName;
 {
     BOOL isDirectory;
     NSString *documentType = [self documentTypeForNewFiles];
@@ -290,6 +290,11 @@ static NSString *PathExtensionForFileType(NSString *fileType, BOOL *outIsPackage
 - (void)templatePickerDidCancel:(OUITemplatePicker *)templatePicker;
 {
     [self _finishedWithURL:nil error:nil completion:nil];
+}
+
+- (NSArray<NSString *> *)templateUTIs;
+{
+    return [_weak_delegate templateUTIs];
 }
 
 @end

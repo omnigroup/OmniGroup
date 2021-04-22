@@ -1,4 +1,4 @@
-// Copyright 2008-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -718,7 +718,10 @@ static void ODOEditingContextInternalDeleteObjects(ODOEditingContext *self, NSSe
                 OBRequestConcreteImplementation(self, _cmd);
             }
         }
-        
+
+        // Before nullifying relationships and marking the objects as deleted, post an early notification for observers that want to be notified before these changes.
+        [[NSNotificationCenter defaultCenter] postNotificationName:ODOEditingContextObjectsPreparingToBeDeletedNotification object:self userInfo:@{ODODeletedObjectsKey:ctx.toDelete}];
+
         // Turns out none of our objects implement -validateForDelete: right now.
     #if 0
         // Validate deletion of all the objects that got collected.  Note that the objects and their neighbors will be in their pre-deletion state.
@@ -1361,6 +1364,7 @@ BOOL ODOEditingContextObjectIsInsertedNotConsideringDeletions(ODOEditingContext 
     return ODOEditingContextFaultErrorUnhandled;
 }
 
+NSNotificationName const ODOEditingContextObjectsPreparingToBeDeletedNotification = @"ODOEditingContextObjectsPreparingToBeDeletedNotification";
 NSNotificationName const ODOEditingContextObjectsWillBeDeletedNotification = @"ODOEditingContextObjectsWillBeDeletedNotification";
 NSNotificationName const ODOEditingContextObjectsDidChangeNotification = @"ODOEditingContextObjectsDidChangeNotification";
 NSNotificationName const ODOEditingContextDidSaveNotification = @"ODOEditingContextDidSaveNotification";
@@ -1890,7 +1894,25 @@ static void _updateRelationshipsForUndo(ODOObject *object, ODOEntity *entity, OD
     OBPRECONDITION(_recentlyInsertedObjects == nil);
     OBPRECONDITION(_recentlyUpdatedObjects == nil);
     OBPRECONDITION(_recentlyDeletedObjects == nil);
-    
+
+    NSMutableSet *toDelete = nil;
+    if ([objectIDsToDelete count] > 0) {
+        toDelete = [NSMutableSet set];
+        for (ODOObjectID *objectID in objectIDsToDelete) {
+            ODOObject *object = [self objectRegisteredForID:objectID];
+            if (!object) {
+                OBASSERT_NOT_REACHED("Should not be able to delete an object that isn't registered");
+                continue;
+            }
+
+            OBASSERT([toDelete member:object] == nil); // no dups, please
+            [toDelete addObject:object];
+        }
+
+        // Before making changes, post an early notification for observers that want to be notified before these changes.
+        [[NSNotificationCenter defaultCenter] postNotificationName:ODOEditingContextObjectsPreparingToBeDeletedNotification object:self userInfo:@{ODODeletedObjectsKey:toDelete}];
+    }
+
     // Perform the indicated changes.  DO NOT use public API here.  We don't want to re-validate deletes or resend -awakeFromInsert, for example.
     // Additionally, all the changes made/advertised here should be *local* to the objects being edited.  For example, we should not re-nullify relationships on deletions since that's been done already and should be captured in the other undos.
     // The exception to this is KVO & maintainence of already-cleared to-many relationships.  Since to-many relationships are not recorded directly in the deltas, we have to update them here (but still going through internal API).
@@ -1952,21 +1974,11 @@ static void _updateRelationshipsForUndo(ODOObject *object, ODOEntity *entity, OD
     }
     
     // Do the deletes
-    if ([objectIDsToDelete count] > 0) {
-        NSMutableSet *toDelete = [NSMutableSet set];
-        for (ODOObjectID *objectID in objectIDsToDelete) {
-            ODOObject *object = [self objectRegisteredForID:objectID];
-            if (!object) {
-                OBASSERT_NOT_REACHED("Should not be able to delete an object that isn't registered");
-                continue;
-            }
-            
-            OBASSERT([toDelete member:object] == nil); // no dups, please
-            [toDelete addObject:object];
-
+    if (toDelete != nil) {
+        for (ODOObject *object in toDelete) {
             // Scan each re-deleted object for non-nil to-one relationships.  If the inverse is to-many, then we need to send KVO and (if the fault has been cleared) update the set.
             // We also need to clear the to-ones to ensure that keyPath observations get dropped and that our to-one accessors can return nil (they'll be called when an observer is removing multi-step keyPath observations).
-            _updateRelationshipsForUndo(object, [objectID entity], ODOEditingContextUndoRelationshipsForDeletion);
+            _updateRelationshipsForUndo(object, object.entity, ODOEditingContextUndoRelationshipsForDeletion);
         }
         
         OBASSERT([toDelete count] > 0);

@@ -1,4 +1,4 @@
-// Copyright 1997-2019 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,8 +9,13 @@
 
 #import <Foundation/NSUserDefaults.h>
 #import <OmniFoundation/OFBundleRegistryTarget.h>
+#import <OmniFoundation/OFBundleMigrationTarget.h>
 
-@interface NSUserDefaults (OFExtensions) <OFBundleRegistryTarget>
+NS_ASSUME_NONNULL_BEGIN
+
+@interface NSUserDefaults (OFExtensions) <OFBundleRegistryTarget, OFBundleMigrationTarget>
 @end
 
 OB_HIDDEN extern NSString * const OFUserDefaultsRegistrationItemName; // Needed by OFBundleRegistry
+
+NS_ASSUME_NONNULL_END

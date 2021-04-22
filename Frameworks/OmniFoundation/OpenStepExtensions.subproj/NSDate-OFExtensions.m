@@ -277,7 +277,7 @@ static NSDateFormatter *HttpDateFormatter(void) {
  
  */
 
-static NSDate * _Nullable _initDateFromXMLString(NSDate *self, const char *buf, size_t length)
+static NSDate * _Nullable _initDateFromXMLString(NSDate *self, const char *buf, size_t length, BOOL allowFloating, BOOL * _Nullable outIsFloating)
 {
     OBAnalyzerNotReached(); // we do some things with atomic_exchange() that clang-sa doesn't like. see comment below
 
@@ -329,7 +329,16 @@ static NSDate * _Nullable _initDateFromXMLString(NSDate *self, const char *buf, 
     }
     
     CFTimeZoneRef timeZone = NULL;
-    if (buf[offset] == 'Z') { // RFC 3339 allows 'z' here too, but we don't right now.
+    BOOL isFloating = NO;
+    if (offset == length) {
+        if (allowFloating) {
+            // No time zone means to interpret the time in the local time zone
+            timeZone = CFTimeZoneCopyDefault();
+            isFloating = YES;
+        } else {
+            BAD_INIT; // Missing time zone.
+        }
+    } else if (buf[offset] == 'Z') { // RFC 3339 allows 'z' here too, but we don't right now.
         if (buf[offset + 1] != 0) {
             BAD_INIT; // Crud after the 'Z'.
         }
@@ -393,12 +402,15 @@ static NSDate * _Nullable _initDateFromXMLString(NSDate *self, const char *buf, 
     timeInterval += fraction;
 
     NSDate *result = [self initWithTimeIntervalSinceReferenceDate:timeInterval];
-    DEBUG_XML_STRING(@"result: %@ %f", result, [result timeIntervalSinceReferenceDate]);
+    DEBUG_XML_STRING(@"result: %@ %f%s", result, [result timeIntervalSinceReferenceDate], isFloating ? @" (floating)" : @"");
+
+    if (outIsFloating != NULL)
+        *outIsFloating = isFloating;
 
     return result;
 }
 
-- (nullable instancetype)initWithXMLString:(NSString *)xmlString;
+- (nullable instancetype)initWithXMLString:(NSString *)xmlString allowFloating:(BOOL)allowFloating outIsFloating:(BOOL * _Nullable)outIsFloating;
 {
     static const NSUInteger OFXMLDateStringMaximumLength = 100; // The true maximum isn't fixed since the fractional seconds part is variable length.  Anything hugely long will be rejected.
     
@@ -412,9 +424,14 @@ static NSDate * _Nullable _initDateFromXMLString(NSDate *self, const char *buf, 
         BAD_INIT;
     }
 
-    NSDate *result = _initDateFromXMLString(self, buf, length);
+    NSDate *result = _initDateFromXMLString(self, buf, length, allowFloating, outIsFloating);
     OBPOSTCONDITION_EXPENSIVE(OFISEQUAL([result xmlString], xmlString));
     return result;
+}
+
+- (nullable instancetype)initWithXMLString:(NSString *)xmlString;
+{
+    return [self initWithXMLString:xmlString allowFloating:NO outIsFloating:NULL];
 }
 
 // Convenience initializers warn incorrectly with -Wobjc-designated-initializers when returning a new object <http://llvm.org/bugs/show_bug.cgi?id=20390>
@@ -424,7 +441,7 @@ static NSDate * _Nullable _initDateFromXMLString(NSDate *self, const char *buf, 
 // Since XML dates are always ASCII, mentioning the encoding in the API is redundant.
 - (nullable instancetype)initWithXMLCString:(const char *)cString;
 {
-    NSDate *result = _initDateFromXMLString(self, cString, strlen(cString));
+    NSDate *result = _initDateFromXMLString(self, cString, strlen(cString), NO, NULL);
     OBPOSTCONDITION_EXPENSIVE(strcmp([[result xmlString] UTF8String], cString) == 0);
     return result;
 }
@@ -684,6 +701,13 @@ static NSString *_xmlStyleDateStringWithFormat(NSDate *self, SEL _cmd, OFXMLDate
 {
     // %04d-%02d-%02dT%02d:%02d:%02d.%03dZ
     return _xmlStyleDateStringWithFormat(self, _cmd, OFXMLDateStringOptionsIncludeTime|OFXMLDateStringOptionsDateSeparators|OFXMLDateStringOptionsTimeSeparators|OFXMLDateStringOptionsMilliseconds|OFXMLDateStringOptionsUTCTimeZone);
+}
+
+// dateTime
+- (NSString *)floatingTimeZoneXMLString;
+{
+    // %04d-%02d-%02dT%02d:%02d:%02d.%03d
+    return _xmlStyleDateStringWithFormat(self, _cmd, OFXMLDateStringOptionsLocalTimeZone|OFXMLDateStringOptionsIncludeTime|OFXMLDateStringOptionsDateSeparators|OFXMLDateStringOptionsTimeSeparators|OFXMLDateStringOptionsMilliseconds);
 }
 
 // Expects a string in the ICS format: YYYYMMdd.  This doesn't attempt to be very forgiving in parsing; the goal should be to feed in either nil/empty or a conforming string.

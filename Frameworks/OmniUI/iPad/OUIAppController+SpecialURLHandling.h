@@ -1,4 +1,4 @@
-// Copyright 2014-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -53,7 +53,7 @@
 - (NSString *)commandDescription;
 
 /// Whether this command can be run without explicit user confirmation. The default value is NO, requiring that the handling machinery present an action sheet to the user requesting permission to invoke the command; subclasses can override to return YES if the URL should be run immediately without confirmation. (Note that your subclass should only do this in rare circumstances.)
-- (BOOL)skipsConfirmation;
+@property (nonatomic, readonly) BOOL skipsConfirmation;
 
 /// A human-readable, localized message asking for permission to invoke this command. By default, this method returns a string incorporating the -commandDescription. Subclasses can override this method to replace the entire confirmation message with something more application- or command-specific.
 - (NSString *)confirmationMessage;

@@ -46,7 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
 {
     NSURL *fileURL = document.fileURL;
     
-    UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:@[fileURL] applicationActivities:self.supportedActivities];
+    UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:@[fileURL, document] applicationActivities:self.supportedActivities];
     
     activityViewController.modalPresentationStyle = UIModalPresentationPopover;
     activityViewController.popoverPresentationController.barButtonItem = exportBarButtonItem;

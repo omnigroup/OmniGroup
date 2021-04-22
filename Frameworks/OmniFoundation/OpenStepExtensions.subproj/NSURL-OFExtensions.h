@@ -1,4 +1,4 @@
-// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -78,5 +78,14 @@ extern void OFScanDirectoryAllowMainQueue(NSURL *directoryURL, BOOL shouldRecurs
 
 // Returns a new block that will report the given extensions as packages and use OFUTI functions to determine the others (caching them). The block returned should be used for only a short period (like a call to OFScanDirectory) since the set of known package extensions may change based on what other clients know about (in OmniFileExchange, anyway).
 extern OFScanPathExtensionIsPackage OFIsPackageWithKnownPackageExtensions(NSSet * _Nullable packageExtensions);
+
+extern NSURL *OFUserDocumentsDirectoryURL(void);
+
+#if OMNI_BUILDING_FOR_IOS
+// iOS uses an 'Inbox' folder in the app's ~/Documents for opening files from other applications
+extern BOOL OFIsInInbox(NSURL *url);
+
+extern OFScanDirectoryFilter OFScanDirectoryExcludeSytemFolderItemsFilter(void);
+#endif
 
 NS_ASSUME_NONNULL_END

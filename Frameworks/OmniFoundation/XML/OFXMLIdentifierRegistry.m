@@ -1,4 +1,4 @@
-// Copyright 2004-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -63,9 +63,9 @@ NSString *OFXMLIDFromString(NSString *str)
 
 - (void)dealloc;
 {
-    OBINVARIANT([self checkInvariants]);
-
     if (_idToObject && _objectToID) {
+        OBINVARIANT([self checkInvariants]);
+
         [self _clear];
     } else {
         // Can happen if we are deallocated w/o init being called. For example, if our OFXMLDocument subclass encounters an error in an init method and returns nil.

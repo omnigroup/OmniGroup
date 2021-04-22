@@ -1,4 +1,4 @@
-// Copyright 2013-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -215,8 +215,9 @@ static NSString *const AddCloudAccountReuseIdentifier = @"OUIServerAccounts.AddA
         OUIServerAccountsViewController *strongSelf = weakSelf;
         if (strongSelf == nil)
             return;
-        [strongSelf _showFolderForAccount:account];
-        [strongSelf _done:nil];
+        if ([strongSelf _showFolderForAccount:account]) {
+            [strongSelf _done:nil];
+        }
     }];
 
     objc_setAssociatedObject(cell, @"accessoryViewTargetActionHolder", editAction, OBJC_ASSOCIATION_RETAIN); // Make sure this action holder sticks around until we reuse the cell for something else
@@ -284,15 +285,25 @@ static NSString *const AddCloudAccountReuseIdentifier = @"OUIServerAccounts.AddA
     [self showViewController:fileListViewController sender:sender];
 }
 
-- (void)_showFolderForAccount:(OFXServerAccount *)account;
+- (BOOL)_showFolderForAccount:(OFXServerAccount *)account;
 {
     OUIDocumentSceneDelegate *sceneDelegate = self.tableView.sceneDelegate;
-    [sceneDelegate openFolderForServerAccount:account];
+
+    // We can't reveal the account's documents if the local documents folder is missing.
+    if ([account.lastError hasUnderlyingErrorDomain:OFXErrorDomain code:OFXLocalAccountDocumentsDirectoryMissing] ||
+        [account.lastError hasUnderlyingErrorDomain:OFXErrorDomain code:OFXCannotResolveLocalDocumentsURL]) {
+        [self _editAccountSettings:account sender:self.tableView];
+        return NO;
+    } else {
+        [sceneDelegate openFolderForServerAccount:account];
+        return YES;
+    }
 }
 
 - (void)_showAccount:(OFXServerAccount *)account;
 {
-    if (_isForBrowsing) {
+    // We can't browse the account's documents if the local documents folder is missing.
+    if (_isForBrowsing && ![account.lastError hasUnderlyingErrorDomain:OFXErrorDomain code:OFXLocalAccountDocumentsDirectoryMissing]) {
         [self _openFileListForAccount:account sender:self.tableView];
     } else {
         [self _editAccountSettings:account sender:self.tableView];

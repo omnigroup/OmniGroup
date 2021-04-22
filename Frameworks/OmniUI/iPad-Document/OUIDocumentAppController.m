@@ -1,4 +1,4 @@
-// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,7 +12,6 @@
 @import OmniAppKit;
 @import OmniBase;
 @import OmniDAV;
-@import OmniDocumentStore;
 @import OmniFileExchange;
 @import OmniFoundation;
 @import OmniUI;
@@ -105,9 +104,6 @@ static NSString *_customLocalDocumentsDisplayName;
     if (![super shouldOfferToReportError:error])
         return NO;
 
-    if ([error hasUnderlyingErrorDomain:ODSErrorDomain code:ODSFilenameAlreadyInUse])
-        return NO; // We need to let the user know to pick a different filename, but reporting this error to us won't help anyone
-    
     if ([error hasUnderlyingErrorDomain:OUIDocumentErrorDomain code:OUIDocumentErrorCannotMoveItemFromInbox])
         return NO; // Ignore the error as per <bug:///160026> (iOS-OmniGraffle Bug: Error encountered: Unable to open file (public.zip-archive))
 
@@ -160,7 +156,7 @@ static NSString *_customLocalDocumentsDisplayName;
     return 1;
 }
 
-- (NSString *)sampleDocumentsDirectoryTitle;
+- (nullable NSString *)sampleDocumentsDirectoryTitle;
 {
     return NSLocalizedStringFromTableInBundle(@"Restore Sample Documents", @"OmniUIDocument", OMNI_BUNDLE, @"Restore Sample Documents Title");
 }
@@ -170,7 +166,7 @@ static NSString *_customLocalDocumentsDisplayName;
     return [[NSBundle mainBundle] URLForResource:@"Samples" withExtension:@""];
 }
 
-- (NSPredicate *)sampleDocumentsFilterPredicate;
+- (nullable NSPredicate *)sampleDocumentsFilterPredicate;
 {
     // For subclasses to overide.
     return nil;
@@ -558,6 +554,13 @@ static NSSet *ViewableFileTypes()
 
     if (account.usageMode != OFXServerAccountUsageModeCloudSync) {
         discardAction(); // This account doesn't sync, so there's nothing to warn about
+        return;
+    }
+
+    // If the account has lost its documents folder, there is nothing for us to clean up.
+    if ([account.lastError hasUnderlyingErrorDomain:OFXErrorDomain code:OFXLocalAccountDocumentsDirectoryMissing] ||
+        [account.lastError hasUnderlyingErrorDomain:OFXErrorDomain code:OFXCannotResolveLocalDocumentsURL]) {
+        discardAction();
         return;
     }
 

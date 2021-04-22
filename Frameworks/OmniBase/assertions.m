@@ -1,4 +1,4 @@
-// Copyright 1997-2019 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,6 +12,7 @@
 #import <OmniBase/macros.h>
 #import <OmniBase/OBBacktraceBuffer.h>
 #import <unistd.h> // For getpid()
+#import <execinfo.h>
 
 RCS_ID("$Id$")
 
@@ -33,6 +34,13 @@ void OBLogAssertionFailure(const char *type, const char *expression, const char 
         else
             fprintf(stderr, "Error: %s failed at %s:%d\n", type, file, lineNumber);
     }
+
+#if 0
+#define MAX_BACKTRACE_DEPTH 128
+    void *frames[MAX_BACKTRACE_DEPTH];
+    int framecount = backtrace(frames, MAX_BACKTRACE_DEPTH);
+    backtrace_symbols_fd(frames, framecount, fileno(stderr));
+#endif
 }
 
 static NSString * const OBEnableExpensiveAssertionsKey = @"OBEnableExpensiveAssertions";

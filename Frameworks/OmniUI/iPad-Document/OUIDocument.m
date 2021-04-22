@@ -1,4 +1,4 @@
-// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,7 +8,6 @@
 #import <OmniUIDocument/OUIDocument.h>
 
 @import OmniFoundation;
-@import OmniDocumentStore;
 @import OmniFileExchange;
 @import OmniUI;
 
@@ -720,7 +719,7 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
         return;
     }
     
-    OBASSERT(!ODSIsInInbox(url));
+    OBASSERT(!OFIsInInbox(url));
     
     // In iOS 5, when backgrounding the app, the -autosaveWithCompletionHandler: method would be called. In iOS 6, this is called directly.
     [self _willSave];

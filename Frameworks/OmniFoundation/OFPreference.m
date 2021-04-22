@@ -7,6 +7,8 @@
 
 #import <OmniFoundation/OFPreference.h>
 
+#import <OmniFoundation/NSFileManager-OFSimpleExtensions.h> // For group container identifier utility
+
 #import <OmniFoundation/OFEnumNameTable.h>
 #import <OmniFoundation/OFNull.h>
 #import <OmniFoundation/NSDate-OFExtensions.h> // For -initWithXMLString:
@@ -30,20 +32,27 @@ NS_ASSUME_NONNULL_BEGIN
 
 //#define DEBUG_PREFERENCES
 
-static NSUserDefaults *standardUserDefaults;
-static NSMutableDictionary <NSString *, OFPreference *> *preferencesByKey;
-static NSLock *preferencesLock;
-static NSSet <NSString *> * _Nullable registeredKeysCache;
 static NSObject *unset = nil;
-static volatile unsigned registrationGeneration = 1;
-static NSNotificationCenter *preferenceNotificationCenter = nil;
 
 NSString * const OFPreferenceObjectValueBinding = @"objectValue";
 NSString * const OFPreferenceDidChangeNotification = @"OFPreferenceDidChangeNotification";
 
+@interface OFPreferenceWrapper ()
+{
+@package
+    NSUserDefaults *_userDefaults;
+    volatile unsigned _registrationGeneration;
+    NSNotificationCenter *_preferenceNotificationCenter;
+    NSLock *_preferencesLock;
+}
+@end
+
+
 @interface OFPreference ()
 {
 @protected
+    __weak OFPreferenceWrapper *_wrapper;
+
     // OFEnumeratedPreference references these
     NSString *_key;
     id _value;
@@ -55,7 +64,7 @@ NSString * const OFPreferenceDidChangeNotification = @"OFPreferenceDidChangeNoti
     OFEnumNameTable *names;
 }
 
-- (id)_initWithKey:(NSString * )key enumeration:(OFEnumNameTable *)enumeration;
+- (id)_initWithKey:(NSString * )key enumeration:(OFEnumNameTable *)enumeration wrapper:(OFPreferenceWrapper *)wrapper;
 
 @end
 
@@ -69,12 +78,18 @@ NSString * const OFPreferenceDidChangeNotification = @"OFPreferenceDidChangeNoti
     BOOL _updatingController;
 }
 
-static id _retainedObjectValue(OFPreference *self, id const *_value, NSString *key)
+static id _Nullable _retainedObjectValue(OFPreference *self, id const *_value, NSString *key)
 {
     id result = nil;
 
+    OFPreferenceWrapper *wrapper = self->_wrapper;
+    if (wrapper == nil) {
+        OBASSERT_NOT_REACHED("Using a preference from a deallocated OFPreferenceWrapper");
+        return nil;
+    }
+
     @synchronized(self) {
-        if (self->_generation != registrationGeneration)
+        if (self->_generation != wrapper->_registrationGeneration)
             result = [unset retain];
         else
             result = [*_value retain];
@@ -93,7 +108,7 @@ static id _retainedObjectValue(OFPreference *self, id const *_value, NSString *k
     return result;
 }
 
-static inline id _objectValue(OFPreference *self, id const *_value, NSString *key, NSString *className)
+static inline id _Nullable _objectValue(OFPreference *self, id const *_value, NSString *key, NSString *className)
 {
     id result = [_retainedObjectValue(self, _value, key) autorelease];
 
@@ -103,7 +118,7 @@ static inline id _objectValue(OFPreference *self, id const *_value, NSString *ke
     return result;
 }
 
-static void _setValueUnderlyingValue(OFPreference *self, id _Nullable controller, NSString * _Nullable keyPath, NSString *key, id _Nullable value)
+static void _setValueUnderlyingValue(OFPreference *self, OFPreferenceWrapper *wrapper, id _Nullable controller, NSString * _Nullable keyPath, NSString *key, id _Nullable value)
 {
     // Per discussion with tjw in <bug:///122290> (Bug: OFPreference deadlock), we should avoid writing to OFPreference from a background thread/queue.
     // The original design of OFPreference was that it would be readable in a thread-safe way from any queue, but that writing to it should happen on the main queue.
@@ -124,11 +139,11 @@ static void _setValueUnderlyingValue(OFPreference *self, id _Nullable controller
     
     @try {
         if (value) {
-            [standardUserDefaults setObject:value forKey:key];
+            [wrapper->_userDefaults setObject:value forKey:key];
             if (controller)
                 [controller setValue:value forKeyPath:keyPath];
         } else {
-            [standardUserDefaults removeObjectForKey:key];
+            [wrapper->_userDefaults removeObjectForKey:key];
             if (controller)
                 [controller setValue:nil forKeyPath:keyPath];
         }
@@ -142,6 +157,12 @@ static void _setValueUnderlyingValue(OFPreference *self, id _Nullable controller
 
 static void _setValue(OFPreference *self, OB_STRONG id *_value, NSString *key, _Nullable id value)
 {
+    OFPreferenceWrapper *wrapper = self->_wrapper;
+    if (wrapper == nil) {
+        OBASSERT_NOT_REACHED("Using a preference from a deallocated OFPreferenceWrapper");
+        return;
+    }
+
     @synchronized(self) {
         // If this preference is created & used by a OAPreferenceClient, or other NSController, use KVC on the controller to set the preference so that other observers of the controller will get notified via KVO.
         // This introduces an(other?) ugly bit, though.  Our OAPreferenceClient instances each use a OFPreferenceWrapper.  This creates a feedback loop on setting in some cases (particularly clearing to a default value).  So, we have _updatingController to record whether we are getting called recursively.
@@ -164,12 +185,12 @@ static void _setValue(OFPreference *self, OB_STRONG id *_value, NSString *key, _
             [*_value release];
             *_value = value;
             
-            _setValueUnderlyingValue(self, controller, keyPath, key, value);
+            _setValueUnderlyingValue(self, wrapper, controller, keyPath, key, value);
 #ifdef DEBUG_PREFERENCES
             NSLog(@"OFPreference(0x%08x:%@) <- %@", self, key, *_value);
 #endif
         } else {
-            _setValueUnderlyingValue(self, controller, keyPath, key, value);
+            _setValueUnderlyingValue(self, wrapper, controller, keyPath, key, value);
             
             // Get the new value exposed by removing this from the user default domain
             [*_value release];
@@ -182,118 +203,49 @@ static void _setValue(OFPreference *self, OB_STRONG id *_value, NSString *key, _
     }
     
     // Tell anyone who is interested that this default changed
-    [preferenceNotificationCenter postNotificationName:OFPreferenceDidChangeNotification object:self];
+    [wrapper->_preferenceNotificationCenter postNotificationName:OFPreferenceDidChangeNotification object:self];
 }
 
 + (void) initialize;
 {
     OBINITIALIZE;
     
-    standardUserDefaults = [[NSUserDefaults standardUserDefaults] retain];
-    [standardUserDefaults volatileDomainForName:NSRegistrationDomain]; // avoid a race condition
-    preferencesByKey = [[NSMutableDictionary alloc] init];
-    preferencesLock = [[NSLock alloc] init];
     unset = [[NSObject alloc] init];  // just getting a guaranteed-unique, retainable/releasable object
-    
-    preferenceNotificationCenter = [[NSNotificationCenter alloc] init];
 }
 
 + (NSSet <NSString *> *)registeredKeys;
 {
-    NSSet <NSString *> *result;
-
-    [preferencesLock lock];
-
-    if (registeredKeysCache == nil) {
-        NSMutableSet *keys = [[NSMutableSet alloc] init];
-        [keys addObjectsFromArray:[preferencesByKey allKeys]];
-        [keys addObjectsFromArray:[[standardUserDefaults volatileDomainForName:NSRegistrationDomain] allKeys]];
-        registeredKeysCache = [keys copy];
-        [keys release];
-    }
-
-    result = [registeredKeysCache retain];
-
-    [preferencesLock unlock];
-
-    return [result autorelease];
+    return [[OFPreferenceWrapper sharedPreferenceWrapper] registeredKeys];
 }
 
 + (void)recacheRegisteredKeys
 {
-    [preferencesLock lock];
-    [registeredKeysCache release];
-    registeredKeysCache = nil;
-    registrationGeneration ++;
-    [preferencesLock unlock];
+    [[OFPreferenceWrapper sharedPreferenceWrapper] recacheRegisteredKeys];
 }
 
 + (void)registerDefaultValue:(id)value forKey:(NSString *)key options:(OFPreferenceRegistrationOptions)options;
 {
-    NSDictionary *registrationDictionary = @{key: value};
-    [self registerDefaults:registrationDictionary options:options];
+    [[OFPreferenceWrapper sharedPreferenceWrapper] registerDefaultValue:value forKey:key options:options];
 }
 
 + (void)registerDefaults:(NSDictionary<NSString *, id> *)registrationDictionary options:(OFPreferenceRegistrationOptions)options;
 {
-    NSSet<NSString *> *registeredKeys = self.registeredKeys;
-    BOOL shouldOverwriteExistingRegistration = ((options & OFPreferenceRegistrationPreserveExistingRegistrations) == 0);
-
-    BOOL (^shouldRegisterDefaultForKey)(NSString * _Nullable key) = ^BOOL (NSString * _Nullable key) {
-        return (key != nil) && (shouldOverwriteExistingRegistration || ![registeredKeys containsObject:key]);
-    };
-
-    if (registrationDictionary.count == 1) {
-        if (shouldRegisterDefaultForKey(registrationDictionary.allKeys.firstObject)) {
-            [[NSUserDefaults standardUserDefaults] registerDefaults:registrationDictionary];
-            [self recacheRegisteredKeys];
-        }
-    } else {
-        NSMutableArray<NSString *> *filteredKeys = nil;
-
-        for (NSString *key in registrationDictionary) {
-            if (!shouldRegisterDefaultForKey(key)) {
-                if (filteredKeys == nil) {
-                    filteredKeys = [NSMutableArray array];
-                }
-                [filteredKeys addObject:key];
-            }
-        }
-        
-        if (filteredKeys != nil && filteredKeys.count == registrationDictionary.count) {
-            return;
-        }
-        
-        if (filteredKeys != nil) {
-            NSMutableDictionary *filteredRegistrationDictionary = [NSMutableDictionary dictionaryWithDictionary:registrationDictionary];
-            [filteredRegistrationDictionary removeObjectsForKeys:filteredKeys];
-            registrationDictionary = filteredRegistrationDictionary;
-        }
-        
-        [[NSUserDefaults standardUserDefaults] registerDefaults:registrationDictionary];
-        [self recacheRegisteredKeys];
-    }
+    [[OFPreferenceWrapper sharedPreferenceWrapper] registerDefaults:registrationDictionary options:options];
 }
 
 + (void)addObserver:(id)anObserver selector:(SEL)aSelector forPreference:(OFPreference * _Nullable)aPreference;
 {
-    [preferenceNotificationCenter addObserver:anObserver selector:aSelector name:OFPreferenceDidChangeNotification object:aPreference];
+    [[OFPreferenceWrapper sharedPreferenceWrapper] addObserver:anObserver selector:aSelector forPreference:aPreference];
 }
 
 + (id)addObserverForPreference:(nullable OFPreference *)preference usingBlock:(void (^)(OFPreference *preference))block;
 {
-    id result = [preferenceNotificationCenter addObserverForName:OFPreferenceDidChangeNotification object:preference queue:nil usingBlock:^(NSNotification * _Nonnull note) {
-        OFPreference *changedPreference = note.object;
-        if ([changedPreference isKindOfClass:[OFPreference class]]) {
-            block(changedPreference);
-        }
-    }];
-    return result;
+    return [[OFPreferenceWrapper sharedPreferenceWrapper] addObserverForPreference:preference usingBlock:block];
 }
 
 + (void)removeObserver:(id)anObserver forPreference:(OFPreference * _Nullable)aPreference;
 {
-    [preferenceNotificationCenter removeObserver:anObserver name:OFPreferenceDidChangeNotification object:aPreference];
+    [[OFPreferenceWrapper sharedPreferenceWrapper] removeObserver:anObserver forPreference:aPreference];
 }
 
 + (nullable id)coerceStringValue:(nullable NSString *)stringValue toTypeOfPropertyListValue:(id)propertyListValue error:(NSError **)outError;
@@ -394,53 +346,22 @@ static void _setValue(OFPreference *self, OB_STRONG id *_value, NSString *key, _
 
 + (BOOL)hasPreferenceForKey:(NSString *)key;
 {
-    BOOL hasPreferenceForKey = NO;
-
-    [preferencesLock lock];
-
-    hasPreferenceForKey = ([preferencesByKey objectForKey: key] != nil);
-
-    [preferencesLock unlock];
-
-    return hasPreferenceForKey;
+    return [[OFPreferenceWrapper sharedPreferenceWrapper] hasPreferenceForKey:key];
 }
 
 + (OFPreference *)preferenceForKey:(NSString *)key;
 {
-    return [self preferenceForKey:key enumeration:nil];
+    return [[OFPreferenceWrapper sharedPreferenceWrapper] preferenceForKey:key];
 }
 
 + (OFPreference *)preferenceForKey:(NSString *)key enumeration:(OFEnumNameTable * _Nullable)enumeration;
 {
-    OFPreference *preference;
-    
-    OBPRECONDITION(key);
-    
-    [preferencesLock lock];
-    preference = [[preferencesByKey objectForKey: key] retain];
-    if (!preference) {
-        if (enumeration == nil) {
-            preference = [[self alloc] _initWithKey: key];
-        } else {
-            preference = [[OFEnumeratedPreference alloc] _initWithKey: key enumeration: enumeration];
-        }
-        [preferencesByKey setObject: preference forKey: key];
-    }
-    [preferencesLock unlock];
-
-    if (enumeration != nil) {
-        // It's OK to pass in a nil value for the enumeration, if you know that the enumeration has already been set up
-        assert([[preference enumeration] isEqual: enumeration]);
-    }
-    
-    return [preference autorelease];
+    return [[OFPreferenceWrapper sharedPreferenceWrapper] preferenceForKey:key enumeration:enumeration];
 }
 
 + (OFPreference *)preferenceForKey:(NSString *)key defaultValue:(id)value;
 {
-    [self registerDefaultValue:value forKey:key options:OFPreferenceRegistrationPreserveExistingRegistrations];
-
-    return [self preferenceForKey:key];
+    return [[OFPreferenceWrapper sharedPreferenceWrapper] preferenceForKey:key defaultValue:value];
 }
 
 - (NSString *) key;
@@ -478,8 +399,14 @@ static void _setValue(OFPreference *self, OB_STRONG id *_value, NSString *key, _
     NSDictionary *registrationDictionary;
     id defaultValue;
 
+    OFPreferenceWrapper *wrapper = self->_wrapper;
+    if (wrapper == nil) {
+        OBASSERT_NOT_REACHED("Using a preference from a deallocated OFPreferenceWrapper");
+        return nil;
+    }
+
     @synchronized(self) {
-	if (_defaultValue != nil && _generation != registrationGeneration) {
+        if (_defaultValue != nil && _generation != wrapper->_registrationGeneration) {
 	    [_defaultValue release];
 	    _defaultValue = nil;
 	}
@@ -489,7 +416,7 @@ static void _setValue(OFPreference *self, OB_STRONG id *_value, NSString *key, _
     if (defaultValue != nil)
         return _defaultValue;
 
-    registrationDictionary = [standardUserDefaults volatileDomainForName:NSRegistrationDomain];
+    registrationDictionary = [wrapper->_userDefaults volatileDomainForName:NSRegistrationDomain];
     defaultValue = [registrationDictionary objectForKey:_key];
 
     @synchronized(self) {
@@ -518,9 +445,15 @@ static void _setValue(OFPreference *self, OB_STRONG id *_value, NSString *key, _
 
 - (BOOL) hasPersistentValue;
 {
+    OFPreferenceWrapper *wrapper = self->_wrapper;
+    if (wrapper == nil) {
+        OBASSERT_NOT_REACHED("Using a preference from a deallocated OFPreferenceWrapper");
+        return NO;
+    }
+
     NSString *bundleIdentifier = [[NSBundle mainBundle] bundleIdentifier];
     for (NSString *domain in @[bundleIdentifier, NSGlobalDomain]) {
-        id value = [[standardUserDefaults persistentDomainForName:domain] objectForKey:_key];
+        id value = [[wrapper->_userDefaults persistentDomainForName:domain] objectForKey:_key];
         if (value != nil) {
             return YES;
         }
@@ -809,6 +742,28 @@ static void _setValue(OFPreference *self, OB_STRONG id *_value, NSString *key, _
     [NSException raise:NSInvalidArgumentException format:@"-%@ called on non-enumerated %@ (%@)", NSStringFromSelector(_cmd), [self shortDescription], _key];
 }
 
+- (void)addObserver:(id)anObserver selector:(SEL)aSelector;
+{
+    OFPreferenceWrapper *wrapper = self->_wrapper;
+    if (wrapper == nil) {
+        OBASSERT_NOT_REACHED("Using a preference from a deallocated OFPreferenceWrapper");
+        return;
+    }
+
+    [wrapper addObserver:anObserver selector:aSelector forPreference:self];
+}
+
+- (void)removeObserver:(id)anObserver;
+{
+    OFPreferenceWrapper *wrapper = self->_wrapper;
+    if (wrapper == nil) {
+        OBASSERT_NOT_REACHED("Using a preference from a deallocated OFPreferenceWrapper");
+        return;
+    }
+
+    [wrapper removeObserver:anObserver forPreference:self];
+}
+
 #pragma mark AppleScript Support
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
@@ -859,12 +814,14 @@ static void _setValue(OFPreference *self, OB_STRONG id *_value, NSString *key, _
 
 #endif
 
-#pragma mark - Private
+#pragma mark Private
 
-- (id) _initWithKey: (NSString * ) key;
+- (id)_initWithKey:(NSString * )key wrapper:(OFPreferenceWrapper *)wrapper;
 {
+    OBPRECONDITION(wrapper != nil);
     OBPRECONDITION(key != nil);
 
+    _wrapper = wrapper;
     _key = [key copy];
     _generation = 0;
     _value = [unset retain];
@@ -874,21 +831,27 @@ static void _setValue(OFPreference *self, OB_STRONG id *_value, NSString *key, _
 
 - (void)_refresh
 {
+    OFPreferenceWrapper *wrapper = self->_wrapper;
+    if (wrapper == nil) {
+        OBASSERT_NOT_REACHED("Using a preference from a deallocated OFPreferenceWrapper");
+        return;
+    }
+
     unsigned newGeneration;
     id newValue;
 
-    [preferencesLock lock];
+    [wrapper->_preferencesLock lock];
 
 #ifdef DEBUG
-    if (![_key hasPrefix:@"SiteSpecific:"] && ![[standardUserDefaults volatileDomainForName:NSRegistrationDomain] objectForKey:_key]) {
+    if (![_key hasPrefix:@"SiteSpecific:"] && ![[wrapper->_userDefaults volatileDomainForName:NSRegistrationDomain] objectForKey:_key]) {
         NSLog(@"OFPreference: No default value is registered for '%@'", _key);
-        OBPRECONDITION([[standardUserDefaults volatileDomainForName:NSRegistrationDomain] objectForKey:_key]);
+        OBPRECONDITION([[wrapper->_userDefaults volatileDomainForName:NSRegistrationDomain] objectForKey:_key]);
     }
 #endif
 
-    newGeneration = registrationGeneration;
-    newValue = [[standardUserDefaults objectForKey: _key] retain];
-    [preferencesLock unlock];
+    newGeneration = wrapper->_registrationGeneration;
+    newValue = [[wrapper->_userDefaults objectForKey: _key] retain];
+    [wrapper->_preferencesLock unlock];
 
 #ifdef DEBUG_PREFERENCES
     NSLog(@"OFPreference(0x%08x:%@) faulting in value %@ generation %u", self, _key, newValue, newGeneration);
@@ -909,9 +872,9 @@ static void _setValue(OFPreference *self, OB_STRONG id *_value, NSString *key, _
 
 @implementation OFEnumeratedPreference
 
-- (id)_initWithKey:(NSString * )key enumeration:(OFEnumNameTable *)enumeration;
+- (id)_initWithKey:(NSString * )key enumeration:(OFEnumNameTable *)enumeration wrapper:(OFPreferenceWrapper *)wrapper;
 {
-    if (!(self = [super _initWithKey:key]))
+    if (!(self = [super _initWithKey:key wrapper:wrapper]))
         return nil;
     names = [enumeration retain];
     return self;
@@ -987,29 +950,237 @@ static void _setValue(OFPreference *self, OB_STRONG id *_value, NSString *key, _
 
 @end
 
-@implementation OFPreferenceWrapper : NSObject
+// MARK: -
 
-+ (OFPreferenceWrapper *) sharedPreferenceWrapper;
+@implementation OFPreferenceWrapper
+{
+@private
+    NSMutableDictionary <NSString *, OFPreference *> *_preferencesByKey;
+    NSSet <NSString *> * _Nullable _registeredKeysCache;
+}
+
++ (OFPreferenceWrapper *)sharedPreferenceWrapper;
 {
     static OFPreferenceWrapper *sharedPreferenceWrapper = nil;
-    
-    if (!sharedPreferenceWrapper)
-        sharedPreferenceWrapper = [[self alloc] init];
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        sharedPreferenceWrapper = [[OFPreferenceWrapper alloc] _initWithSuiteName:nil];
+    });
+
     return sharedPreferenceWrapper;
 }
 
-- (OFPreference *)preferenceForKey:(NSString *)key;
+static NSMutableDictionary <NSString *, OFPreferenceWrapper *> *PreferenceWrapperBySuiteName;
+static NSLock *PreferenceWrapperLock;
+
++ (OFPreferenceWrapper *)preferenceWrapperWithSuiteName:(NSString *)suiteName;
 {
-    return [OFPreference preferenceForKey:key];
+    OBPRECONDITION(suiteName != nil);
+
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        PreferenceWrapperLock = [[NSLock alloc] init];
+        PreferenceWrapperBySuiteName = [[NSMutableDictionary alloc] init];
+    });
+
+    [PreferenceWrapperLock lock];
+    OFPreferenceWrapper *wrapper = PreferenceWrapperBySuiteName[suiteName];
+    if (wrapper == nil) {
+        wrapper = [[[OFPreferenceWrapper alloc] _initWithSuiteName:suiteName] autorelease];
+        PreferenceWrapperBySuiteName[suiteName] = wrapper;
+    }
+    [PreferenceWrapperLock unlock];
+
+    return wrapper;
+}
+
+// For preference domains that should be stored in a group container. This should be the base identifer ("com.mycompany.appname") and the appropriate prefix will be added to the suite name for the current platform.
++ (OFPreferenceWrapper *)preferenceWrapperWithGroupIdentifier:(NSString *)suiteName;
+{
+    // TODO: Move this method off NSFileManager(OFSimpleExtensions) to NSProcessInfo?
+
+    return [self preferenceWrapperWithSuiteName:[[NSFileManager defaultManager] groupContainerIdentifierForBaseIdentifier:suiteName]];
+}
+
+- _initWithSuiteName:(nullable NSString *)suiteName;
+{
+    self = [super init];
+
+    _suiteName = [suiteName copy];
+
+    if (suiteName == nil) {
+        _userDefaults = [[NSUserDefaults standardUserDefaults] retain];
+    } else {
+        _userDefaults = [[NSUserDefaults alloc] initWithSuiteName:suiteName];
+    }
+
+    [_userDefaults volatileDomainForName:NSRegistrationDomain]; // avoid a race condition
+    _preferencesByKey = [[NSMutableDictionary alloc] init];
+    _preferencesLock = [[NSLock alloc] init];
+
+    _preferenceNotificationCenter = [[NSNotificationCenter alloc] init];
+
+    _registrationGeneration = 1;
+
+    return self;
 }
 
 - (void) dealloc;
 {
-    OBRejectUnusedImplementation(self, _cmd); // OFPreferenceWrapper instance should never be deallocated
+    OBRejectUnusedImplementation(self, _cmd); // OFPreferenceWrapper instances should never be deallocated
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunreachable-code"
     [super dealloc]; // We know this won't be reached, but w/o this we get a warning about a missing call to super -dealloc
 #pragma clang diagnostic pop
+}
+
+- (NSSet <NSString *> *)registeredKeys;
+{
+    NSSet <NSString *> *result;
+
+    [_preferencesLock lock];
+
+    if (_registeredKeysCache == nil) {
+        NSMutableSet *keys = [[NSMutableSet alloc] init];
+        [keys addObjectsFromArray:[_preferencesByKey allKeys]];
+        [keys addObjectsFromArray:[[_userDefaults volatileDomainForName:NSRegistrationDomain] allKeys]];
+        _registeredKeysCache = [keys copy];
+        [keys release];
+    }
+
+    result = [_registeredKeysCache retain];
+
+    [_preferencesLock unlock];
+
+    return [result autorelease];
+}
+
+- (void)recacheRegisteredKeys
+{
+    [_preferencesLock lock];
+    [_registeredKeysCache release];
+    _registeredKeysCache = nil;
+    _registrationGeneration ++;
+    [_preferencesLock unlock];
+}
+
+- (void)registerDefaultValue:(id)value forKey:(NSString *)key options:(OFPreferenceRegistrationOptions)options;
+{
+    NSDictionary *registrationDictionary = @{key: value};
+    [self registerDefaults:registrationDictionary options:options];
+}
+
+- (void)registerDefaults:(NSDictionary<NSString *, id> *)registrationDictionary options:(OFPreferenceRegistrationOptions)options;
+{
+    NSSet<NSString *> *registeredKeys = self.registeredKeys;
+    BOOL shouldOverwriteExistingRegistration = ((options & OFPreferenceRegistrationPreserveExistingRegistrations) == 0);
+
+    BOOL (^shouldRegisterDefaultForKey)(NSString * _Nullable key) = ^BOOL (NSString * _Nullable key) {
+        return (key != nil) && (shouldOverwriteExistingRegistration || ![registeredKeys containsObject:key]);
+    };
+
+    if (registrationDictionary.count == 1) {
+        if (shouldRegisterDefaultForKey(registrationDictionary.allKeys.firstObject)) {
+            [_userDefaults registerDefaults:registrationDictionary];
+            [self recacheRegisteredKeys];
+        }
+    } else {
+        NSMutableArray<NSString *> *filteredKeys = nil;
+
+        for (NSString *key in registrationDictionary) {
+            if (!shouldRegisterDefaultForKey(key)) {
+                if (filteredKeys == nil) {
+                    filteredKeys = [NSMutableArray array];
+                }
+                [filteredKeys addObject:key];
+            }
+        }
+
+        if (filteredKeys != nil && filteredKeys.count == registrationDictionary.count) {
+            return;
+        }
+
+        if (filteredKeys != nil) {
+            NSMutableDictionary *filteredRegistrationDictionary = [NSMutableDictionary dictionaryWithDictionary:registrationDictionary];
+            [filteredRegistrationDictionary removeObjectsForKeys:filteredKeys];
+            registrationDictionary = filteredRegistrationDictionary;
+        }
+
+        [_userDefaults registerDefaults:registrationDictionary];
+        [self recacheRegisteredKeys];
+    }
+}
+
+- (void)addObserver:(id)anObserver selector:(SEL)aSelector forPreference:(OFPreference * _Nullable)aPreference;
+{
+    [_preferenceNotificationCenter addObserver:anObserver selector:aSelector name:OFPreferenceDidChangeNotification object:aPreference];
+}
+
+- (id)addObserverForPreference:(nullable OFPreference *)preference usingBlock:(void (^)(OFPreference *preference))block;
+{
+    id result = [_preferenceNotificationCenter addObserverForName:OFPreferenceDidChangeNotification object:preference queue:nil usingBlock:^(NSNotification * _Nonnull note) {
+        OFPreference *changedPreference = note.object;
+        if ([changedPreference isKindOfClass:[OFPreference class]]) {
+            block(changedPreference);
+        }
+    }];
+    return result;
+}
+
+- (void)removeObserver:(id)anObserver forPreference:(OFPreference * _Nullable)aPreference;
+{
+    [_preferenceNotificationCenter removeObserver:anObserver name:OFPreferenceDidChangeNotification object:aPreference];
+}
+
+- (BOOL)hasPreferenceForKey:(NSString *)key;
+{
+    BOOL hasPreferenceForKey = NO;
+
+    [_preferencesLock lock];
+
+    hasPreferenceForKey = ([_preferencesByKey objectForKey: key] != nil);
+
+    [_preferencesLock unlock];
+
+    return hasPreferenceForKey;
+}
+
+- (OFPreference *)preferenceForKey:(NSString *)key;
+{
+    return [self preferenceForKey:key enumeration:nil];
+}
+
+- (OFPreference *)preferenceForKey:(NSString *)key enumeration:(OFEnumNameTable * _Nullable)enumeration;
+{
+    OFPreference *preference;
+
+    OBPRECONDITION(key);
+
+    [_preferencesLock lock];
+    preference = [[_preferencesByKey objectForKey: key] retain];
+    if (!preference) {
+        if (enumeration == nil) {
+            preference = [[OFPreference alloc] _initWithKey:key wrapper:self];
+        } else {
+            preference = [[OFEnumeratedPreference alloc] _initWithKey:key enumeration:enumeration wrapper:self];
+        }
+        [_preferencesByKey setObject: preference forKey: key];
+    }
+    [_preferencesLock unlock];
+
+    if (enumeration != nil) {
+        // It's OK to pass in a nil value for the enumeration, if you know that the enumeration has already been set up
+        assert([[preference enumeration] isEqual: enumeration]);
+    }
+
+    return [preference autorelease];
+}
+
+- (OFPreference *)preferenceForKey:(NSString *)key defaultValue:(id)value;
+{
+    [self registerDefaultValue:value forKey:key options:OFPreferenceRegistrationPreserveExistingRegistrations];
+
+    return [self preferenceForKey:key];
 }
 
 - (nullable id)objectForKey:(NSString *)defaultName;
@@ -1019,112 +1190,112 @@ static void _setValue(OFPreference *self, OB_STRONG id *_value, NSString *key, _
 
 - (void)setObject:(nullable id)value forKey:(NSString *)defaultName;
 {
-    [[OFPreference preferenceForKey: defaultName] setObjectValue: value];
+    [[self preferenceForKey:defaultName] setObjectValue:value];
 }
 
 - (nullable id)valueForKey:(NSString *)aKey;
 {
-    return [[OFPreference preferenceForKey: aKey] objectValue];
+    return [[self preferenceForKey:aKey] objectValue];
 }
 
 - (void)setValue:(nullable id)value forKey:(NSString *)aKey;
 {
-    [[OFPreference preferenceForKey: aKey] setObjectValue: value];
+    [[self preferenceForKey:aKey] setObjectValue:value];
 }
 
 - (void)removeObjectForKey:(NSString *)defaultName;
 {
-    [[OFPreference preferenceForKey: defaultName] restoreDefaultValue];
+    [[self preferenceForKey:defaultName] restoreDefaultValue];
 }
 
 - (nullable NSString *)stringForKey:(NSString *)defaultName;
 {
-    return [[OFPreference preferenceForKey: defaultName] stringValue];
+    return [[self preferenceForKey:defaultName] stringValue];
 }
 
 - (nullable NSArray *)arrayForKey:(NSString *)defaultName;
 {
-    return [[OFPreference preferenceForKey: defaultName] arrayValue];
+    return [[self preferenceForKey:defaultName] arrayValue];
 }
 
 - (nullable NSDictionary *)dictionaryForKey:(NSString *)defaultName;
 {
-    return [[OFPreference preferenceForKey: defaultName] dictionaryValue];
+    return [[self preferenceForKey:defaultName] dictionaryValue];
 }
 
 - (nullable NSData *)dataForKey:(NSString *)defaultName;
 {
-    return [[OFPreference preferenceForKey: defaultName] dataValue];
+    return [[self preferenceForKey:defaultName] dataValue];
 }
 
 - (nullable NSURL *)bookmarkURLForKey:(NSString *)defaultName;
 {
-    return [[OFPreference preferenceForKey: defaultName] bookmarkURLValue];
+    return [[self preferenceForKey:defaultName] bookmarkURLValue];
 }
 
 - (nullable NSArray *)stringArrayForKey:(NSString *)defaultName;
 {
-    return [[OFPreference preferenceForKey: defaultName] stringArrayValue];
+    return [[self preferenceForKey:defaultName] stringArrayValue];
 }
 
 - (int)intForKey:(NSString *)defaultName;
 {
-    return [[OFPreference preferenceForKey: defaultName] intValue];
+    return [[self preferenceForKey:defaultName] intValue];
 }
 
 - (NSInteger)integerForKey:(NSString *)defaultName;
 {
-    return [[OFPreference preferenceForKey: defaultName] intValue];
+    return [[self preferenceForKey:defaultName] intValue];
 }
 
 - (float)floatForKey:(NSString *)defaultName; 
 {
-    return [[OFPreference preferenceForKey: defaultName] floatValue];
+    return [[self preferenceForKey:defaultName] floatValue];
 }
 
 - (double)doubleForKey:(NSString *)defaultName; 
 {
-    return [[OFPreference preferenceForKey: defaultName] floatValue];
+    return [[self preferenceForKey:defaultName] floatValue];
 }
 
 - (BOOL)boolForKey:(NSString *)defaultName;  
 {
-    return [[OFPreference preferenceForKey: defaultName] boolValue];
+    return [[self preferenceForKey:defaultName] boolValue];
 }
 
 - (void)setInt:(int)value forKey:(NSString *)defaultName;
 {
-    [[OFPreference preferenceForKey: defaultName] setIntValue: value];
+    [[self preferenceForKey:defaultName] setIntValue:value];
 }
 
 - (void)setInteger:(NSInteger)value forKey:(NSString *)defaultName;
 {
-    [[OFPreference preferenceForKey: defaultName] setIntegerValue: value];
+    [[self preferenceForKey:defaultName] setIntegerValue:value];
 }
 
 - (void)setFloat:(float)value forKey:(NSString *)defaultName;
 {
-    [[OFPreference preferenceForKey: defaultName] setFloatValue: value];
+    [[self preferenceForKey:defaultName] setFloatValue:value];
 }
 
 - (void)setDouble:(double)value forKey:(NSString *)defaultName;
 {
-    [[OFPreference preferenceForKey: defaultName] setDoubleValue: value];
+    [[self preferenceForKey:defaultName] setDoubleValue:value];
 }
 
 - (void)setBool:(BOOL)value forKey:(NSString *)defaultName;
 {
-    [[OFPreference preferenceForKey: defaultName] setBoolValue: value];
+    [[self preferenceForKey:defaultName] setBoolValue:value];
 }
 
 - (BOOL)synchronize;
 {
-    return [standardUserDefaults synchronize];
+    return [_userDefaults synchronize];
 }
 
 - (NSDictionary *)volatileDomainForName:(NSString *)name;
 {
-    return [[NSUserDefaults standardUserDefaults] volatileDomainForName:name];
+    return [_userDefaults volatileDomainForName:name];
 }
 
 @end

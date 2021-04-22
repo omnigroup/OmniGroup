@@ -56,7 +56,7 @@
 		34019FA61B62ED9F003A5BE4 /* ODODatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = 344FB1BF0D89979200AA63FE /* ODODatabase.m */; };
 		34019FA71B62ED9F003A5BE4 /* ODOFetchRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = 344FB1A90D89973500AA63FE /* ODOFetchRequest.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34019FA81B62ED9F003A5BE4 /* ODOFetchRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 344FB1BB0D89979200AA63FE /* ODOFetchRequest.m */; };
-		34019FA91B62ED9F003A5BE4 /* ODOPredicate-SQL.h in Headers */ = {isa = PBXBuildFile; fileRef = 348ECFF50D8F78BE007ADAC9 /* ODOPredicate-SQL.h */; };
+		34019FA91B62ED9F003A5BE4 /* ODOPredicate-SQL.h in Headers */ = {isa = PBXBuildFile; fileRef = 348ECFF50D8F78BE007ADAC9 /* ODOPredicate-SQL.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34019FAA1B62ED9F003A5BE4 /* ODOPredicate-SQL.m in Sources */ = {isa = PBXBuildFile; fileRef = 348ECFF60D8F78BE007ADAC9 /* ODOPredicate-SQL.m */; };
 		34019FAB1B62ED9F003A5BE4 /* ODOPredicate.h in Headers */ = {isa = PBXBuildFile; fileRef = 348ED05B0D8F7AD9007ADAC9 /* ODOPredicate.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34019FAC1B62ED9F003A5BE4 /* ODOPredicate.m in Sources */ = {isa = PBXBuildFile; fileRef = 348ED05C0D8F7AD9007ADAC9 /* ODOPredicate.m */; };
@@ -136,7 +136,7 @@
 		348409530D89F5EF00E74C9D /* ODOVersion.h in Headers */ = {isa = PBXBuildFile; fileRef = 348409510D89F5EF00E74C9D /* ODOVersion.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		348409540D89F5EF00E74C9D /* ODOVersion.m in Sources */ = {isa = PBXBuildFile; fileRef = 348409520D89F5EF00E74C9D /* ODOVersion.m */; };
 		348E07230D904E99003C22D6 /* ODOObject-Internal.m in Sources */ = {isa = PBXBuildFile; fileRef = 348E07220D904E99003C22D6 /* ODOObject-Internal.m */; };
-		348ECFF70D8F78BE007ADAC9 /* ODOPredicate-SQL.h in Headers */ = {isa = PBXBuildFile; fileRef = 348ECFF50D8F78BE007ADAC9 /* ODOPredicate-SQL.h */; };
+		348ECFF70D8F78BE007ADAC9 /* ODOPredicate-SQL.h in Headers */ = {isa = PBXBuildFile; fileRef = 348ECFF50D8F78BE007ADAC9 /* ODOPredicate-SQL.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		348ECFF80D8F78BE007ADAC9 /* ODOPredicate-SQL.m in Sources */ = {isa = PBXBuildFile; fileRef = 348ECFF60D8F78BE007ADAC9 /* ODOPredicate-SQL.m */; };
 		348ED05D0D8F7AD9007ADAC9 /* ODOPredicate.h in Headers */ = {isa = PBXBuildFile; fileRef = 348ED05B0D8F7AD9007ADAC9 /* ODOPredicate.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		348ED05E0D8F7AD9007ADAC9 /* ODOPredicate.m in Sources */ = {isa = PBXBuildFile; fileRef = 348ED05C0D8F7AD9007ADAC9 /* ODOPredicate.m */; };
@@ -168,7 +168,7 @@
 		34B77C241EC10F6C00BBBA65 /* ODOEntity-SQL.h in Headers */ = {isa = PBXBuildFile; fileRef = 34B9CDD70D8B1A4E001A5AB1 /* ODOEntity-SQL.h */; };
 		34B77C251EC10F6C00BBBA65 /* ODOEntity-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 34905A160D8A3261001E6B6B /* ODOEntity-Internal.h */; };
 		34B77C261EC10F6C00BBBA65 /* ODOSQLStatement.h in Headers */ = {isa = PBXBuildFile; fileRef = 3400BAA00D8E23CE00390D08 /* ODOSQLStatement.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		34B77C271EC10F6C00BBBA65 /* ODOPredicate-SQL.h in Headers */ = {isa = PBXBuildFile; fileRef = 348ECFF50D8F78BE007ADAC9 /* ODOPredicate-SQL.h */; };
+		34B77C271EC10F6C00BBBA65 /* ODOPredicate-SQL.h in Headers */ = {isa = PBXBuildFile; fileRef = 348ECFF50D8F78BE007ADAC9 /* ODOPredicate-SQL.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34B77C281EC10F6C00BBBA65 /* ODOSQLConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = 3EA806CB1EA7B58C008DE258 /* ODOSQLConnection.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		34B77C291EC10F6C00BBBA65 /* ODOPredicate.h in Headers */ = {isa = PBXBuildFile; fileRef = 348ED05B0D8F7AD9007ADAC9 /* ODOPredicate.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34B77C2A1EC10F6C00BBBA65 /* ODOObject-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 3400B6880D8C625700390D08 /* ODOObject-Internal.h */; };
@@ -1943,6 +1943,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 34A5E12B0D89940F0006DF9F /* Omni-Framework-Debug.xcconfig */;
 			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_MODULES = YES;
 				DEFINES_MODULE = YES;
 				INFOPLIST_FILE = Info.plist;
@@ -1962,6 +1963,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 34A5E12C0D89940F0006DF9F /* Omni-Framework-Release.xcconfig */;
 			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_MODULES = YES;
 				DEFINES_MODULE = YES;
 				INFOPLIST_FILE = Info.plist;

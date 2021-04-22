@@ -1,4 +1,4 @@
-// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,7 +7,7 @@
 
 #import <OmniUI/OUIAppController.h>
 
-@class ODSFileItem, OFFileEdit, ODSFileItemEdit, ODSScope, ODSStore;
+@class OFFileEdit;
 @class OFXAgentActivity, OFXServerAccount;
 @class OUIDocument, OUIDocumentPicker, OUIDocumentPickerViewController, OUIBarButtonItem;
 @class OUINewDocumentCreationRequest;
@@ -37,9 +37,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 // Sample documents
 - (NSInteger)builtInResourceVersion;
-- (NSString *)sampleDocumentsDirectoryTitle;
+- (nullable NSString *)sampleDocumentsDirectoryTitle;
 - (NSURL *)sampleDocumentsDirectoryURL;
-- (NSPredicate *)sampleDocumentsFilterPredicate;
+- (nullable NSPredicate *)sampleDocumentsFilterPredicate;
 - (void)copySampleDocumentsToUserDocumentsWithCompletionHandler:(void (^)(NSDictionary <NSString *, NSURL *> *nameToURL))completionHandler;
 
 - (NSString *)stringTableNameForSampleDocuments;

@@ -1,4 +1,4 @@
-// Copyright 2013-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -1103,7 +1103,17 @@ static __weak OFXAgent *BackgroundFetchSyncAgent;
             }
         }
     }
-    
+
+    // We may have some accounts that *never* got started and have been marked for removal. They'll only be present in allAccounts at this point.
+    NSArray <OFXServerAccount *> *allAccounts = [_accountRegistry.allAccounts copy];
+    [allAccounts enumerateObjectsUsingBlock:^(OFXServerAccount * account, NSUInteger idx, BOOL * _Nonnull stop) {
+        if (account.hasBeenPreparedForRemoval && _uuidToAccountAgent[account.uuid] == nil) {
+            assert(uuidToAccountAgent[account.uuid] == nil); // shouldn't be starting for an account that is being removed
+            [_accountRegistry _cleanupAccountAfterRemoval:account];
+        }
+    }];
+
+
     // Inform any agents that we no longer have that they should cleanup and stop
     [_uuidToAccountAgent enumerateKeysAndObjectsUsingBlock:^(NSString *uuid, OFXAccountAgent *accountAgent, BOOL *stop){
         DEBUG_ACCOUNT_REMOVAL(1, @"Checking on account agent with uuid %@.", uuid);
@@ -1162,7 +1172,7 @@ static __weak OFXAgent *BackgroundFetchSyncAgent;
     
     OBASSERT([runningAccounts count] + [failedAccounts count] == [serverAccounts count], "Every account should be running or failed");
     OBASSERT([runningAccounts intersectsSet:failedAccounts] == NO, "Cannot be running and failed");
-    
+
     OFXServerAccountsSnapshot *accountsSnapshot = [[OFXServerAccountsSnapshot alloc] initWithRunningAccounts:runningAccounts failedAccounts:failedAccounts];
     
     if (OFNOTEQUAL(_accountsSnapshot, accountsSnapshot)) {

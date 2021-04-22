@@ -1,4 +1,4 @@
-// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,7 @@
 #import <OmniUI/OUIAppController.h>
 
 @import StoreKit; // For SKErrorDomain
+@import OmniDAV; // For ODAVHTTPErrorDomain
 
 #import <MessageUI/MFMailComposeViewController.h>
 #import <MobileCoreServices/UTCoreTypes.h>
@@ -20,6 +21,7 @@
 #import <OmniFoundation/OFPointerStack.h>
 #import <OmniFoundation/OFPreference.h>
 #import <OmniFoundation/OFVersionNumber.h>
+#import <OmniUI/OmniUI-Swift.h>
 #import <OmniUI/OUIAppController+SpecialURLHandling.h>
 #import <OmniUI/OUIAppControllerSceneHelper.h>
 #import <OmniUI/OUIAttentionSeekingButton.h>
@@ -209,7 +211,7 @@ static void __iOS7B5CleanConsoleOutput(void)
 
 + (void)registerDefaultReportErrorAction NS_EXTENSION_UNAVAILABLE_IOS("Cannot register the default report error action from extensions as it uses API which extensions can't use");
 {
-    _defaultReportErrorActionTitle = NSLocalizedStringFromTableInBundle(@"Report Error", @"OmniUI", OMNI_BUNDLE, @"When displaying a generic error, this is the option to report the error.");
+    _defaultReportErrorActionTitle = NSLocalizedStringFromTableInBundle(@"Contact Omni", @"OmniUI", OMNI_BUNDLE, @"When displaying a generic error, this is the option to report the error.");
     _defaultReportErrorActionBlock = ^(UIViewController *viewController, NSError *error, void (^interactionCompletion)(void)) {
         NSString *body = [NSString stringWithFormat:@"\n%@\n\n%@\n", [OUIAppController.controller fullReleaseString], [error toPropertyList]];
         [OUIAppController.sharedController sendFeedbackWithSubject:[NSString stringWithFormat:@"Error encountered: %@", [error localizedDescription]] body:body inScene:viewController.view.window.windowScene completion:interactionCompletion];
@@ -344,6 +346,11 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
 
     id value = error.userInfo[OUIShouldOfferToReportErrorUserInfoKey];
     if (value && ![value boolValue]) {
+        return NO;
+    }
+    
+    NSError *DAVError = [error underlyingErrorWithDomain:ODAVHTTPErrorDomain];
+    if (DAVError != nil && !ODAVShouldOfferToReportError(DAVError)) {
         return NO;
     }
 
@@ -530,6 +537,8 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
     [myClass registerCommandClass:[OUIHelpURLCommand class] forSpecialURLPath:@"/help"];
     [myClass registerCommandClass:[OUIPurchaseURLCommand class] forSpecialURLPath:@"/purchase"];
     [myClass registerCommandClass:[OUISendFeedbackURLCommand class] forSpecialURLPath:@"/send-feedback"];
+    [myClass registerCommandClass:[OUILicensingAuthenticationCommand class] forSpecialURLPath:@"/omni-account-authenticate"];
+    [myClass registerCommandClass:[OUILicensingAuthenticationCommand class] forSpecialURLPath:@"/site-license-authenticate"];
     [myClass registerDefaultReportErrorAction];
     
     NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
@@ -1079,6 +1088,11 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
     return menuImage(@"OUIMenuItemSettings.png");
 }
 
+- (UIImage *)omniAccountsMenuImage;
+{
+    return menuImage(@"OUIMenuItemOmniAccount.png");
+}
+
 - (UIImage *)inAppPurchasesMenuImage;
 {
     return menuImage(@"OUIMenuItemPurchases.png");
@@ -1148,6 +1162,11 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
     }
 }
 
+- (void)handleLicensingAuthenticationURL:(NSURL *)url presentationSource:(UIViewController *)presentationSource;
+{
+    OBRequestConcreteImplementation(self, _cmd);
+}
+
 - (BOOL)canHaveMultipleCrashReportScenes
 {
     return YES;
@@ -1159,6 +1178,12 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
 {
     OBASSERT_NOT_REACHED("Should be subclassed to provide something nicer.");
     return @"HALP ME!";
+}
+
+- (NSString *)omniAccountMenuTitle;
+{
+    NSString *title = NSLocalizedStringFromTableInBundle(@"Omni Account", @"OmniUI", OMNI_BUNDLE, @"Default title for the Omni Account menu item");
+    return title;
 }
 
 - (NSString *)aboutMenuTitle;

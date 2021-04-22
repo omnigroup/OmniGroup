@@ -34,9 +34,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSString *)xmlDateString;
 
 // dateTime formatted according to http://www.w3.org/2001/XMLSchema-datatypes
+- (nullable instancetype)initWithXMLString:(NSString *)xmlString allowFloating:(BOOL)allowFloating outIsFloating:(BOOL * _Nullable)outIsFloating;
 - (nullable instancetype)initWithXMLString:(NSString *)xmlString;
 - (nullable instancetype)initWithXMLCString:(const char *)cString;
-- (NSString *)xmlString;
+- (NSString *)xmlString; // UTC
+- (NSString *)floatingTimeZoneXMLString; // Date in current time zone with no zone recorded
 
 // date formatted according to iCal
 - (nullable instancetype)initWithICSDateOnlyString:(NSString *)aString;

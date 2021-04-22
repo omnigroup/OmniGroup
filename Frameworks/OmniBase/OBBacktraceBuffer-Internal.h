@@ -1,4 +1,4 @@
-// Copyright 2008-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,8 +12,13 @@
 */
 
 /* These can be adjusted as needed - CrashCatcher reads their values from the crashed process's OBBacktraceBufferInfo */
+#if OMNI_BUILDING_FOR_SERVER
 #define OBBacktraceBufferAddressCount (64)    /* Max depth of stack to record per trace */
-#define OBBacktraceBufferTraceCount (16)       /* Number of recent traces to retain */
+#define OBBacktraceBufferTraceCount (64)       /* Number of recent traces to retain */
+#else
+#define OBBacktraceBufferAddressCount (64)    /* Max depth of stack to record per trace */
+#define OBBacktraceBufferTraceCount (32)       /* Number of recent traces to retain */
+#endif
 
 struct OBBacktraceBuffer {
     volatile OBBacktraceBufferType type;

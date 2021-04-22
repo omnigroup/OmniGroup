@@ -1544,6 +1544,9 @@
 		A2FF79661F71ECE20054DA38 /* NSFileHandle-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = A2FF79631F71ECE20054DA38 /* NSFileHandle-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A2FF79671F71ECE20054DA38 /* NSFileHandle-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = A2FF79641F71ECE20054DA38 /* NSFileHandle-OFExtensions.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		A2FF79681F71ECE20054DA38 /* NSFileHandle-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = A2FF79641F71ECE20054DA38 /* NSFileHandle-OFExtensions.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		D96FC71823EE1BCC00FD6D74 /* OFBundleMigrationTarget.h in Headers */ = {isa = PBXBuildFile; fileRef = D96FC71723EE1BCC00FD6D74 /* OFBundleMigrationTarget.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D96FC71923EE1BCC00FD6D74 /* OFBundleMigrationTarget.h in Headers */ = {isa = PBXBuildFile; fileRef = D96FC71723EE1BCC00FD6D74 /* OFBundleMigrationTarget.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D96FC71A23EE1BCC00FD6D74 /* OFBundleMigrationTarget.h in Headers */ = {isa = PBXBuildFile; fileRef = D96FC71723EE1BCC00FD6D74 /* OFBundleMigrationTarget.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E22C340514577CBA0036797A /* OFCompletionMatch.h in Headers */ = {isa = PBXBuildFile; fileRef = E218273A145605170097BBFE /* OFCompletionMatch.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E22C35AE14587A780036797A /* OFIndexPath.h in Headers */ = {isa = PBXBuildFile; fileRef = E2182735145604D60097BBFE /* OFIndexPath.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E22C35B014587A7D0036797A /* OFIndexPath.m in Sources */ = {isa = PBXBuildFile; fileRef = E218272F1456049B0097BBFE /* OFIndexPath.m */; };
@@ -2580,6 +2583,7 @@
 		B58A47670662B2E30097A154 /* OFXMLIdentifierRegistry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFXMLIdentifierRegistry.h; sourceTree = "<group>"; };
 		B58A47680662B2E30097A154 /* OFXMLIdentifierRegistry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXMLIdentifierRegistry.m; sourceTree = "<group>"; };
 		BF0E642806309CBE0097A147 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		D96FC71723EE1BCC00FD6D74 /* OFBundleMigrationTarget.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OFBundleMigrationTarget.h; sourceTree = "<group>"; };
 		E218272F1456049B0097BBFE /* OFIndexPath.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFIndexPath.m; sourceTree = "<group>"; };
 		E2182735145604D60097BBFE /* OFIndexPath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFIndexPath.h; sourceTree = "<group>"; };
 		E218273A145605170097BBFE /* OFCompletionMatch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OFCompletionMatch.h; path = DataStructures.subproj/OFCompletionMatch.h; sourceTree = "<group>"; };
@@ -3260,6 +3264,7 @@
 				00E51C70FE8AAEA611C9CC38 /* OFBundleRegistry.h */,
 				00E51C60FE8AAEA611C9CC38 /* OFBundleRegistry.m */,
 				34EE654D1DB7F94700647BC7 /* OFBundleRegistryTarget.h */,
+				D96FC71723EE1BCC00FD6D74 /* OFBundleMigrationTarget.h */,
 				3D990C72FF3658F5C697A146 /* OFCharacterScanner.h */,
 				3D990C74FF36598CC697A146 /* OFCharacterScanner.m */,
 				34A2CE890D865E9200219E36 /* OFCharacterScanner-OFTrie.h */,
@@ -4181,6 +4186,7 @@
 				34A061B31EC110A60099028D /* NSComparisonPredicate-OFExtensions.h in Headers */,
 				34A061B41EC110A60099028D /* NSBundle-OFExtensions.h in Headers */,
 				34A061B51EC110A60099028D /* NSSet-OFExtensions.h in Headers */,
+				D96FC71A23EE1BCC00FD6D74 /* OFBundleMigrationTarget.h in Headers */,
 				34A061B61EC110A60099028D /* OFRationalNumber.h in Headers */,
 				34A061B71EC110A60099028D /* OFTimeSpan.h in Headers */,
 				34A061B81EC110A60099028D /* NSScriptClassDescription-OFExtensions.h in Headers */,
@@ -4385,6 +4391,7 @@
 				34F16BA5194F74F100AD9C4D /* OFRandom.h in Headers */,
 				34F16B87194F6F1C00AD9C4D /* OFByte.h in Headers */,
 				34F16B66194F6E7F00AD9C4D /* OFBundleRegistry.h in Headers */,
+				D96FC71923EE1BCC00FD6D74 /* OFBundleMigrationTarget.h in Headers */,
 				34F16B82194F6F0300AD9C4D /* OFTransientObjectsTracker.h in Headers */,
 				34F16BF3194F770600AD9C4D /* NSNumber-OFExtensions-CGTypes.h in Headers */,
 				34F16C3A194F799F00AD9C4D /* OFXMLInternedStringTable.h in Headers */,
@@ -4523,6 +4530,7 @@
 				4A4E066508AA72B10098FF0F /* NSArray-OFExtensions.h in Headers */,
 				4A4E066608AA72B10098FF0F /* NSAttributedString-OFExtensions.h in Headers */,
 				10455AB8230751120046AD5E /* OFPointerStack.h in Headers */,
+				D96FC71823EE1BCC00FD6D74 /* OFBundleMigrationTarget.h in Headers */,
 				1E1B93AA19D232A700693752 /* OFASN1Utilities.h in Headers */,
 				4A4E066708AA72B10098FF0F /* NSBundle-OFFixes.h in Headers */,
 				4A4E066808AA72B10098FF0F /* NSCalendarDate-OFExtensions.h in Headers */,

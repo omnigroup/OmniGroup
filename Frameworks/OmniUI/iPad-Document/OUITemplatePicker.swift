@@ -1,4 +1,4 @@
-// Copyright 2017-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2017-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,6 +11,7 @@
     func shouldUseTemplatePicker() -> Bool
     
     func wantsLanguageButton() -> Bool
+    func wantsLinkedFolderButton() -> Bool
     func placeholderImage(for url: URL) -> UIImage
     func numberOfInternalSections(in templatePicker: OUITemplatePicker) -> Int
     func internalSupportedLanguages(in templatePicker: OUITemplatePicker) -> [String]
@@ -87,7 +88,7 @@ public enum TemplateLabelHeight {
     }
 }
 
-public class OUITemplatePicker: UIViewController {
+public class OUITemplatePicker: UIViewController, UIDocumentPickerDelegate {
 
     @objc public static func newTemplatePicker() -> OUITemplatePicker {
         let storyboard = UIStoryboard(name: "OUITemplatePicker", bundle: OUITemplatePicker.bundle())
@@ -104,11 +105,28 @@ public class OUITemplatePicker: UIViewController {
     @IBOutlet weak var collectionView: UICollectionView!
     @objc public weak var internalTemplateDelegate: OUIInternalTemplateDelegate?
     @objc public weak var templateDelegate: OUITemplatePickerDelegate?
+    {
+        didSet {
+            var templateFileTypes: [UTI] = []
+            if let templateDelegate = templateDelegate, let templateUTIs = templateDelegate.templateUTIs?() {
+                templateFileTypes = templateUTIs.map { UTI($0) }
+            }
+            let templateUTIPredicate = UTIResourceTypePredicate(fileTypes: templateFileTypes)
+
+            linkedTemplateFolders = TemplateResourceBookmarks(preferenceKey: "linkedTemplateFolderBookmarks", resourceTypes: [templateBookmarkType : templateUTIPredicate]) {
+                self.linkedFolderCache = self.updateLinkedFileItemCache()
+                self.collectionView.reloadData()
+            }
+        }
+    }
 
     @objc public var navigationTitle: String?
     @objc public var wantsCancelButton = true
     @objc public var wantsLanguageButton = true
+    @objc public var wantsLinkedFolderButton = true
     @objc public var supportedFileTypes = [String]()
+
+    fileprivate var linkFolderButton: UIBarButtonItem?
 
     fileprivate var currentLanguage: String = Locale.current.languageCode! {
         didSet {
@@ -119,6 +137,11 @@ public class OUITemplatePicker: UIViewController {
     fileprivate var languageButton: UIBarButtonItem?
     fileprivate weak var languagePicker: OUILanguagePicker?
     fileprivate lazy var customTemplates: [OUITemplateItem] = scanForCustomTemplates()
+
+    fileprivate var linkedTemplateFolders: TemplateResourceBookmarks?
+    private var linkedFolderQuerySourceObservation: NSObjectProtocol?
+    private let templateBookmarkType = "template"
+    private var linkedFolderCache: [OUITemplateItem] = []
 
     // MARK: - Actions
     @objc public static func knownLanguages() -> [String]? {
@@ -152,6 +175,30 @@ public class OUITemplatePicker: UIViewController {
             performSegue(withIdentifier: OUITemplatePicker.showLanguagePickerIdentifier, sender: languageButton)
         } else {
             dismissLanguagePicker()
+        }
+    }
+
+    @objc fileprivate func chooseLinkedFolder() {
+        let picker = UIDocumentPickerViewController(documentTypes: [kUTTypeFolder as String], in: .open)
+        picker.allowsMultipleSelection = true // Without this, we don't get a "Open" option
+        picker.delegate = self
+
+        picker.modalPresentationStyle = .overCurrentContext
+
+        self.present(picker, animated: true)
+    }
+
+    // MARK:- UIDocumentPickerDelegate
+
+    public func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+        guard let linkedTemplateFolders = linkedTemplateFolders  else { return }
+
+        for url in urls {
+            do {
+                try linkedTemplateFolders.addResourceFolderURL(url)
+            } catch let err {
+                print("Error adding template folder: \(err)")
+            }
         }
     }
 
@@ -271,6 +318,7 @@ extension OUITemplatePicker {
 
     fileprivate func updateNavigationBar() {
         let navigationItem = self.navigationItem
+        var rightButtonItems: [UIBarButtonItem] = []
         let languageTitle = localizedLanguage(for: currentLanguage)
         if wantsLanguageButton {
             if languageButton == nil {
@@ -278,14 +326,26 @@ extension OUITemplatePicker {
             } else {
                 languageButton?.title = languageTitle
             }
+            if let langButton = languageButton {
+                rightButtonItems.append(langButton)
+            }
         }
 
         if wantsCancelButton {
             let cancelButton = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancel))
             navigationItem.setLeftBarButton(cancelButton, animated: true)
         }
+
+        if wantsLinkedFolderButton {
+            if linkFolderButton == nil {
+                linkFolderButton = UIBarButtonItem(title: "Link Folder", style: .plain, target: self, action: #selector(chooseLinkedFolder))
+            }
+            if let linkButton = linkFolderButton {
+                rightButtonItems.append(linkButton)
+            }
+        }
         navigationItem.title = navigationTitle
-        navigationItem.setRightBarButton(languageButton, animated: true)
+        navigationItem.setRightBarButtonItems(rightButtonItems, animated: true)
     }
 
     override public func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
@@ -337,12 +397,23 @@ extension OUITemplatePicker: UICollectionViewDataSource {
 
     fileprivate func wantsCustomTemplateSection() -> Bool {
         guard let delegate = internalTemplateDelegate else { return false }
-
         return delegate.templatePickerCustomTemplateFileTypes != nil && customTemplates.count > 0
     }
 
+    fileprivate func wantsLinkedFoldersSection() -> Bool {
+        return linkedFolderCache.count > 0
+    }
+
     fileprivate func firstInternalSection() -> Int {
-        return wantsCustomTemplateSection() ? 1 : 0
+        var firstSection = 0
+
+        if wantsLinkedFoldersSection() {
+            firstSection += 1
+        }
+        if wantsCustomTemplateSection() {
+            firstSection += 1
+        }
+        return firstSection
     }
 
     fileprivate func isInternal(section: Int) -> Bool {
@@ -351,10 +422,50 @@ extension OUITemplatePicker: UICollectionViewDataSource {
         return section >= firstInternalSection()
     }
 
+    fileprivate func isCustom(section: Int) -> Bool {
+        return section == 0 && wantsCustomTemplateSection() // if we have a custom section, it'll be in the first section
+    }
+
+    fileprivate func isLinkedFolders(section: Int) -> Bool {
+        return isCustom(section: section) == false && isInternal(section: section) == false
+    }
+
     fileprivate func internalSection(for section: Int) -> Int {
         return section - firstInternalSection()
     }
 
+    private func updateLinkedFileItemCache() -> [OUITemplateItem] {
+        var allTheFileItems: [OUITemplateItem] = []
+        guard let linkedTemplateFolders = linkedTemplateFolders else { return allTheFileItems }
+        for location in linkedTemplateFolders.bookmarkedResourceLocations {
+
+            guard let contents = location.resourceContents(type: templateBookmarkType) else {
+                break
+            }
+
+            for fileEdit in contents.fileEdits {
+                let templateURL = fileEdit.originalFileURL
+
+                // checking for (and skipping) hidden files
+                if let isHidden = try? templateURL.resourceValues(forKeys: [URLResourceKey.isHiddenKey]).isHidden, isHidden == true {
+                    continue
+                }
+
+                let templateURLFolder = templateURL.deletingLastPathComponent()
+                // checking for (and skipping) hidden folders (ex .Trash)
+                if let isHidden = try? templateURLFolder.resourceValues(forKeys: [URLResourceKey.isHiddenKey]).isHidden, isHidden == true {
+                    continue
+                }
+                let pathComponent = templateURL.lastPathComponent as NSString
+                let displayName = pathComponent.deletingPathExtension
+                let templateItem = OUITemplateItem(fileURL: templateURL, displayName: displayName)
+                allTheFileItems.append(templateItem)
+            }
+        }
+        return allTheFileItems
+    }
+
+    // here's the brains
     fileprivate func templateItem(for indexPath: IndexPath) -> OUITemplateItem? {
         guard let delegate = internalTemplateDelegate else { return nil }
 
@@ -363,10 +474,14 @@ extension OUITemplatePicker: UICollectionViewDataSource {
             var internalIndexPath = indexPath
             internalIndexPath.section = internalSection(for: indexPath.section)
             templateItem = delegate.templatePicker(self, templateItemRowAt: internalIndexPath, for: currentLanguage)
-        } else {
+        } else if isCustom(section: indexPath.section) {
             let index = indexPath.row
             guard index < customTemplates.count else { return nil }
             templateItem = customTemplates[index]
+        } else { // linked folders
+            let index = indexPath.row
+            guard index < linkedFolderCache.count else { return nil }
+            templateItem = linkedFolderCache[index]
         }
         return templateItem
     }
@@ -378,6 +493,9 @@ extension OUITemplatePicker: UICollectionViewDataSource {
         if wantsCustomTemplateSection() {
             numberOfSections += 1
         }
+        if wantsLinkedFoldersSection() {
+            numberOfSections += 1
+        }
 
         return numberOfSections
     }
@@ -387,9 +505,12 @@ extension OUITemplatePicker: UICollectionViewDataSource {
 
         if isInternal(section: section) {
             return delegate.templatePicker(self, numberOfRowsInSection: internalSection(for: section), for: currentLanguage)
-        } else {
+        } else if isCustom(section: section) {
             return customTemplates.count
+        } else {
+            return self.linkedFolderCache.count
         }
+        return 0
     }
 
     public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -409,7 +530,6 @@ extension OUITemplatePicker: UICollectionViewDataSource {
         
         return cell
     }
-
 }
 
 
@@ -432,8 +552,10 @@ extension OUITemplatePicker: UICollectionViewDelegate {
                 return view
             }
             headerTitle = delegate.templatePicker(self, titleForHeaderInSection: internalSection(for: indexPath.section), for: currentLanguage)
-        } else {
+        } else if isCustom(section: indexPath.section) {
             headerTitle = NSLocalizedString("ouiTemplatePicker.customTemplatesHeader", tableName: "OmniUIDocument", bundle: OmniUIDocumentBundle, value: "Custom", comment: "Custom templates header title")
+        } else if isLinkedFolders(section: indexPath.section) {
+            headerTitle = NSLocalizedString("ouiTemplatePicker.LinkedFolderHeader", tableName: "OmniUIDocument", bundle: OmniUIDocumentBundle, value: "Linked Folders", comment: "linked folders header title")
         }
         view.label.text = headerTitle?.localizedUppercase
 

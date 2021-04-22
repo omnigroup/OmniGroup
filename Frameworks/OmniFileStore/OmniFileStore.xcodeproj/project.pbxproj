@@ -1426,6 +1426,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 3421AE8C0F71F89C0096AADB /* Omni-Framework-Debug.xcconfig */;
 			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniFileStore;
@@ -1438,6 +1439,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 3421AE8D0F71F89C0096AADB /* Omni-Framework-Release.xcconfig */;
 			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniFileStore;

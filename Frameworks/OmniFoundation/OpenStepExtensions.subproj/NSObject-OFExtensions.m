@@ -1,4 +1,4 @@
-// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -169,18 +169,20 @@ void OFAfterDelayPerformBlock(NSTimeInterval delay, void (^block)(void))
     [block release];
 }
 
-void OFPerformInBackground(void (^block)(void))
+void OFPerformInBackground(void (^block)(dispatch_queue_t queue))
 {
     block = [block copy];
     OBRecordBacktraceWithContext("Background block queued", OBBacktraceBuffer_Generic, block);
 
-    NSOperationQueue *queue = [[NSOperationQueue alloc] init];
-    [queue addOperationWithBlock:^{
+    dispatch_queue_t queue = dispatch_queue_create("com.omnigroup.frameworks.OmniFoundation.OneShot", DISPATCH_QUEUE_SERIAL);
+    dispatch_async(queue, ^{
         OBRecordBacktraceWithContext("Background block invoke", OBBacktraceBuffer_Generic, block);
-        block();
-        [block release];
-        [queue release];
-    }];
+        @autoreleasepool {
+            block(queue);
+            [block release];
+        }
+        dispatch_release(queue);
+    });
 }
 
 void OFMainThreadPerformBlock(void (^block)(void))
@@ -211,6 +213,23 @@ void OFMainThreadPerformBlockSynchronously(void (^block)(void))
         });
         [block release];
     }
+}
+
+void OFRunLoopPerformBlockAndWait(CFRunLoopRef runLoop, CFTypeRef mode, void (^block)(void))
+{
+    NSConditionLock *lock = [[NSConditionLock alloc] initWithCondition:NO];
+
+    CFRunLoopPerformBlock(runLoop, mode, ^{
+        block();
+        [lock lock];
+        [lock unlockWithCondition:YES];
+    });
+
+    // Wake up the run loop so the block is performed even if the loop is blocked/sleeping
+    CFRunLoopWakeUp(CFRunLoopGetMain());
+
+    [lock lockWhenCondition:YES];
+    [lock unlock];
 }
 
 // Inspired by <https://github.com/n-b/CTT2>, but redone to use a timer to avoid spinning the runloop as fast as possible when polling.

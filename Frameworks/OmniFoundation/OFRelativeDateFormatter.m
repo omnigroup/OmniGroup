@@ -19,7 +19,11 @@ NS_ASSUME_NONNULL_BEGIN
 // Swift (for whatever reason) isn't seeing the initializer otherwise.
 - init;
 {
-    return [super init];
+    self = [super init];
+    if (self == nil)
+        return nil;
+    self.calendar = NSCalendar.autoupdatingCurrentCalendar;
+    return self;
 }
 
 - (void)dealloc;
@@ -81,7 +85,7 @@ dateString = [super stringForObjectValue:obj]; \
     if (!_useRelativeDayNames && !_wantsTruncatedTime)
 	return [super stringForObjectValue:obj];
     
-    NSCalendar *cal = [NSCalendar currentCalendar];
+    NSCalendar *cal = [self calendar];
     NSDateComponents *value = [cal components:NSCalendarUnitYear|NSCalendarUnitMonth|NSCalendarUnitDay|NSCalendarUnitHour|NSCalendarUnitMinute|NSCalendarUnitWeekday fromDate:obj];
     NSDateFormatterStyle timeStyle = [self timeStyle];
     NSString *dateString = @"";

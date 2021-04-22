@@ -1,4 +1,4 @@
-// Copyright 2008-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -151,6 +151,8 @@ extern void ODAVSyncOperations(const char *file, unsigned line, ODAVAddOperation
 
 - (nullable ODAVFileInfo *)synchronousFileInfoAtURL:(NSURL *)url error:(NSError **)outError;
 - (nullable ODAVFileInfo *)synchronousFileInfoAtURL:(NSURL *)url serverDate:(NSDate * __nullable OB_AUTORELEASING * __nullable)outServerDate error:(NSError **)outError;
+
+- (nullable ODAVSingleFileInfoResult *)synchronousMetaFileInfoAtURL:(NSURL *)url serverDate:(NSDate * __nullable OB_AUTORELEASING * __nullable)outServerDate error:(NSError **)outError;
 
 - (nullable ODAVMultipleFileInfoResult *)synchronousDirectoryContentsAtURL:(NSURL *)url withETag:(nullable NSString *)ETag error:(NSError **)outError;
 

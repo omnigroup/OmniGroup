@@ -340,7 +340,8 @@ public struct Difference {
                 }
             }
         }
-        
+
+        OBRecordBacktrace("Start tableView update", .generic)
         tableView.performBatchUpdates({
             tableView.deleteSections(IndexSet(from: sectionChanges.deletions), with: animations.sectionDeletion)
             tableView.insertSections(IndexSet(from: sectionChanges.insertions), with: animations.sectionInsertion)
@@ -355,7 +356,14 @@ public struct Difference {
             }
             
             otherUpdates?()
-        }, completion: completion)
+        }, completion: { finished in
+            if finished {
+                OBRecordBacktrace("End tableView update", .generic)
+            } else {
+                OBRecordBacktrace("Interrupted tableView update", .generic)
+            }
+            completion?(finished)
+        })
     }
     
     public func updateCollectionView(_ collectionView: UICollectionView, otherUpdates: (() -> Void)? = nil, completion: ((Bool) -> Void)? = nil) {

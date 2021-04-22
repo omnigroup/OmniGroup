@@ -71,6 +71,20 @@ RCS_ID("$Id$")
     ROUND_TRIP(@"2007-12-31T05:00:00.000Z");
 }
 
+#define ROUND_TRIP_FLOATING(inputString) do { \
+    BOOL isFloating = NO; \
+    NSDate *date = [[NSDate alloc] initWithXMLString:inputString allowFloating:YES outIsFloating:&isFloating]; \
+    XCTAssertNotNil(date); \
+    XCTAssertTrue(isFloating); \
+    NSString *outputString = [date floatingTimeZoneXMLString]; \
+    XCTAssertEqualObjects(inputString, outputString); \
+} while(0)
+
+- (void)testFloatingXMLDateParsingRoundTrip;
+{
+    ROUND_TRIP_FLOATING(@"2007-12-31T05:00:00.000");
+}
+
 - (void)testDescriptionWithHTTPFormat;
 {
     XCTAssertEqualObjects([[NSDate dateWithTimeIntervalSinceReferenceDate:0.0] descriptionWithHTTPFormat],

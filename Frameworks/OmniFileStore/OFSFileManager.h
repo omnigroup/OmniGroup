@@ -1,4 +1,4 @@
-// Copyright 2008-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -58,6 +58,7 @@ typedef NS_ENUM(NSUInteger, OFSFileManagerIntent) {
 
 // Returns an ODAVFileInfo. If we determine that the file does not exist, returns an ODAVFileInfo with exists=NO.
 - (ODAVFileInfo *)fileInfoAtURL:(NSURL *)url error:(NSError **)outError;
+- (ODAVFileInfo *)fileInfoAtURL:(NSURL *)url collectingRedirects:(NSMutableArray *)redirects error:(NSError **)outError;
 
 // For the following methods, a few underlying scheme-specific errors are translated/wrapped into XMLData error codes for consistency:
 //   Directory operation on nonexistent directory  -->  OFSNoSuchDirectory

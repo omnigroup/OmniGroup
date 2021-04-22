@@ -21,6 +21,10 @@
 + (NSString *)containingApplicationBundleIdentifier;
 {
     NSBundle *mainBundle = [NSBundle mainBundle];
+    NSString *plistValue = mainBundle.infoDictionary[@"OFContainingApplicationBundleIdentifier"];
+    if (plistValue != nil)
+        return plistValue;
+
     NSString *path = mainBundle.bundlePath;
     if ([path hasSuffix:@"app"]) {
         return mainBundle.bundleIdentifier;
@@ -29,6 +33,7 @@
     while (path != nil && path.length > 0) {
         if ([path hasSuffix:@"app"]) {
             NSBundle *bundle = [NSBundle bundleWithPath:path];
+            assert(bundle != nil);
             return bundle.bundleIdentifier;
         }
         path = [path stringByDeletingLastPathComponent];

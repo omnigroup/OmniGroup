@@ -137,6 +137,10 @@
 		34F507451AF2807C00F7E580 /* OBPatchThrow.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1E43B8881AF18C4100E084EA /* OBPatchThrow.mm */; };
 		34F507461AF2808000F7E580 /* OBPatchTrap.m in Sources */ = {isa = PBXBuildFile; fileRef = A27426271293799F00674569 /* OBPatchTrap.m */; };
 		34F507471AF2821300F7E580 /* OBPatchTrap.h in Headers */ = {isa = PBXBuildFile; fileRef = A27426261293799F00674569 /* OBPatchTrap.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34FE617A23E8DAC500B22260 /* OBBacktraceBuffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34FE617923E8DAC500B22260 /* OBBacktraceBuffer.swift */; };
+		34FE617B23E8DAC500B22260 /* OBBacktraceBuffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34FE617923E8DAC500B22260 /* OBBacktraceBuffer.swift */; };
+		34FE617C23E8DAC500B22260 /* OBBacktraceBuffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34FE617923E8DAC500B22260 /* OBBacktraceBuffer.swift */; };
+		34FE617D23E8DAC500B22260 /* OBBacktraceBuffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34FE617923E8DAC500B22260 /* OBBacktraceBuffer.swift */; };
 		3E2D23591E8DAD0F00D6BE03 /* OBLoadAction.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C2AFE8AAE2511C9CC38 /* OBLoadAction.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3E2D235A1E8DAD5800D6BE03 /* OBLoadAction.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C21FE8AAE2511C9CC38 /* OBLoadAction.m */; };
 		3E34A6041F7D6E3C008E5A99 /* OBUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E34A6031F7D6E3C008E5A99 /* OBUtilities.swift */; };
@@ -478,6 +482,7 @@
 		34EE20EC14F035E700722491 /* OBErrorTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OBErrorTests.h; sourceTree = "<group>"; };
 		34EE20ED14F035E700722491 /* OBErrorTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OBErrorTests.m; sourceTree = "<group>"; };
 		34EF25361A64881A00C0073A /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
+		34FE617923E8DAC500B22260 /* OBBacktraceBuffer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OBBacktraceBuffer.swift; sourceTree = "<group>"; };
 		3E34A6031F7D6E3C008E5A99 /* OBUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OBUtilities.swift; sourceTree = "<group>"; };
 		4A33D42808A0191B003A3FA5 /* OmniBase.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = OmniBase.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		4AAFAE1908A0216200E04045 /* Omni-Framework-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Debug.xcconfig"; sourceTree = "<group>"; };
@@ -636,6 +641,7 @@
 				A2E007850E5CA926007709A5 /* OBBacktraceBuffer-Internal.h */,
 				34571D271AB1E9310072E0F0 /* OBBacktraceBuffer.h */,
 				A2581A620E2D36DD001ABDA6 /* OBBacktraceBuffer.m */,
+				34FE617923E8DAC500B22260 /* OBBacktraceBuffer.swift */,
 				34AB12941DB5ED51000665C4 /* OBMemoryUseHistory.swift */,
 				00E51C25FE8AAE2511C9CC38 /* macros.h */,
 				00E51C2DFE8AAE2511C9CC38 /* rcsid.h */,
@@ -1231,6 +1237,7 @@
 				34ECC9691CCAED44000287D4 /* OBCasting.m in Sources */,
 				34C40F68194F4914001A4399 /* OBBacktraceBuffer.m in Sources */,
 				34C40F64194F4907001A4399 /* OBUtilities-NonARC.m in Sources */,
+				34FE617B23E8DAC500B22260 /* OBBacktraceBuffer.swift in Sources */,
 				34B614001DCBE55800C115B9 /* OBExpectedDeallocation.swift in Sources */,
 				34637CFB194F46EB009B51C5 /* OBObject.m in Sources */,
 				345D414F239B1EE50031C5F9 /* OBLog.swift in Sources */,
@@ -1278,6 +1285,7 @@
 				34B77AA31EC0FE5500BBBA65 /* assertions.m in Sources */,
 				345D414A239B1A160031C5F9 /* OBLog.m in Sources */,
 				34B77AA41EC0FE5500BBBA65 /* OBExpectedDeallocation.swift in Sources */,
+				34FE617D23E8DAC500B22260 /* OBBacktraceBuffer.swift in Sources */,
 				34B77AA51EC0FE5500BBBA65 /* OBUtilities.m in Sources */,
 				34B77AA61EC0FE5500BBBA65 /* NSException-OBExtensions.m in Sources */,
 				34B77AA71EC0FE5500BBBA65 /* OBPatchTrap.m in Sources */,
@@ -1318,6 +1326,7 @@
 				4A33D41C08A0191B003A3FA5 /* assertions.m in Sources */,
 				345D4148239B1A160031C5F9 /* OBLog.m in Sources */,
 				34B613FF1DCBE55800C115B9 /* OBExpectedDeallocation.swift in Sources */,
+				34FE617A23E8DAC500B22260 /* OBBacktraceBuffer.swift in Sources */,
 				4A33D41D08A0191B003A3FA5 /* OBUtilities.m in Sources */,
 				4A33D41E08A0191B003A3FA5 /* NSException-OBExtensions.m in Sources */,
 				34F507461AF2808000F7E580 /* OBPatchTrap.m in Sources */,
@@ -1352,6 +1361,7 @@
 				793CD9281DD2410100949CBF /* OBLogger.swift in Sources */,
 				3E2D235A1E8DAD5800D6BE03 /* OBLoadAction.m in Sources */,
 				5FE81E771B62E33D0056756C /* OBLogger.m in Sources */,
+				34FE617C23E8DAC500B22260 /* OBBacktraceBuffer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

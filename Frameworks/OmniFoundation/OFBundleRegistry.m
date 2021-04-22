@@ -15,6 +15,7 @@
 #import <OmniFoundation/NSString-OFExtensions.h>
 #import <OmniFoundation/OFBundledClass.h>
 #endif
+#import <OmniFoundation/OFBundleMigrationTarget.h>
 #import <OmniFoundation/NSUserDefaults-OFExtensions.h>
 #import <OmniFoundation/CFPropertyList-OFExtensions.h>
 #import <OmniFoundation/OFPreference.h>
@@ -638,13 +639,37 @@ static NSString *_normalizedPath(NSString *path)
             continue;
         }
 
+        // Be sure to perform the migrations last
+        __block NSArray <NSDictionary <NSString *, NSString *> *> *postRegistrationMigrations = nil;
         [registrationDictionary enumerateKeysAndObjectsUsingBlock:^(id _Nonnull key, id _Nonnull obj, BOOL * _Nonnull stop) {
+            if ([key isKindOfClass:[NSString class]] && [key isEqual:@"migrations"]) {
+                postRegistrationMigrations = obj;
+                return;
+            }
+            
             @try {
                 [registrationClass registerItemName:key bundle:bundle description:obj];
             } @catch (NSException *exc) {
                 NSLog(@"+[%@ registerItemName:%@ bundle:%@ description:%@]: %@", registrationClass, key, bundle, obj, [exc reason]);
             };
         }];
+        
+        if (postRegistrationMigrations == nil) {
+            continue;
+        }
+
+        OBASSERT([registrationClass conformsToProtocol:@protocol(OFBundleMigrationTarget)], "The class %@ should conform to the OFBundleMigrationTarget protocol if its registering for migrations.", registrationClass);
+
+        if (![registrationClass respondsToSelector:@selector(migrateItems:bundle:)]) {
+            NSLog(@"OFBundleRegistry warning: registration class '%@' from bundle '%@' doesn't accept migrations", registrationClassName, bundlePath);
+            continue;
+        }
+
+        @try {
+            [registrationClass migrateItems:postRegistrationMigrations bundle:bundle];
+        } @catch (NSException *exc) {
+            NSLog(@"+[%@ migrateItems:%@ bundle:%@]: %@", registrationClass, postRegistrationMigrations, bundle, [exc reason]);
+        };
     }
 }
 

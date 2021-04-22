@@ -1,4 +1,4 @@
-// Copyright 2008-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -121,14 +121,21 @@ OBDEPRECATED_METHOD(+DAVFileManager:validateCertificateForChallenge:);
 
 - (ODAVFileInfo *)fileInfoAtURL:(NSURL *)url error:(NSError **)outError;
 {
-    return [self fileInfoAtURL:url serverDate:NULL error:outError];
+    return [self fileInfoAtURL:url collectingRedirects:nil error:outError];
 }
 
-- (ODAVFileInfo *)fileInfoAtURL:(NSURL *)url serverDate:(NSDate **)outServerDate error:(NSError **)outError;
+- (ODAVFileInfo *)fileInfoAtURL:(NSURL *)url collectingRedirects:(NSMutableArray *)redirects error:(NSError **)outError;
+{
+    return [self fileInfoAtURL:url collectingRedirects:redirects serverDate:NULL error:outError];
+}
+
+- (ODAVFileInfo *)fileInfoAtURL:(NSURL *)url collectingRedirects:(NSMutableArray *)redirects serverDate:(NSDate **)outServerDate error:(NSError **)outError;
 {
     OBLog(OFSFileManagerLogger, 2, @"DAV operation: PROPFIND %@", url);
     
-    return [_connection synchronousFileInfoAtURL:url serverDate:outServerDate error:outError];
+    ODAVSingleFileInfoResult* result = [_connection synchronousMetaFileInfoAtURL:url serverDate:outServerDate error:outError];
+    [redirects addObjectsFromArray:result.redirects];
+    return result.fileInfo;
 }
 
 - (NSData *)dataWithContentsOfURL:(NSURL *)url withETag:(NSString *)ETag error:(NSError **)outError;

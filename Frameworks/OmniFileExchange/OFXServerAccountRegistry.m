@@ -1,4 +1,4 @@
-// Copyright 2013-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -185,6 +185,17 @@ static NSString * const ValidImportExportAccounts = @"validImportExportAccounts"
         
         if (account.hasBeenPreparedForRemoval) {
             DEBUG_ACCOUNT_REMOVAL(1, @"Initializing with an account in the removed state; cleaning it up.");
+
+            // Make sure we know if the local documents folder is accessible before trying to clean up.
+            __autoreleasing NSError *resolveError;
+            BOOL ok = [account resolveLocalDocumentsURL:&resolveError];
+            if (!ok) {
+                [account reportError:resolveError];
+
+                // If we aren't on the main thread, this won't be set immediately.
+                OBASSERT([NSThread isMainThread]);
+                OBASSERT(account.lastError);
+            }
 
             // We died or were killed before being able to remove the account...
             [self _cleanupAccountAfterRemoval:account];
@@ -450,6 +461,15 @@ static unsigned AccountContext;
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
     if (account.usageMode == OFXServerAccountUsageModeCloudSync) {
         // Go through this helper method to make sure we delete the right ancestory URL (since there is an extra 'Documents' component). This does some other checks to make sure we are deleting the right thing.
+
+        // If we are removing the account since it got unlinked from its local documents URL, don't crash on the assertion in -localDocumentsURL
+        if ([account.lastError hasUnderlyingErrorDomain:OFXErrorDomain code:OFXLocalAccountDocumentsDirectoryMissing] ||
+            [account.lastError hasUnderlyingErrorDomain:OFXErrorDomain code:OFXCannotResolveLocalDocumentsURL]) {
+            DEBUG_ACCOUNT_REMOVAL(1, @"Local documents folder was missing; calling completion handler");
+            removalCompleted();
+            return;
+        }
+
         [OFXServerAccount deleteGeneratedLocalDocumentsURL:account.localDocumentsURL accountRequiredMigration:account.requiresMigration completionHandler:^(NSError *removeError) {
             if (removeError)
                 NSLog(@"Error removing local account documents at %@: %@", account.localDocumentsURL, [removeError toPropertyList]);

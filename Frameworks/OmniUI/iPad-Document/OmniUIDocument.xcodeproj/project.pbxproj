@@ -78,7 +78,6 @@
 		3458F10F1B5D7539000011A6 /* OmniUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3458F0FD1B5D7456000011A6 /* OmniUI.framework */; };
 		3458F1111B5D756D000011A6 /* OmniDAV.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3458F1101B5D756D000011A6 /* OmniDAV.framework */; };
 		3458F1131B5D7578000011A6 /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3458F1121B5D7578000011A6 /* MobileCoreServices.framework */; };
-		3458F1151B5D7591000011A6 /* OmniDocumentStore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3458F1141B5D7591000011A6 /* OmniDocumentStore.framework */; };
 		3458F1171B5D75A0000011A6 /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3458F1161B5D75A0000011A6 /* OmniBase.framework */; };
 		3458F1191B5D75AC000011A6 /* Photos.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3458F1181B5D75AC000011A6 /* Photos.framework */; };
 		3458F11B1B5D75B3000011A6 /* OmniUnzip.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3458F11A1B5D75B3000011A6 /* OmniUnzip.framework */; };
@@ -116,6 +115,7 @@
 		4AF15245231D3DDC00B8A58F /* OUIDocumentBrowserWelcomeAppIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AF15244231D3DDC00B8A58F /* OUIDocumentBrowserWelcomeAppIntegration.swift */; };
 		4AF15246231D437100B8A58F /* OUIDocumentBrowserWelcome.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AF15239231D39DF00B8A58F /* OUIDocumentBrowserWelcome.swift */; };
 		4AF15248231D470600B8A58F /* OUIDocumentBrowserWelcome.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4AF15247231D470600B8A58F /* OUIDocumentBrowserWelcome.xcassets */; };
+		50C5059B23EE18410074DCB6 /* OUITemplateResourceBookmarks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50C5059A23EE18410074DCB6 /* OUITemplateResourceBookmarks.swift */; };
 		6C34CDC81B73DB1200692269 /* CoreSpotlight.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6C34CDC71B73DB1200692269 /* CoreSpotlight.framework */; };
 		FB847DAF1BED5C65004E6BD7 /* OUIDocumentExporter.h in Headers */ = {isa = PBXBuildFile; fileRef = FB847DAD1BED5C65004E6BD7 /* OUIDocumentExporter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FB847DB01BED5C65004E6BD7 /* OUIDocumentExporter.m in Sources */ = {isa = PBXBuildFile; fileRef = FB847DAE1BED5C65004E6BD7 /* OUIDocumentExporter.m */; };
@@ -130,20 +130,6 @@
 			proxyType = 2;
 			remoteGlobalIDString = 3E1F09D12034C0BD001EE416;
 			remoteInfo = "OUIUnitTests-iOS";
-		};
-		345350D91ECA6EB900E2FB65 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 345350D51ECA6EB900E2FB65 /* OmniDocumentStore.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 344F78B61B56F98A003BB98D;
-			remoteInfo = "OmniDocumentStore-iOS";
-		};
-		345350DF1ECA6EBE00E2FB65 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 345350D51ECA6EB900E2FB65 /* OmniDocumentStore.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 344F78B51B56F98A003BB98D;
-			remoteInfo = "OmniDocumentStore-iOS";
 		};
 		345350F61ECA6F2900E2FB65 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -289,7 +275,6 @@
 		3446137F22F25E690090B387 /* ShareAsFileTypeActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareAsFileTypeActivity.swift; sourceTree = SOURCE_ROOT; };
 		3452DDDB16C213E5001164A6 /* OUIDocumentInbox.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIDocumentInbox.h; sourceTree = SOURCE_ROOT; };
 		3452DDDC16C213E5001164A6 /* OUIDocumentInbox.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIDocumentInbox.m; sourceTree = SOURCE_ROOT; };
-		345350D51ECA6EB900E2FB65 /* OmniDocumentStore.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniDocumentStore.xcodeproj; path = ../../OmniDocumentStore/OmniDocumentStore.xcodeproj; sourceTree = "<group>"; };
 		345350EF1ECA6F2900E2FB65 /* OmniFileExchange.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniFileExchange.xcodeproj; path = ../../OmniFileExchange/OmniFileExchange.xcodeproj; sourceTree = "<group>"; };
 		3453F0311FCF484F0001CBA7 /* OUIExportOption.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OUIExportOption.h; sourceTree = SOURCE_ROOT; };
 		3453F0321FCF484F0001CBA7 /* OUIExportOption.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = OUIExportOption.m; sourceTree = SOURCE_ROOT; };
@@ -309,7 +294,6 @@
 		3458F1051B5D74E8000011A6 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		3458F1101B5D756D000011A6 /* OmniDAV.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniDAV.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3458F1121B5D7578000011A6 /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
-		3458F1141B5D7591000011A6 /* OmniDocumentStore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniDocumentStore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3458F1161B5D75A0000011A6 /* OmniBase.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniBase.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3458F1181B5D75AC000011A6 /* Photos.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Photos.framework; path = System/Library/Frameworks/Photos.framework; sourceTree = SDKROOT; };
 		3458F11A1B5D75B3000011A6 /* OmniUnzip.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniUnzip.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -352,6 +336,7 @@
 		4AF15239231D39DF00B8A58F /* OUIDocumentBrowserWelcome.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OUIDocumentBrowserWelcome.swift; sourceTree = "<group>"; };
 		4AF15244231D3DDC00B8A58F /* OUIDocumentBrowserWelcomeAppIntegration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OUIDocumentBrowserWelcomeAppIntegration.swift; sourceTree = "<group>"; };
 		4AF15247231D470600B8A58F /* OUIDocumentBrowserWelcome.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = OUIDocumentBrowserWelcome.xcassets; sourceTree = "<group>"; };
+		50C5059A23EE18410074DCB6 /* OUITemplateResourceBookmarks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OUITemplateResourceBookmarks.swift; sourceTree = "<group>"; };
 		50C8ED811A2E721E00BAD9EB /* OUIExportOptionsCollectionViewLayout.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIExportOptionsCollectionViewLayout.h; sourceTree = SOURCE_ROOT; };
 		50C8ED821A2E721E00BAD9EB /* OUIExportOptionsCollectionViewLayout.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIExportOptionsCollectionViewLayout.m; sourceTree = SOURCE_ROOT; };
 		6C34CDC71B73DB1200692269 /* CoreSpotlight.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreSpotlight.framework; path = System/Library/Frameworks/CoreSpotlight.framework; sourceTree = SDKROOT; };
@@ -377,7 +362,6 @@
 				3458F11B1B5D75B3000011A6 /* OmniUnzip.framework in Frameworks */,
 				3458F1191B5D75AC000011A6 /* Photos.framework in Frameworks */,
 				3458F1171B5D75A0000011A6 /* OmniBase.framework in Frameworks */,
-				3458F1151B5D7591000011A6 /* OmniDocumentStore.framework in Frameworks */,
 				3458F1131B5D7578000011A6 /* MobileCoreServices.framework in Frameworks */,
 				3458F1111B5D756D000011A6 /* OmniDAV.framework in Frameworks */,
 				3458F10A1B5D7512000011A6 /* UIKit.framework in Frameworks */,
@@ -533,14 +517,6 @@
 			path = ../../../Configurations;
 			sourceTree = "<group>";
 		};
-		345350D61ECA6EB900E2FB65 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				345350DA1ECA6EB900E2FB65 /* OmniDocumentStore.framework */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
 		345350F01ECA6F2900E2FB65 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -572,11 +548,9 @@
 			children = (
 				3466ADF71F59F4CE00646BA5 /* OmniUI.xcodeproj */,
 				345350EF1ECA6F2900E2FB65 /* OmniFileExchange.xcodeproj */,
-				345350D51ECA6EB900E2FB65 /* OmniDocumentStore.xcodeproj */,
 				3458F1221B5D75EC000011A6 /* OmniAppKit.framework */,
 				3458F1161B5D75A0000011A6 /* OmniBase.framework */,
 				3458F1101B5D756D000011A6 /* OmniDAV.framework */,
-				3458F1141B5D7591000011A6 /* OmniDocumentStore.framework */,
 				3458F0FF1B5D74B5000011A6 /* OmniFileExchange.framework */,
 				3458F1031B5D74D0000011A6 /* OmniFoundation.framework */,
 				3458F11C1B5D75BB000011A6 /* OmniQuartz.framework */,
@@ -603,6 +577,7 @@
 				420E6FA01FCD3D4700CF7191 /* OUINewDocumentCreationContext.swift */,
 				345E077522EF9CF00050ABBB /* OUITemplatePickerDelegate.h */,
 				4287BA0E1FC3EDED00981669 /* OUITemplatePicker.swift */,
+				50C5059A23EE18410074DCB6 /* OUITemplateResourceBookmarks.swift */,
 				4225BCBB1FCCC3830024E9CF /* OUILanguagePicker.swift */,
 				4287BA191FC3F5C300981669 /* OUITemplatePicker.storyboard */,
 				42E515761FC49DDF00B0AB2D /* OUITemplatePickerHeader.swift */,
@@ -785,7 +760,6 @@
 			);
 			dependencies = (
 				345350FF1ECA6F3300E2FB65 /* PBXTargetDependency */,
-				345350E01ECA6EBE00E2FB65 /* PBXTargetDependency */,
 				3466AE071F59F4D700646BA5 /* PBXTargetDependency */,
 			);
 			name = "OmniUIDocument-iOS";
@@ -828,10 +802,6 @@
 			projectDirPath = "";
 			projectReferences = (
 				{
-					ProductGroup = 345350D61ECA6EB900E2FB65 /* Products */;
-					ProjectRef = 345350D51ECA6EB900E2FB65 /* OmniDocumentStore.xcodeproj */;
-				},
-				{
 					ProductGroup = 345350F01ECA6F2900E2FB65 /* Products */;
 					ProjectRef = 345350EF1ECA6F2900E2FB65 /* OmniFileExchange.xcodeproj */;
 				},
@@ -853,13 +823,6 @@
 			fileType = wrapper.cfbundle;
 			path = "OUIUnitTests-iOS.xctest";
 			remoteRef = 3441D39B2069FE6600ACEDB9 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		345350DA1ECA6EB900E2FB65 /* OmniDocumentStore.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = OmniDocumentStore.framework;
-			remoteRef = 345350D91ECA6EB900E2FB65 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		345350F71ECA6F2900E2FB65 /* OmniFileExchange.framework */ = {
@@ -977,6 +940,7 @@
 				3458F0361B5D6FD7000011A6 /* OUIDocumentInbox.m in Sources */,
 				3446131322F24BA80090B387 /* DocumentConversionActivity.swift in Sources */,
 				4A7CC9C022F2508200A5741C /* OUIDocumentSceneDelegate.m in Sources */,
+				50C5059B23EE18410074DCB6 /* OUITemplateResourceBookmarks.swift in Sources */,
 				3458F0961B5D70E1000011A6 /* OmniUIDocumentAppearance.m in Sources */,
 				34B54AE022E27D6E008AABC6 /* OUIServerAccountsViewController.m in Sources */,
 				420E6FA11FCD3D4700CF7191 /* OUINewDocumentCreationContext.swift in Sources */,
@@ -1004,11 +968,6 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		345350E01ECA6EBE00E2FB65 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = "OmniDocumentStore-iOS";
-			targetProxy = 345350DF1ECA6EBE00E2FB65 /* PBXContainerItemProxy */;
-		};
 		345350FF1ECA6F3300E2FB65 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = "OmniFileExchange-iOS";

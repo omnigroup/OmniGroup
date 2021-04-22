@@ -119,6 +119,9 @@ if [ -n "${OMNI_VERSIONS-}" ]; then
     PREBUILT_VERSIONS_COMMIT=$(awk '/CommitHash: / {print $2}' "$OMNI_VERSIONS")
     if [[ "$PREBUILT_VERSIONS_COMMIT" != "$COMMIT" ]]; then
         echo >&2 "error: The file $OMNI_VERSIONS thinks we're building revision $PREBUILT_VERSIONS_COMMIT but our actual checkout (in $(pwd)) is $COMMIT"
+        echo >&2
+        echo "$OMNI_VERSIONS contains:" >&2
+        cat "$OMNI_VERSIONS" >&2
         exit 1
     fi
 fi

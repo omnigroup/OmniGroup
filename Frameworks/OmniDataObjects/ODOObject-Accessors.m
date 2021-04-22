@@ -1,4 +1,4 @@
-// Copyright 2008-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -376,7 +376,8 @@ static _Nullable id _ODOObjectToOneRelationshipGetterAtIndex(ODOObject *self, NS
         
         // Ensure that this early-out we are going to use is valid -- deleted objects should be faults.
         // It is valid (and desirable) to access properties of objects while handling ODOEditingContextObjectsWillBeDeletedNotification, so allow that.
-        BOOL isHandlingObjectsWillBeDeletedNotificationForSelf = [self->_editingContext _isSendingObjectsWillBeDeletedNotificationForObject:self];
+#define isHandlingObjectsWillBeDeletedNotificationForSelf ([self->_editingContext _isSendingObjectsWillBeDeletedNotificationForObject:self])
+        
         OBASSERT(![self isDeleted] || isHandlingObjectsWillBeDeletedNotificationForSelf || self->_flags.isFault);
         if (self->_flags.isFault && ([self isDeleted] && !isHandlingObjectsWillBeDeletedNotificationForSelf))
             return nil;

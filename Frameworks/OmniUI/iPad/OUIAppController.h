@@ -1,4 +1,4 @@
-// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -173,6 +173,7 @@ typedef NS_ENUM(NSInteger, OUIAppMenuOptionPosition) {
 };
 
 // override to customize the about screen
+- (NSString *)omniAccountMenuTitle;
 - (NSString *)aboutMenuTitle;
 - (NSString *)aboutScreenTitle;
 - (NSURL *)aboutScreenURL;
@@ -206,6 +207,7 @@ extern NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey; // @"
 @property(nonatomic,readonly) UIImage *releaseNotesMenuImage;
 @property(nonatomic,readonly) UIImage *configureOmniPresenceMenuImage;
 @property(nonatomic,readonly) UIImage *settingsMenuImage;
+@property(nonatomic,readonly) UIImage *omniAccountsMenuImage;
 @property(nonatomic,readonly) UIImage *inAppPurchasesMenuImage;
 @property(nonatomic,readonly) UIImage *quickStartMenuImage;
 @property(nonatomic,readonly) UIImage *trialModeMenuImage;
@@ -228,6 +230,7 @@ extern NSNotificationName const OUISystemIsSnapshottingNotification;
 - (void)unlockCreateNewDocumentInViewController:(UIViewController *)viewController withCompletionHandler:(void (^ __nonnull)(BOOL isUnlocked))completionBlock;
 
 - (void)checkTemporaryLicensingStateInViewController:(UIViewController *)viewController withCompletionHandler:(void (^ __nullable)(void))completionHandler;
+- (void)handleLicensingAuthenticationURL:(NSURL *)url presentationSource:(UIViewController *)presentationSource;
 
 // Defaults to YES, can be overridden by apps to allow only one crash report, and subsequent scenes will show an alert pointing the user to the lone crash report scene.
 @property (nonatomic, readonly) BOOL canHaveMultipleCrashReportScenes;

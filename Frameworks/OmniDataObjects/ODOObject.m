@@ -1,4 +1,4 @@
-// Copyright 2008-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -858,7 +858,7 @@ static void _validateRelatedObjectClass(const void *value, void *context)
             if (!flags.optional) {
                 NSError *error = nil;
                 ODOError(&error, ODORequiredValueNotPresentValidationError, @"Cannot save.", ([NSString stringWithFormat:@"Required property '%@' not set on '%@'.", [prop name], [self shortDescription]]));
-                OBRecordBacktraceWithContext(error.localizedFailureReason.UTF8String, OBBacktraceBuffer_Generic, self);
+                OBRecordBacktraceWithContext(prop.name.UTF8String, OBBacktraceBuffer_Generic, self);
                 assert(value != nil || flags.optional);
                 if (outError != NULL)
                     *outError = error;

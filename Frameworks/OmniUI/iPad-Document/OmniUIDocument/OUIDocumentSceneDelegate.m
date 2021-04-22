@@ -1,4 +1,4 @@
-// Copyright 2019 Omni Development, Inc. All rights reserved.
+// Copyright 2019-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -516,7 +516,7 @@ static OFPreference *showFileExtensionsPreference;
     };
     OFScanErrorHandler errorHandler = nil;
 
-    OFScanDirectory(folderURL, NO/*shouldRecurse*/, ODSScanDirectoryExcludeSytemFolderItemsFilter(), isPackage, itemHandler, errorHandler);
+    OFScanDirectory(folderURL, NO/*shouldRecurse*/, OFScanDirectoryExcludeSytemFolderItemsFilter(), isPackage, itemHandler, errorHandler);
 
     return usedFileNames;
 }
@@ -796,7 +796,7 @@ static OFPreference *showFileExtensionsPreference;
 {
     if (options & OUIDocumentPerformOpenURLOptionsImport) {
         [self importDocumentFromURL:url];
-    } else if (ODSIsInInbox(url)) { // move file for sure
+    } else if (OFIsInInbox(url)) { // move file for sure
         
         [OUIDocumentInbox takeInboxItem:url completionHandler:^(NSURL *newFileURL, NSError *errorOrNil) {
             main_async(^{
@@ -1107,14 +1107,16 @@ static OFPreference *showFileExtensionsPreference;
     UIViewController *rootViewController = nil;
 
     if (isForBrowsing) {
-        // Don't bother asking them to choose an account if they only have one
+        // Don't bother asking them to choose an account if they only have one and it is in working order
         NSArray <OFXServerAccount *> *validCloudSyncAccounts = agentActivity.agent.accountRegistry.validCloudSyncAccounts;
         if (validCloudSyncAccounts.count == 1) {
             OFXServerAccount *onlyAccount = validCloudSyncAccounts[0];
-            [self openFolderForServerAccount:onlyAccount];
-            OUIDocumentSyncActivityObserver *observer = [[OUIDocumentSyncActivityObserver alloc] initWithAgentActivity:agentActivity];
-            rootViewController = [OUIDocumentServerAccountFileListViewFactory fileListViewControllerWithServerAccount:onlyAccount observer:observer];
-            rootViewController.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(_dismissSyncFileListController:)];
+            if (onlyAccount.lastError == nil) {
+                [self openFolderForServerAccount:onlyAccount];
+                OUIDocumentSyncActivityObserver *observer = [[OUIDocumentSyncActivityObserver alloc] initWithAgentActivity:agentActivity];
+                rootViewController = [OUIDocumentServerAccountFileListViewFactory fileListViewControllerWithServerAccount:onlyAccount observer:observer];
+                rootViewController.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(_dismissSyncFileListController:)];
+            }
         }
     }
 

@@ -1,4 +1,4 @@
-// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -302,7 +302,7 @@ static void _updateFlag(ODSFileItem *fileItem, NSString *bindingKey, BOOL value)
     };
     OFScanErrorHandler errorHandler = nil;
     
-    OFScanDirectory(folderURL, NO/*shouldRecurse*/, ODSScanDirectoryExcludeSytemFolderItemsFilter(), isPackage, itemHandler, errorHandler);
+    OFScanDirectory(folderURL, NO/*shouldRecurse*/, OFScanDirectoryExcludeSytemFolderItemsFilter(), isPackage, itemHandler, errorHandler);
     
     return usedFileNames;
 }
@@ -405,7 +405,7 @@ static void _updateFlag(ODSFileItem *fileItem, NSString *bindingKey, BOOL value)
             return YES; // Keep trying to get as many as we can...
         };
         
-        OFScanDirectory(_directoryURL, YES/*shouldRecurse*/, ODSScanDirectoryExcludeSytemFolderItemsFilter(), isPackage, itemBlock, errorHandler);
+        OFScanDirectory(_directoryURL, YES/*shouldRecurse*/, OFScanDirectoryExcludeSytemFolderItemsFilter(), isPackage, itemBlock, errorHandler);
         
         if (scanFinished)
             [[NSOperationQueue mainQueue] addOperationWithBlock:scanFinished];

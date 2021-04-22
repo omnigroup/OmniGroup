@@ -1,4 +1,4 @@
-// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,6 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSString *)documentCreationRequestDocumentTypeForNewFiles:(nullable OUINewDocumentCreationRequest *)request;
 - (NSArray *)documentCreationRequestEditableDocumentTypes:(nullable OUINewDocumentCreationRequest *)request;
+- (NSArray<NSString *> *)templateUTIs;
 
 @end
 
@@ -29,8 +30,8 @@ NS_ASSUME_NONNULL_BEGIN
 // This will present a template picker if the delegate calls for it, otherwise it will create a new untitled document.
 - (void)runWithInternalTemplateDelegate:(nullable id <OUIInternalTemplateDelegate>)internalTemplateDelegate;
 
-@property(readonly,nonatomic) NSString *documentTypeForNewFiles;
-- (NSURL *)temporaryURLForCreatingNewDocumentNamed:(nullable NSString *)documentName;
+@property(nullable,readonly,nonatomic) NSString *documentTypeForNewFiles;
+- (nullable NSURL *)temporaryURLForCreatingNewDocumentNamed:(nullable NSString *)documentName;
 
 @end
 

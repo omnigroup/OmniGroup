@@ -1,4 +1,4 @@
-// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -112,7 +112,11 @@ static const char *OBBacktraceOpTypeName(enum OBBacktraceBufferType op)
 
 void OBBacktraceDumpEntries(void)
 {
-    for (int32_t slot = 0; slot < OBBacktraceBufferTraceCount; slot++) {
+    // Print the buffers in order, assuming that we are stopped in the debugger and next_available_backtrace is fixed
+
+    for (int32_t countPrinted = 0; countPrinted < OBBacktraceBufferTraceCount; countPrinted++) {
+        int32_t slot = (next_available_backtrace + countPrinted) % OBBacktraceBufferTraceCount;
+
         struct OBBacktraceBuffer *buf = &backtraces[slot];
         const char *opName = OBBacktraceOpTypeName(buf->type);
 
@@ -127,9 +131,9 @@ void OBBacktraceDumpEntries(void)
             }
 
             backtrace_symbols_fd(buf->frames, frameCount, fileno(stderr));
-
-            fprintf(stderr, "\n\n");
         }
+
+        fprintf(stderr, "\n\n");
     }
 }
 #endif

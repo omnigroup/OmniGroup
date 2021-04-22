@@ -34,6 +34,7 @@
 		235D67421EB00E06007FCF56 /* OUIMultiPaneNotifications.m in Sources */ = {isa = PBXBuildFile; fileRef = 235D67401EB00E06007FCF56 /* OUIMultiPaneNotifications.m */; };
 		236CA7741B5D690B00D66AFA /* UIVisualEffectView-OUIExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 236CA7721B5D690B00D66AFA /* UIVisualEffectView-OUIExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		236CA7751B5D690B00D66AFA /* UIVisualEffectView-OUIExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 236CA7731B5D690B00D66AFA /* UIVisualEffectView-OUIExtensions.m */; };
+		2BD092BE23E8F56E0087AECD /* OUILicensingAuthenticationCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BD092BD23E8F56E0087AECD /* OUILicensingAuthenticationCommand.swift */; };
 		342C5F7B1B5D935400B5A80D /* UIImage-OUIExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 342C5F791B5D935400B5A80D /* UIImage-OUIExtensions.h */; };
 		342C5F7C1B5D935400B5A80D /* UIImage-OUIExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 342C5F7A1B5D935400B5A80D /* UIImage-OUIExtensions.m */; };
 		348A79D91B584A830082D55D /* OUIFeatures.h in Headers */ = {isa = PBXBuildFile; fileRef = 34EA43E41267A32200BAC7FD /* OUIFeatures.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -515,6 +516,55 @@
 			remoteGlobalIDString = 348A79BA1B5849C70082D55D;
 			remoteInfo = "OmniUI-iOS";
 		};
+		4AE1C1F023DF7B480034A48E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4AE1C1E223DF7B480034A48E /* OmniDAV.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 8DC2EF5B0486A6940098B216;
+			remoteInfo = OmniDAV;
+		};
+		4AE1C1F223DF7B480034A48E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4AE1C1E223DF7B480034A48E /* OmniDAV.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 34D621AF1B38807700DCE250;
+			remoteInfo = "OmniDAV-iOS";
+		};
+		4AE1C1F423DF7B480034A48E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4AE1C1E223DF7B480034A48E /* OmniDAV.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 34E88F9B1EC1173E007B918E;
+			remoteInfo = "OmniDAV-server";
+		};
+		4AE1C1F623DF7B480034A48E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4AE1C1E223DF7B480034A48E /* OmniDAV.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 349F978F15DEA87B00D7677C;
+			remoteInfo = ODAVUnitTests;
+		};
+		4AE1C1F823DF7B480034A48E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4AE1C1E223DF7B480034A48E /* OmniDAV.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 340490AC15E53DDC0044F67F;
+			remoteInfo = ODAVUnitTestsTouch;
+		};
+		4AE1C1FA23DF7B480034A48E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4AE1C1E223DF7B480034A48E /* OmniDAV.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 34C017A410995278001C110D;
+			remoteInfo = odav;
+		};
+		4AE1C20023DF7B620034A48E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4AE1C1E223DF7B480034A48E /* OmniDAV.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 34D621AE1B38807700DCE250;
+			remoteInfo = "OmniDAV-iOS";
+		};
 		4DD560CC1ED39D5C00F9A088 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 2787A6541991F4E0008D3495 /* OmniAppKit.xcodeproj */;
@@ -596,6 +646,7 @@
 		2787A6541991F4E0008D3495 /* OmniAppKit.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniAppKit.xcodeproj; path = ../../OmniAppKit/OmniAppKit.xcodeproj; sourceTree = "<group>"; };
 		27D1BBCD1991F78A00976618 /* OmniQuartz.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniQuartz.xcodeproj; path = ../../OmniQuartz/OmniQuartz.xcodeproj; sourceTree = "<group>"; };
 		27D1BBDE1991F7D800976618 /* OmniUnzip.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniUnzip.xcodeproj; path = ../../OmniUnzip/OmniUnzip.xcodeproj; sourceTree = "<group>"; };
+		2BD092BD23E8F56E0087AECD /* OUILicensingAuthenticationCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OUILicensingAuthenticationCommand.swift; sourceTree = "<group>"; };
 		3407448B12A5E83F00EFDA68 /* OUIInspectorBackgroundView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIInspectorBackgroundView.h; sourceTree = "<group>"; };
 		3407448C12A5E83F00EFDA68 /* OUIInspectorBackgroundView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIInspectorBackgroundView.m; sourceTree = "<group>"; };
 		340B1E2C12B17C00004823B3 /* OmniUI.defaults */ = {isa = PBXFileReference; explicitFileType = text.xml; fileEncoding = 4; indentWidth = 8; name = OmniUI.defaults; path = Inspectors/OmniUI.defaults; sourceTree = "<group>"; usesTabs = 1; };
@@ -891,6 +942,7 @@
 		4A62A83C23216725000032F7 /* OUILoupeImages.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = OUILoupeImages.xcassets; sourceTree = "<group>"; };
 		4AA1E2F622FBA22000B81411 /* OUIAppControllerSceneHelper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OUIAppControllerSceneHelper.h; sourceTree = "<group>"; };
 		4AA1E2F722FBA22000B81411 /* OUIAppControllerSceneHelper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = OUIAppControllerSceneHelper.m; sourceTree = "<group>"; };
+		4AE1C1E223DF7B480034A48E /* OmniDAV.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniDAV.xcodeproj; path = ../../OmniDAV/OmniDAV.xcodeproj; sourceTree = "<group>"; };
 		4AF14C5C2318850B00B8A58F /* OUINews.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OUINews.swift; sourceTree = "<group>"; };
 		4AF368E32006E665004EED9D /* OUIPasswordPromptViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OUIPasswordPromptViewController.swift; sourceTree = "<group>"; };
 		4AF368E42006E665004EED9D /* OUIPasswordPromptViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = OUIPasswordPromptViewController.xib; sourceTree = "<group>"; };
@@ -1640,6 +1692,7 @@
 		348A7C0F1B584F550082D55D /* Omni */ = {
 			isa = PBXGroup;
 			children = (
+				4AE1C1E223DF7B480034A48E /* OmniDAV.xcodeproj */,
 				348A7C1C1B584FCD0082D55D /* OmniBase.framework */,
 				348A7C0D1B584F4E0082D55D /* OmniFoundation.framework */,
 				27D1BBDE1991F7D800976618 /* OmniUnzip.xcodeproj */,
@@ -1750,6 +1803,7 @@
 				23137CFC19ABB435005D85AE /* OUIPurchaseURLCommand.m */,
 				4AF93D7C1E9D328D00DA8E01 /* OUISendFeedbackURLCommand.h */,
 				4AF93D7D1E9D328D00DA8E01 /* OUISendFeedbackURLCommand.m */,
+				2BD092BD23E8F56E0087AECD /* OUILicensingAuthenticationCommand.swift */,
 			);
 			name = "Special URL Handling";
 			sourceTree = "<group>";
@@ -1765,6 +1819,19 @@
 				6CAC9DCE1951F4CB004F5C28 /* OUIVerticalSplitTransition.m */,
 			);
 			name = Transitions;
+			sourceTree = "<group>";
+		};
+		4AE1C1E323DF7B480034A48E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				4AE1C1F123DF7B480034A48E /* OmniDAV.framework */,
+				4AE1C1F323DF7B480034A48E /* OmniDAV.framework */,
+				4AE1C1F523DF7B480034A48E /* OmniDAV.framework */,
+				4AE1C1F723DF7B480034A48E /* ODAVUnitTests.xctest */,
+				4AE1C1F923DF7B480034A48E /* libODAVUnitTestsTouch.a */,
+				4AE1C1FB23DF7B480034A48E /* odav */,
+			);
+			name = Products;
 			sourceTree = "<group>";
 		};
 		5F1A5AE615ADF7A4003FD79D /* Password Alert */ = {
@@ -2013,6 +2080,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				4AE1C20123DF7B620034A48E /* PBXTargetDependency */,
 				349EB2741ECA68A1008AFC01 /* PBXTargetDependency */,
 				34EFC2861ECA63F70056DB93 /* PBXTargetDependency */,
 				34D73AD6205AE9B200183D03 /* PBXTargetDependency */,
@@ -2075,6 +2143,10 @@
 				{
 					ProductGroup = 2787A6551991F4E0008D3495 /* Products */;
 					ProjectRef = 2787A6541991F4E0008D3495 /* OmniAppKit.xcodeproj */;
+				},
+				{
+					ProductGroup = 4AE1C1E323DF7B480034A48E /* Products */;
+					ProjectRef = 4AE1C1E223DF7B480034A48E /* OmniDAV.xcodeproj */;
 				},
 				{
 					ProductGroup = 27D1BBCE1991F78A00976618 /* Products */;
@@ -2162,6 +2234,48 @@
 			fileType = wrapper.framework;
 			path = OmniUnzip.framework;
 			remoteRef = 34A733761B32090B008E2A38 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		4AE1C1F123DF7B480034A48E /* OmniDAV.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = OmniDAV.framework;
+			remoteRef = 4AE1C1F023DF7B480034A48E /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		4AE1C1F323DF7B480034A48E /* OmniDAV.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = OmniDAV.framework;
+			remoteRef = 4AE1C1F223DF7B480034A48E /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		4AE1C1F523DF7B480034A48E /* OmniDAV.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = OmniDAV.framework;
+			remoteRef = 4AE1C1F423DF7B480034A48E /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		4AE1C1F723DF7B480034A48E /* ODAVUnitTests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = ODAVUnitTests.xctest;
+			remoteRef = 4AE1C1F623DF7B480034A48E /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		4AE1C1F923DF7B480034A48E /* libODAVUnitTestsTouch.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libODAVUnitTestsTouch.a;
+			remoteRef = 4AE1C1F823DF7B480034A48E /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		4AE1C1FB23DF7B480034A48E /* odav */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = odav;
+			remoteRef = 4AE1C1FA23DF7B480034A48E /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		4DD560CD1ED39D5C00F9A088 /* OmniAppKit.framework */ = {
@@ -2382,6 +2496,7 @@
 				348A7A091B584AE10082D55D /* OUIColorInspectorPane.m in Sources */,
 				348A7B491B584D130082D55D /* UIGestureRecognizer-OUIExtensions.m in Sources */,
 				231060501EAFE95D008E0647 /* Bundle.swift in Sources */,
+				2BD092BE23E8F56E0087AECD /* OUILicensingAuthenticationCommand.swift in Sources */,
 				348A7B271B584CF10082D55D /* OUIKeyboardLock.m in Sources */,
 				348A7A851B584BAE0082D55D /* OUIInspectorLabel.m in Sources */,
 				348A79F91B584AE10082D55D /* OUIAbstractColorInspectorSlice.m in Sources */,
@@ -2474,6 +2589,11 @@
 			isa = PBXTargetDependency;
 			target = 348A79BA1B5849C70082D55D /* OmniUI-iOS */;
 			targetProxy = 3E1F09D72034C0BD001EE416 /* PBXContainerItemProxy */;
+		};
+		4AE1C20123DF7B620034A48E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "OmniDAV-iOS";
+			targetProxy = 4AE1C20023DF7B620034A48E /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 

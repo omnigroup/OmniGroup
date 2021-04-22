@@ -129,6 +129,7 @@ OUIKeyCommands.m
 OUIKeyboardLock.m
 OUIKeyboardNotifier.m
 OUILabeledValueCell.m
+OUILicensingAuthenticationCommand.swift
 OUILongPressGestureRecognizer.m
 OUILoupeOverlay.m
 OUIMenuController.m

@@ -1,4 +1,4 @@
-// Copyright 1997-2019 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,6 +20,13 @@ typedef CF_ENUM(uintptr_t, OBBacktraceBufferType) {
 
 extern void OBRecordBacktrace(const char *message, OBBacktraceBufferType optype);
 extern void OBRecordBacktraceWithContext(const char *message, OBBacktraceBufferType optype, const void *context);
+
+static inline void _OBRecordBacktraceU8(const uint8_t *message, OBBacktraceBufferType optype) {
+    OBRecordBacktrace((const char *)message, optype);
+}
+static inline void _OBRecordBacktraceWithContextU8(const uint8_t *message, OBBacktraceBufferType optype, id context) {
+    OBRecordBacktraceWithContext((const char *)message, optype, (__bridge const void *)context);
+}
 
 static inline void OBRecordBacktraceWithSelector(SEL selector) {
     OBRecordBacktrace(sel_getName(selector), OBBacktraceBuffer_PerformSelector);

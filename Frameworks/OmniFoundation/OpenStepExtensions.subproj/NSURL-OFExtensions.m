@@ -1,4 +1,4 @@
-// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -734,5 +734,70 @@ OFScanPathExtensionIsPackage OFIsPackageWithKnownPackageExtensions(NSSet * _Null
     
     return [isPackage copy];
 }
+
+NSURL *OFUserDocumentsDirectoryURL(void)
+{
+    static NSURL *documentsDirectoryURL = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        __autoreleasing NSError *error = nil;
+        documentsDirectoryURL = [[[NSFileManager defaultManager] URLForDirectory:NSDocumentDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:YES error:&error] copy];
+        if (!documentsDirectoryURL) {
+            [error log:@"Error creating user documents directory"];
+        }
+
+        documentsDirectoryURL = [[documentsDirectoryURL URLByStandardizingPath] copy];
+    });
+
+    return documentsDirectoryURL;
+}
+
+#if OMNI_BUILDING_FOR_IOS
+
+static NSString * const OFDocumentInteractionInboxFolderName = @"Inbox";
+static NSString * const OFiCloudDriveInboxFolderSuffix = @"-Inbox";
+
+BOOL OFIsInInbox(NSURL *url)
+{
+    // Check to see if the URL directly points to the Inbox.
+    NSString *lastPathComponent = [url lastPathComponent];
+    if (lastPathComponent != nil && ([lastPathComponent caseInsensitiveCompare:OFDocumentInteractionInboxFolderName] == NSOrderedSame)) {
+        return YES;
+    }
+
+    // URL does not directly point to Inbox, check if it points to a file directly in the Inbox.
+    NSURL *pathURL = [url URLByDeletingLastPathComponent]; // Remove the filename.
+    NSString *lastPathComponentString = [pathURL lastPathComponent];
+
+    BOOL isInDocumentInteractionInbox = (lastPathComponentString != nil && [lastPathComponentString caseInsensitiveCompare:OFDocumentInteractionInboxFolderName] == NSOrderedSame);
+
+    // When documents are shared via the iCloud Drive app on iOS 9+, they are placed in a [APP_CONTAINER]/tmp/[APP_BUNDLE_ID]-Inbox/ folder. I can't find any documentation about this, so we need to treat it similarly to the Document Interaction Inbox. ([APP_CONTAINER]/Documents/Inbox) Because this new folder is in /tmp, we're not going to worry about deleting the folder. We will just let our other 'move sutff out of an Inbox location' code delete the file from the 'Inbox'. This is why I'm not vending this new Inbox location out and only checking it here.
+    BOOL isIniCloudDriveInbox = (lastPathComponentString != nil && [lastPathComponentString hasSuffix:OFiCloudDriveInboxFolderSuffix]);
+
+
+    return (isInDocumentInteractionInbox || isIniCloudDriveInbox);
+}
+
+OFScanDirectoryFilter OFScanDirectoryExcludeSytemFolderItemsFilter(void)
+{
+    return [^BOOL(NSURL *fileURL){
+        // We never want to acknowledge files in the inbox directly. Instead they'll be dealt with when they're handed to us via document interaction and moved.
+        if (OFIsInInbox(fileURL)) {
+            return NO;
+        }
+
+        // iOS 11's Files app will create a .Trash folder in ~/Documents.
+        if ([[fileURL lastPathComponent] isEqual:@".Trash"]) {
+            // If we start calling this for OmniPresence-based scopes, we'd possibly stop syncing files in .Trash directories that were created by the user. This is pretty edge-case, but let's not do that unless needed.
+            OBASSERT([[fileURL URLByDeletingLastPathComponent] isEqual:OFUserDocumentsDirectoryURL()]);
+
+            return NO;
+        }
+
+        return YES;
+    } copy];
+};
+
+#endif
 
 NS_ASSUME_NONNULL_END

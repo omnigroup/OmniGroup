@@ -1,4 +1,4 @@
-// Copyright 2015-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -6,7 +6,6 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 @import Foundation;
-@import OmniDocumentStore;
 @import OmniUnzip;
 
 #import <OmniUIDocument/OUIDocument.h>
@@ -14,21 +13,6 @@
 #import <OmniUI/OUIAppController.h>
 
 NS_ASSUME_NONNULL_BEGIN
-
-OB_DEPRECATED_ATTRIBUTE
-@protocol OUIDocumentExporterHost <NSObject>
-
-@optional
-- (NSURL *)fileURLToExport OB_DEPRECATED_ATTRIBUTE;
-
-- (UIColor *)tintColorForExportMenu OB_DEPRECATED_ATTRIBUTE; // use [UIColor blackColor] to also get untemplated images
-- (void)prepareToExport OB_DEPRECATED_ATTRIBUTE;
-- (NSArray <NSURL *> *)fileURLsToExport;
-
-- (NSArray *)fileItemsToExport OB_DEPRECATED_ATTRIBUTE;
-- (ODSFileItem *)fileItemToExport OB_DEPRECATED_ATTRIBUTE;
-
-@end
 
 /// Create instances using the +exporter method instead of -init
 @interface OUIDocumentExporter : NSObject
@@ -70,44 +54,4 @@ OB_DEPRECATED_ATTRIBUTE
 - (void)exportFileWrapperOfType:(NSString *)exportType parentViewController:(UIViewController *)parentViewController withCompletionHandler:(void (^)(NSFileWrapper * _Nullable fileWrapper, NSError * _Nullable error))completionHandler;
 @end
 
-@class OFXServerAccount;
-@interface OUIDocumentExporter (OUIDocumentExporterDeprecated)
-// Subclass -[ODSFileItem(OUIDocumentExtensions) availableExportTypesForFileExportToLocalDocuments:] instead.
-- (NSArray *)appSpecificAvailableExportTypesForFileItem:(ODSFileItem *)fileItem serverAccount:(OFXServerAccount *)serverAccount exportOptionsType:(OUIExportOptionsType)exportOptionsType OB_DEPRECATED_ATTRIBUTE;
-
-// Use UIActivity/NSURL-based API.
-- (BOOL)canExportFileItem:(ODSFileItem *)fileItem OB_DEPRECATED_ATTRIBUTE;
-- (void)exportItem:(ODSFileItem *)fileItem OB_DEPRECATED_ATTRIBUTE;
-- (void)exportItem:(ODSFileItem *)fileItem sender:(id)sender OB_DEPRECATED_ATTRIBUTE;
-- (void)emailFileItem:(ODSFileItem *)fileItem OB_DEPRECATED_ATTRIBUTE;
-- (nullable NSData *)copyAsImageDataForFileURL:(NSURL *)fileURL error:(NSError **)outError OB_DEPRECATED_ATTRIBUTE;
-- (NSArray *)availableExportTypesForFileItem:(ODSFileItem *)fileItem exportOptionsType:(OUIExportOptionsType)exportOptionsType OB_DEPRECATED_ATTRIBUTE;
-- (void)exportFileWrapperOfType:(NSString *)exportType forFileItem:(ODSFileItem *)fileItem withCompletionHandler:(void (^)(NSFileWrapper * _Nullable fileWrapper, NSError * _Nullable error))completionHandler OB_DEPRECATED_ATTRIBUTE;
-- (nullable NSArray<OUIMenuOption *> *)additionalExportOptionsForFileItem:(ODSFileItem *)fileItem OB_DEPRECATED_ATTRIBUTE;
-- (NSArray *)availableInAppPurchaseExportTypesForFileItem:(ODSFileItem *)fileItem exportOptionsType:(OUIExportOptionsType)exportOptionsType OB_DEPRECATED_ATTRIBUTE;
-- (NSString *)printButtonTitleForFileItem:(ODSFileItem *)fileItem OB_DEPRECATED_ATTRIBUTE;
-- (void)printFileItem:(ODSFileItem *)fileItem fromButton:(UIBarButtonItem *)aButton OB_DEPRECATED_ATTRIBUTE;
-- (nullable NSData *)copyAsImageDataForFileItem:(ODSFileItem *)fileItem error:(NSError **)outError OB_DEPRECATED_ATTRIBUTE;
-- (UIImage *)cameraRollImageForFileItem:(ODSFileItem *)fileItem OB_DEPRECATED_ATTRIBUTE;
-- (nullable NSData *)PDFDataForFileItem:(ODSFileItem *)fileItem error:(NSError **)error OB_DEPRECATED_ATTRIBUTE;
-- (nullable NSData *)PNGDataForFileItem:(ODSFileItem *)fileItem error:(NSError **)error OB_DEPRECATED_ATTRIBUTE;
-
-// Indicate what types are supported by subclassing +[OUIDocument availableExportTypesForFileType:] or by subclassing -PNGData:, etc.
-- (BOOL)supportsExportAsPNG OB_DEPRECATED_ATTRIBUTE;
-- (BOOL)supportsCopyAsImage OB_DEPRECATED_ATTRIBUTE;
-- (BOOL)supportsSendToCameraRoll OB_DEPRECATED_ATTRIBUTE;
-- (BOOL)supportsPrinting OB_DEPRECATED_ATTRIBUTE;
-- (UIImage *)cameraRollImageForFileURL:(NSURL *)fileURL OB_DEPRECATED_ATTRIBUTE;
-
-// Temporary on a work-in-progress branch.
-- (nullable NSArray<OUIMenuOption *> *)additionalExportOptionsForFileURL:(NSURL *)fileURL OB_DEPRECATED_ATTRIBUTE;
-- (nullable NSData *)PDFDataForFileURL:(NSURL *)fileURL error:(NSError **)error OB_DEPRECATED_ATTRIBUTE;
-- (nullable NSData *)PNGDataForFileURL:(NSURL *)fileURL error:(NSError **)error OB_DEPRECATED_ATTRIBUTE;
-- (void)printFileURL:(NSURL *)fileURL fromButton:(UIBarButtonItem *)aButton OB_DEPRECATED_ATTRIBUTE;
-- (void)exportFileWrapperOfType:(NSString *)exportType forFileURL:(NSURL *)fileURL withCompletionHandler:(void (^)(NSFileWrapper * _Nullable fileWrapper, NSError * _Nullable error))completionHandler OB_DEPRECATED_ATTRIBUTE;
-- (void)generatePDFDataForFileURL:(NSURL *)fileURL completionHandler:(void (^)(NSData * _Nullable data, NSError * _Nullable errorOrNil))completionHandler OB_DEPRECATED_ATTRIBUTE;
-
-@end
-
 NS_ASSUME_NONNULL_END
-

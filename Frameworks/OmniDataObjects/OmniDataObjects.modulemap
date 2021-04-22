@@ -3,6 +3,11 @@ framework module OmniDataObjects {
 
     exclude header "ODOModel-Creation.h"
     exclude header "ODOEditingContext-Subclass.h"
+    exclude header "ODOPredicate-SQL.h"
+
+    explicit module PredicateSQL {
+        header "ODOPredicate-SQL.h"
+    }
 
     export *
     module * { export * }

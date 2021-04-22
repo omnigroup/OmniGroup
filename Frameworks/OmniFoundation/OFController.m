@@ -1,4 +1,4 @@
-// Copyright 1998-2019 Omni Development, Inc. All rights reserved.
+// Copyright 1998-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -822,7 +822,8 @@ static NSString * const OFControllerAssertionHandlerException = @"OFControllerAs
 
 - (BOOL)exceptionHandler:(NSExceptionHandler *)sender shouldLogException:(NSException *)exception mask:(NSUInteger)aMask;
 {
-    OBRecordBacktrace(NULL, OBBacktraceBuffer_NSException);
+    // This makes the assumption that NSException names are using static strings, which is a very good bet.
+    OBRecordBacktrace([[exception name] UTF8String], OBBacktraceBuffer_NSException);
 
     /*
      

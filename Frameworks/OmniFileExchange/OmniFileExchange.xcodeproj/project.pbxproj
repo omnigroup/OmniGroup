@@ -127,7 +127,6 @@
 		343683521B582C6B00BC25E6 /* OmniDAV.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 347A67B21B38B5F900354BDD /* OmniDAV.framework */; };
 		343683541B582C8700BC25E6 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 343683531B582C8700BC25E6 /* UIKit.framework */; };
 		343683561B582C9D00BC25E6 /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 343683551B582C9D00BC25E6 /* MobileCoreServices.framework */; };
-		3436835B1B582D0900BC25E6 /* OmniDocumentStore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34F2A9491B5719A60063D482 /* OmniDocumentStore.framework */; };
 		343BE00516E7BAEF0060AFD5 /* OFXContainerScan.h in Headers */ = {isa = PBXBuildFile; fileRef = 343BE00316E7BAEE0060AFD5 /* OFXContainerScan.h */; };
 		343BE00716E7BAEF0060AFD5 /* OFXContainerScan.m in Sources */ = {isa = PBXBuildFile; fileRef = 343BE00416E7BAEF0060AFD5 /* OFXContainerScan.m */; };
 		3441607316B07DBF00E917F5 /* OFXServerAccountValidator.h in Headers */ = {isa = PBXBuildFile; fileRef = 3441607116B07DBF00E917F5 /* OFXServerAccountValidator.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -470,13 +469,6 @@
 			remoteGlobalIDString = 34D621AE1B38807700DCE250;
 			remoteInfo = "OmniDAV-iOS";
 		};
-		345350B31ECA6DBE00E2FB65 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 2787A6411991F363008D3495 /* OmniDocumentStore.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 344F78B51B56F98A003BB98D;
-			remoteInfo = "OmniDocumentStore-iOS";
-		};
 		347797AF17EA28F3005E6DC6 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34AFACD8164B0E70009E39AB /* Project object */;
@@ -505,13 +497,6 @@
 			remoteGlobalIDString = 8DC2EF4F0486A6940098B216;
 			remoteInfo = OmniDAV;
 		};
-		34F2A9481B5719A60063D482 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 2787A6411991F363008D3495 /* OmniDocumentStore.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 344F78B61B56F98A003BB98D;
-			remoteInfo = "OmniDocumentStore-iOS";
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
@@ -529,7 +514,6 @@
 		1E66EB661ED513E6005E32FD /* OmniBase.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniBase.xcodeproj; path = OmniBase/OmniBase.xcodeproj; sourceTree = "<group>"; };
 		1E9FA5841ED511BD00CC2AB8 /* OmniFoundation.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniFoundation.xcodeproj; path = OmniFoundation/OmniFoundation.xcodeproj; sourceTree = "<group>"; };
 		2787A62D1991F292008D3495 /* OmniDAV.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniDAV.xcodeproj; path = OmniDAV/OmniDAV.xcodeproj; sourceTree = "<group>"; };
-		2787A6411991F363008D3495 /* OmniDocumentStore.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniDocumentStore.xcodeproj; path = OmniDocumentStore/OmniDocumentStore.xcodeproj; sourceTree = "<group>"; };
 		340135B616DBD6B300BCC654 /* OFXFileSnapshotUploadTransfer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFXFileSnapshotUploadTransfer.h; sourceTree = SOURCE_ROOT; };
 		340135B716DBD6B300BCC654 /* OFXFileSnapshotUploadTransfer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXFileSnapshotUploadTransfer.m; sourceTree = SOURCE_ROOT; };
 		340135C216DBEABC00BCC654 /* OFXFileSnapshotUploadRenameTransfer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFXFileSnapshotUploadRenameTransfer.h; sourceTree = SOURCE_ROOT; };
@@ -759,7 +743,6 @@
 				343683561B582C9D00BC25E6 /* MobileCoreServices.framework in Frameworks */,
 				343683541B582C8700BC25E6 /* UIKit.framework in Frameworks */,
 				3436834F1B582C5200BC25E6 /* Foundation.framework in Frameworks */,
-				3436835B1B582D0900BC25E6 /* OmniDocumentStore.framework in Frameworks */,
 				343683501B582C6B00BC25E6 /* OmniBase.framework in Frameworks */,
 				343683511B582C6B00BC25E6 /* OmniFoundation.framework in Frameworks */,
 				343683521B582C6B00BC25E6 /* OmniDAV.framework in Frameworks */,
@@ -882,14 +865,6 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		2787A6421991F363008D3495 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				34F2A9491B5719A60063D482 /* OmniDocumentStore.framework */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
 		340135C816DC19F600BCC654 /* Upload */ = {
 			isa = PBXGroup;
 			children = (
@@ -965,7 +940,6 @@
 				1E9FA5841ED511BD00CC2AB8 /* OmniFoundation.xcodeproj */,
 				34824B051742E5B200253D52 /* OmniCommandLine.xcodeproj */,
 				2787A62D1991F292008D3495 /* OmniDAV.xcodeproj */,
-				2787A6411991F363008D3495 /* OmniDocumentStore.xcodeproj */,
 			);
 			name = Omni;
 			path = ..;
@@ -1412,7 +1386,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				345350B41ECA6DBE00E2FB65 /* PBXTargetDependency */,
 				345350B21ECA6DB900E2FB65 /* PBXTargetDependency */,
 			);
 			name = "OmniFileExchange-iOS";
@@ -1524,10 +1497,6 @@
 				{
 					ProductGroup = 2787A62E1991F292008D3495 /* Products */;
 					ProjectRef = 2787A62D1991F292008D3495 /* OmniDAV.xcodeproj */;
-				},
-				{
-					ProductGroup = 2787A6421991F363008D3495 /* Products */;
-					ProjectRef = 2787A6411991F363008D3495 /* OmniDocumentStore.xcodeproj */;
 				},
 				{
 					ProductGroup = 1E8FA6F41ED512A1001801A2 /* Products */;
@@ -1766,13 +1735,6 @@
 			remoteRef = 34824B091742E5B200253D52 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		34F2A9491B5719A60063D482 /* OmniDocumentStore.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = OmniDocumentStore.framework;
-			remoteRef = 34F2A9481B5719A60063D482 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
 /* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
@@ -1988,11 +1950,6 @@
 			isa = PBXTargetDependency;
 			name = "OmniDAV-iOS";
 			targetProxy = 345350B11ECA6DB900E2FB65 /* PBXContainerItemProxy */;
-		};
-		345350B41ECA6DBE00E2FB65 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = "OmniDocumentStore-iOS";
-			targetProxy = 345350B31ECA6DBE00E2FB65 /* PBXContainerItemProxy */;
 		};
 		347797B017EA28F3005E6DC6 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;

@@ -1,4 +1,4 @@
-// Copyright 2008-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -66,6 +66,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+/// Sent from `-deleteObject:error:` and undo of `-insertObject:`, passing the objects to be deleted in the `ODODeletedObjectsKey` user info key, including those any propagated deletes. The object passed to `-deleteObject:error:` will have already been sent `prepareForDeletion`, but will not have relationships nullfied or report itself as deleted.
+extern NSNotificationName const ODOEditingContextObjectsPreparingToBeDeletedNotification;
+
+/// Sent from -deleteObject:error: and undo of -insertObject:, passing the objects to be deleted in the `ODODeletedObjectsKey` key, including those that will be included due to delete propagation. The objects will have received `prepareForDeletion` before this notification.  The objects are provisionally marked as deleted (they will return `YES` for `isDeleted` and will not appear in fetches). During receipt of this notification, it is still allowed to query properties on the deleted objects. Snapshots of the last committed state of deleted objects are also passed in the `ODODeletedObjectPropertySnapshotsKey` user info key.
 extern NSNotificationName const ODOEditingContextObjectsWillBeDeletedNotification;
 
 extern NSNotificationName const ODOEditingContextObjectsDidChangeNotification;
