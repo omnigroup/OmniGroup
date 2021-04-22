@@ -1,16 +1,16 @@
-// Copyright 2016-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
-//
-// $Id$
 
-/// decribes a way to apply a decoration to a view
+/// Decribes a way to apply a decoration to a view
 protocol PaneDecoration {
     func apply(toView view: UIView)
 }
+
+// MARK: -
 
 struct ShowDivider: PaneDecoration {
     func apply(toView view: UIView) {
@@ -18,22 +18,55 @@ struct ShowDivider: PaneDecoration {
     }
 }
 
+// MARK: -
+
 struct HideDivider: PaneDecoration {
     func apply(toView view: UIView) {
         view.isHidden = true
     }
 }
 
+// MARK: -
+
 struct AddShadow: PaneDecoration {
-   func apply(toView view: UIView) {
+    func apply(toView view: UIView) {
+        let shadowOpacity: Float
+        
+        switch view.traitCollection.userInterfaceStyle {
+        case .dark:
+            shadowOpacity = 0
+            
+        case .light, .unspecified:
+            fallthrough
+            
+        @unknown default:
+            shadowOpacity = 0.4
+        }
+
+        let shadowColor = UIColor { (traitCollection) -> UIColor in
+            switch traitCollection.userInterfaceStyle {
+            case .dark:
+                return UIColor.clear
+                
+            case .light, .unspecified:
+                fallthrough
+                
+            @unknown default:
+                return UIColor.black
+            }
+        }
+
         let layer = view.layer
-        layer.shadowColor = UIColor.black.cgColor
-        layer.shadowOffset = CGSize(width: 1.0, height: 0.0)
-        layer.shadowRadius = 6.0
-        layer.shadowOpacity = 0.5
+        layer.shadowColor = shadowColor.cgColor
+        layer.shadowOffset = .zero
+        layer.shadowRadius = 2.5
+        layer.shadowOpacity = shadowOpacity
+
         view.clipsToBounds = false
     }
 }
+
+// MARK: -
 
 struct RemoveShadow: PaneDecoration {
    func apply(toView view: UIView) {

@@ -150,7 +150,6 @@
 		347601B616C4741D00675597 /* OFXFileSnapshotDeleteTransfer.m in Sources */ = {isa = PBXBuildFile; fileRef = 347601B316C4741D00675597 /* OFXFileSnapshotDeleteTransfer.m */; };
 		347601C016C4841E00675597 /* OFXFileItemTransfers.h in Headers */ = {isa = PBXBuildFile; fileRef = 347601BE16C4841E00675597 /* OFXFileItemTransfers.h */; };
 		347601C216C4841E00675597 /* OFXFileItemTransfers.m in Sources */ = {isa = PBXBuildFile; fileRef = 347601BF16C4841E00675597 /* OFXFileItemTransfers.m */; };
-		3482169A22E0E68900801258 /* OFXAccountMigration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3482169922E0E68900801258 /* OFXAccountMigration.swift */; };
 		3482169C22E0EFB200801258 /* OFXBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3482169B22E0EFB200801258 /* OFXBundle.swift */; };
 		3482169D22E0EFB200801258 /* OFXBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3482169B22E0EFB200801258 /* OFXBundle.swift */; };
 		34824AFA1742E55600253D52 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34AFAD2A164B0EC8009E39AB /* Foundation.framework */; };
@@ -576,7 +575,6 @@
 		347601B316C4741D00675597 /* OFXFileSnapshotDeleteTransfer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXFileSnapshotDeleteTransfer.m; sourceTree = SOURCE_ROOT; };
 		347601BE16C4841E00675597 /* OFXFileItemTransfers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFXFileItemTransfers.h; sourceTree = SOURCE_ROOT; };
 		347601BF16C4841E00675597 /* OFXFileItemTransfers.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXFileItemTransfers.m; sourceTree = SOURCE_ROOT; };
-		3482169922E0E68900801258 /* OFXAccountMigration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OFXAccountMigration.swift; sourceTree = SOURCE_ROOT; };
 		3482169B22E0EFB200801258 /* OFXBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OFXBundle.swift; sourceTree = SOURCE_ROOT; };
 		3482169E22E0F27D00801258 /* Omni-Application-Common-MASEnterprise.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-MASEnterprise.xcconfig"; sourceTree = "<group>"; };
 		3482169F22E0F27D00801258 /* Server-Global-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Server-Global-Common.xcconfig"; sourceTree = "<group>"; };
@@ -1047,7 +1045,6 @@
 				34AFAD39164B114F009E39AB /* OFXAccountAgent-Internal.h */,
 				34AFAD3A164B114F009E39AB /* OFXAccountAgent.h */,
 				34AFAD3B164B114F009E39AB /* OFXAccountAgent.m */,
-				3482169922E0E68900801258 /* OFXAccountMigration.swift */,
 				34C530DC16F917610007477E /* OFXAccountClientParameters.h */,
 				34C530DD16F917610007477E /* OFXAccountClientParameters.m */,
 				3474308D16F1434C009C693C /* OFXAccountInfo.h */,
@@ -1882,7 +1879,6 @@
 				343682BB1B58295000BC25E6 /* OFXFileSnapshot.m in Sources */,
 				343682B11B58295000BC25E6 /* OFXContainerScan.m in Sources */,
 				343682CE1B58298D00BC25E6 /* OFXFileSnapshotUploadRenameTransfer.m in Sources */,
-				3482169A22E0E68900801258 /* OFXAccountMigration.swift in Sources */,
 				343682961B58293200BC25E6 /* OFXServerAccountType.m in Sources */,
 				343682D41B58299A00BC25E6 /* OFXFileSnapshotDeleteTransfer.m in Sources */,
 				343682A21B58295000BC25E6 /* OFXAccountAgent.m in Sources */,

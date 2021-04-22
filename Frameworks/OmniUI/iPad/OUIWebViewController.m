@@ -72,11 +72,7 @@ static NSString * const InvalidScheme = @"x-invalid";
     if ([delegate respondsToSelector:@selector(webViewControllerShouldClose:)] && ![delegate webViewControllerShouldClose:self])
         return;
 
-    [self dismissViewControllerAnimated:YES completion:^{
-        if (_closeBlock != NULL) {
-            _closeBlock(self);
-        }
-    }];
+    [self dismissViewControllerAnimated:YES completion:nil];
 }
 
 #pragma mark - UIResponder
@@ -422,6 +418,16 @@ static NSString * const InvalidScheme = @"x-invalid";
     [super viewDidDisappear:animated];
     
     [self.webView stopLoading];
+    
+    id <OUIWebViewControllerDelegate> delegate = _delegate;
+    if ([delegate respondsToSelector:@selector(webViewControllerDidClose:)]) {
+        [delegate webViewControllerDidClose:self];
+    }
+    
+    // Can't include this in the close: method because we can be dismissed via swipe to delete as well.
+    if (_closeBlock != NULL) {
+        _closeBlock(self);
+    }
 }
 
 - (BOOL)shouldAutorotate;

@@ -22,9 +22,6 @@
 /* time display format for today */
 "Today, %@ <day name>" = "Oggi, %@";
 
-/* Document store scope display name */
-"Trash" = "Cestino";
-
 /* Error description when a file type is not recognized. */
 "Unable to add document." = "Impossibile aggiungere il documento.";
 

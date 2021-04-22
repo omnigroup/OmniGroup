@@ -161,7 +161,7 @@ static NSComparisonResult _compareItem(id obj1, id obj2, void *context)
     // If we go down into a font family that isn't selected and select one of its faces, then when we come back we need to update selection
     UITableView *tableView = (UITableView *)self.view;
     if (tableView.style == UITableViewStylePlain) {
-        tableView.backgroundColor = [UIColor systemGroupedBackgroundColor];
+        tableView.backgroundColor = [OUIInspectorSlice sliceBackgroundColor];
     } else {
         tableView.backgroundColor = nil;
     }
@@ -239,7 +239,7 @@ static NSDictionary *_itemAtIndexPath(OUIFontInspectorPane *self, NSIndexPath *i
     NSDictionary *item = _itemAtIndexPath(self, indexPath);
     if (!item) {
         OUIThemedTableViewCell *cell = [[OUIThemedTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
-        cell.backgroundColor = [UIColor secondarySystemGroupedBackgroundColor];
+        cell.backgroundColor = [OUIInspectorSlice sliceBackgroundColor];
         return cell;
     }
     
@@ -248,7 +248,7 @@ static NSDictionary *_itemAtIndexPath(OUIFontInspectorPane *self, NSIndexPath *i
     if (!cell) {
         cell = [[OUIThemedTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:identifier];
         
-        cell.backgroundColor = [UIColor secondarySystemGroupedBackgroundColor];
+        cell.backgroundColor = [OUIInspectorSlice sliceBackgroundColor];
         cell.opaque = YES;
         
         UILabel *label = cell.textLabel;
@@ -256,7 +256,7 @@ static NSDictionary *_itemAtIndexPath(OUIFontInspectorPane *self, NSIndexPath *i
         label.font = [item objectForKey:ItemFont];
         label.opaque = YES;
         label.backgroundColor = cell.backgroundColor;
-        label.textColor = [UIColor labelColor];
+        label.textColor = [OUIInspector labelTextColor];
         
         [cell sizeToFit];
     }

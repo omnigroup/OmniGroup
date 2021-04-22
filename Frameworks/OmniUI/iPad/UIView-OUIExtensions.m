@@ -542,6 +542,11 @@ static void OUIViewPerformPosingForThreading(void)
     }
 }
 
+- (UIScene *)containingScene
+{
+    return self.window.windowScene;
+}
+
 @end
 
 @implementation UITextField (RecursivelySetUITextFieldColor)

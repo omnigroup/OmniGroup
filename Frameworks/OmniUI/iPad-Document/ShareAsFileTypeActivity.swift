@@ -7,10 +7,9 @@
 
 import Foundation
 import UIKit
-
 import OmniUIDocument.Internal
 
-private class ShareAsFileTypeActivity : DocumentConversionActivity<OUIDocument, FileWrapper> {
+private class ShareAsFileTypeActivity : DocumentProcessingActivity<OUIDocument> {
     
     static let activityType = UIActivity.ActivityType("com.omnigroup.frameworks.OmniUIDocument.ShareAsFileType")
     
@@ -25,11 +24,11 @@ private class ShareAsFileTypeActivity : DocumentConversionActivity<OUIDocument, 
     }
     
     public override var activityTitle: String? {
-        return NSLocalizedString("Share as ...", tableName: "OmniUIDocument", bundle: OmniUIDocumentBundle, comment: "Share activity title")
+        return NSLocalizedString("Share As…", tableName: "OmniUIDocument", bundle: OmniUIDocumentBundle, comment: "Share activity title")
     }
 
     public override var activityImage: UIImage? {
-        return UIImage(named: "OUIMenuItemSendToApp", in: OmniUIDocumentBundle, with: nil)
+        return UIImage.init(systemName: "square.and.arrow.up")
     }
     
     public override func canPerform(withActivityItems activityItems: [Any]) -> Bool {
@@ -38,18 +37,20 @@ private class ShareAsFileTypeActivity : DocumentConversionActivity<OUIDocument, 
     }
     
     private var exportOptionsController: OUIExportOptionsController!
-    private var exportViewController: UIViewController!
-    
-    public override func prepare(withActivityItems activityItems: [Any]) {
-        super.prepare(withActivityItems: activityItems)
-        
+
+    // MARK:- DocumentProcessingActivity subclass
+
+    override public func makeProcessingViewController() -> UIViewController {
         exportOptionsController = OUIExportOptionsController(fileURLs: self.fileURLs, exporter: exporter, activity: self)
-        exportViewController = exportOptionsController.viewController
+        return exportOptionsController.viewController
     }
-    
-    public override var activityViewController: UIViewController? {
-        return exportViewController
+
+    // MARK:- URLProcessingActivity subclass
+
+    override public func startProcessing() {
+        // Our "processing" is just collecting the fileURLs and handing them off to the export options interface
     }
+
 }
 
 extension OUIDocumentExporter {

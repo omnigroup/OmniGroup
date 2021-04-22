@@ -132,6 +132,8 @@ static void StopAccessing(NSURL *url)
     // For unmigrated iOS accounts, where the per-account Documents directory was stored in the container's ~/Library/Application/Support/OmniPresence/<random-id>/Documents.
     NSURL *_unmigratedLocalDocumentsURL;
     NSString *_unmigratedNickname;
+    
+    BOOL _hasStartedMigration;
 #endif
 }
 
@@ -212,6 +214,37 @@ static BOOL _validateLocalFileSystem(NSURL *url, NSError **outError)
     
     return YES;
 }
+
+#else /* TARGET_OS_IPHONE */
+
+static BOOL _validateWithinSandboxedDocumentsFolder(NSURL *url, NSError **outError)
+{
+    NSURL *proposedURL = url.URLByStandardizingPath;
+    NSURL *documentsDirectoryURL = [[NSFileManager defaultManager] URLForDirectory:NSDocumentDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:YES error:outError];
+    if (documentsDirectoryURL == nil) {
+        return NO;
+    }
+
+    NSString *proposedPath = proposedURL.path;
+    NSString *documentsPath = documentsDirectoryURL.path;
+    if (![proposedPath hasPrefix:documentsPath]) {
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Local documents folder cannot be used.", @"OmniFileExchange", OMNI_BUNDLE, @"error description");
+        NSString *reason = NSLocalizedStringFromTableInBundle(@"The proposed local documents folder is not within the app's local documents. Please pick a location within that folder.", @"OmniFileExchange", OMNI_BUNDLE, @"error description");
+        OFXError(outError, OFXLocalAccountDirectoryNotUsable, description, reason);
+        return NO;
+    }
+
+    NSString *trashPath = [documentsPath stringByAppendingPathComponent:@".Trash"];
+    if ([proposedPath hasPrefix:trashPath]) {
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Local documents folder cannot be used.", @"OmniFileExchange", OMNI_BUNDLE, @"error description");
+        NSString *reason = NSLocalizedStringFromTableInBundle(@"The proposed local documents folder is within the app's trash. This could lead to files getting unintentionally removed.", @"OmniFileExchange", OMNI_BUNDLE, @"error description");
+        OFXError(outError, OFXLocalAccountDirectoryNotUsable, description, reason);
+        return NO;
+    }
+
+    return YES;
+}
+
 #endif
 
 + (BOOL)validateLocalDocumentsURL:(NSURL *)documentsURL reason:(OFXServerAccountLocalDirectoryValidationReason)validationReason error:(NSError **)outError;
@@ -245,6 +278,9 @@ static BOOL _validateLocalFileSystem(NSURL *url, NSError **outError)
         return NO;
     
     if (!_validateLocalFileSystem(documentsURL, outError))
+        return NO;
+#else
+    if (!_validateWithinSandboxedDocumentsFolder(documentsURL, outError))
         return NO;
 #endif
     
@@ -288,6 +324,21 @@ static BOOL _validateLocalFileSystem(NSURL *url, NSError **outError)
     return YES;
 }
 
++ (nullable OFXServerAccount *)accountSyncingLocalURL:(NSURL *)url fromRegistry:(OFXServerAccountRegistry *)registry;
+{
+    NSArray *syncAccounts = [[registry validCloudSyncAccounts] copy];
+    for (OFXServerAccount *account in syncAccounts) {
+        if (![account resolveLocalDocumentsURL:NULL])
+            continue;
+
+        if (OFURLContainsURL(account.localDocumentsURL, url)) {
+            return account;
+        }
+    }
+
+    return nil;
+}
+
 + (nullable NSURL *)signinURLFromWebDAVString:(NSString *)webdavString;
 {
     NSURL *url = [NSURL URLWithString:webdavString];
@@ -310,11 +361,17 @@ static BOOL _validateLocalFileSystem(NSURL *url, NSError **outError)
     return url;
 }
 
-+ (NSString *)suggestedDisplayNameForAccountType:(OFXServerAccountType *)accountType url:(NSURL *)url username:(nullable NSString *)username excludingAccount:(nullable OFXServerAccount *)excludeAccount;
++ (NSString *)suggestedDisplayNameForAccountType:(OFXServerAccountType *)accountType url:(nullable NSURL *)url username:(nullable NSString *)username excludingAccount:(nullable OFXServerAccount *)excludeAccount;
 {
     OFXServerAccountRegistry *registry = [OFXServerAccountRegistry defaultAccountRegistry];
+    NSArray <OFXServerAccount *> *allAccounts = registry.allAccounts;
+    if (allAccounts.count == 0) {
+        // If there aren't any other accounts, suggest "OmniPresence"
+        return @"OmniPresence";
+    }
+
     NSMutableArray <OFXServerAccount *> *similarAccounts = [NSMutableArray array];
-    for (OFXServerAccount *account in [registry allAccounts]) {
+    for (OFXServerAccount *account in allAccounts) {
         if (account.type != accountType || account == excludeAccount)
             continue;
         [similarAccounts addObject:account];
@@ -754,7 +811,77 @@ static BOOL _validateLocalFileSystem(NSURL *url, NSError **outError)
     return _unmigratedLocalDocumentsURL != nil;
 }
 
-- (BOOL)didMigrateToLocalDocumentsURL:(NSURL *)updatedDocumentsURL error:(NSError **)outError;
+- (void)startMigrationWithCompletionHandler:(void (^)(BOOL success, NSError * _Nullable error))completionHandler;
+{
+    assert([NSThread isMainThread]);
+
+    if (_hasStartedMigration)
+        return; // If we scan the account list and try to start migration again, just ignore the redundant attempt
+
+    _hasStartedMigration = YES;
+    
+    NSURL *updatedDocumentsURL;
+    {
+        __autoreleasing NSError *documentsError = nil;
+        
+        NSURL *userDocumentsURL = [[NSFileManager defaultManager] URLForDirectory:NSDocumentDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:NO error:&documentsError];
+        if (!userDocumentsURL) {
+            [documentsError log:@"Cannot find user documents directory to migrate OmniPresence account"];
+            completionHandler(NO, documentsError);
+            return;
+        }
+        
+        NSString *displayName = [[self.displayName stringByReplacingOccurrencesOfString:@"/" withString:@"-"] stringByReplacingOccurrencesOfString:@"." withString:@"-"];
+        NSURL *proposedDocumentsURL = [userDocumentsURL URLByAppendingPathComponent:displayName];
+        NSLog(@"proposedDocumentsURL for account %@ is %@", self, proposedDocumentsURL);
+        
+        // Handle the case of a directory already being there.
+        documentsError = nil;
+        NSString *updatedDocumentsPath = [[NSFileManager defaultManager] uniqueFilenameFromName:proposedDocumentsURL.absoluteURL.path allowOriginal:YES create:NO error:&documentsError];
+        if (!updatedDocumentsPath) {
+            [documentsError log:@"Cannot find unique path for %@", proposedDocumentsURL];
+            completionHandler(NO, documentsError);
+            return;
+        }
+        
+        updatedDocumentsURL = [NSURL fileURLWithPath:updatedDocumentsPath];
+        NSLog(@"updatedDocumentsURL for account %@ is %@", self, updatedDocumentsURL);
+    }
+
+    NSOperationQueue *originalQueue = NSOperationQueue.currentQueue; // We asserted we're in the main thread already, but...
+    NSOperationQueue *queue = [[NSOperationQueue alloc] init];
+    queue.name = @"com.omnigroup.OmniFileExchange.AccountMigration.Move";
+    
+    // Here we are moving out of our ~/Library and there should be vanishingly few file presenters still watching anything in the moving folder since the account is stopped. But, we might have preview generation going on or maybe some stray thing. We want those file presenters to think the folder has gone way, not get updated to point to the new location.
+    NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] init];
+    NSFileAccessIntent *sourceIntent = [NSFileAccessIntent writingIntentWithURL:self.localDocumentsURL options:NSFileCoordinatorWritingForDeleting];
+    NSFileAccessIntent *destinationIntent = [NSFileAccessIntent writingIntentWithURL:updatedDocumentsURL options:0];
+    
+    completionHandler = [completionHandler copy];
+    [coordinator coordinateAccessWithIntents:@[sourceIntent, destinationIntent] queue:queue byAccessor:^(NSError * _Nullable error) {
+        if (error) {
+            [error log:@"Error coordinating file access with source %@ and destination %@", self.localDocumentsURL, updatedDocumentsURL];
+            [originalQueue addOperationWithBlock:^{
+                completionHandler(NO, error);
+            }];
+            return;
+        }
+        
+        __autoreleasing NSError *moveError;
+        if (![[NSFileManager defaultManager] moveItemAtURL:sourceIntent.URL toURL:destinationIntent.URL error:&moveError]) {
+            [error log:@"Error moving account directory from %@ to %@", sourceIntent.URL, destinationIntent.URL];
+            completionHandler(NO, error);
+        } else {
+            [originalQueue addOperationWithBlock:^{
+                [self _didMigrateToLocalDocumentsURL:updatedDocumentsURL];
+                completionHandler(YES, nil);
+            }];
+        }
+        
+    }];
+}
+
+- (void)_didMigrateToLocalDocumentsURL:(NSURL *)updatedDocumentsURL;
 {
     OBPRECONDITION(_unmigratedLocalDocumentsURL);
     OBPRECONDITION(_accessedLocalDocumentsBookmarkURL == nil);
@@ -768,10 +895,7 @@ static BOOL _validateLocalFileSystem(NSURL *url, NSError **outError)
     _localDocumentsBookmarkData = bookmarkDataWithURL(updatedDocumentsURL, &bookmarkError);
     if (!_localDocumentsBookmarkData) {
         DEBUG_BOOKMARK(0, @"Error creating bookmark data for %@: %@", updatedDocumentsURL, bookmarkError);
-        if (outError) {
-            *outError = bookmarkError;
-        }
-        return NO;
+        return;
     }
     
      __autoreleasing NSError *resolveError;
@@ -779,10 +903,7 @@ static BOOL _validateLocalFileSystem(NSURL *url, NSError **outError)
         _localDocumentsBookmarkData = nil; // Clear the bookmark data that didn't work.
         
         DEBUG_BOOKMARK(0, @"Error resolving new migrated bookmark: %@", resolveError);
-        if (outError) {
-            *outError = resolveError;
-        }
-        return NO;
+        return;
     }
 
     // This is a hack to let OFXServerAccountRegistry know that it needs to move the whole metadata directory for this account.
@@ -794,8 +915,6 @@ static BOOL _validateLocalFileSystem(NSURL *url, NSError **outError)
     [self didChangeValueForKey:OFValidateKeyPath(self, propertyList)];
     
     _didMigrate = NO;
-    
-    return YES;
 }
 
 #endif
@@ -967,7 +1086,7 @@ static BOOL _validateLocalFileSystem(NSURL *url, NSError **outError)
     _lastKnownDisplayName = [propertyList[@"displayName"] copy];
 
 #if !OFX_MAC_STYLE_ACCOUNT
-    _unmigratedNickname = [propertyList[UnmigratedNicknameKey] copy];
+    _unmigratedNickname = [[propertyList stringForKey:UnmigratedNicknameKey defaultValue:_lastKnownDisplayName] copy];
 #endif
     
     _credentialServiceIdentifier = [propertyList[@"serviceIdentifier"] copy];

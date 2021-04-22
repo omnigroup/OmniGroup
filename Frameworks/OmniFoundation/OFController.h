@@ -28,13 +28,16 @@ typedef NS_ENUM(NSInteger, OFControllerTerminateReply) {
     OFControllerTerminateLater
 };
 
+#if USE_NOTIFICATION_CENTER
 // Support for dispatching notifications to different subsystems. +[OFController sharedController] will be the delegate of the notification center.
 @protocol OFNotificationOwner <NSUserNotificationCenterDelegate>
 - (BOOL)ownsNotification:(NSUserNotification *)notification;
 @end
+#endif
+
 @protocol OFControllerStatusObserver;
 
-@interface OFController : NSObject <NSUserNotificationCenterDelegate>
+@interface OFController : NSObject
 
 + (NSBundle *)controllingBundle;
 + (BOOL)isRunningUnitTests;
@@ -84,6 +87,7 @@ typedef NS_ENUM(NSInteger, OFControllerTerminateReply) {
 // NSExceptionHandler delegate
 - (BOOL)exceptionHandler:(NSExceptionHandler *)sender shouldLogException:(NSException *)exception mask:(NSUInteger)aMask;
 
+#if USE_NOTIFICATION_CENTER
 // Support for splitting out ownership of NSUserNotifications across different subsystems.
 - (void)addNotificationOwner:(id <OFNotificationOwner>)notificationOwner;
 - (void)removeNotificationOwner:(id <OFNotificationOwner>)notificationOwner;
@@ -92,6 +96,7 @@ typedef NS_ENUM(NSInteger, OFControllerTerminateReply) {
 - (void)userNotificationCenter:(NSUserNotificationCenter *)center didDeliverNotification:(NSUserNotification *)notification NS_REQUIRES_SUPER;
 - (void)userNotificationCenter:(NSUserNotificationCenter *)center didActivateNotification:(NSUserNotification *)notification NS_REQUIRES_SUPER;
 - (BOOL)userNotificationCenter:(NSUserNotificationCenter *)center shouldPresentNotification:(NSUserNotification *)notification NS_REQUIRES_SUPER;
+#endif
 
 @end
 

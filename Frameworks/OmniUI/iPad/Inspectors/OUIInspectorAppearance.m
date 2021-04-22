@@ -47,30 +47,35 @@ static BOOL OUIInspectorAppearanceEnabled = NO;
 @dynamic InspectorBarStyle;
 @dynamic NavigationBarAccessoryBlurEffectStyle;
 
-@dynamic InspectorBackgroundColor;
-@dynamic InspectorSeparatorColor;
-@dynamic InspectorDisabledTextColor;
-@dynamic InspectorTextColor;
-
-@dynamic PlaceholderTextColor;
-
-@dynamic PopoverBackgroundColor;
-
-@dynamic SearchBarFieldBackgroundColor;
-@dynamic SearchBarBarTintColor;
-
-@dynamic HorizontalTabBottomStrokeColor;
-@dynamic HorizontalTabSeparatorTopColor;
+#define DEFINE_COLOR_ASSET(namedColorProperty) \
+- (UIColor *)namedColorProperty \
+{ \
+    static UIColor *color; \
+    static dispatch_once_t onceToken; \
+    dispatch_once(&onceToken, ^{ \
+        color = [UIColor colorNamed:NSSTRINGIFY(namedColorProperty) inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil]; \
+    }); \
+    return color; \
+}
 
 
-@dynamic TableViewSeparatorColor;
-@dynamic TableCellSelectedBackgroundColor;
-@dynamic TableCellBackgroundColor;
-@dynamic TableCellTextColor;
-@dynamic TableCellDetailTextLabelColor;
-@dynamic TableCellDisclosureTint;
-
-@dynamic InterfaceActionItemSeparatorColor;
+DEFINE_COLOR_ASSET(InspectorBackgroundColor)
+DEFINE_COLOR_ASSET(InspectorSeparatorColor)
+DEFINE_COLOR_ASSET(InspectorDisabledTextColor)
+DEFINE_COLOR_ASSET(InspectorTextColor)
+DEFINE_COLOR_ASSET(PlaceholderTextColor)
+DEFINE_COLOR_ASSET(PopoverBackgroundColor)
+DEFINE_COLOR_ASSET(SearchBarFieldBackgroundColor)
+DEFINE_COLOR_ASSET(SearchBarBarTintColor)
+DEFINE_COLOR_ASSET(HorizontalTabBottomStrokeColor)
+DEFINE_COLOR_ASSET(HorizontalTabSeparatorTopColor)
+DEFINE_COLOR_ASSET(TableCellBackgroundColor)
+DEFINE_COLOR_ASSET(TableCellSelectedBackgroundColor)
+DEFINE_COLOR_ASSET(TableCellTextColor)
+DEFINE_COLOR_ASSET(TableCellDetailTextLabelColor)
+DEFINE_COLOR_ASSET(TableCellDisclosureTint)
+DEFINE_COLOR_ASSET(TableViewSeparatorColor)
+DEFINE_COLOR_ASSET(InterfaceActionItemSeparatorColor)
 
 @end
 

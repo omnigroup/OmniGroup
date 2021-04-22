@@ -29,9 +29,6 @@
 "Cannot locate synchronized documents folder." = "同期済み書類フォルダが見つかりません。";
 
 /* Error description */
-"Cannot move document." = "書類を移動できません。";
-
-/* Error description */
 "Cannot start account agent." = "アカウントエージェントを起動できません。";
 
 /* Error description */
@@ -43,29 +40,17 @@
 /* Account validation step description */
 "Checking Credentials" = "資格情報を確認中";
 
-/* iTunes import title */
-"Copy from iTunes" = "iTunes からコピー";
-
 /* error reason */
 "Could not access synchronized documents folder." = "同期済み書類フォルダにアクセスできませんでした。";
 
 /* error reason */
 "Could not resolve archived bookmark for synchronized documents folder." = "同期済み書類フォルダのアーカイブ済みブックマークを解決できませんでした。";
 
-/* iTunes import/export account detail string */
-"Documents" = "書類";
-
 /* Add server account description */
 "Easily sync Omni documents. Signup is free!" = "Omni 書類を簡単に同期。サインアップは無料です！";
 
 /* Server account export title format */
 "Export to \"%@\"" = "“%@” に書き出す";
-
-/* iTunes export title */
-"Export to iTunes" = "iTunes に書き出す";
-
-/* Server account type */
-"iTunes" = "iTunes";
 
 /* Error reason */
 "Local account documents folder is missing." = "ローカルアカウント書類フォルダがありません。";
@@ -111,14 +96,17 @@
 /* error reason */
 "The cloud account requires OmniPresence format %@, but this device is using format %@. Please upgrade this copy of OmniPresence." = "このクラウドアカウントには OmniPresence フォーマット %1$@ が必要ですが、このデバイスはフォーマット %2$@ を使用しています。 この OmniPresence をアップグレードしてください。";
 
-/* Error description */
-"The document \"%@\" is not fully downloaded." = "書類 “%@” は完全にはダウンロードされていません。";
-
 /* error description */
 "The proposed local documents folder already contains files. Please specify an empty folder or one that doesn't yet exist." = "提案されたローカル書類フォルダにはすでにファイルが含まれています。空のフォルダまたはまだ存在しないフォルダを指定してください。";
 
 /* error description */
 "The proposed local documents folder is not on a local volume. Please pick a location that is local to your computer." = "提案されたローカル書類フォルダはローカルボリュームにありません。お使いのコンピュータに対してローカルである場所を選択してください。";
+
+/* error description */
+"The proposed local documents folder is not within the app's local documents. Please pick a location within that folder." = "提案されたローカル書類フォルダはアプリのローカル書類内にありません。そのフォルダ内の場所を選択してください。";
+
+/* error description */
+"The proposed local documents folder is within the app's trash. This could lead to files getting unintentionally removed." = "提案されたローカル書類フォルダはアプリのゴミ箱内にありません。これにより、ファイルが意図に反して削除される可能性があります。";
 
 /* error description */
 "The selected local folder appears to be inside a %@ folder. Using two file synchronization systems on the same folder can result in data loss." = "選択したローカルフォルダは %@ フォルダ内にあるようです。1 つのフォルダで 2 つのファイル同期システムを使用すると、データを損失する可能性があります。";

@@ -78,7 +78,13 @@ open class URLProcessingActivity : UIActivity {
 }
 
 open class DocumentProcessingActivity<DocumentType: OUIDocument> : URLProcessingActivity {
-            
+
+    // This will be invoked from prepare(withActivityItems:) and the result will be returned as the activityViewController.
+    open func makeProcessingViewController() -> UIViewController {
+        // Default to a vanilla view controller that other view controllers can be presented atop.
+        return OUIWrappingViewController()
+    }
+
     // MARK:- URLProcessingActivity subclass
     
     open override func isSuitableURL(_ url: URL) -> Bool {
@@ -111,6 +117,7 @@ open class DocumentProcessingActivity<DocumentType: OUIDocument> : URLProcessing
         let document: DocumentType
         do {
             document = try documentType.init(existingFileURL: url)
+            document.activityViewController = processingViewController
         } catch let err {
             // TODO: Capture errors and report them somewhere?
             print("Error creating document for \(url): \(err)")
@@ -139,6 +146,28 @@ open class DocumentProcessingActivity<DocumentType: OUIDocument> : URLProcessing
             }
         }
     }
+
+    // MARK:- UIActivity subclass
+
+    // Some subclasses may need a view controller to provide details on opening documents (for example, a passphrase for decryption)
+
+    public var processingViewController: UIViewController!
+
+    public override func prepare(withActivityItems activityItems: [Any]) {
+        super.prepare(withActivityItems: activityItems)
+
+        if processingViewController == nil {
+            processingViewController = makeProcessingViewController()
+        }
+
+        // The regular `perform()` function won't be called since we provide a view controller.
+        startProcessing()
+    }
+
+    public override var activityViewController: UIViewController? {
+        return processingViewController
+    }
+
 }
 
 // A document processing activity that converts the document to a different content type and collects the results.

@@ -18,7 +18,6 @@ RCS_ID("$Id$")
     BOOL _shouldShowDismissButton;
 }
 
-@property (nonatomic, strong) UINavigationBar *navigationBar;
 @property (nonatomic, strong) UISegmentedControl *segmentedControl;
 
 @property (nonatomic, weak) id<UINavigationControllerDelegate> originalNavDelegate;
@@ -30,6 +29,7 @@ RCS_ID("$Id$")
 @implementation OUISegmentedViewController
 {
     BOOL _invalidated;
+    UINavigationBar *_navigationBar;
 }
 
 - (void)awakeFromNib;
@@ -44,18 +44,20 @@ RCS_ID("$Id$")
     OBPRECONDITION(_invalidated == NO);
 
     [super viewDidLoad];
-	// Do any additional setup after loading the view.
-    self.view.backgroundColor = [UIColor systemBackgroundColor];
+
+    // Do any additional setup after loading the view.
+    UIView *view = self.view;
+    view.backgroundColor = [UIColor systemBackgroundColor];
     
-    self.navigationBar = [[UINavigationBar alloc] init];
-    self.navigationBar.translatesAutoresizingMaskIntoConstraints = NO;
-    self.navigationBar.delegate = self;
-    [self.view addSubview:self.navigationBar];
+    _navigationBar = [[UINavigationBar alloc] init];
+    _navigationBar.translatesAutoresizingMaskIntoConstraints = NO;
+    _navigationBar.delegate = self;
+    [view addSubview:_navigationBar];
     
     NSDictionary *views = NSDictionaryOfVariableBindings(_navigationBar);
-    [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[_navigationBar]|" options:0 metrics:nil views:views]];
+    [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[_navigationBar]|" options:0 metrics:nil views:views]];
 
-    [self.view addConstraint:[self.navigationBar.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor]];
+    [view addConstraint:[_navigationBar.topAnchor constraintEqualToAnchor:view.safeAreaLayoutGuide.topAnchor]];
 }
 
 - (void)viewDidDisappear:(BOOL)animated;
@@ -78,9 +80,9 @@ RCS_ID("$Id$")
 {
     _invalidated = YES;
 
-    [self.navigationBar popNavigationItemAnimated:NO];
-    [self.navigationBar removeFromSuperview];
-    self.navigationBar = nil;
+    [_navigationBar popNavigationItemAnimated:NO];
+    [_navigationBar removeFromSuperview];
+    _navigationBar = nil;
 
     // <bug:///146312> (iOS-OmniOutliner Engineering: Error: PRECONDITION failed. Requires '_invalidated == NO', at /Users/brent/Projects/omni/OmniGroup/Frameworks/OmniUI/iPad/OUISegmentedViewController.m:44)
     // Don't set the view to nil. The problem: while closing the document, the layout engine may reference this view, in which case it will load the view and viewDidLoad will get called (because view is nil), which triggers an assertion failure. Instead, let’s expect deallocation.
@@ -88,8 +90,9 @@ RCS_ID("$Id$")
     OBExpectDeallocation(self);
 }
 
-- (CGFloat)topLayoutLength;{
-    return CGRectGetMaxY(self.navigationBar.frame);
+- (CGFloat)topLayoutLength;
+{
+    return CGRectGetMaxY(_navigationBar.frame);
 }
 
 - (void)setViewControllers:(NSArray *)viewControllers;
@@ -171,6 +174,7 @@ RCS_ID("$Id$")
                                                                               metrics:nil
                                                                                 views:views]];
             UINavigationController *selectedNavigationController = (UINavigationController *)_selectedViewController;
+            [selectedNavigationController setNavigationBarHidden:selectedNavigationController.visibleViewController.wantsHiddenNavigationBar animated:NO];
             self.originalNavDelegate = selectedNavigationController.delegate;
             selectedNavigationController.delegate = self;
         
@@ -194,7 +198,7 @@ RCS_ID("$Id$")
     }
 
     if (self.isViewLoaded && !_invalidated)
-        [self.view bringSubviewToFront:self.navigationBar];
+        [self.view bringSubviewToFront:_navigationBar];
 }
 
 - (void)setSelectedIndex:(NSUInteger)selectedIndex;
@@ -254,7 +258,7 @@ RCS_ID("$Id$")
     if (self.leftBarButtonItem) {
         self.navigationItem.leftBarButtonItem = self.leftBarButtonItem;
     }
-    [self.navigationBar pushNavigationItem:self.navigationItem animated:NO];
+    [_navigationBar pushNavigationItem:self.navigationItem animated:NO];
 }
 
 - (void)_segmentValueChanged:(id)sender;
@@ -293,7 +297,7 @@ RCS_ID("$Id$")
 
 - (UIBarPosition)positionForBar:(id <UIBarPositioning>)bar;
 {
-    if (bar == self.navigationBar) {
+    if (bar == _navigationBar) {
         return UIBarPositionTopAttached;
     }
 
@@ -370,14 +374,6 @@ RCS_ID("$Id$")
     
     return nil;
 }
-
-- (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance;
-{
-    OUIInspectorAppearance *appearance = OB_CHECKED_CAST(OUIInspectorAppearance, changedAppearance);
-    
-    self.navigationBar.barStyle = appearance.InspectorBarStyle;
-}
-
 
 @end
 

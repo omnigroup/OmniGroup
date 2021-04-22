@@ -20,7 +20,7 @@ typedef NS_ENUM(NSUInteger, OUIMenuControllerOptionInvocationAction) {
 
 @interface OUIMenuController : OUIWrappingViewController
 
-@property(nonatomic,copy) NSArray *topOptions;
+@property(nonatomic,copy) NSArray <OUIMenuOption *> *topOptions;
 @property(nonatomic,copy) void (^didFinish)(void);
 
 @property(nonatomic,copy) UIColor *tintColor;

@@ -28,7 +28,7 @@ RCS_ID("$Id$")
 {
     UIView *view = [[UIView alloc] init];
 
-    UIColor *backgroundColor = [UIColor whiteColor];
+    UIColor *backgroundColor = [UIColor systemBackgroundColor];
     if (_translucentBackground) {
         backgroundColor = [backgroundColor colorWithAlphaComponent:0.75];
     }

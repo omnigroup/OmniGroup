@@ -79,8 +79,11 @@ static OFPreference *OFXRecentTransferErrorThresholdBeforeAutomaticallyStopping;
 // We load the account info in the background, but only set this group identifier on the foreground.
 @property(nonatomic,copy) NSString *netStateRegistrationGroupIdentifier;
 
-
 @end
+
+#if TARGET_OS_IPHONE
+static BOOL _isFileInTrashAtURL(NSURL *fileURL);
+#endif
 
 @implementation OFXAccountAgent
 {
@@ -144,10 +147,6 @@ static OFPreference *OFXRecentTransferErrorThresholdBeforeAutomaticallyStopping;
     OFNetStateRegistration *_stateRegistration;
     
     OFXAccountInfo *_info;
-    
-#if !OFX_MAC_STYLE_ACCOUNT
-    OFXAccountMigration *_activeMigration;
-#endif
 }
 
 static NSSet <NSString *> *_lowercasePathExtensions(id <NSFastEnumeration> pathExtensions)
@@ -194,14 +193,6 @@ static NSSet <NSString *> *_lowercasePathExtensions(id <NSFastEnumeration> pathE
     _syncPathExtensions = [_lowercasePathExtensions(syncPathExtensions) copy];
     _remoteDirectoryName = [remoteDirectoryName copy];
     
-#if !OMNI_BUILDING_FOR_MAC
-    // If an account has been migrated, it is in a location visible to Files.app and in the local documents directory. We can't show placeholder files in this world and need to just download everything. If this account is later migrated, a new account agent will be created and this one discarded.
-    BOOL automaticallyDownloadFileContents = !account.requiresMigration;
-
-    _foregroundAutomaticallyDownloadFileContents = automaticallyDownloadFileContents;
-    _backgroundAutomaticallyDownloadFileContents = automaticallyDownloadFileContents;
-#endif
-
     return self;
 }
 
@@ -295,6 +286,13 @@ static NSSet <NSString *> *_lowercasePathExtensions(id <NSFastEnumeration> pathE
     OBPRECONDITION(_stateRegistration == nil);
     OBPRECONDITION(_localDocumentsDirectoryHandle == NULL);
 
+#if !OFX_MAC_STYLE_ACCOUNT
+    if (_account.requiresMigration) {
+        OFXError(outError, OFXAccountRequiresMigration, @"Cannot start un-migrated accounts", nil);
+        return NO;
+    }
+#endif
+
     if (_foregroundState != OFXAccountAgentStateCreated)
         [NSException raise:NSInternalInconsistencyException format:@"Called -start on %@ while it was in state %ld", [self shortDescription], _foregroundState];
 
@@ -315,9 +313,10 @@ static NSSet <NSString *> *_lowercasePathExtensions(id <NSFastEnumeration> pathE
     // Our caller, -[OFXAgent _validatedAccountsChanged], should have already called -resolveLocalDocumentsURL: on our behalf on the Mac.
     NSURL *localDocumentsURL = _account.localDocumentsURL;
 
-    BOOL inTrash = NO;
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-    inTrash = [[NSFileManager defaultManager] isFileInTrashAtURL:localDocumentsURL];
+    BOOL inTrash = [[NSFileManager defaultManager] isFileInTrashAtURL:localDocumentsURL];
+#else
+    BOOL inTrash = _isFileInTrashAtURL(localDocumentsURL);
 #endif
     
     if (inTrash) {
@@ -1120,9 +1119,14 @@ static NSSet <NSString *> *_lowercasePathExtensions(id <NSFastEnumeration> pathE
 {
     OBPRECONDITION([NSThread isMainThread]);
     
-    if (self.foregroundState != OFXAccountAgentStateStarted)
-        [NSException raise:NSGenericException format:@"Attempted to invoke a container action while the account agent %@ was not runnning", [self shortDescription]];
-    
+    if (self.foregroundState != OFXAccountAgentStateStarted) {
+        NSString *message = [NSString stringWithFormat:@"Unable to perform operation: sync account %@ is not runnning", [self shortDescription]];
+        __autoreleasing NSError *error;
+        OFXError(&error, OFXSyncAgentNotStarted, message, nil);
+        errorHandler(error);
+        return;
+    }
+
     errorHandler = [errorHandler copy];
     containerAction = [containerAction copy];
     
@@ -1308,21 +1312,21 @@ static NSSet <NSString *> *_lowercasePathExtensions(id <NSFastEnumeration> pathE
     return [currentQueue.name isEqualToString:[self _operationQueueName]];
 }
 
-#if !OFX_MAC_STYLE_ACCOUNT
-
-// Since OFXAccountAgent is single-use, once a migration is finished (successfully or not), we need to tell OFXAgent to make a new instance to replace us.
-- (void)migrationDidFinish;
-{
-    OBPRECONDITION([NSThread isMainThread]);
-    OBPRECONDITION(_activeMigration);
-    OBPRECONDITION(self.foregroundState == OFXAccountAgentStateStopped); // Don't call after stopping
-    
-    _activeMigration = nil;
-    
-    [[NSNotificationCenter defaultCenter] postNotificationName:OFXAccountAgentDidStopForReplacementNotification object:self userInfo:nil];
-}
-
-#endif
+//#if !OFX_MAC_STYLE_ACCOUNT
+//
+//// Since OFXAccountAgent is single-use, once a migration is finished (successfully or not), we need to tell OFXAgent to make a new instance to replace us.
+//- (void)migrationDidFinish;
+//{
+//    OBPRECONDITION([NSThread isMainThread]);
+//    OBPRECONDITION(_activeMigration);
+//    OBPRECONDITION(self.foregroundState == OFXAccountAgentStateStopped); // Don't call after stopping
+//    
+//    _activeMigration = nil;
+//    
+//    [[NSNotificationCenter defaultCenter] postNotificationName:OFXAccountAgentDidStopForReplacementNotification object:self userInfo:nil];
+//}
+//
+//#endif
 
 #pragma mark - NSFilePresenter
 
@@ -1949,6 +1953,21 @@ static NSString * const OFXContainerPathExtension = @"container";
     }];
     _metadataUpdateTimer = nil;
 }
+
+#if TARGET_OS_IPHONE
+static BOOL _isFileInTrashAtURL(NSURL *fileURL) {
+    NSURL *proposedURL = fileURL.URLByStandardizingPath;
+    NSURL *documentsDirectoryURL = [[NSFileManager defaultManager] URLForDirectory:NSDocumentDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:NO error:NULL];
+    if (documentsDirectoryURL == nil) {
+        return NO; // No documents, no trash
+    }
+
+    NSString *proposedPath = proposedURL.path;
+    NSString *documentsPath = documentsDirectoryURL.path;
+    NSString *trashPath = [documentsPath stringByAppendingPathComponent:@".Trash"];
+    return [proposedPath hasPrefix:trashPath];
+}
+#endif
 
 @end
 

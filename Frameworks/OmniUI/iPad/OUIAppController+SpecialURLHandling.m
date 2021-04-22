@@ -93,7 +93,7 @@ RCS_ID("$Id$");
 
 - (UIViewController *)viewControllerForSpecialURLHandlingPresentation;
 {
-    UIWindow *window = [[self class] windowForScene:nil options:OUIWindowForSceneOptionsAllowCascadingLookup];
+    UIWindow *window = [[self class] windowForScene:nil options:OUIWindowForSceneOptionsAllowFallbackLookup];
     UIViewController *viewController = window.rootViewController;
 
     while (viewController.presentedViewController != nil) {

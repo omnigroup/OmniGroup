@@ -13,6 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (nullable NSArray<UIKeyCommand *> *)keyCommandsForCategories:(nullable NSOrderedSet<NSString *> *)categories;
 + (nullable NSSet<NSString *> *)keyCommandSelectorNamesForCategories:(nullable NSOrderedSet<NSString *> *)categories;
++ (nullable NSSet<NSString *> *)keyCommandSelectorNamesForKeyCommands:(nullable NSArray<UIKeyCommand *> *)keyCommands;
 
 + (NSString *)truncatedDiscoverabilityTitle:(NSString *)title;
 

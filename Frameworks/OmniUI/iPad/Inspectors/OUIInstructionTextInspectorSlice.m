@@ -97,7 +97,7 @@ RCS_ID("$Id$");
     self.label.numberOfLines = 0; // No limit
     self.label.text = _instructionText;
     self.label.lineBreakMode = NSLineBreakByWordWrapping;
-
+    self.label.textColor = [OUIInspector headerTextColor];
     [self.contentView addSubview:self.label];
 
     //constraints

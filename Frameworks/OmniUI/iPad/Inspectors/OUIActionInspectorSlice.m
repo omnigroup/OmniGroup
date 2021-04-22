@@ -9,6 +9,7 @@
 
 #import <OmniUI/OUIInspectorTextWell.h>
 #import <OmniUI/OUIInspectorAppearance.h>
+#import <OmniUI/OUIInspector.h>
 
 #import "OUIParameters.h"
 
@@ -87,7 +88,7 @@ RCS_ID("$Id$");
     _textWell = [[[[self class] textWellClass] alloc] initWithFrame:textWellFrame];
     _textWell.translatesAutoresizingMaskIntoConstraints = NO;
     _textWell.cornerType = OUIInspectorWellCornerTypeLargeRadius;
-    _textWell.labelColor = [UIColor secondaryLabelColor];
+    _textWell.labelColor = [OUIInspector labelTextColor];
 
     // Accessibility
     _textWell.isAccessibilityElement = YES;

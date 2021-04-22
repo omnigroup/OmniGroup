@@ -52,7 +52,6 @@ private enum Section : Hashable {
     case address
     case credentials
     case description
-    case migrate
     case deletion
 
     var rows: [Row] {
@@ -91,14 +90,6 @@ private enum Section : Hashable {
             cell.textLabel?.textAlignment = .center
             return cell
             
-        case .migrate:
-            let identifier = "migrate"
-            let cell = tableView.dequeueReusableCell(withIdentifier: identifier) ?? UITableViewCell(style: .default, reuseIdentifier: identifier)
-            cell.textLabel?.text = NSLocalizedString("Migrate Account...", tableName: "OmniUIDocument", bundle: OmniUIDocumentBundle, comment: "Server Account Setup button label")
-            cell.textLabel?.textColor = controller.view.tintColor
-            cell.textLabel?.textAlignment = .center
-            return cell
-
         case .address:
             cell = valueCell(controller: controller, tableView: tableView)
             contents = cell.editableValueCell
@@ -234,7 +225,7 @@ private enum Section : Hashable {
         assert(rowIndex < rows.count)
         
         switch self {
-        case .migrate, .deletion:
+        case .deletion:
             return true
         default:
             return false
@@ -291,10 +282,6 @@ public class OUIServerAccountSetupViewController : OUIActionViewController, OUIE
         sections.append(.credentials)
         sections.append(.description)
         
-        if account != nil {
-            // We allow migration for all accounts, since one option is to migrate the acount to Files.
-            sections.append(.migrate)
-        }
         if showDeletionSection {
             sections.append(.deletion)
         }
@@ -452,25 +439,27 @@ public class OUIServerAccountSetupViewController : OUIActionViewController, OUIE
 
         // Validate the new account settings
 
+        guard let navigationController = self.navigationController else { return }
+
         let validationViewController = OUIServerAccountValidationViewController(account: account, username: username, password: password)!
 
         validationViewController.finished = { (vc, errorOrNil) in
             if let error = errorOrNil {
                 self.account = nil // Make a new instance if this one failed and wasn't added to the registry
-                self.navigationController?.popToViewController(self, animated: true)
+                navigationController.popToViewController(self, animated: true)
             
                 if !(error as NSError).causedByUserCancelling {
                     // Passing a nil account so that this doesn't present an option to edit an account ... since we are already doing that.
                     let controller = OUIDocumentAppController.shared()
-                    controller.presentSyncError(errorOrNil, for: nil, in: self.navigationController, retry: nil)
+                    controller.presentSyncError(errorOrNil, in: navigationController, retry: nil)
                 }
             } else {
                 self.finishWithError(errorOrNil)
-                self.navigationController?.popToRootViewController(animated: true)
+                navigationController.popToRootViewController(animated: true)
             }
         }
         
-        navigationController?.pushViewController(validationViewController, animated: true)
+        navigationController.pushViewController(validationViewController, animated: true)
     }
 
     // MARK: - UIViewController subclass
@@ -590,10 +579,6 @@ public class OUIServerAccountSetupViewController : OUIActionViewController, OUIE
             
             present(deleteConfirmation, animated: true)
 
-        case .migrate:
-            tableView.deselectRow(at: indexPath, animated: true)
-            navigationController?.pushViewController(OUIMigrateAccountViewController(agentActivity: agentActivity, account: account), animated: true)
-
         default:
             assertionFailure()
         }
@@ -631,11 +616,11 @@ public class OUIServerAccountSetupViewController : OUIActionViewController, OUIE
     // MARK: - Private
 
     var _suggestedNickname: String {
-        guard let urlString = textAt(section: .address, row: .basic), urlString != "" else {
-            return ""
-        }
-        guard let url = OFXServerAccount.signinURL(fromWebDAVString: urlString) else {
-            return ""
+        let url: URL?
+        if let urlString = textAt(section: .address, row: .basic), urlString != "" {
+            url = OFXServerAccount.signinURL(fromWebDAVString: urlString)
+        } else {
+            url = nil
         }
         
         let username = textAt(section: .credentials, row: .username)

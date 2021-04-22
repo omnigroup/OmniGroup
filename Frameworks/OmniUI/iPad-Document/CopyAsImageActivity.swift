@@ -20,7 +20,7 @@ public class CopyAsImageActivity : DocumentConversionActivity<OUIDocument, [Stri
     }
     
     public override var activityImage: UIImage? {
-        return OUIDocumentExporter.copyAsImageImage
+        return UIImage(systemName:"crop")
     }
     
     public override func isSuitableDocumentType(_ type: OUIDocument.Type) -> Bool {

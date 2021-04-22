@@ -1,7 +1,4 @@
 #!/bin/zsh -euf
-#
-# $Id$
-#
 
 CMD="$CONFIGURATION_BUILD_DIR/$PRODUCT_NAME"
 
@@ -10,7 +7,10 @@ rm -rf "$TEST_OUTPUT_DIR"
 mkdir -p "$TEST_OUTPUT_DIR"
 
 echo "Test output $TEST_OUTPUT_DIR"
-/usr/bin/genstrings -o "$TEST_OUTPUT_DIR" Tests/input.m
+
+# N.B. -q Turns off multiple key/value pairs warning.
+# Our tests intentionally have data with multiple key/value pairs; we don't want to see this warning during a normal build.
+/usr/bin/genstrings -q -o "$TEST_OUTPUT_DIR" Tests/input.m
 
 for output in "$TEST_OUTPUT_DIR/"*.strings; do
   test_name="$output:t"

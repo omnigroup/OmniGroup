@@ -15,10 +15,6 @@ NS_ASSUME_NONNULL_BEGIN
 @class OFFileMotionResult;
 @class OFXFileMetadata, OFXRegistrationTable<ValueType>, OFXServerAccount, OFXContainerAgent, OFXAccountClientParameters;
 
-#if !OFX_MAC_STYLE_ACCOUNT
-@class OFXAccountMigration;
-#endif
-
 typedef void (^OFXSyncCompletionHandler)(NSError * _Nullable errorOrNil);
 
 @interface OFXAccountAgent : NSObject
@@ -63,11 +59,6 @@ typedef void (^OFXSyncCompletionHandler)(NSError * _Nullable errorOrNil);
 - (void)countFileItemsWithLocalChanges:(void (^)(NSError * _Nullable errorOrNil, NSUInteger count))completionHandler;
 
 @property(nonatomic,copy,nullable) NSString *debugName;
-
-#if !OFX_MAC_STYLE_ACCOUNT
-@property(nonatomic,nullable,strong,readonly) OFXAccountMigration *activeMigration;
-- (void)migrationDidFinish;
-#endif
 
 #ifdef OMNI_ASSERTIONS_ON
 @property(nonatomic,readonly) BOOL runningOnAccountAgentQueue;

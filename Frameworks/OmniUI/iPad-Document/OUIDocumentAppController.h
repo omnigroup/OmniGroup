@@ -12,16 +12,26 @@
 @class OUIDocument, OUIDocumentPicker, OUIDocumentPickerViewController, OUIBarButtonItem;
 @class OUINewDocumentCreationRequest;
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface OUIDocumentAppController : OUIAppController
 
+@property (class, nonatomic, copy) NSString *localDocumentsDisplayName;
+
 - (UIWindow *)makeMainWindowForScene:(UIWindowScene *)scene; // Called to create the window for a new scene
+@property (nonatomic, nullable, readonly) __kindof OUIDocument *mostRecentlyActiveDocument;
 
-@property(nonatomic,readonly) OFXAgentActivity *agentActivity;
+@property (nonatomic, nullable, readonly) OFXAgentActivity *agentActivity;
+@property (nonatomic, nullable, readonly) UIImage *agentStatusImage;
 
-@property(nonatomic,retain) NSURL *searchResultsURL; // document URL from continue user activity
+@property (nonatomic, nullable, strong) NSURL *searchResultsURL; // document URL from continue user activity
+
+@property (nonatomic, readonly) NSURL *localDocumentsURL;
+@property (atomic, nullable, readonly) NSURL *iCloudDocumentsURL;
 
 - (NSArray <NSString *> *)editableFileTypes;
 - (NSArray <NSString *> *)viewableFileTypes;
+@property (nonatomic, nullable, readonly) NSArray <NSString *> *templateFileTypes;
 
 - (BOOL)canViewFileTypeWithIdentifier:(NSString *)uti;
 
@@ -30,7 +40,7 @@
 - (NSString *)sampleDocumentsDirectoryTitle;
 - (NSURL *)sampleDocumentsDirectoryURL;
 - (NSPredicate *)sampleDocumentsFilterPredicate;
-- (void)copySampleDocumentsToUserDocumentsWithCompletionHandler:(void (^)(NSDictionary *nameToURL))completionHandler;
+- (void)copySampleDocumentsToUserDocumentsWithCompletionHandler:(void (^)(NSDictionary <NSString *, NSURL *> *nameToURL))completionHandler;
 
 - (NSString *)stringTableNameForSampleDocuments;
 - (NSString *)localizedNameForSampleDocumentNamed:(NSString *)documentName;
@@ -40,58 +50,36 @@
 - (void)performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))completionHandler;
 
 // UIApplicationDelegate methods we implement (see OUIAppController too)
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions;
-- (void)applicationWillEnterForeground:(UIApplication *)application;
-- (void)applicationDidEnterBackground:(UIApplication *)application;
-- (UISceneConfiguration *)application:(UIApplication *)application configurationForConnectingSceneSession:(UISceneSession *)connectingSceneSession options:(UISceneConnectionOptions *)options;
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(nullable NSDictionary<UIApplicationLaunchOptionsKey, id> *)launchOptions;
+- (UISceneConfiguration *)application:(UIApplication *)application configurationForConnectingSceneSession:(UISceneSession *)connectingSceneSession options:(UISceneConnectionOptions *)options; // If you just want to substitute the default scene delegate class, use the .defaultSceneDelegateClass property rather than subclassing this. (Subclass this method when doing more advanced customizations, such as setting up a custom scene for an external display.)
 
-// API for caching previews
-- (void)updatePreviewsFor:(id <NSFastEnumeration>)fileItems;
-
-// API for internal templates
-- (NSSet *)internalTemplateFileItems;
+@property (nonatomic, readonly) Class defaultSceneDelegateClass;
 
 // Subclass responsibility
 - (Class)documentExporterClass;
 - (NSString *)newDocumentShortcutIconImageName;
-- (UIImage *)documentPickerBackgroundImage;
-- (UIColor *)emptyOverlayViewTextColor;
-- (Class)documentClassForURL:(NSURL *)url;
+- (nullable Class)documentClassForURL:(NSURL *)url;
 - (UIView *)pickerAnimationViewForTarget:(OUIDocument *)document;
-- (NSArray *)toolbarItemsForDocument:(OUIDocument *)document;
-- (BOOL)shouldOpenOnlineHelpOnFirstLaunch; //defaults YES, implemented this way so you can special-case demo builds.
-// Optional ODSStoreDelegate that we implement
-- (NSArray *)documentCreationRequestEditableDocumentTypes:(OUINewDocumentCreationRequest *)request;
-/// Default is _window.tintColor.
-- (UIColor *)launchActivityIndicatorColor;
-@property (readonly) BOOL allowsMultiFileSharing;
 
 // Per-app user activity definitions
 + (NSString *)openDocumentUserActivityType;
 + (NSString *)createDocumentFromTemplateUserActivityType;
 
-// Helpful dialogs
-- (void)presentSyncError:(NSError *)syncError forAccount:(OFXServerAccount *)account inViewController:(UIViewController *)viewController retryBlock:(void (^)(void))retryBlock;
-- (void)warnAboutDiscardingUnsyncedEditsInAccount:(OFXServerAccount *)account fromViewController:(UIViewController *)parentViewController withCancelAction:(void (^)(void))cancelAction discardAction:(void (^)(void))discardAction;
-
-// document state
-+ (NSDictionary *)documentStateForFileEdit:(OFFileEdit *)fileEdit;
-+ (void)setDocumentState:(NSDictionary *)documentState forFileEdit:(OFFileEdit *)fileEdit;
-+ (void)copyDocumentStateFromFileEdit:(OFFileEdit *)fromFileEdit toFileEdit:(OFFileEdit *)toFileEdit;
+// Sync support
+@property (nonatomic, readonly) OUIMenuOption *configureOmniPresenceMenuOption;
+- (void)presentSyncError:(nullable NSError *)syncError inViewController:(UIViewController *)viewController retryBlock:(void (^ _Nullable)(void))retryBlock;
+- (void)warnAboutDiscardingUnsyncedEditsInAccount:(OFXServerAccount *)account fromViewController:(UIViewController *)parentViewController withCancelAction:(void (^ _Nullable)(void))cancelAction discardAction:(void (^)(void))discardAction;
 
 // core spotlight
 + (void)registerSpotlightID:(NSString *)uniqueID forDocumentFileURL:(NSURL *)fileURL;
 + (NSString *)spotlightIDForFileURL:(NSURL *)fileURL;
 + (NSURL *)fileURLForSpotlightID:(NSString *)uniqueID;
 
+// Where our old document picker used to put trashed files.
++ (NSURL *)legacyTrashDirectoryURL;
+
 @end
 
-// These currently must all be implemented somewhere in the responder chain.
-@interface NSObject (OUIAppMenuTarget)
-- (void)showOnlineHelp:(id)sender;
-- (void)sendFeedback:(id)sender;
-- (void)showReleaseNotes:(id)sender;
-- (void)restoreSampleDocuments:(id)sender;
-- (void)runTests:(id)sender;
-@end
+extern NSString * const OUIShortcutTypeNewDocument;
 
+NS_ASSUME_NONNULL_END

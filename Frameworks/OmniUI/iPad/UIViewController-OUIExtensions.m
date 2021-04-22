@@ -6,6 +6,8 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniUI/UIViewController-OUIExtensions.h>
+#import <OmniUI/UIView-OUIExtensions.h>
+#import <OmniUI/OmniUI-Swift.h>
 
 #if defined(DEBUG)
 #import <OmniFoundation/NSString-OFExtensions.h>
@@ -99,6 +101,29 @@ RCS_ID("$Id$");
         return NO;
     }
     return YES;
+}
+
+- (UIScene *)containingScene
+{
+    // If the view's in the view hierarchy, it'll have a scene
+    if ([self isViewLoaded]) {
+        UIScene *scene = self.view.containingScene;
+        if (scene != nil) {
+            return scene;
+        }
+    }
+    
+    // If it's not in the hierarchy, we may have an ancestor who is about to add us as a a child, and they may have a containing scene
+    UIViewController *parent = self.parentViewController;
+    if (parent != nil) {
+        UIScene *scene = parent.containingScene;
+        if (scene != nil) {
+            return scene;
+        }
+    }
+
+    // We may have a presenting view controller that can resolve a scene
+    return self.presentingViewController.containingScene;
 }
 
 @end

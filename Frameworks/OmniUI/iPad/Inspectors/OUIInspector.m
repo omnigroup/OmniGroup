@@ -97,17 +97,27 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
 
 + (UIColor *)backgroundColor;
 {
-    return [UIColor systemGroupedBackgroundColor];
+    return [UIColor colorNamed:@"inspectorBackgroundColor" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
 }
 
 + (UIColor *)disabledLabelTextColor;
 {
-    return [UIColor tertiaryLabelColor];
+    return [UIColor colorNamed:@"inspectorDisabledLabelTextColor" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
+}
+
++ (UIColor *)placeholderTextColor;
+{
+    return [UIColor colorNamed:@"inspectorPlaceholderTextColor" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
 }
 
 + (UIColor *)labelTextColor;
 {
-    return [UIColor labelColor];
+    return [UIColor colorNamed:@"inspectorLabelTextColor" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
+}
+
++ (UIColor *)headerTextColor;
+{
+    return [UIColor colorNamed:@"inspectorHeaderTextColor"inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
 }
 
 + (UIFont *)labelFont;
@@ -117,12 +127,12 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
 
 + (UIColor *)valueTextColor;
 {
-    return [UIColor labelColor];
+    return [UIColor colorNamed:@"inspectorValueTextColor" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
 }
 
 + (UIColor *)indirectValueTextColor;
 {
-    return [UIColor secondaryLabelColor];
+    return [UIColor colorNamed:@"inspectorIndirectValueTextColor" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
 }
 
 - init;
@@ -186,17 +196,6 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
 - (void)dealloc;
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-    
-    _navigationController.delegate = nil;
-
-    // Attempting to fix ARC weak reference cleanup crasher in <bug:///93163> (Crash after setting font color on Level 1 style)
-    for (UIViewController *viewController in _navigationController.viewControllers) {
-        // Not all the view controllers might be inspector panes. <bug:///152890> (iOS-OmniOutliner Crasher: Crash exiting document while theme picker is showing). Should maybe remove this hack and see if there this is still an issue.
-        if ([viewController isKindOfClass:[OUIInspectorPane class]]) {
-            OUIInspectorPane *pane = (OUIInspectorPane *)viewController;
-            pane.inspector = nil;
-        }
-    }
 }
 
 static CGFloat _currentDefaultInspectorContentWidth = 320;

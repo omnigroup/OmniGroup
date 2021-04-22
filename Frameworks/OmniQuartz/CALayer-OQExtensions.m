@@ -611,16 +611,34 @@ static void _writeString(NSString *str)
 #define DEBUG_RENDER(format, ...)
 #define DEBUG_RENDER_ON 0
 #endif
+
++ (OQRenderLayerFilter)defaultRenderLayerFilter;
+{
+    static OQRenderLayerFilter DefaultFilter = ^BOOL(CALayer *layer){
+        if (layer.hidden) {
+            return NO;
+        }
+        if (layer.opacity <= 0.0) {
+            return NO;
+        }
+        return YES;
+    };
+
+    return DefaultFilter;
+}
+
 // Assumes the caller has set up our transform as it wants.
 - (void)renderRect:(CGRect)rect inContextIgnoringCache:(CGContextRef)ctx useAnimatedValues:(BOOL)useAnimatedValues;
 {
-    if (self.hidden)
-        return;
-    [self renderRect:rect inContextIgnoringHiddenIgnoringCache:ctx useAnimatedValues:useAnimatedValues];
+    [self renderRect:rect inContextIgnoringCache:ctx filter:[[self class] defaultRenderLayerFilter] useAnimatedValues:useAnimatedValues];
 }
 
-- (void)renderRect:(CGRect)rect inContextIgnoringHiddenIgnoringCache:(CGContextRef)ctx useAnimatedValues:(BOOL)useAnimatedValues;
+- (void)renderRect:(CGRect)rect inContextIgnoringCache:(CGContextRef)ctx filter:(OQRenderLayerFilter)filter useAnimatedValues:(BOOL)useAnimatedValues;
 {
+    if (filter && !filter(self)) {
+        return;
+    }
+
     id delegate = self.delegate;
     if (delegate && [delegate respondsToSelector:@selector(layoutLayer:inRect:)]) {
         DEBUG_RENDER(@"  force layout %@ in rect %@ if needed via delegate %@", [self shortDescription], NSStringFromRect(rect), [delegate shortDescription]);
@@ -822,7 +840,7 @@ static void _writeString(NSString *str)
                 CGContextTranslateCTM(ctx, -(subBounds.origin.x + subAnchorPoint.x * subBounds.size.width), -(subBounds.origin.y + subAnchorPoint.y * subBounds.size.height));
                 
                 CGRect sublayerRect = [self convertRect:rect toLayer:sublayer];
-                [sublayer renderRect:sublayerRect inContextIgnoringCache:ctx useAnimatedValues:useAnimatedValues]; // Will push/pop its own gsave
+                [sublayer renderRect:sublayerRect inContextIgnoringCache:ctx filter:filter useAnimatedValues:useAnimatedValues]; // Will push/pop its own gsave
                 CGContextRestoreGState(ctx);
             }
         }
@@ -838,14 +856,19 @@ static void _writeString(NSString *str)
 
 - (NSImage *)imageForRect:(NSRect)rect useAnimatedValues:(BOOL)useAnimatedValues;
 {
+    return [self imageForRect:rect flipped:NO filter:[[self class] defaultRenderLayerFilter] useAnimatedValues:useAnimatedValues];
+}
+
+- (NSImage *)imageForRect:(NSRect)rect flipped:(BOOL)flipped filter:(OQRenderLayerFilter)filter useAnimatedValues:(BOOL)useAnimatedValues;
+{
     NSImage *image = [[[NSImage alloc] initWithSize:rect.size] autorelease];
-    [image lockFocus];
+    [image lockFocusFlipped:flipped];
     {
         CGContextRef ctx = [[NSGraphicsContext currentContext] CGContext];
         CGContextSaveGState(ctx);
         {
             CGContextTranslateCTM(ctx, -rect.origin.x, -rect.origin.y);
-            [self renderRect:rect inContextIgnoringCache:ctx useAnimatedValues:useAnimatedValues];
+            [self renderRect:rect inContextIgnoringCache:ctx filter:filter useAnimatedValues:useAnimatedValues];
         }
         CGContextRestoreGState(ctx);
     }

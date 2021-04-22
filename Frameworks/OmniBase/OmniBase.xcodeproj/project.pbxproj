@@ -1673,7 +1673,7 @@
 				DEFINES_MODULE = YES;
 				INFOPLIST_FILE = Info.plist;
 				MODULEMAP_FILE = OmniBase.modulemap;
-				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniBase;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniBase.watchOS;
 				PRODUCT_NAME = OmniBase;
 				TARGETED_DEVICE_FAMILY = 4;
 			};
@@ -1688,7 +1688,7 @@
 				DEFINES_MODULE = YES;
 				INFOPLIST_FILE = Info.plist;
 				MODULEMAP_FILE = OmniBase.modulemap;
-				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniBase;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniBase.watchOS;
 				PRODUCT_NAME = OmniBase;
 				TARGETED_DEVICE_FAMILY = 4;
 			};

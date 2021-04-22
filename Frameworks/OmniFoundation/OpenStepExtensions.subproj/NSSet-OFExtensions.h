@@ -19,7 +19,7 @@ typedef id (^OFSetObjectMap)(__kindof ObjectType object);
 + (instancetype)setByEnumerating:(NSEnumerator<ObjectType> *)enumerator;
 
 - (NSSet *)setByPerformingSelector:(SEL)aSelector;
-- (NSSet *)setByPerformingBlock:(OFSetObjectMap)block;
+- (NSSet *)setByPerformingBlock:(NS_NOESCAPE OFSetObjectMap)block;
 
 - (NSSet<ObjectType> *)setByRemovingObject:(ObjectType)anObject;
 

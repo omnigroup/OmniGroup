@@ -22,9 +22,6 @@
 /* time display format for today */
 "Today, %@ <day name>" = "今日、%@";
 
-/* Document store scope display name */
-"Trash" = "ゴミ箱";
-
 /* Error description when a file type is not recognized. */
 "Unable to add document." = "書類を追加できません。";
 

@@ -19,7 +19,7 @@
 
 RCS_ID("$Id$");
 
-NSString * const OUITextExampleInspectorSliceExmapleString = @"Hwæt! We Gardena in geardagum"; // For subclasses
+NSString * const OUITextExampleInspectorSliceExampleString = @"Hwæt! We Gardena in geardagum"; // For subclasses
 
 @implementation OUITextExampleInspectorSlice
 
@@ -66,7 +66,7 @@ NSString * const OUITextExampleInspectorSliceExmapleString = @"Hwæt! We Gardena
     OBASSERT(firstSpan.textView);
     
     NSDictionary *attributes = [firstSpan.textView attributesInRange:firstSpan.range];
-    return [[NSAttributedString alloc] initWithString:OUITextExampleInspectorSliceExmapleString attributes:attributes];
+    return [[NSAttributedString alloc] initWithString:OUITextExampleInspectorSliceExampleString attributes:attributes];
 }
 
 #pragma mark - OUIInspectorSlice subclass

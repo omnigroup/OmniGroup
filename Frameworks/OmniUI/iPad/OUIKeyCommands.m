@@ -21,6 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 static NSMutableDictionary *CategoriesToKeyCommands = nil;
 static NSMutableDictionary *CategoriesToSelectorNames = nil;
+static NSCache *KeyCommandsToSelectorNames = nil;
 
 static void _parseKeyCommands(NSArray *commands, NSBundle *bundle, NSString *tableName, NSArray **outKeyCommands, NSSet **outSelectorNames)
 {
@@ -173,8 +174,9 @@ static void _parseKeyCommands(NSArray *commands, NSBundle *bundle, NSString *tab
 {
     OBINITIALIZE;
     
-    CategoriesToKeyCommands = [NSMutableDictionary dictionary];
-    CategoriesToSelectorNames = [NSMutableDictionary dictionary];
+    CategoriesToKeyCommands = [[NSMutableDictionary alloc] init];
+    CategoriesToSelectorNames = [[NSMutableDictionary alloc] init];
+    KeyCommandsToSelectorNames = [[NSCache alloc] init];
     
     // Each file should have the structure { category = ( list of commands ); }
     NSMutableArray *bundles = [[NSBundle allFrameworks] mutableCopy]; // On iOS 8 and iOS 9, +allFrameworks includes +mainBundle.
@@ -289,6 +291,31 @@ static void _parseKeyCommands(NSArray *commands, NSBundle *bundle, NSString *tab
     return selectorNames;
 }
 
++ (nullable NSSet<NSString *> *)keyCommandSelectorNamesForKeyCommands:(nullable NSArray<UIKeyCommand *> *)keyCommands;
+{
+    if (keyCommands == nil) {
+        return nil;
+    }
+    
+    NSSet *selectorNames = [KeyCommandsToSelectorNames objectForKey:keyCommands];
+    if (selectorNames != nil) {
+        return selectorNames;
+    }
+    
+    NSMutableSet *mergedSelectorNames = [NSMutableSet set];
+    for (UIKeyCommand *keyCommand in keyCommands) {
+        SEL selector = keyCommand.action;
+        if (selector != NULL) {
+            NSString *selectorName = NSStringFromSelector(selector);
+            [mergedSelectorNames addObject:selectorName];
+        }
+    }
+    
+    [KeyCommandsToSelectorNames setObject:mergedSelectorNames forKey:keyCommands];
+    
+    return selectorNames;
+}
+
 // Awful approximation for a string that's too long and will break multi-column layout. Useful for discoverability titles that display user configured strings.
 // TODO: Consider adding support for string measuring.
 static NSUInteger DesiredDiscoverabilityTitleLength = 25;
@@ -311,10 +338,24 @@ static NSUInteger DesiredDiscoverabilityTitleLength = 25;
         NSOrderedSet<NSString *> *categories = [responder keyCommandCategories];
         if (categories != nil) {
             NSSet *selectorNames = [OUIKeyCommands keyCommandSelectorNamesForCategories:categories];
-            return [selectorNames containsObject:NSStringFromSelector(action)];
+            if ([selectorNames containsObject:NSStringFromSelector(action)]) {
+                return YES;
+            }
         }
     }
     
+    if ([self conformsToProtocol:@protocol(OUIKeyCommandProvider)] || [self respondsToSelector:@selector(keyCommands)]) {
+        // It might be nice, and more efficient, to cache the computed selects for key commands by responder, but we cannot rely on the set of key commands being static over time.
+        // One example of this may be an app which vends different key commands for standard and pro editions. (It would be preferable to vend all the commands and disable the pro set, but we cannot rely on that.)
+        NSArray<UIKeyCommand *> *keyCommands = self.keyCommands;
+        if (keyCommands != nil) {
+            NSSet *selectorNames = [OUIKeyCommands keyCommandSelectorNamesForKeyCommands:keyCommands];
+            if ([selectorNames containsObject:NSStringFromSelector(action)]) {
+                return YES;
+            }
+        }
+    }
+
     return NO;
 }
 

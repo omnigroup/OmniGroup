@@ -54,6 +54,7 @@
 #import <OmniFoundation/OFOrderedMutableDictionary.h>
 #import <OmniFoundation/OFPerformanceMeasurement.h>
 #import <OmniFoundation/OFPoint.h>
+#import <OmniFoundation/OFPointerStack.h>
 #import <OmniFoundation/OFPreference.h>
 #import <OmniFoundation/OFRandom.h>
 #import <OmniFoundation/OFRationalNumber.h>

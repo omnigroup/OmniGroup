@@ -29,9 +29,6 @@
 "Cannot locate synchronized documents folder." = "Impossible de localiser le dossier de documents synchronisés.";
 
 /* Error description */
-"Cannot move document." = "Impossible de déplacer le document.";
-
-/* Error description */
 "Cannot start account agent." = "Impossible de démarrer l’agent du compte.";
 
 /* Error description */
@@ -43,29 +40,17 @@
 /* Account validation step description */
 "Checking Credentials" = "Vérification des informations d’identification";
 
-/* iTunes import title */
-"Copy from iTunes" = "Copier depuis iTunes";
-
 /* error reason */
 "Could not access synchronized documents folder." = "Impossible d’accéder au dossier de documents synchronisés.";
 
 /* error reason */
 "Could not resolve archived bookmark for synchronized documents folder." = "Impossible de résoudre le signet archivé pour le dossier de documents synchronisés.";
 
-/* iTunes import/export account detail string */
-"Documents" = "Documents";
-
 /* Add server account description */
 "Easily sync Omni documents. Signup is free!" = "Synchronisez des documents Omni. Abonnement gratuit !";
 
 /* Server account export title format */
 "Export to \"%@\"" = "Exporter vers “%@”";
-
-/* iTunes export title */
-"Export to iTunes" = "Exporter vers iTunes";
-
-/* Server account type */
-"iTunes" = "iTunes";
 
 /* Error reason */
 "Local account documents folder is missing." = "Le dossier de documents de compte locaux est manquant.";
@@ -111,14 +96,17 @@
 /* error reason */
 "The cloud account requires OmniPresence format %@, but this device is using format %@. Please upgrade this copy of OmniPresence." = "Le compte du cloud nécessite le format OmniPresence %1$@, mais cet appareil utilise le format %2$@. Mettez à niveau cette copie d’OmniPresence.";
 
-/* Error description */
-"The document \"%@\" is not fully downloaded." = "Le document “%@” n’a pas été complètement téléchargé.";
-
 /* error description */
 "The proposed local documents folder already contains files. Please specify an empty folder or one that doesn't yet exist." = "Le dossier de documents locaux proposé contient déjà des fichiers. Spécifiez un dossier vide ou un qui n’existe pas encore.";
 
 /* error description */
 "The proposed local documents folder is not on a local volume. Please pick a location that is local to your computer." = "Le dossier de documents locaux proposé ne se trouve pas sur un volume local. Sélectionnez un emplacement local sur votre ordinateur.";
+
+/* error description */
+"The proposed local documents folder is not within the app's local documents. Please pick a location within that folder." = "Le dossier de documents locaux proposé ne se trouve pas dans les documents locaux de l’app. Veuillez choisir un emplacement dans ce dossier.";
+
+/* error description */
+"The proposed local documents folder is within the app's trash. This could lead to files getting unintentionally removed." = "Le dossier de documents locaux proposé se trouve dans la corbeille de l’app. Cela risque d’entraîner une suppression de fichiers involontaire.";
 
 /* error description */
 "The selected local folder appears to be inside a %@ folder. Using two file synchronization systems on the same folder can result in data loss." = "Le dossier local sélectionné semble se trouver dans un dossier %@. L’utilisation de deux systèmes de synchronisation de fichiers pour un même dossier peut provoquer la perte de données.";

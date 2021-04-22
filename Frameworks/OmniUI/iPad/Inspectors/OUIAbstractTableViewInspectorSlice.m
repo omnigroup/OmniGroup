@@ -74,7 +74,7 @@ static NSString *_doneActionButtonTitle;
 
 + (UIColor *)headerTextColor;
 {
-    return [UIColor labelColor];
+    return [OUIInspector headerTextColor];
 }
 
 + (UILabel *)headerLabelWithText:(NSString *)labelString;
@@ -98,8 +98,9 @@ static NSString *_doneActionButtonTitle;
     
     UILabel *label = [self headerLabelWithText:labelString];
     label.translatesAutoresizingMaskIntoConstraints = NO;
+    label.textColor = [OUIInspector headerTextColor];
     headerView.label = label;
-    
+
     UIEdgeInsets edgeInsets = OUIInspectorSlice.sliceAlignmentInsets;
 
     [headerView addSubview:label];
@@ -129,7 +130,7 @@ static NSString *_doneActionButtonTitle;
     if ([OUIInspectorAppearance inspectorAppearanceEnabled]) {
         [headerView themedAppearanceDidChange:OUIInspectorAppearance.appearance];
     } else {
-        headerView.backgroundColor = [UIColor systemGroupedBackgroundColor];
+        headerView.backgroundColor = [OUIInspector backgroundColor];
     }
     OBASSERT(headerView.backgroundColor != nil, "Clear backgrounds cause the header view's text to overlap the font names, and that looks bad.");
     
@@ -236,7 +237,8 @@ static NSString *_doneActionButtonTitle;
     OBASSERT([self conformsToProtocol:@protocol(UITableViewDataSource)]);
     OBASSERT([self conformsToProtocol:@protocol(UITableViewDelegate)]);
 
-    _tableView.backgroundColor = [UIColor systemGroupedBackgroundColor];
+    _tableView.backgroundColor = [OUIInspector backgroundColor];
+    _tableView.separatorColor = [OUIInspectorSlice sliceSeparatorColor];
     _tableView.delegate = (id <UITableViewDelegate>)self;
     _tableView.dataSource = (id <UITableViewDataSource>)self;
     
@@ -289,15 +291,10 @@ static NSString *_doneActionButtonTitle;
     [_tableView setEditing:editing animated:animated];
 }
 
-//-(UIColor *)sliceBackgroundColor;
-//{
-//    return [UIColor clearColor];
-//}
-//
 - (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section;
 {
     OUIInspectorTableViewHeaderFooterView *view = [[OUIInspectorTableViewHeaderFooterView alloc] init];
-    view.contentView.backgroundColor = [UIColor clearColor];
+    view.backgroundColor = [OUIInspector backgroundColor];
     return view;
 }
 
@@ -309,7 +306,7 @@ static NSString *_doneActionButtonTitle;
 - (UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section;
 {
     UIView *view = [[UIView alloc] init];
-    view.backgroundColor = [UIColor clearColor];
+    view.backgroundColor = [OUIInspector backgroundColor];
     return view;
 }
 

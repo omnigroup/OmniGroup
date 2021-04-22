@@ -1,44 +1,14 @@
-/* Filename appendage to indicate file is a copy of a file that has been moved to a different location */
-" (Copy)" = " （コピー）";
-
-/* bytes */
-"%@ B" = "%@ B";
-
 /* error description */
 "%@ cannot open this type of file." = "%@ はこのタイプのファイルを開くことができません。";
 
-/* gigabytes */
-"%@ GB" = "%@ GB";
+/* OmniPresence file list: status: items and size format */
+"%@ items, %@" = "%1$@ 項目、%2$@";
 
-/* doc picker multiple items accessibility value */
-"%@ items" = "%@ 項目";
-
-/* kilobytes */
-"%@ KB" = "%@ KB";
-
-/* megabytes */
-"%@ MB" = "%@ MB";
+/* OmniPresence file list: status: items and size with downloads format */
+"%@ items, %@ (%@ downloaded, %@)" = "%1$@ 項目、%2$@（%3$@ 個ダウンロード済み、%4$@）";
 
 /* home screen detail label */
 "%d items" = "%d 項目";
-
-/* Main toolbar title for a multiple selected documents. */
-"%ld Documents Selected" = "%ld 個の書類を選択";
-
-/* Main toolbar title for a multiple selected items. */
-"%ld Items Selected" = "%ld 個の項目を選択";
-
-/* home screen detail format -- count and item description */
-"%lu %@" = "%1$lu 個の%2$@";
-
-/* Main toolbar title for a single selected document. */
-"1 Document Selected" = "1 個の書類を選択";
-
-/* doc picker single item accessibility value */
-"1 item" = "1 項目";
-
-/* Main toolbar title for a single selected folder. */
-"1 Item Selected" = "1 個の項目を選択";
 
 /* replace document description */
 "A document with the name \"%@\" already exists. Do you want to replace it? This cannot be undone." = "%@” という名前の書類はすでに存在します。置き換えますか？この操作は元に戻せません。";
@@ -48,14 +18,6 @@
 
 /* Server Account Setup label: account name */
 "Account Name" = "アカウント名";
-
-/* Menu option in the document picker view */
-"Actions" = "アクション";
-
-/* Cloud Setup button title to add a new account
-   Cloud Setup button title to convert an existing account */
-
-"Add an Account" = "アカウントを追加";
 
 /* home screen button label */
 "Add OmniPresence Account" = "OmniPresence アカウントを追加";
@@ -67,41 +29,16 @@
    Server account setup confirmation cancellation label
    title for alert option cancel */
 
-
-
-
-
 "Cancel" = "キャンセル";
-
-/* item not fully downloaded error title */
-"Cannot Duplicate Item" = "項目を複製できません";
-
-/* item not fully downloaded error title */
-"Cannot Export Item" = "項目を書き出せません";
 
 /* email action description */
 "Choose a format for emailing \"%@\":" = "“%@” をメールで送信するためのフォーマットを選択してください：";
-
-/* toolbar prompt when choosing a template */
-"Choose a Template" = "テンプレートを選択";
 
 /* Cloud setup modal sheet title */
 "Choose Account Type" = "アカウントのタイプを選択";
 
 /* export options title */
 "Choose Format" = "フォーマットを選択";
-
-/* Clear from Recent Documents container toolbar item accessibility label. */
-"Clear" = "消去";
-
-/* clear button title */
-"Clear %ld Documents" = "%ld 個の書類を消去";
-
-/* remove button title */
-"Clear Document" = "書類を消去";
-
-/* doc picker custom accessibility action name */
-"Clear name field" = "名前フィールドを消去";
 
 /* title view clear button accessibility label. */
 "Clear Title" = "タイトルを消去";
@@ -112,47 +49,26 @@
 /* demo mode disabled message */
 "Cloud storage is disabled in this demo version." = "このデモバージョンではクラウドストレージが無効になっています。";
 
+/* Screen title for configuring OmniPresence accounts */
+"Configure OmniPresence Syncing" = "OmniPresence 同期を設定";
+
 /* Success label when connecting to an OmniPresence or WebDAV server account */
 "Connected" = "接続しました";
 
-/* webdav connecting label */
-"Connecting" = "接続中";
+/* Update news: button title */
+"Continue" = "続ける";
 
 /* Menu option in the document picker view */
 "Copy as Image" = "イメージとしてコピー";
 
-/* gear menu item */
-"Copy from WebDAV" = "WebDAV からコピー";
-
-/* gear menu item */
-"Copy from…" = "コピー元を選択…";
-
-/* Create Document From Template Document Shortcut Title */
-"Create New Document" = "書類を新規作成";
-
-/* Create Document From Template Document Shortcut Title */
-"Create New Document From %@" = "%@ から書類を新規作成";
-
 /* moved aside custom sample document name */
 "CustomizedSampleDocumentName" = "%@ カスタマイズ済み";
-
-/* sort by date */
-"Date" = "日付";
-
-/* Delete toolbar item accessibility label. */
-"Delete" = "削除";
 
 /* Server account setup confirmation action label format */
 "Delete \"%@\"" = "“%@” を削除";
 
-/* delete button title */
-"Delete %ld Documents" = "%ld 個の書類を削除";
-
 /* Server Account Setup button label */
 "Delete Account" = "アカウントを削除";
-
-/* delete button title */
-"Delete Document" = "書類を削除";
 
 /* Discard unsynced edits dialog: discard button label */
 "Discard Edits" = "編集内容を破棄";
@@ -169,31 +85,11 @@
 /* Toolbar button title for returning to list of documents. */
 "Documents <back button>" = "書類";
 
-/* Duplicate document preview action title.
-   Duplicate toolbar item accessibility label. */
-
-"Duplicate" = "複製";
-
-/* title for alert option confirming duplication of multiple files */
-"Duplicate %ld Documents" = "%ld 個の書類を複製";
-
-/* title for alert option confirming duplication of multiple items */
-"Duplicate %ld Items" = "%ld 個の項目を複製";
-
-/* omni sync server setup help */
-"Easily sync Omni documents between devices. Signup is free!" = "デバイス間で Omni 書類を簡単に同期。サインアップは無料です！";
-
-/* When displaying a sync error, this is the option to change the username and password. */
-"Edit Credentials" = "資格情報を編集";
-
-/* doc picker custom accessibility action name */
-"Edit name" = "名前を編集";
+/* OmniPresence sync status */
+"Downloading files" = "ファイルをダウンロード中";
 
 /* title view edit button item accessibility hint. */
 "Edits the document's title." = "書類のタイトルを編集。";
-
-/* empty trash button title */
-"Empty Trash" = "ゴミ箱を空にする";
 
 /* webdav help */
 "Enter the location of your WebDAV space." = "WebDAV の場所を入力してください。";
@@ -201,36 +97,16 @@
 /* export button title
    export options title
    Export toolbar item accessibility label. */
-
-
 "Export" = "書き出し";
 
 /* export to description */
 "Export \"%@\" as:" = "“%@” を次の名前で書き出す：";
 
-/* export action description */
-"Export \"%@\" to %@ as:" = "%1$@ を次の名前で %2$@ に書き出す：";
-
-/* Menu option in the document picker view */
-"Export to WebDAV" = "WebDAV に書き出す";
-
-/* Export document preview action title. */
-"Export…" = "書き出す…";
-
-/* finished */
-"Finished" = "完了";
-
-/* doc picker folder type accessibility value */
-"Folder" = "フォルダ";
-
-/* import sheet title */
-"Import" = "読み込み";
+/* OmniPresence file list: sort order option */
+"folder and name" = "フォルダと名前";
 
 /* Info item accessibility label */
 "Info" = "情報";
-
-/* doc picker title label editing accessibility value */
-"Is editing" = "編集中";
 
 /* Notice for the user about the last edit to a document (unknown device) */
 "Last edit: %@" = "最後の編集：%@";
@@ -241,76 +117,43 @@
 /* Notice for the user about the last edit to a document (this device) */
 "Last edit: %@ on this device" = "最後の編集：%@（このデバイス）";
 
+/* OmniPresence sync status: prefix for the 'last sync' status */
+"Last sync" = "最後の同期";
+
+/* Update news: button title */
+"Learn More" = "詳しい情報";
+
 /* Server Account Setup label: location */
 "Location" = "場所";
 
-/* top level doc picker title */
-"Locations" = "場所";
-
-/* modified date accessibility value */
-"Modified %@" = "変更日 %@";
-
-/* Menu option in the document picker view
-   Move toolbar item accessibility label. */
-
-"Move" = "移動";
-
-/* move to trash button title */
-"Move %ld Items to Trash" = "%ld 個の項目をゴミ箱に移動";
-
-/* move to trash button title
-   Move to Trash toolbar item accessibility label. */
-
-"Move to Trash" = "ゴミ箱に移動";
-
-/* Share menu title */
-"Move to..." = "移動…";
-
-/* Move document preview action title. */
-"Move…" = "移動…";
+/* OmniPresence file list: sort order option */
+"modification date" = "変更日";
 
 /* Base name for newly created documents. This will have an number appended to it to make it unique. */
 "My Document" = "書類";
 
-/* Base name for newly created templates. This will have an number appended to it to make it unique. */
-"My Template" = "マイテンプレート";
+/* OmniPresence file list: sort order option */
+"name" = "名前";
 
 /* New Document toolbar item accessibility label.
    New Template button title */
-
 "New Document" = "新規書類";
 
-/* Action sheet title for making a new folder from the selected documents */
-"New folder" = "新規フォルダ";
+/* Update news: title */
+"New in iOS 13:\nFull Adoption of Apple's Document Browser" = "iOS 13 の新機能：\nApple 書類ブラウザを完全採用";
 
 /* Server Account Setup label: nickname */
 "Nickname" = "ニックネーム";
 
-/* Export message for empty table view */
-"No accounts are configured for exporting." = "書き出し用に構成されたアカウントはありません。";
-
-/* Import message for empty table view */
-"No accounts are configured for importing." = "読み込み用に構成されたアカウントはありません。";
-
-/* doc picker no items accessibility value */
-"No items" = "項目なし";
-
-/* Not downloaded accessibility label. */
-"Not downloaded" = "ダウンロードされていません";
-
-/* Not uploaded accessibility label. */
-"Not uploaded" = "アップロードされていません";
-
 /* button title
    When displaying a sync error, this is the option to ignore the error. */
-
 "OK" = "OK";
 
 /* demo disabled message */
 "OmniPresence allows you to use our free sync service or any compatible WebDAV server to automatically share documents between your devices, or to keep copies of your documents in the cloud in case you need to restore your device." = "OmniPresence を利用すると、弊社の無料同期サービスや互換性のある任意の WebDAV サーバを使うことができます。また、お持ちのデバイスを復元しなければならない場合に備え、書類のコピーをクラウドに保存しておくこともできます。";
 
-/* Omni Presence config email subject format */
-"OmniPresence Configuration: %@" = "OmniPresence の構成： %@";
+/* Update news: title */
+"OmniPresence Documents" = "OmniPresence 書類";
 
 /* demo disabled title */
 "OmniPresence is disabled in this demo version." = "このデモバージョンでは OmniPresence が無効になっています。";
@@ -323,21 +166,6 @@
 
 /* Open Document Shortcut Title */
 "Open %@" = "%@ を開く";
-
-/* empty picker text for Recent Documents */
-"Open a document to add it to this view." = "書類を開くと、その書類がこのビューに追加されます。";
-
-/* Open External Document toolbar item accessibility label. */
-"Open External Document" = "外部の書類を開く";
-
-/* Omni Presence config email body */
-"Open this file on another device to configure OmniPresence there." = "このファイルを別のデバイス上で開き、そこで OmniPresence を構成してください。";
-
-/* home screen button label */
-"Open…" = "開く...";
-
-/* Menu title for selecting an external document provider when moving a file */
-"Other…" = "その他...";
 
 /* Language section title */
 "ouiLanguagePicker.language" = "言語";
@@ -360,17 +188,8 @@
 /* purchase now button title */
 "Purchase Now." = "今すぐ購入。";
 
-/* Generic name for location of external documents */
-"Recent Documents" = "最近使った書類";
-
 /* rename button title */
 "Rename" = "名称変更";
-
-/* toolbar prompt while renaming a document */
-"Rename Document" = "書類を名称変更";
-
-/* toolbar prompt while renaming a folder */
-"Rename Folder" = "フォルダを名称変更";
 
 /* Message format for alert informing user that the document has been renamed on another device */
 "Renamed to %@." = "名称が %@ に変更されました。";
@@ -387,73 +206,39 @@
 /* Restore Sample Documents Title */
 "Restore Sample Documents" = "サンプル書類を復元";
 
-/* Share menu title */
-"Restore to..." = "復元先...";
-
 /* When displaying a sync error, this is the option to retry syncing. */
 "Retry Sync" = "同期を再試行";
 
 /* Account setup toolbar button title to save account settings */
 "Save" = "保存";
 
-/* document picker compact title view accessibility hint */
-"Scroll down to show sort and filter controls" = "並べ替えとフィルタのコントロールを表示するには下方向へスクロール";
-
-/* document picker button label */
-"Search" = "検索";
-
-/* edit button title for doc picker in non-edit mode */
-"Select" = "選択";
-
-/* Main toolbar title for a no selected documents. */
-"Select a Document" = "書類を選択";
-
 /* send to app description */
 "Send \"%@\" to app as:" = "“%@” を次の名前でアプリに送信：";
-
-/* Omni Sync Server send settings button title */
-"Send Settings via Email" = "設定をメールで送信";
-
-/* Menu option in the document picker view */
-"Send to App" = "アプリに送信";
-
-/* Menu option in the document picker view */
-"Send to Files" = "ファイルに送信";
 
 /* Menu option in the document picker view */
 "Send to Photos" = "写真に送信";
 
 /* export options title
    Menu option in the document picker view */
-
 "Send via Mail" = "メールで送信";
-
-/* email action description */
-"Server address: %@" = "サーバアドレス： %@";
 
 /* Label format when setting up an OmniPresence or WebDAV server account */
 "Setting up \"%@\"" = "“%@” を設定中";
 
+/* Share activity title */
+"Share As…" = "フォーマットを指定して共有...";
+
 /* Omni Sync Server sign up button title */
 "Sign Up For a New Account" = "新規アカウントにサインアップ";
 
-/* sort by accessibility label */
-"Sort by %@" = "%@で並べ替え";
+/* OmniPresence file list: sort order option */
+"size" = "サイズ";
+
+/* OmniPresence file list: sort order label */
+"Sort by:" = "ソート順：";
 
 /* Presence toolbar item accessibility label. */
 "Sync Now" = "今すぐ同期";
-
-/* empty template picker button text */
-"Tap here to add a document without a template." = "テンプレートなしで書類を追加するにはここをタップ。";
-
-/* empty picker button text */
-"Tap here, or on the + in the toolbar, to add a custom template." = "カスタムテンプレートを追加するには、ここをタップするか、ツールバーの「+」をタップしてください。";
-
-/* empty picker button text */
-"Tap here, or on the + in the toolbar, to add a document." = "書類を追加するには、ここをタップするか、ツールバーの「+」をタップしてください。";
-
-/* file name label for template filte types */
-"Template:" = "テンプレート：";
 
 /* Discard unsynced edits dialog: message format */
 "The \"%@\" account has %ld edited documents which have not yet been synced up to the cloud. Do you wish to discard those edits?" = "“%1$@” には、まだクラウドと同期されていない %2$ld 個の編集済み書類があります。これらの編集内容を破棄しますか？";
@@ -476,26 +261,29 @@
 /* Photo Library permisssions error suggestion. */
 "This app does not have access to your Photo Library." = "このアプリにはフォトライブラリへのアクセス権がありません。";
 
-/* empty picker because of removed account text */
-"This Cloud Account no longer exists." = "このクラウドアカウントはもう存在しません。";
-
 /* Error reason for a document operation failing due to a missing file. */
 "This document is not accessible. It is possible the file was deleted, renamed or moved via iTunes or an external document provider. Please try removing the file and adding it again." = "この書類にアクセスできません。ファイルが iTunes または外部の書類プロバイダを通じて削除または移動されたか、名前が変更されています。このファイルを削除してから、追加し直してみてください。";
-
-/* item not fully downloaded error message */
-"This item cannot be duplicated because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "この項目は完全にはダウンロードされていないため、複製できません。項目をタップし、完全にダウンロードされるのを待って、やり直してください。";
-
-/* item not fully downloaded error message */
-"This item cannot be exported because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "この項目は完全にはダウンロードされていないため、書き出せません。項目をタップし、完全にダウンロードされるのを待って、やり直してください。";
-
-/* sort by title */
-"Title" = "タイトル";
 
 /* error title */
 "Unable to open file." = "ファイルを開けません。";
 
+/* OmniPresence sync status */
+"Uploading and downloading files" = "ファイルをアップロード中／ダウンロード中";
+
+/* OmniPresence sync status */
+"Uploading files" = "ファイルをアップロード中";
+
 /* Account validation status string. */
 "Validating account..." = "アカウントを検証中…";
 
-/* empty picker button text */
-"When plug-ins are installed, they will appear here." = "プラグインがインストールされている場合、それらのプラグインはここに表示されます。";
+/* Screen title for viewing OmniPresence documents */
+"View OmniPresence Documents" = "OmniPresence 書類を表示";
+
+/* Update news: description */
+"We've retired our custom document browser in favor of using Apple's built-in browser, making it easier than ever for you to choose where you want to keep your documents." = "Omni では、弊社のカスタム書類ブラウザを廃止し、Apple の内蔵ブラウザを利用することとなりました。これにより、以前にも増して簡単に書類の保存場所を指定できます。";
+
+/* error description */
+"While attempting to open %@, received an error from the system" = "%@ を開こうとしているときに、システムからエラーを受信しました";
+
+/* Update news: description */
+"Your OmniPresence documents will only be visible in the new browser when they’ve been downloaded to this device.\n\nOmniPresence does not download larger synced files automatically. You can manually download larger files to this device now, or access the download manager later from the OmniPresence icon in the toolbar." = "お持ちの OmniPresence 書類は、それらの書類をこのデバイスにダウンロードした後、新しいブラウザでのみ表示できます。\n\nOmniPresence では、大きなサイズの同期ファイルが自動的にダウンロードされることはありません。今すぐ手動でこのデバイスに大きなファイルをダウンロードするか、後でツールバーの OmniPresence アイコンからダウンロードマネージャにアクセスできます。";

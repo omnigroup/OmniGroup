@@ -7,23 +7,19 @@
 
 #import <OmniUIDocument/OUIDocumentExporter.h>
 
-#import <OmniUIDocument/OUIDocumentAppController.h>
-#import <OmniUIDocument/OUIDocumentPicker.h>
-#import <OmniUIDocument/OUIDocumentPickerViewController.h>
-#import <OmniUIDocument/OUIErrors.h>
+@import MobileCoreServices;
+@import OmniBase;
+@import OmniFileExchange;
+@import OmniFoundation;
+@import OmniUI;
+@import Photos;
+
 #import <OmniUIDocument/OUIDocument.h>
+#import <OmniUIDocument/OUIDocumentAppController.h>
+#import <OmniUIDocument/OUIErrors.h>
 #import <OmniUIDocument/OmniUIDocument-Swift.h>
 
 #import "OUIExportOptionsController.h"
-
-@import OmniBase;
-@import OmniFoundation;
-@import MobileCoreServices;
-@import Photos;
-@import OmniUI;
-@import OmniFileExchange;
-
-RCS_ID("$Id$")
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -46,18 +42,14 @@ NS_ASSUME_NONNULL_BEGIN
     return barButtonItem;
 }
 
-- (void)exportDocument:(OUIDocument *)document fromViewController:(UIViewController *)parentViewController barButtonItem:(nullable UIBarButtonItem *)exportBarButtonItem;
+- (void)exportDocument:(OUIDocument *)document fromViewController:(UIViewController *)parentViewController barButtonItem:(UIBarButtonItem *)exportBarButtonItem;
 {
     NSURL *fileURL = document.fileURL;
     
     UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:@[fileURL] applicationActivities:self.supportedActivities];
     
-    if (exportBarButtonItem) {
-        activityViewController.modalPresentationStyle = UIModalPresentationPopover;
-        activityViewController.popoverPresentationController.barButtonItem = exportBarButtonItem;
-    } else {
-        activityViewController.modalPresentationStyle = UIModalPresentationFormSheet;
-    }
+    activityViewController.modalPresentationStyle = UIModalPresentationPopover;
+    activityViewController.popoverPresentationController.barButtonItem = exportBarButtonItem;
     
     activityViewController.completionWithItemsHandler = ^(UIActivityType activityType, BOOL completed, NSArray *returnedItems, NSError *errorOrNil){
         if (errorOrNil) {
@@ -104,11 +96,8 @@ static BOOL DocumentClassSubclasses(Class cls, SEL sel) {
         // Add the 'native' marker
         [exportTypes insertObject:[NSNull null] atIndex:0];
         
-        // PDF PNG Fallbacks
-        BOOL canMakePDF = [self supportsExportAsPDF];
+        // PNG Fallbacks
         BOOL canMakePNG = DocumentClassSubclasses(documentClass, @selector(PNGData:));
-        if (canMakePDF)
-            [exportTypes addObject:(NSString *)kUTTypePDF];
         if (canMakePNG)
             [exportTypes addObject:(NSString *)kUTTypePNG];
     }
@@ -118,17 +107,17 @@ static BOOL DocumentClassSubclasses(Class cls, SEL sel) {
 
 #pragma mark - Subclass Overrides
 
-- (UIImage *)iconForUTI:(NSString *)fileUTI;
+- (nullable UIImage *)iconForUTI:(NSString *)fileUTI;
 {
     OBRequestConcreteImplementation(self, _cmd);
 }
 
-- (UIImage *)exportIconForUTI:(NSString *)fileUTI;
+- (nullable UIImage *)exportIconForUTI:(NSString *)fileUTI;
 {
     OBRequestConcreteImplementation(self, _cmd);
 }
 
-- (NSString *)exportLabelForUTI:(NSString *)fileUTI;
+- (nullable NSString *)exportLabelForUTI:(NSString *)fileUTI;
 {
     if (OFTypeConformsTo(fileUTI, kUTTypePDF))
         return @"PDF";
@@ -150,10 +139,6 @@ static BOOL DocumentClassSubclasses(Class cls, SEL sel) {
 + (UIImage *)sendToPhotosImage;
 {
     return [UIImage imageNamed:@"OUIMenuItemSendToPhotos" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
-}
-+ (UIImage *)printImage;
-{
-    return [UIImage imageNamed:@"OUIMenuItemPrint" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
 }
 
 - (NSArray *)availableInAppPurchaseExportTypesForFileURL:(NSURL *)fileURL;

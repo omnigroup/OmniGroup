@@ -129,5 +129,4 @@ const NSTimeInterval OUIAnimationSequenceImmediateDuration = 0.0;
     [seq _run]; // -retains the receiver until it is done
 }
 
-
 @end

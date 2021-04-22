@@ -377,6 +377,11 @@ static unsigned AccountAgentNetStateRegistrationGroupIdentifierContext;
         [self _syncAndStartTimer];
 }
 
+- (BOOL)isOffline;
+{
+    return _netReachability == nil || !_netReachability.isReachable;
+}
+
 - (void)applicationWillEnterForeground;
 {
     REQUIRE(_started, YES, @"Called -applicationWillEnterForeground.");
@@ -718,80 +723,6 @@ static void _stopObservingAccountAgent(OFXAgent *self, OFXAccountAgent *accountA
     [accountAgent countFileItemsWithLocalChanges:completionHandler];
 }
 
-#if !OFX_MAC_STYLE_ACCOUNT
-
-- (nullable OFXAccountMigration *)_startMigratingAccountToLocalDocuments:(OFXServerAccount *)serverAccount
-                                                                activity:(OFXAgentActivity *)agentActivity
-                                                       chooseDestination:(OFXMigrationChooseDestination _Nullable)chooseDestination
-                                                       completionHandler:(void (^)(NSError * _Nullable errorOrNil))completionHandler
-                                                                   error:(NSError **)outError;
-{
-    OBPRECONDITION(agentActivity.agent == self);
-    
-    OFXAccountAgent *accountAgent = _uuidToAccountAgent[serverAccount.uuid];
-    if (!accountAgent) {
-        __autoreleasing NSError *error;
-        OFXError(&error, OFXFileNotContainedInAnyAccount, @"Attempted operation on an account that is not registered with this agent.", nil);
-        return nil;
-    }
-
-    // Make sure we don't have an in-progress migration
-    OFXAccountMigration *activeMigration = accountAgent.activeMigration;
-    if (activeMigration && activeMigration.isRunning) {
-        OBASSERT_NOT_REACHED("This should be diallowed by the user interface.");
-        NSString *reason = NSLocalizedStringFromTableInBundle(@"Cannot start migration.", @"OmniFileExchange", OMNI_BUNDLE, @"Error description");
-        NSString *description = NSLocalizedStringFromTableInBundle(@"An account migration is already in progress.", @"OmniFileExchange", OMNI_BUNDLE, @"Error when attempting to start a migration while one is running already");
-        OFXError(outError, OFXMigrationAlreadyActive, reason, description);
-        return nil;
-    }
-    
-    completionHandler = [completionHandler copy];
-    
-    OFXAccountActivity *accountActivity = [agentActivity activityForAccount:serverAccount];
-    if (!accountActivity) {
-        __autoreleasing NSError *error;
-        OFXError(&error, OFXFileNotContainedInAnyAccount, @"Attempted operation on an account that is not registered with this agent.", nil);
-        return nil;
-    }
-    
-    OFXAccountMigration *newMigration = [[OFXAccountMigration alloc] initWithAccountAgent:accountAgent accountActivity:accountActivity];
-    accountAgent.activeMigration = newMigration;
-    
-    newMigration.chooseDestination = chooseDestination;
-    
-    [newMigration start:^(OFXAccountMigration *migration, NSError *errorOrNil){
-        OBASSERT_IF(accountAgent.activeMigration == nil, "Since migrations require a stopped account agent, and since account agents are single use, -migrationFinished needs to have been called");
-        accountAgent.activeMigration = nil; // Clearing it anyway here
-
-        if (completionHandler) {
-            completionHandler(errorOrNil);
-        }
-    }];
-    
-    return newMigration;
-}
-
-- (nullable OFXAccountMigration *)startMigratingAccountToLocalDocuments:(OFXServerAccount *)serverAccount
-                                                               activity:(OFXAgentActivity *)agentActivity
-                                                      completionHandler:(void (^)(NSError * _Nullable errorOrNil))completionHandler
-                                                                  error:(NSError **)outError;
-{
-    return [self _startMigratingAccountToLocalDocuments:serverAccount activity:agentActivity chooseDestination:nil completionHandler:completionHandler error:outError];
-
-}
-
-// This version copies the data out of the OmniPresence account and then removes the account.
-- (nullable OFXAccountMigration *)startMigratingAccountToFiles:(OFXServerAccount *)serverAccount
-                                                      activity:(OFXAgentActivity *)agentActivity
-                                             chooseDestination:(OFXMigrationChooseDestination)chooseDestination
-                                             completionHandler:(void (^)(NSError * _Nullable errorOrNil))completionHandler error:(NSError **)outError;
-{
-    return [self _startMigratingAccountToLocalDocuments:serverAccount activity:agentActivity chooseDestination:chooseDestination completionHandler:completionHandler error:outError];
-}
-                                                                                                                                                               
-#endif
-
-
 #pragma mark - OFNetStateNotifierDelegate
 
 - (void)netStateNotifierStateChanged:(OFNetStateNotifier *)notifier;
@@ -894,6 +825,15 @@ static void _stopObservingAccountAgent(OFXAgent *self, OFXAccountAgent *accountA
 #if OMNI_BUILDING_FOR_IOS
         if (serverAccount.requiresMigration) {
             // This account still lives in an iOS app's private container area and can't be inside another account (and we can't resolve its local documents URL yet).
+            // Start migrating it now, and don't create an agent for this account until the migration finishes (we just have to wait on file coordination to perform the move).
+            DEBUG_SYNC(1, @"Account requires migration: %@ (%@)", serverAccount, serverAccount.displayName);
+            [serverAccount startMigrationWithCompletionHandler:^(BOOL success, NSError *error) {
+                DEBUG_SYNC(1, @"Finished migration of account %@ (%@): success=%@, error=%@", serverAccount, serverAccount.displayName, @(success), error.toPropertyList);
+                if (success) {
+                    [self _validatedAccountsChanged];
+                }
+            }];
+            continue;
         } else
 #endif
         {

@@ -30,20 +30,9 @@
 
 - (UIBarButtonItem *)newAppMenuBarButtonItem;
 {
-    OBFinishPortingLater("Attention dot disabled now so that the bar item will actuall show up. See <bug:///176678> (Frameworks-iOS Bug: Convert the app menu bar item's \"attention\" support to use a plain UIBarButtonItem) to fix the rest of this.");
-//    BOOL needsAttentionDot = [self newsWantsAttention];
-
     UIImage *normalImage = OUIAppController.sharedController.appMenuImage;
-
     UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithImage:normalImage style:UIBarButtonItemStylePlain target:self action:@selector(_showAppMenu:)];
-
     item.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Help and Settings", @"OmniUI", OMNI_BUNDLE, @"Help and Settings toolbar item accessibility label.");
-
-//    if (!self.appMenuUnderlyingButtonsMappedToAssociatedBarButtonItems) {
-//        self.appMenuUnderlyingButtonsMappedToAssociatedBarButtonItems = [NSMapTable weakToWeakObjectsMapTable];
-//    }
-//    [self.appMenuUnderlyingButtonsMappedToAssociatedBarButtonItems setObject:item forKey:button];
-
     return item;
 }
 
@@ -54,7 +43,7 @@
     [self showAboutScreenInNavigationController:nil];
 }
 
-- (void)_showReleaseNotes:(id)sender;
+- (void)showReleaseNotes:(nullable id)sender;
 {
     [self showWebViewWithURL:[[NSBundle mainBundle] URLForResource:@"MessageOfTheDay" withExtension:@"html"] title:NSLocalizedStringFromTableInBundle(@"Release Notes", @"OmniUI", OMNI_BUNDLE, @"release notes html screen title")];
 }
@@ -99,9 +88,6 @@
     NSMutableArray *options = [NSMutableArray array];
     OUIMenuOption *option;
     NSArray *additionalOptions;
-
-    // Space at the top
-    [options addObject:[OUIMenuOption separatorWithTitle:@" "]];
 
     option = appController.specialFirstAppMenuOption;
     if (option) {
@@ -155,7 +141,7 @@
     if (additionalOptions)
         [options addObjectsFromArray:additionalOptions];
 
-    option = [OUIMenuOption optionWithTarget:self selector:@selector(_showReleaseNotes:)
+    option = [OUIMenuOption optionWithTarget:self selector:@selector(showReleaseNotes:)
                                                        title:NSLocalizedStringFromTableInBundle(@"Release Notes", @"OmniUI", OMNI_BUNDLE, @"App menu item title")
                                                        image:appController.releaseNotesMenuImage];
     [options addObject:option];
@@ -167,9 +153,6 @@
     additionalOptions = [appController additionalAppMenuOptionsAtPosition:OUIAppMenuOptionPositionAtEnd];
     if (additionalOptions)
         [options addObjectsFromArray:additionalOptions];
-
-    // Space at the bottom
-    [options addObject:[OUIMenuOption separatorWithTitle:@" "]];
 
     return options;
 }
@@ -195,27 +178,37 @@
 
     _appMenuController.topOptions = [self _appMenuTopOptions];
 
-    _appMenuController.tintColor = UIColor.blackColor; // The icons are many colors for iOS 11 flavor, so menu text looks better untinted.
-    _appMenuController.menuOptionBackgroundColor = UIColor.whiteColor; // White menu option backgrounds
-    _appMenuController.menuBackgroundColor = UIColor.systemGroupedBackgroundColor; // Gray separator and scroll-bounce region
-
-    [_appMenuController setSizesToOptionWidth:YES];
-
-    UIBarButtonItem *appropriatePresenter = nil;
-    if ([sender isKindOfClass:[UIBarButtonItem class]])
-    {
-        appropriatePresenter = sender;
-    } else {
-        appropriatePresenter = [self _barButtonItemForSender:sender];
-    }
-    OBASSERT(appropriatePresenter != nil);
-    OBASSERT([appropriatePresenter isKindOfClass:[UIBarButtonItem class]]); // ...or we shouldn't be passing it as the bar item in the next call
+    _appMenuController.tintColor = UIColor.labelColor; // The icons are many colors for iOS 11 flavor, so menu text looks better untinted.
+    _appMenuController.menuOptionBackgroundColor = UIColor.clearColor;
+    _appMenuController.menuBackgroundColor = UIColor.secondarySystemBackgroundColor; // Separator and scroll-bounce region
+    _appMenuController.showsDividersBetweenOptions = YES;
+    _appMenuController.sizesToOptionWidth = YES;
 
     _appMenuController.title = [OUIAppController applicationName];
     _appMenuController.alwaysShowsNavigationBar = YES;
 
-    _appMenuController.popoverPresentationController.barButtonItem = appropriatePresenter;
-    [self.window.rootViewController presentViewController:_appMenuController animated:YES completion:nil];
+    UIViewController *rootViewController = self.window.rootViewController;
+    if ([rootViewController isKindOfClass:[UIDocumentBrowserViewController class]]) {
+        // In iOS 10.13 beta 7, you can't present a popover from a document browser's navigation button. See <bug:///176777> (iOS-OmniGraffle Bug: Gear menu popover appears on far left of display).
+        _appMenuController.modalPresentationStyle = UIModalPresentationFormSheet;
+        // popoverPresentationController.sourceView = rootViewController.view;
+        // popoverPresentationController.canOverlapSourceViewRect = YES;
+        // CGRect browserFrame = rootViewController.view.frame;
+        // popoverPresentationController.sourceRect = rootViewController.view.frame;
+    } else {
+        UIPopoverPresentationController *popoverPresentationController = _appMenuController.popoverPresentationController;
+        UIBarButtonItem *appropriatePresenter = nil;
+        if ([sender isKindOfClass:[UIBarButtonItem class]]) {
+            appropriatePresenter = sender;
+        } else {
+            appropriatePresenter = [self _barButtonItemForSender:sender];
+        }
+        OBASSERT(appropriatePresenter != nil);
+        OBASSERT([appropriatePresenter isKindOfClass:[UIBarButtonItem class]]); // ...or we shouldn't be passing it as the bar item in the next call
+        popoverPresentationController.barButtonItem = appropriatePresenter;
+    }
+
+    [rootViewController presentViewController:_appMenuController animated:YES completion:nil];
 }
 
 - (NSString *)_aboutPanelJSONBindingsString;
@@ -353,7 +346,7 @@
 
 #pragma mark - OUIWebViewControllerDelegate
 
-- (BOOL)webViewControllerShouldClose:(OUIWebViewController *)webViewController;
+- (void)webViewControllerDidClose:(OUIWebViewController *)webViewController;
 {
     NSString *newsURLStringCurrentlyShowing = _newsURLStringCurrentlyShowing;
     if (webViewController == _newsViewController && newsURLStringCurrentlyShowing != nil && webViewController.webView.URL) {
@@ -364,8 +357,6 @@
 
         [[NSNotificationCenter defaultCenter] postNotificationName:OUIAttentionSeekingNotification object:self userInfo:@{ OUIAttentionSeekingForNewsKey : @(NO) }];
     }
-
-    return YES;
 }
 
 @end

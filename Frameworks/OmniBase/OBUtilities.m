@@ -419,7 +419,9 @@ void _OBStopInDebuggerWithoutMessage(void)
     BOOL isBeingDebugged = OBIsBeingDebugged();
     if (isBeingDebugged) {
         // N.B. This should not use OBTrap. The intent here is to stop in the debugger if we are being debugged, but in non-fatally, such that you can to continue and debug the application in it's current state.
+#ifndef DEBUG_correia
         kill(getpid(), SIGTRAP);
+#endif
     }
 }
 

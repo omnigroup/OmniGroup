@@ -38,7 +38,7 @@ OB_DEPRECATED_ATTRIBUTE
 - (instancetype)init NS_UNAVAILABLE;
 
 - (UIBarButtonItem *)makeExportBarButtonItemWithTarget:(id)target action:(SEL)action forViewController:(UIViewController *)viewController;
-- (void)exportDocument:(OUIDocument *)document fromViewController:(UIViewController *)parentViewController barButtonItem:(nullable UIBarButtonItem *)exportBarButtonItem;
+- (void)exportDocument:(OUIDocument *)document fromViewController:(UIViewController *)parentViewController barButtonItem:(UIBarButtonItem *)exportBarButtonItem;
 
 @property(nonatomic,readonly) NSArray <UIActivity *> *supportedActivities;
 
@@ -46,15 +46,14 @@ OB_DEPRECATED_ATTRIBUTE
 
 #pragma mark - Possible Subclass Overrides
 
-- (UIImage *)iconForUTI:(NSString *)fileUTI;
-- (UIImage *)exportIconForUTI:(NSString *)fileUTI;
-- (NSString *)exportLabelForUTI:(NSString *)fileUTI;
+- (nullable UIImage *)iconForUTI:(NSString *)fileUTI;
+- (nullable UIImage *)exportIconForUTI:(NSString *)fileUTI;
+- (nullable NSString *)exportLabelForUTI:(NSString *)fileUTI;
 
 // UIActivity images
 @property(class,readonly,nonatomic) UIImage *sendToPasteboardImage;
 @property(class,readonly,nonatomic) UIImage *copyAsImageImage NS_RETURNS_NOT_RETAINED;
 @property(class,readonly,nonatomic) UIImage *sendToPhotosImage;
-@property(class,readonly,nonatomic) UIImage *printImage;
 
 
 - (NSArray *)availableInAppPurchaseExportTypesForFileURL:(NSURL *)fileURL;
@@ -99,7 +98,6 @@ OB_DEPRECATED_ATTRIBUTE
 - (BOOL)supportsSendToCameraRoll OB_DEPRECATED_ATTRIBUTE;
 - (BOOL)supportsPrinting OB_DEPRECATED_ATTRIBUTE;
 - (UIImage *)cameraRollImageForFileURL:(NSURL *)fileURL OB_DEPRECATED_ATTRIBUTE;
-- (BOOL)supportsExportAsPDF OB_DEPRECATED_ATTRIBUTE;
 
 // Temporary on a work-in-progress branch.
 - (nullable NSArray<OUIMenuOption *> *)additionalExportOptionsForFileURL:(NSURL *)fileURL OB_DEPRECATED_ATTRIBUTE;

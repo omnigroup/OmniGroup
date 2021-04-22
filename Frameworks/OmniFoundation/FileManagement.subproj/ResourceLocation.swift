@@ -347,6 +347,11 @@ private let bookmarkCreationOptions: URL.BookmarkCreationOptions = [.withSecurit
         // DirectoryEnumerator is a NSEnumerator, which isn't generic and can't declare that it yields NSURLs.
         for item in topLevelEnumerator {
             let fileURL = (item as! NSURL) as URL
+
+            #if os(iOS)
+            guard !fileURL.path.contains("/.Trash/") else { continue }
+            #endif
+
             guard let values = try? fileURL.resourceValues(forKeys: keys) else {
                 continue
             }

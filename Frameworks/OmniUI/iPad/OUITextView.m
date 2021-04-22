@@ -401,6 +401,26 @@ static NSString *_positionDescription(OUITextView *self, OUEFTextPosition *posit
     return [self textRangeFromPosition:hitPosition toPosition:hitPosition];
 }
 
+- (nullable UITextPosition *)closestPositionToPoint:(CGPoint)point;
+{
+    NSUInteger characterIndex = [self.layoutManager characterIndexForPoint:point inTextContainer:self.textContainer fractionOfDistanceBetweenInsertionPoints:NULL];
+    UITextPosition *beginningOfDocument = self.beginningOfDocument;
+    UITextPosition *pointPosition = [self positionFromPosition:beginningOfDocument offset:characterIndex];
+    return pointPosition;
+}
+
+- (nullable UITextPosition *)closestPositionToPoint:(CGPoint)point withinRange:(UITextRange *)range;
+{
+    UITextPosition *pointPosition = [self closestPositionToPoint:point];
+    UITextPosition *start = range.start;
+    if ([self offsetFromPosition:pointPosition toPosition:start] < 0)
+        return start;
+    UITextPosition *end = range.end;
+    if ([self offsetFromPosition:pointPosition toPosition:start] > 0)
+        return end;
+    return pointPosition;
+}
+
 // For use when a field editor is coming on screen and we want to act like UITextView would if it were already on screen when tapped (select the beginning/ending of a word).
 - (void)selectForInitialTapAtPoint:(CGPoint)pt;
 {

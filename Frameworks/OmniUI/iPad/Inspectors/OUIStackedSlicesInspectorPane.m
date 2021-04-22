@@ -194,6 +194,9 @@ static id _commonInit(OUIStackedSlicesInspectorPaneContentView *self)
 
 - (NSArray *)appropriateSlices:(NSArray *)availableSlices forInspectedObjects:(NSArray *)inspectedObjects;
 {
+    if (inspectedObjects == nil)
+        return @[]; // We're tearing down this inspector
+
     NSMutableArray *appropriateSlices = [NSMutableArray array];
     OUIInspectorSlice *previousSlice = nil;
     for (OUIInspectorSlice *slice in _availableSlices) {
@@ -351,6 +354,7 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
     if (self.slices.count == 0) {
         paneContentView.backgroundView.label.text = NSLocalizedStringFromTableInBundle(@"Nothing to Inspect", @"OmniUI", OMNI_BUNDLE, @"Text letting the user know why nothing is showing in the inspector");
         paneContentView.backgroundView.label.font = [paneContentView.backgroundView.label.font fontWithSize:InspectorFontSize];
+        paneContentView.backgroundView.label.textColor = [OUIInspector headerTextColor];
     }
     else {
         paneContentView.backgroundView.label.text = nil;
@@ -580,7 +584,6 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
     OUIInspectorAppearance *appearance = OB_CHECKED_CAST_OR_NIL(OUIInspectorAppearance, changedAppearance);
     OUIStackedSlicesInspectorPaneContentView *view = (OUIStackedSlicesInspectorPaneContentView *)self.contentView;
     view.inspectorBackgroundViewColor = appearance.InspectorBackgroundColor;
-    self.navigationController.toolbar.barStyle = appearance.InspectorBarStyle;
     self.navigationController.toolbar.backgroundColor = appearance.InspectorBackgroundColor;
 }
 

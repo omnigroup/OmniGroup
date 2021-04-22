@@ -21,7 +21,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface OUIExportOptionPickerViewController () <UICollectionViewDataSource, UICollectionViewDelegate>
 
 @property (weak, nonatomic) IBOutlet UICollectionView *collectionView;
-@property (weak, nonatomic) IBOutlet UILabel *exportDescriptionLabel;
 @property (weak, nonatomic) IBOutlet UILabel *exportDestinationLabel;
 @property (weak, nonatomic) IBOutlet UIButton *inAppPurchaseButton;
 @property (weak, nonatomic) IBOutlet NSLayoutConstraint *collectionViewTrailingConstraint;
@@ -75,14 +74,6 @@ NS_ASSUME_NONNULL_BEGIN
     exportDestinationLabel.text = text;
 }
 
-- (void)setActionDescription:(nullable NSString *)text;
-{
-    [self view]; // load our outlets
-    UILabel *exportDescriptionLabel = _exportDescriptionLabel;
-    OBASSERT(exportDescriptionLabel != nil);
-    exportDescriptionLabel.text = text;
-}
-
 - (void)setInterfaceDisabledWhileExporting:(BOOL)shouldDisable completion:(void (^ _Nullable)(void))completion;
 {
     OBPRECONDITION([NSThread isMainThread]);
@@ -111,14 +102,14 @@ NS_ASSUME_NONNULL_BEGIN
 {
     [super viewDidLoad];
 
-    self.view.backgroundColor = [UIColor colorWithWhite:0.94 alpha:1.0];
+    self.view.backgroundColor = [UIColor systemBackgroundColor];
 
     UIBarButtonItem *cancel = [[OUIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(_cancel:)];
     self.navigationItem.leftBarButtonItem = cancel;
 
     self.navigationItem.title = NSLocalizedStringFromTableInBundle(@"Choose Format", @"OmniUIDocument", OMNI_BUNDLE, @"export options title");
 
-    self.collectionView.backgroundColor = [UIColor whiteColor];
+    self.collectionView.backgroundColor = self.view.backgroundColor;
     [self.collectionView registerNib:[UINib nibWithNibName:@"OUIExportOptionViewCell" bundle:OMNI_BUNDLE] forCellWithReuseIdentifier:exportOptionCellReuseIdentifier];
     if ([self.collectionView.collectionViewLayout isKindOfClass:[OUIExportOptionsCollectionViewLayout class]]) {
         OUIExportOptionsCollectionViewLayout *layout =((OUIExportOptionsCollectionViewLayout *)(self.collectionView.collectionViewLayout));

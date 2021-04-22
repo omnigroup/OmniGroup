@@ -21,7 +21,7 @@ public class PrintActivity : DocumentProcessingActivity<OUIDocument> {
     }
     
     public override var activityImage: UIImage? {
-        return OUIDocumentExporter.printImage
+        return UIImage.init(systemName: "printer")
     }
     
     public override func canPerform(withActivityItems activityItems: [Any]) -> Bool {
@@ -34,23 +34,8 @@ public class PrintActivity : DocumentProcessingActivity<OUIDocument> {
         return OBClassImplementingMethod(type, #selector(OUIDocument.print(withParentViewController:completionHandler:))) != OUIDocument.self
     }
     
-    private var wrappingViewController: OUIWrappingViewController!
-
-    public override func prepare(withActivityItems activityItems: [Any]) {
-        super.prepare(withActivityItems: activityItems)
-        
-        self.wrappingViewController = OUIWrappingViewController()
-        
-        // The regular `perform()` function won't be called since we provide a view controller.
-        startProcessing()
-    }
-
-    public override var activityViewController: UIViewController? {
-        return wrappingViewController
-    }
-
     public override func process(document: OUIDocument, completionHandler: @escaping () -> Void) {
-        document.print(withParentViewController: wrappingViewController) { errorOrNil in
+        document.print(withParentViewController: processingViewController) { errorOrNil in
             if let error = errorOrNil {
                 // TODO: Allow cancelling when printing multiple documents
                 print("Error printing: \(error)")

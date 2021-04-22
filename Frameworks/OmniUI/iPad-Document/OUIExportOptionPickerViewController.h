@@ -34,7 +34,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic,copy) NSString *inAppPurchaseButtonTitle;
 
 - (void)setExportDestination:(nullable NSString *)text;
-- (void)setActionDescription:(nullable NSString *)text;
 
 - (void)setInterfaceDisabledWhileExporting:(BOOL)shouldDisable completion:(void (^ _Nullable)(void))completion;
 

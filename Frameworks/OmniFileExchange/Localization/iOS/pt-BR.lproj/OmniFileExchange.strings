@@ -29,9 +29,6 @@
 "Cannot locate synchronized documents folder." = "Não foi possível localizar a pasta de documentos sincronizados.";
 
 /* Error description */
-"Cannot move document." = "Não foi possível mover o documento.";
-
-/* Error description */
 "Cannot start account agent." = "Não foi possível iniciar o agente de conta.";
 
 /* Error description */
@@ -43,29 +40,17 @@
 /* Account validation step description */
 "Checking Credentials" = "Verificando Credenciais";
 
-/* iTunes import title */
-"Copy from iTunes" = "Copiar da iTunes";
-
 /* error reason */
 "Could not access synchronized documents folder." = "Não foi possível acessar a pasta de documentos sincronizados.";
 
 /* error reason */
 "Could not resolve archived bookmark for synchronized documents folder." = "Não foi possível resolver os favoritos arquivados da pasta de documentos sincronizados.";
 
-/* iTunes import/export account detail string */
-"Documents" = "Documentos";
-
 /* Add server account description */
 "Easily sync Omni documents. Signup is free!" = "Sincronize facilmente os docs. do Omni. Registro gratuito!";
 
 /* Server account export title format */
 "Export to \"%@\"" = "Exportar para “%@”";
-
-/* iTunes export title */
-"Export to iTunes" = "Exportar para iTunes";
-
-/* Server account type */
-"iTunes" = "iTunes";
 
 /* Error reason */
 "Local account documents folder is missing." = "Está faltando a pasta de documentos da conta local.";
@@ -111,14 +96,17 @@
 /* error reason */
 "The cloud account requires OmniPresence format %@, but this device is using format %@. Please upgrade this copy of OmniPresence." = "A conta da nuvem requer o formato do OmniPresence %1$@, mas este dispositivo está usando o formato %2$@. Atualize esta cópia do OmniPresence.";
 
-/* Error description */
-"The document \"%@\" is not fully downloaded." = "O documento “%@” não foi totalmente transferido.";
-
 /* error description */
 "The proposed local documents folder already contains files. Please specify an empty folder or one that doesn't yet exist." = "A pasta de documentos local proposta já contém arquivos. Especifique uma pasta vazia ou uma que ainda não existe.";
 
 /* error description */
 "The proposed local documents folder is not on a local volume. Please pick a location that is local to your computer." = "A pasta de documentos local proposta não está em um volume local. Selecione uma localização que esteja em seu computador.";
+
+/* error description */
+"The proposed local documents folder is not within the app's local documents. Please pick a location within that folder." = "A pasta de documentos local proposta não está dentro dos documentos locais do app. Selecione uma localização dentro dessa pasta.";
+
+/* error description */
+"The proposed local documents folder is within the app's trash. This could lead to files getting unintentionally removed." = "A pasta de documentos local proposta está na lixeira do app. Isto pode resultar na remoção não intencional de arquivos.";
 
 /* error description */
 "The selected local folder appears to be inside a %@ folder. Using two file synchronization systems on the same folder can result in data loss." = "A pasta local selecionada parece estar dentro de uma pasta do %@. O uso de dois sistemas de sincronização na mesma pasta pode resultar em perda de dados.";

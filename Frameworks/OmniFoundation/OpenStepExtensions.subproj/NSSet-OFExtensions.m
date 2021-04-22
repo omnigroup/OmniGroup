@@ -35,7 +35,7 @@ RCS_ID("$Id$");
     }];
 }
 
-- (NSSet *)setByPerformingBlock:(OFSetObjectMap)block
+- (NSSet *)setByPerformingBlock:(NS_NOESCAPE OFSetObjectMap)block
 {
     NSMutableSet *result = [NSMutableSet set];
 

@@ -22,6 +22,12 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		10455AB8230751120046AD5E /* OFPointerStack.h in Headers */ = {isa = PBXBuildFile; fileRef = 10455AB6230751120046AD5E /* OFPointerStack.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		10455AB9230751120046AD5E /* OFPointerStack.h in Headers */ = {isa = PBXBuildFile; fileRef = 10455AB6230751120046AD5E /* OFPointerStack.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		10455ABA230751120046AD5E /* OFPointerStack.h in Headers */ = {isa = PBXBuildFile; fileRef = 10455AB6230751120046AD5E /* OFPointerStack.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		10455ABB230751120046AD5E /* OFPointerStack.m in Sources */ = {isa = PBXBuildFile; fileRef = 10455AB7230751120046AD5E /* OFPointerStack.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		10455ABC230751120046AD5E /* OFPointerStack.m in Sources */ = {isa = PBXBuildFile; fileRef = 10455AB7230751120046AD5E /* OFPointerStack.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		10455ABD230751120046AD5E /* OFPointerStack.m in Sources */ = {isa = PBXBuildFile; fileRef = 10455AB7230751120046AD5E /* OFPointerStack.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		154070EB1E7B539000939905 /* ko.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 154070E91E7B539000939905 /* ko.lproj */; };
 		154070EC1E7B539000939905 /* pt-BR.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 154070EA1E7B539000939905 /* pt-BR.lproj */; };
 		1E1B93AA19D232A700693752 /* OFASN1Utilities.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E1B93A819D232A700693752 /* OFASN1Utilities.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -1925,6 +1931,9 @@
 		06DB16D5FF5DC915C697A12F /* CFString-OFExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CFString-OFExtensions.h"; sourceTree = "<group>"; };
 		06DB16D6FF5DC915C697A12F /* CFString-OFExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "CFString-OFExtensions.m"; sourceTree = "<group>"; };
 		06DB16D9FF5DCC3BC697A12F /* OFLowerCaseTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFLowerCaseTest.m; sourceTree = "<group>"; };
+		10455AB6230751120046AD5E /* OFPointerStack.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OFPointerStack.h; sourceTree = "<group>"; };
+		10455AB7230751120046AD5E /* OFPointerStack.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = OFPointerStack.m; sourceTree = "<group>"; };
+		10455AD0230B27E40046AD5E /* OFPointerStackTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OFPointerStackTests.swift; sourceTree = "<group>"; };
 		154070E91E7B539000939905 /* ko.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ko.lproj; path = Localization/iOS/ko.lproj; sourceTree = "<group>"; };
 		154070EA1E7B539000939905 /* pt-BR.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "pt-BR.lproj"; path = "Localization/iOS/pt-BR.lproj"; sourceTree = "<group>"; };
 		1571135A1863766C002F6107 /* ja.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ja.lproj; path = Localization/iOS/ja.lproj; sourceTree = "<group>"; };
@@ -2825,6 +2834,8 @@
 				34F4C0EB078F062000E8899E /* OFVersionNumber.h */,
 				34F4C0EC078F062000E8899E /* OFVersionNumber.m */,
 				3F95F9D3002B743AC697A14E /* Trie */,
+				10455AB6230751120046AD5E /* OFPointerStack.h */,
+				10455AB7230751120046AD5E /* OFPointerStack.m */,
 			);
 			name = DataStructures;
 			path = DataStructures.subproj;
@@ -3722,6 +3733,7 @@
 				1EB9F9FA1A64627E00222BFD /* OFCryptoTest.m */,
 				1E7164971D92FBD9001B2FBB /* OFCryptoTest-AEAD.m */,
 				1EFB29CB1D495D72005DC7B3 /* OFCMSTest.swift */,
+				10455AD0230B27E40046AD5E /* OFPointerStackTests.swift */,
 				A22C597E0BA88349005F177C /* OFDataTest.m */,
 				8B8DB053039416A313C564E8 /* OFDateTestCase.m */,
 				34562D6211AC2E78005F186D /* OFDateFormatConversionTests.m */,
@@ -4066,6 +4078,7 @@
 				34A0615C1EC110A60099028D /* OFZipCodeFormatter.h in Headers */,
 				34A061631EC110A60099028D /* OFBundleRegistry.h in Headers */,
 				34A061641EC110A60099028D /* OFBundledClass.h in Headers */,
+				10455ABA230751120046AD5E /* OFPointerStack.h in Headers */,
 				34A061651EC110A60099028D /* OFCharacterScanner.h in Headers */,
 				34A061661EC110A60099028D /* OFController.h in Headers */,
 				34A061671EC110A60099028D /* OFGeometry.h in Headers */,
@@ -4302,6 +4315,7 @@
 				34F16BD1194F768B00AD9C4D /* NSArray-OFExtensions.h in Headers */,
 				34F16BC5194F757700AD9C4D /* CFString-OFExtensions.h in Headers */,
 				34F16B6C194F6E9C00AD9C4D /* OFObject.h in Headers */,
+				10455AB9230751120046AD5E /* OFPointerStack.h in Headers */,
 				34F16B85194F6F1200AD9C4D /* OFBijection-Internal.h in Headers */,
 				34F16BF7194F771200AD9C4D /* NSObject-OFExtensions.h in Headers */,
 				34F16BB9194F755400AD9C4D /* CFData-OFCompression.h in Headers */,
@@ -4488,6 +4502,7 @@
 				4A4E066408AA72B10098FF0F /* OmniFoundation.h in Headers */,
 				4A4E066508AA72B10098FF0F /* NSArray-OFExtensions.h in Headers */,
 				4A4E066608AA72B10098FF0F /* NSAttributedString-OFExtensions.h in Headers */,
+				10455AB8230751120046AD5E /* OFPointerStack.h in Headers */,
 				1E1B93AA19D232A700693752 /* OFASN1Utilities.h in Headers */,
 				4A4E066708AA72B10098FF0F /* NSBundle-OFFixes.h in Headers */,
 				4A4E066808AA72B10098FF0F /* NSCalendarDate-OFExtensions.h in Headers */,
@@ -5432,6 +5447,7 @@
 				34A0627A1EC110A60099028D /* NSMutableData-OFExtensions.m in Sources */,
 				34A0627B1EC110A60099028D /* NSMutableDictionary-OFExtensions.m in Sources */,
 				4D9E123A1ED8B6DA00E04E34 /* Collection-OFExtensions.swift in Sources */,
+				10455ABD230751120046AD5E /* OFPointerStack.m in Sources */,
 				34A0627C1EC110A60099028D /* NSMutableSet-OFExtensions.m in Sources */,
 				34A0627D1EC110A60099028D /* OFTransientObjectsTracker.m in Sources */,
 				34A0627E1EC110A60099028D /* NSMutableString-OFExtensions.m in Sources */,
@@ -5660,6 +5676,7 @@
 				34F16B98194F6F6C00AD9C4D /* OFMultiValueDictionary.m in Sources */,
 				34F16B73194F6EB700AD9C4D /* OFStringScanner.m in Sources */,
 				34F16B8E194F6F3D00AD9C4D /* OFEnumNameTable.m in Sources */,
+				10455ABC230751120046AD5E /* OFPointerStack.m in Sources */,
 				34F16C01194F773600AD9C4D /* NSString-OFConversion.m in Sources */,
 				34F16C1E194F77BB00AD9C4D /* OFXMLIdentifier.m in Sources */,
 				1E8D018F1D21EA4D008E75AE /* OFCMSUtilities.swift in Sources */,
@@ -5839,6 +5856,7 @@
 				4A4E06D308AA72B10098FF0F /* OFSparseArray.m in Sources */,
 				4A4E06D708AA72B10098FF0F /* OFTrie.m in Sources */,
 				4A4E06D808AA72B10098FF0F /* OFTrieBucket.m in Sources */,
+				10455ABB230751120046AD5E /* OFPointerStack.m in Sources */,
 				4A4E06D908AA72B10098FF0F /* OFTrieEnumerator.m in Sources */,
 				4A4E06DA08AA72B10098FF0F /* OFTrieNode.m in Sources */,
 				4A4E06DF08AA72B10098FF0F /* OFAlias.m in Sources */,

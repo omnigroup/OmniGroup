@@ -59,6 +59,7 @@ DataStructures.subproj/OFOffsetMutableArray.m
 DataStructures.subproj/OFOrderedMutableDictionary.m
 DataStructures.subproj/OFPerformanceMeasurement.m
 DataStructures.subproj/OFPoint.m
+DataStructures.subproj/OFPointerStack.m
 DataStructures.subproj/OFRandom.m
 DataStructures.subproj/OFRationalNumber.m
 DataStructures.subproj/OFReadWriteFileBuffer.m

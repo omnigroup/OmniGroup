@@ -67,6 +67,9 @@ extern NSImage *OAImageNamed(NSString *name, NSBundle *bundle);
 
 - (NSData *)pngData;
 
+// 0=most compression, 1=no compression
+- (NSData *)jpegDataWithCompressionFactor:(CGFloat)compressionFactor;
+
 // icon utilties
 
 // Creates a document-preview style icon. All images supplied should have reps at 128x128, 32x32, and 16x16 for best results. Caller is responsible for positioning content appropriately within the icon frame (i.e. so it appears in the right place composited on the icon).

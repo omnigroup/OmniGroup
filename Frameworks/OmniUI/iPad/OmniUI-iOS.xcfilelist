@@ -91,6 +91,7 @@ OUIActivityIndicator.m
 OUIAnimationSequence.m
 OUIAppController+SpecialURLHandling.m
 OUIAppController.m
+OUIAppController.swift
 OUIAppControllerSceneHelper.m
 OUIAttentionSeekingButton.m
 OUIBarButtonItem.m
@@ -112,6 +113,7 @@ OUIEditableLabeledTableViewCell.m
 OUIEditableLabeledValueCell.m
 OUIEmptyOverlayView.m
 OUIEmptyOverlayView.xib
+OUIEnqueueableAlertController.m
 OUIErrors.m
 OUIFauxHighlightToolbarButton.m
 OUIFloatingContentToolbar.swift
@@ -136,6 +138,7 @@ OUIMenuOptionsController.m
 OUIMinimalScrollNotifierImplementation.m
 OUINavigationBarTextField.m
 OUINavigationController.m
+OUINews.swift
 OUINoteTextView.m
 OUINumericFieldTableCell.m
 OUINumericFieldTableCell.xib

@@ -86,7 +86,12 @@ OBDEPRECATED_METHOD(-minimumHeightForWidth:);
 
 - (UIColor *)sliceBackgroundColor;
 {
-    return [UIColor secondarySystemGroupedBackgroundColor];
+    return [[self class] sliceBackgroundColor];
+}
+
++ (UIColor *)sliceBackgroundColor;
+{
+    return [UIColor colorNamed:@"inspectorSliceBackgroundColor" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
 }
 
 + (UIColor *)sliceSeparatorColor;
@@ -94,7 +99,7 @@ OBDEPRECATED_METHOD(-minimumHeightForWidth:);
 #if 1
     // iOS 7 GM bug: Table views in popovers draw their separators in very light gray the second time the popover is displayed. This is to match what they end up drawing on subsequent displays, so at least we'll be consistent.
     // RADAR 14969546 : <bug:///94533> (UITableViews in popovers lose their separator color after they are first presented)
-    return [UIColor separatorColor];
+    return [UIColor colorNamed:@"inspectorSeparatorColor" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
 #else
     // Use UITableView's default separator color as our default separator color.
     static dispatch_once_t predicate;
@@ -153,12 +158,6 @@ OBDEPRECATED_METHOD(-minimumHeightForWidth:);
     self.separatorColor = [OUIInspectorSlice sliceSeparatorColor];
     
     return self;
-}
-
-- (void)dealloc;
-{
-    // Attempting to fix ARC weak reference cleanup crasher in <bug:///93163> (Crash after setting font color on Level 1 style)
-    _detailPane.parentSlice = nil;
 }
 
 - (OUIInspector *)inspector;

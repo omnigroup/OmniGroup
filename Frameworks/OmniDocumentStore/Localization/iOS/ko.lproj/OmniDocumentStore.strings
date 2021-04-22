@@ -22,9 +22,6 @@
 /* time display format for today */
 "Today, %@ <day name>" = "오늘, %@";
 
-/* Document store scope display name */
-"Trash" = "휴지통";
-
 /* Error description when a file type is not recognized. */
 "Unable to add document." = "도큐멘트를 추가할 수 없습니다.";
 

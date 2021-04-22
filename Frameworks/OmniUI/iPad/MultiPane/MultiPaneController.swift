@@ -70,6 +70,8 @@
     
     /// called when the user taps one of the bar button items before presentation. This is called in addition to the willHidePane and willShowPane methods, but this will also be called in every displayMode. If the receiver only cares about this message in certain displayModes, it can check the display mode of the multiPaneController parameter.
     @objc optional func userWillExplicitlyToggleVisibility(_ paneWillBeShown: Bool, at location: MultiPaneLocation, multiPaneController: MultiPaneController)
+    
+    @objc optional func shouldPreserveEditingPaneVisibilityOnDisplayModeTransition(_ multiPaneController: MultiPaneController) -> Bool
 }
 
 @objc (OUIMultiPaneAppearanceDelegate) public protocol MultiPaneAppearanceDelegate {
@@ -321,8 +323,28 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
     
     override open func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
+
         self.pinningLayoutPass = false
         updateDisplayMode(forSize: currentSize, traitCollection: traitCollection)
+        
+        if let paneAndResponder = paneAndResponderToReinstateUponTraitCollectionDidChange {
+            // It's still slightly too soon to invoke a presentation. One more turn of the run loop seems to do it, though.
+            DispatchQueue.main.async {
+                self.showPane(at: paneAndResponder.location, animated: false) {
+                    paneAndResponder.responder.becomeFirstResponder()
+                }
+            }
+            paneAndResponderToReinstateUponTraitCollectionDidChange = nil
+        }
+        
+        // If we've changed display modes, we've already updated the decorations.
+        // If not, and the color appearance has changed, they may need an appeareance/decoration update.
+        // (Doing that work in the case that we already have just above for the layout is OK.)
+        //
+        // Use perform as current in case the trait collection hasn't propagated down to the pane's view controllers.
+        traitCollection.performAsCurrent {
+            self.panes.forEach { $0.traitCollectionDidChange(previousTraitCollection) }
+        }
     }
     
     override open func willTransition(to newCollection: UITraitCollection, with coordinator: UIViewControllerTransitionCoordinator) {
@@ -444,10 +466,15 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
     
     /// Show a pane for a given location, supplying an animation option, in the style that MultiPaneController is acustomed.
     @objc /**REVIEW**/ open func showPane(at location: MultiPaneLocation, animated: Bool) {
+        showPane(at: location, animated: animated, completion: {})
+    }
+    
+    /// Show a pane for a given location, supplying an animation option, in the style that MultiPaneController is acustomed.
+    private func showPane(at location: MultiPaneLocation, animated: Bool, completion: @escaping ()->Void) {
         guard let pane = pane(withLocation: location) else { return }
         guard pane.isVisible == false else { return }
         
-        multiPanePresenter.present(pane: pane, fromViewController: self, usingDisplayMode: displayMode, animated: animated)
+        multiPanePresenter.present(pane: pane, fromViewController: self, usingDisplayMode: displayMode, animated: animated, completion: completion)
     }
     
     /// Does nothing unless display mode is multi and the location is left or right
@@ -552,6 +579,8 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
         }
     }
     
+    var isShowingTransitionShieldView: Bool = false
+    var paneAndResponderToReinstateUponTraitCollectionDidChange: (location: MultiPaneLocation, responder: UIResponder)? = nil
     // setup the display mode for the given screen/windo size and trait collection
     // Called when a view controller size/trait transition occurs.
     fileprivate func updateDisplayMode(forSize size: CGSize, traitCollection: UITraitCollection) {
@@ -592,26 +621,77 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
         }
         
         if let presentedController = presentedViewController, let pane = pane(forViewController: presentedController), displayMode == .compact && preferredMode != .compact {
-                let shieldView = UIView(frame: view.frame)
-                shieldView.backgroundColor = UIColor.systemBackground
-                view.addSubview(shieldView)
-                view.bringSubviewToFront(shieldView)
+            guard let view = view else { return }
+            guard !isShowingTransitionShieldView else { return }
+            
+            var presentedControllerQueue: [UIViewController] = []
+            var loopController = presentedController
+            while let anotherPresentation = loopController.presentedViewController {
+                // We treat the end as the head of the queue
+                presentedControllerQueue.insert(anotherPresentation, at: 0)
+                loopController = anotherPresentation
+            }
+            
+            
+            let shieldView = UIView(frame: view.frame)
+            shieldView.translatesAutoresizingMaskIntoConstraints = false
+            shieldView.backgroundColor = UIColor.systemBackground
+            view.addSubview(shieldView)
+            view.bringSubviewToFront(shieldView)
+            
+            NSLayoutConstraint.activate([
+                NSLayoutConstraint(item: view, attribute: .leading, relatedBy: .equal, toItem: shieldView, attribute: .leading, multiplier: 1, constant: 0),
+                NSLayoutConstraint(item: view, attribute: .trailing, relatedBy: .equal, toItem: shieldView, attribute: .trailing, multiplier: 1, constant: 0),
+                NSLayoutConstraint(item: view, attribute: .top, relatedBy: .equal, toItem: shieldView, attribute: .top, multiplier: 1, constant: 0),
+                NSLayoutConstraint(item: view, attribute: .bottom, relatedBy: .equal, toItem: shieldView, attribute: .bottom, multiplier: 1, constant: 0)
+            ])
+            
+            isShowingTransitionShieldView = true
             
             self.dismiss(animated: true, completion: {
                 self.displayMode = preferredMode
                 self.updatePinButtonItems()
                 
                 shieldView.removeFromSuperview()
-                    
+                self.isShowingTransitionShieldView = false
+                
                 // Need a turn of the run loop to get the shield view out of there. Otherwise, the appearance animation gets wonky.
                 DispatchQueue.main.asyncAfter(deadline: DispatchTime.now()+0.1, execute: {
+                    // Recursively presents previously presented view controllers
+                    func representPresentations(on controller: UIViewController, completion: @escaping ()->Void) {
+                        guard let presentation = presentedControllerQueue.popLast() else { completion(); return }
+                        controller.present(presentation, animated: false) {
+                            representPresentations(on: presentation, completion: completion)
+                        }
+                    }
+                    
                     if !pane.isVisible {
                         self.showPane(at: pane.location, animated: false)
+                    }
+                    
+                    representPresentations(on: self.viewController(atLocation: pane.location)!) {
                         savedFirstResponder?.becomeFirstResponder()
                     }
                 })
             })
         } else {
+            if self.navigationDelegate?.shouldPreserveEditingPaneVisibilityOnDisplayModeTransition?(self) ?? false {
+                // Our delegate wants to continue the current editing interaction after the transition is over
+                if let savedFirstResponder = savedFirstResponder, paneAndResponderToReinstateUponTraitCollectionDidChange == nil && savedFirstResponder is UITextInput {
+                    var paneContainingFirstResponder: MultiPaneLocation? = nil
+                    if let leftController = pane(withLocation: .left)?.viewController, leftController.isInActiveResponderChain(preceding: self) {
+                        paneContainingFirstResponder = .left
+                    } else if let rightController = pane(withLocation: .right)?.viewController, rightController.isInActiveResponderChain(preceding: self) {
+                        paneContainingFirstResponder = .right
+                    } else if let centerController = pane(withLocation: .center)?.viewController, centerController.isInActiveResponderChain(preceding: self) {
+                        paneContainingFirstResponder = .center
+                    }
+                    if let paneContainingFirstResponder = paneContainingFirstResponder, displayMode != .compact && preferredMode == .compact {
+                        paneAndResponderToReinstateUponTraitCollectionDidChange = (paneContainingFirstResponder, savedFirstResponder)
+                    }
+                }
+            }
+
             displayMode = preferredMode
             updatePinButtonItems()
         }
@@ -831,17 +911,10 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
     }
 
     private func updateDisplayButtonItems(forMode displayMode: MultiPaneDisplayMode) {
-        if displayMode == .compact {
-            // setup the left button to be the back button
-            leftPaneDisplayButton.image = nil
-            let buttonTitle = NSLocalizedString("Back", tableName: "OmniUI", bundle: OmniUIBundle, comment: "MultiPane Back button title, when system is compact")
-            leftPaneDisplayButton.title = buttonTitle
-        } else {
-            // sidebar representation
-            let image = UIImage(named: "OUIMultiPaneLeftSidebarButton", in: OmniUIBundle, compatibleWith: traitCollection)
-            leftPaneDisplayButton.image = image
-            leftPaneDisplayButton.title = nil
-        }
+        // sidebar representation
+        let image = UIImage(named: "OUIMultiPaneLeftSidebarButton", in: OmniUIBundle, compatibleWith: traitCollection)
+        leftPaneDisplayButton.image = image
+        leftPaneDisplayButton.title = nil
         layoutDelegate?.didUpdateDisplayButtonItems?(self)
     }
     

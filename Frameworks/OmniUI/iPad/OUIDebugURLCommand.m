@@ -7,6 +7,8 @@
 
 #import <OmniUI/OUIDebugURLCommand.h>
 #import <OmniUI/UIDevice-OUIExtensions.h>
+#import <OmniUI/UIViewController-OUIExtensions.h>
+#import <OmniFoundation/NSObject-OFExtensions.h>
 @import OmniUnzip
 
 RCS_ID("$Id$");
@@ -118,7 +120,9 @@ RCS_ID("$Id$");
         } else {
             // Finish starting up if we postponed to handle the DEBUG url
             OUIAppController *controller = [OUIAppController controller];
-            controller.shouldPostponeLaunchActions = NO;
+            if (controller.shouldPostponeLaunchActions) {
+                controller.shouldPostponeLaunchActions = NO;
+            }
         }
     };
 
@@ -170,13 +174,12 @@ RCS_ID("$Id$");
         subject = [NSString stringWithFormat:@"Debug Info for %@ (%@, %@, %s)", appName, marketingVersion, bundleVersion, __DATE__];
     }
     
-    MFMailComposeViewController *mailController = [(OUIAppController *)[[UIApplication sharedApplication] delegate] mailComposeController];
+    MFMailComposeViewController *mailController = [(OUIAppController *)[[UIApplication sharedApplication] delegate] newMailComposeController];
     
     [mailController setSubject:subject];
     [mailController setMessageBody:body isHTML:NO];
     
-    // TODO: Ultimately we do know which scene is handling the URL command, and we should pass it through.
-    [[OUIAppController controller] sendMailTo:@[address] withComposeController:mailController inScene:nil];
+    [[OUIAppController controller] sendMailTo:@[address] withComposeController:mailController inScene:self.viewControllerForPresentation.containingScene];
 }
 
 - (BOOL)command_EmailReceipt NS_EXTENSION_UNAVAILABLE_IOS("This depends on UIApplication, which isn't available in application extensions");
@@ -189,6 +192,68 @@ RCS_ID("$Id$");
 
     [self emailURLs:urls toAddress:address subject:subject error:&error];
     return NO; // Don't quit the app after running this command
+}
+
+- (BOOL)command_TestCrash;
+{
+    NSLog(@"Crash requested by %@", self.url.absoluteString);
+    assert(0);
+    return NO; // Don't quit the app if the crash doesn't actually crash
+}
+
+- (BOOL)command_TestBackgroundAlertPresentationInFiveSeconds
+{
+    return [self _createAndPostDebugQueueAlertsInScene:self.viewControllerForPresentation.containingScene requiringPresentationInScene:NO];
+}
+
+- (BOOL)command_TestBackgroundAlertPresentationInFiveSecondsRequiringThisScene
+{
+    return [self _createAndPostDebugQueueAlertsInScene:self.viewControllerForPresentation.containingScene requiringPresentationInScene:YES];
+}
+
+- (BOOL)_createAndPostDebugQueueAlertsInScene:(UIScene *)scene requiringPresentationInScene:(BOOL)requireGivenScene NS_EXTENSION_UNAVAILABLE_IOS("");
+{
+    OUIEnqueueableAlertController *controller1 = [OUIEnqueueableAlertController alertControllerWithTitle:@"Alert 1 of 4 (nil handler)" message:nil preferredStyle:UIAlertControllerStyleAlert];
+    [controller1 addActionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil];
+    
+    OUIEnqueueableAlertController *controller2 = [OUIEnqueueableAlertController alertControllerWithTitle:@"Alert 2 of 4 (non-nil handler)" message:nil preferredStyle:UIAlertControllerStyleAlert];
+    [controller2 addActionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {}];
+    
+    OUIEnqueueableAlertController *controller3 = [OUIEnqueueableAlertController alertControllerWithTitle:@"Alert 3 of 4 (extended alert)" message:nil preferredStyle:UIAlertControllerStyleAlert];
+    OUIExtendedAlertAction *extendedAction = [OUIExtendedAlertAction extendedActionWithTitle:@"Show intermediate alert for 3 seconds" style:UIAlertActionStyleDefault handler:^(OUIExtendedAlertAction * _Nonnull action) {
+        UIAlertController *intermediateController = [UIAlertController alertControllerWithTitle:@"Intermediate" message:nil preferredStyle:UIAlertControllerStyleAlert];
+        UIViewController *presentingController = [[OUIAppController windowForScene:scene options:0] rootViewController];
+        while (presentingController.presentedViewController != nil) {
+            presentingController = presentingController.presentedViewController;
+        }
+        [presentingController presentViewController:intermediateController animated:YES completion:nil];
+        OFAfterDelayPerformBlock(3, ^{
+            [intermediateController dismissViewControllerAnimated:YES completion:^{
+                [action extendedActionComplete];
+            }];
+        });
+    }];
+    [controller3 addExtendedAction:extendedAction];
+    
+    OUIEnqueueableAlertController *controller4 = [OUIEnqueueableAlertController alertControllerWithTitle:@"Alert 4 of 4 (nil handler, test complete)" message:nil preferredStyle:UIAlertControllerStyleAlert];
+    [controller4 addActionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil];
+    
+    OFAfterDelayPerformBlock(5, ^{
+        if (requireGivenScene) {
+            [OUIAppController enqueueInteractionController:controller1 forPresentationInScene:scene withActivityContextTitle:@"Debug URL" activityContinuationButtonTitle:@"Continue in other scene" postponeActivityButtonTitle:@"Postpone"];
+            [OUIAppController enqueueInteractionController:controller2 forPresentationInScene:scene withActivityContextTitle:@"Debug URL" activityContinuationButtonTitle:@"Continue in other scene" postponeActivityButtonTitle:@"Postpone"];
+            [OUIAppController enqueueInteractionController:controller3 forPresentationInScene:scene withActivityContextTitle:@"Debug URL" activityContinuationButtonTitle:@"Continue in other scene" postponeActivityButtonTitle:@"Postpone"];
+            [OUIAppController enqueueInteractionController:controller4 forPresentationInScene:scene withActivityContextTitle:@"Debug URL" activityContinuationButtonTitle:@"Continue in other scene" postponeActivityButtonTitle:@"Postpone"];
+        } else {
+            [OUIAppController enqueueInteractionControllerPresentationForAnyForegroundScene:controller1];
+            [OUIAppController enqueueInteractionControllerPresentationForAnyForegroundScene:controller2];
+            [OUIAppController enqueueInteractionControllerPresentationForAnyForegroundScene:controller3];
+            [OUIAppController enqueueInteractionControllerPresentationForAnyForegroundScene:controller4];
+        }
+    });
+    
+    // No need to quit the app after running this command
+    return NO;
 }
 
 - (BOOL)emailURLs:(NSArray *)URLs toAddress:(NSString *)address subject:(NSString *)subject error:(NSError **)outError;
@@ -221,7 +286,7 @@ RCS_ID("$Id$");
 
     if ([MFMailComposeViewController canSendMail]) {
         OUIAppController *appController = (OUIAppController *)[[UIApplication sharedApplication] delegate];
-        MFMailComposeViewController *controller = [appController mailComposeController];
+        MFMailComposeViewController *controller = [appController newMailComposeController];
 
 
         /* Seems like we don't need this anymore if we let the appController wrangle the mailComposeController?

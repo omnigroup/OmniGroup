@@ -15,10 +15,7 @@ typedef enum {
 
 @interface ODSLocalDirectoryScope : ODSScope
 
-@property (class, nonatomic, copy) NSString *localDocumentsDisplayName;
-
 + (NSURL *)userDocumentsDirectoryURL;
-+ (NSURL *)trashDirectoryURL;
 + (NSURL *)templateDirectoryURL;
 
 - (id)initWithDirectoryURL:(NSURL *)directoryURL scopeType:(ODSLocalDirectoryScopeType)scopeType documentStore:(ODSStore *)documentStore;

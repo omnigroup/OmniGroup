@@ -18,10 +18,18 @@ RCS_ID("$Id$");
 
 @property (nonatomic, strong) UIStackView *stackView;
 @property (nonatomic, readwrite, strong) UIButton *closeDocumentButton;
+@property (nonatomic, strong) UIButton *syncButton;
+@property (nonatomic, strong) UIButton *syncBarButtonItemButton;
 @property (nonatomic, strong) UIButton *documentTitleButton;
 @property (nonatomic, strong) UILabel *documentTitleLabel;
 
+@property (nonatomic, assign) BOOL syncButtonShowingActiveState;
+@property (nonatomic, assign) NSTimeInterval syncButtonActivityStartedTimeInterval;
+@property (nonatomic, assign) NSTimeInterval syncButtonLastActivityTimeInterval;
+@property (nonatomic, strong) NSTimer *syncButtonActivityFinishedTimer;
+
 @property (nonatomic, readwrite, strong) UIBarButtonItem *closeDocumentBarButtonItem;
+@property (nonatomic, readwrite, strong) UIBarButtonItem *syncBarButtonItem;
 
 @end
 
@@ -54,6 +62,8 @@ static void _commonInit(OUIDocumentTitleView *self)
     self->_titleColor = [UIColor labelColor];
     [self _updateTitles];
     
+    self->_syncButton = [self _createSyncButton];
+    
     UIImage *closeDocumentImage = [UIImage imageNamed:@"OUIToolbarDocuments" inBundle:bundle compatibleWithTraitCollection:nil];
     self->_closeDocumentButton = [UIButton buttonWithType:UIButtonTypeSystem];
     [self->_closeDocumentButton setImage:closeDocumentImage forState:UIControlStateNormal];
@@ -68,6 +78,9 @@ static void _commonInit(OUIDocumentTitleView *self)
                                      style:UIBarButtonItemStylePlain target:self action:@selector(_closeDocument:)];
     self.closeDocumentBarButtonItem.accessibilityIdentifier = @"BackToDocuments";
     
+    self->_syncBarButtonItemButton = [self _createSyncButton];
+    self.syncBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self->_syncBarButtonItemButton];
+
     self->_hideTitle = YES;
     
     self->_stackView = [[UIStackView alloc] init];
@@ -82,17 +95,45 @@ static void _commonInit(OUIDocumentTitleView *self)
     [self->_stackView.topAnchor constraintEqualToAnchor:self.topAnchor].active = YES;
     [self->_stackView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor].active = YES;
 
+    [self->_stackView addArrangedSubview:self->_syncButton];
     [self->_stackView addArrangedSubview:self->_closeDocumentButton];
     [self->_stackView addArrangedSubview:self->_documentTitleButton];
     [self->_stackView addArrangedSubview:self->_documentTitleLabel];
 
+    UIImage *syncImage = [[self class] _syncImage];
     self.frame = (CGRect) {
         .origin = CGPointZero,
         .size = (CGSize) {
             .width = 0, // Width will be resized via UINavigationBar during its layout.
-            .height = closeDocumentImage.size.height // UINavigationBar will never change our size, so we need to set that up here.
+            .height = MAX(syncImage.size.height, closeDocumentImage.size.height) // UINavigationBar will never change our size, so we need to set that up here.
         }
     };
+}
+
++ (UIImage *)_syncImage;
+{
+    static UIImage *syncImage;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        syncImage = [UIImage imageNamed:@"OmniPresenceToolbarIcon" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
+    });
+    return syncImage;
+}
+
+- (UIButton *)_createSyncButton;
+{
+    UIImage *syncImage = [[self class] _syncImage];
+    UIButton *syncButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    [syncButton setImage:syncImage forState:UIControlStateNormal];
+    syncButton.imageView.contentMode = UIViewContentModeCenter;
+    syncButton.translatesAutoresizingMaskIntoConstraints = NO;
+    [syncButton setContentCompressionResistancePriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisHorizontal];
+    [syncButton setContentCompressionResistancePriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisVertical];
+    syncButton.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Sync Now", @"OmniUIDocument", OMNI_BUNDLE, @"Presence toolbar item accessibility label.");
+    [syncButton addTarget:self action:@selector(_syncButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
+    syncButton.hidden = YES;
+
+    return syncButton;
 }
 
 - (id)initWithFrame:(CGRect)frame;
@@ -111,6 +152,16 @@ static void _commonInit(OUIDocumentTitleView *self)
     return self;
 }
 
+- (void)dealloc;
+{
+    if (_syncAccountActivity) {
+        [_syncAccountActivity removeObserver:self forKeyPath:OFValidateKeyPath(_syncAccountActivity, isActive) context:SyncAccountActivityContext];
+        [_syncAccountActivity removeObserver:self forKeyPath:OFValidateKeyPath(_syncAccountActivity, lastError) context:SyncAccountActivityContext];
+    }
+    
+    [_syncButtonActivityFinishedTimer invalidate];
+}
+
 - (BOOL)shouldShowCloseDocumentButton {
     return !self.closeDocumentButton.hidden;
 }
@@ -120,6 +171,21 @@ static void _commonInit(OUIDocumentTitleView *self)
 }
 
 #pragma mark - API
+
+- (void)setSyncAccountActivity:(OFXAccountActivity *)syncAccountActivity;
+{
+    if (_syncAccountActivity != syncAccountActivity) {
+        [_syncAccountActivity removeObserver:self forKeyPath:OFValidateKeyPath(_syncAccountActivity, isActive) context:SyncAccountActivityContext];
+        [_syncAccountActivity removeObserver:self forKeyPath:OFValidateKeyPath(_syncAccountActivity, lastError) context:SyncAccountActivityContext];
+        
+        _syncAccountActivity = syncAccountActivity;
+        
+        [_syncAccountActivity addObserver:self forKeyPath:OFValidateKeyPath(_syncAccountActivity, isActive) options:0 context:SyncAccountActivityContext];
+        [_syncAccountActivity addObserver:self forKeyPath:OFValidateKeyPath(_syncAccountActivity, lastError) options:0 context:SyncAccountActivityContext];
+        
+        [self _updateSyncButtonIconForAccountActivity];
+    }
+}
 
 - (void)setTitle:(NSString *)title;
 {
@@ -153,6 +219,11 @@ static void _commonInit(OUIDocumentTitleView *self)
     [self _updateTitleVisibility];
 }
 
+- (void)setHideSyncButton:(BOOL)hideSyncButton {
+    _hideSyncButton = hideSyncButton;
+    
+    [self _updateSyncButtonIconForAccountActivity];
+}
 #pragma mark - UIView subclass
 
 + (BOOL)requiresConstraintBasedLayout;
@@ -169,6 +240,20 @@ static void _commonInit(OUIDocumentTitleView *self)
 #endif
     
     return fittingSize;
+}
+
+#pragma mark - NSKeyValueObserving
+
+static void *SyncAccountActivityContext = &SyncAccountActivityContext;
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context;
+{
+    if (context == SyncAccountActivityContext) {
+        OBASSERT(object == _syncAccountActivity);
+        [self _updateSyncButtonIconForAccountActivity];
+    } else {
+        [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
+    }
 }
 
 #pragma mark - Helpers
@@ -211,6 +296,82 @@ static void _commonInit(OUIDocumentTitleView *self)
 - (void)_closeDocument:(id)sender {
     OUIDocumentSceneDelegate *sceneDelegate = [OUIDocumentSceneDelegate documentSceneDelegateForView:self];
     [sceneDelegate closeDocument:sender];
+}
+
+- (void)_syncButtonTapped:(id)sender;
+{
+    id<OUIDocumentTitleViewDelegate> delegate = _delegate;
+    if ([delegate respondsToSelector:@selector(documentTitleView:syncButtonTapped:)])
+        [delegate documentTitleView:self syncButtonTapped:sender];
+}
+
+- (void)_updateSyncButtonIconForAccountActivity;
+{
+    if (!_syncAccountActivity) {
+        _syncButton.hidden = YES;
+        _syncBarButtonItemButton.hidden = YES;
+    } else {
+        _syncButton.hidden = NO;
+        _syncBarButtonItemButton.hidden = NO;
+    }
+    
+    if (self.hideSyncButton) {
+        self.syncButton.hidden = YES;
+    }
+    
+    if ([_syncAccountActivity lastError] != nil) {
+        _syncButtonShowingActiveState = NO;
+        [_syncButtonActivityFinishedTimer invalidate];
+        _syncButtonActivityFinishedTimer = nil;
+        if ([[_syncAccountActivity lastError] causedByUnreachableHost]) {
+            [self _updateSyncButtonsWithImageNamed:@"OmniPresenceToolbarIcon-Offline"];
+        } else {
+            [self _updateSyncButtonsWithImageNamed:@"OmniPresenceToolbarIcon-Error"];
+        }
+    } else if ([_syncAccountActivity isActive]) {
+        if (!_syncButtonShowingActiveState) {
+            _syncButtonShowingActiveState = YES;
+            _syncButtonActivityStartedTimeInterval = [NSDate timeIntervalSinceReferenceDate];
+            [self _updateSyncButtonsWithImageNamed:@"OmniPresenceToolbarIcon-Active"];
+        }
+        _syncButtonLastActivityTimeInterval = [NSDate timeIntervalSinceReferenceDate];
+        
+        [_syncButtonActivityFinishedTimer invalidate];
+        _syncButtonActivityFinishedTimer = nil;
+    } else if (_syncButtonShowingActiveState && _syncButtonActivityFinishedTimer == nil) {
+        // Prepare to turn off the active state on the icon. Leave it on at least a minimum time since the very start and a (smaller) minimum time since the last activity (in case the state toggles several times).
+        
+        NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
+        NSTimeInterval timeSinceStart = now - _syncButtonActivityStartedTimeInterval;
+        NSTimeInterval timeSinceLastActivity = now - _syncButtonLastActivityTimeInterval;
+
+        NSTimeInterval remainingTimeSinceStart = [OmniUIDocumentAppearance appearance].documentSyncMinimumVisiblityFromActivityStartTimeInterval - timeSinceStart;
+        NSTimeInterval remainingTimeSinceLastActivity = [OmniUIDocumentAppearance appearance].documentSyncMinimumVisiblityFromLastActivityTimeInterval - timeSinceLastActivity;
+        
+        NSTimeInterval remainingTime = MAX3(0, remainingTimeSinceStart, remainingTimeSinceLastActivity);
+
+        _syncButtonShowingActiveState = NO;
+        
+        _syncButtonActivityFinishedTimer = [NSTimer scheduledTimerWithTimeInterval:remainingTime target:self selector:@selector(_activityFinishedTimerFired:) userInfo:nil repeats:NO];
+    }
+}
+
+- (void)_updateSyncButtonsWithImageNamed:(NSString *)imageName;
+{
+    UIImage *updatedSyncButtonImage = [UIImage imageNamed:imageName inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
+    [_syncButton setImage:updatedSyncButtonImage forState:UIControlStateNormal];
+    [_syncBarButtonItemButton setImage:updatedSyncButtonImage forState:UIControlStateNormal];
+}
+
+- (void)_activityFinishedTimerFired:(NSTimer *)timer;
+{
+    OBPRECONDITION(_syncButtonActivityFinishedTimer == timer);
+    
+    [_syncButtonActivityFinishedTimer invalidate];
+    _syncButtonActivityFinishedTimer = nil;
+    
+    _syncButtonShowingActiveState = NO;
+    [self _updateSyncButtonsWithImageNamed:@"OmniPresenceToolbarIcon"];
 }
 
 @end

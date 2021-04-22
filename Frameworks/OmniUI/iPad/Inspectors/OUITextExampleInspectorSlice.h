@@ -11,4 +11,4 @@
 - (NSAttributedString *)makeExampleAttributedString;
 @end
 
-extern NSString * const OUITextExampleInspectorSliceExmapleString;
+extern NSString * const OUITextExampleInspectorSliceExampleString;

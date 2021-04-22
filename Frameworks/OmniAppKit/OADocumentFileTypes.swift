@@ -16,7 +16,7 @@ import OmniFoundation
         case none =  "None"
     }
 
-    public let fileTypeToRole: [UTI:Role]
+    private let fileTypeToRole: [UTI:Role]
     public let editableFileTypes: Set<UTI>
 
     @objc public static var main: DocumentFileTypes = DocumentFileTypes(bundle: Bundle.main)
@@ -75,19 +75,26 @@ import OmniFoundation
     }
 
     // For application with dynamic file types.
-    public init(readableTypes: [UTI], writableTypes: [UTI]) {
-        self.editableFileTypes = Set(writableTypes)
+    public init(readableTypes: Set<UTI>, writableTypes: Set<UTI>, editableTypes: Set<UTI>) {
+        // Can have non-native types that can be imported and exported, but aren't considered native (in editableTypes). But editable types must be readable and writable.
+        assert(editableTypes.isSubset(of: readableTypes))
+        assert(editableTypes.isSubset(of: writableTypes))
 
-        // Do the readers first to the writable types can override
         var fileTypeToRole = [UTI:Role]()
-        for type in readableTypes {
-            fileTypeToRole[type] = .viewer
+
+        let allTypes = readableTypes.union(writableTypes).union(editableTypes)
+        for type in allTypes {
+            if editableTypes.contains(type) {
+                fileTypeToRole[type] = .editor
+            } else if writableTypes.contains(type) {
+                fileTypeToRole[type] = Role.none // Export only
+            } else {
+                fileTypeToRole[type] = .viewer
+            }
         }
-        for type in writableTypes {
-            fileTypeToRole[type] = .editor
-        }
-        
+
         self.fileTypeToRole = fileTypeToRole
+        self.editableFileTypes = editableTypes
     }
 
     public var readableTypes: [UTI] {
@@ -100,6 +107,8 @@ import OmniFoundation
             }
         }
     }
+
+    // TODO: This is wrong (and not necessarily useful). Some 'none' types may be export-only. Really, an individual document should be consulted for its writable types.
 
     public var writableTypes: [UTI] {
         return fileTypeToRole.compactMap { type, role in

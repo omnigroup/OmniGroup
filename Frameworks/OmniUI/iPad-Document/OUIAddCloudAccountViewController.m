@@ -14,10 +14,6 @@
 #import <OmniAppKit/OAAppearanceColors.h>
 #import <OmniUIDocument/OmniUIDocument-Swift.h>
 
-#import "OUIDocumentAppController-Internal.h"
-
-RCS_ID("$Id$");
-
 NS_ASSUME_NONNULL_BEGIN
 
 @interface OUIAddCloudAccountViewController () <UITableViewDataSource, UITableViewDelegate>

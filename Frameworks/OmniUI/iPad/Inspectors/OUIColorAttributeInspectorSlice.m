@@ -10,6 +10,7 @@
 #import <OmniUI/OUIColorAttributeInspectorWell.h>
 #import <OmniUI/OUIInspectorSelectionValue.h>
 #import <OmniUI/OUIInspectorAppearance.h>
+#import <OmniUI/OUIInspector.h>
 
 #import "OUIParameters.h"
 
@@ -65,7 +66,7 @@ NS_ASSUME_NONNULL_BEGIN
     _textWell.cornerType = OUIInspectorWellCornerTypeLargeRadius;
     _textWell.backgroundType = OUIInspectorWellBackgroundTypeNormal;
     _textWell.label = self.title;
-    _textWell.labelColor = [UIColor secondaryLabelColor];
+    _textWell.labelColor = [OUIInspector labelTextColor];
 
     [_textWell addTarget:self action:@selector(showDetails:) forControlEvents:UIControlEventTouchUpInside];
 

@@ -9,7 +9,6 @@
 
 #import <OmniFoundation/OFSaveType.h>
 #import <OmniFoundation/OFCMS.h>
-#import <OmniUIDocument/OUIDocumentPreview.h> // OUIDocumentPreviewArea
 
 @class UIResponder, UIView, UIViewController;
 @class OUIDocumentViewController;
@@ -17,7 +16,7 @@
 
 @protocol OUIDocumentViewController;
 
-@interface OUIDocument : UIDocument <OFCMSKeySource>
+@interface OUIDocument : UIDocument <OFCMSKeySource, OJSEnvironmentProviderType>
 
 // Can be overridden to provide a file inside the app wrapper to read into a new document. Returns nil by default.
 + (NSURL *)builtInBlankTemplateURL;
@@ -48,10 +47,6 @@
 // Can set this before opening a document to tell it that it is being opened for the purpose of generating exported content.
 @property(nonatomic) BOOL forExportOnly;
 
-- (void)transientFileItemForPreviewGeneration:(ODSFileItem *)fileItem;
-
-//@property(nonatomic,readonly) ODSFileItem *fileItem;
-
 - (void)willEditDocumentTitle;
 
 @property(nonatomic,readonly) UIViewController *viewControllerToPresent;
@@ -63,6 +58,9 @@
 @property(nonatomic,readonly) BOOL isClosing;
 
 @property(nonatomic,readonly) UIResponder *defaultFirstResponder; // Defaults to the documentViewController, or if that view controller implements -defaultFirstResponder, returns the result of that.
+
+// If a document is being opened to be processed by a UIActivity, this can be set to the UIActivity's activityViewController to allow looking up a view controller on which to present UI (since the document won't have a view controller/scene of its own).
+@property(nonatomic,weak) UIViewController *activityViewController;
 
 - (void)finishUndoGroup;
 - (void)forceUndoGroupClosed;
@@ -82,9 +80,6 @@
 // Gives the document a chance to break retain cycles.
 - (void)didClose;
 
-// Must be called on a successful write after the new file is written. The passed in URL should be the argument to -writeContents:toURL:forSaveOperation:originalContentsURL:error:
-- (void)didWriteToURL:(NSURL *)url;
-
 // Subclass responsibility
 
 /*
@@ -101,27 +96,11 @@
 - (void)didRedo;
 - (UIView *)viewToMakeFirstResponderWhenInspectorCloses;
 
-// Subclass points for displaying a last updated message.
-@property (nonatomic, readonly, copy) NSString *lastQueuedUpdateMessage;
-/// Subclasses are responsible for overriding this method and handling the acutal displaying of the UI. Use -lastQueuedUpdateMessage in your UI, which is setup for you by OUIDocument.
-- (void)displayLastQueuedUpdateMessage NS_REQUIRES_SUPER;
-/// Subclasses are responsible for overriding this method and dismissing the UI they displayed via -displayLastQueuedUpdateMessage.
-- (void)dismissUpdateMessage NS_REQUIRES_SUPER;
-/// Subclasses can override to decide if the update message should be displayed.
-- (BOOL)shouldShowUpdateMessage;
-
-- (NSString *)alertTitleForIncomingEdit;
-
 - (id)tearDownViewController;
 - (void)recreateViewControllerWithViewState:(id)viewState;
 // When we get an incoming change from iCloud, OUIDocument discards the view controller it got from -makeViewController and makes a new one. These can be subclassed to help tear down the view controller and to transition view state from the old to the new, if appropriate.
 - (NSDictionary *)willRebuildViewController;
 - (void)didRebuildViewController:(NSDictionary *)state;
-
-// Support for previews
-+ (OUIImageLocation *)placeholderPreviewImageForFileURL:(NSURL *)fileURL area:(OUIDocumentPreviewArea)area;
-+ (OUIImageLocation *)encryptedPlaceholderPreviewImageForFileURL:(NSURL *)fileURL area:(OUIDocumentPreviewArea)area;
-+ (void)writePreviewsForDocument:(OUIDocument *)document withCompletionHandler:(void (^)(void))completionHandler;
 
 // UIDocument method that we subclass and require our subclasses to call super on (though UIDocument strongly suggests it).
 - (void)saveToURL:(NSURL *)url forSaveOperation:(UIDocumentSaveOperation)saveOperation completionHandler:(void (^)(BOOL success))completionHandler NS_REQUIRES_SUPER;
@@ -137,13 +116,13 @@
 @property(readonly,nonatomic) NSString *name;
 @property(readonly,nonatomic) NSString *exportingName;
 
+@property (readonly, nonatomic) BOOL canRename;
+- (void)renameToName:(NSString *)name completionBlock:(void (^)(BOOL success, NSError *error))completionBlock;
+
 /// Application-specific subclasses of OUIDocument can subclass this to report the file type identifiers that are available for this file. The argument `isFileExportToLocalDocuments` is YES only if we are doing a filesystem-based export (not send-to-app, etc) to the local iTunes accessible Documents folder. The default implementation returns nil, in which case the export interface will build a default set of types. A NSNull may be inserted into this array to represent "the current type".
 + (NSArray *)availableExportTypesForFileType:(NSString *)fileType isFileExportToLocalDocuments:(BOOL)isFileExportToLocalDocuments;
+- (NSArray *)availableExportTypesToLocalDocuments:(BOOL)isFileExportToLocalDocuments;
 
 @end
 
 extern OFSaveType OFSaveTypeForUIDocumentSaveOperation(UIDocumentSaveOperation saveOperation);
-
-// A helper function to centralize the hack for -openWithCompletionHandler: leaving the document 'open-ish' when it fails.
-// Radar 10694414: If UIDocument -openWithCompletionHandler: fails, it is still a presenter
-extern void OUIDocumentHandleDocumentOpenFailure(OUIDocument *document, void (^completionHandler)(BOOL success));

@@ -29,9 +29,6 @@
 "Cannot locate synchronized documents folder." = "동기화된 도큐멘트 폴더를 찾을 수 없습니다.";
 
 /* Error description */
-"Cannot move document." = "도큐멘트를 이동할 수 없습니다.";
-
-/* Error description */
 "Cannot start account agent." = "계정 에이전트를 시작할 수 없습니다.";
 
 /* Error description */
@@ -43,29 +40,17 @@
 /* Account validation step description */
 "Checking Credentials" = "자격 증명 확인 중";
 
-/* iTunes import title */
-"Copy from iTunes" = "iTunes에서 복사";
-
 /* error reason */
 "Could not access synchronized documents folder." = "동기화된 도큐멘트 폴더에 액세스할 수 없습니다.";
 
 /* error reason */
 "Could not resolve archived bookmark for synchronized documents folder." = "동기화된 도큐멘트 폴더에 대해 아카이브된 책갈피를 확인할 수 없습니다.";
 
-/* iTunes import/export account detail string */
-"Documents" = "도큐멘트";
-
 /* Add server account description */
 "Easily sync Omni documents. Signup is free!" = "Omni 도큐멘트를 쉽게 동기화할 수 있습니다. 무료로 등록하십시오!";
 
 /* Server account export title format */
 "Export to \"%@\"" = "“%@”(으)로 내보내기";
-
-/* iTunes export title */
-"Export to iTunes" = "iTunes로 내보내기";
-
-/* Server account type */
-"iTunes" = "iTunes";
 
 /* Error reason */
 "Local account documents folder is missing." = "로컬 계정 도큐멘트 폴더가 누락되었습니다.";
@@ -111,14 +96,17 @@
 /* error reason */
 "The cloud account requires OmniPresence format %@, but this device is using format %@. Please upgrade this copy of OmniPresence." = "클라우드 계정에는 OmniPresence 형식 %1$@이(가) 필요하지만 이 장치에서 %2$@ 형식을 사용 중입니다. 이 OmniPresence를 업그레이드하십시오.";
 
-/* Error description */
-"The document \"%@\" is not fully downloaded." = "“%@” 도큐멘트가 완전히 다운로드되지 않았습니다.";
-
 /* error description */
 "The proposed local documents folder already contains files. Please specify an empty folder or one that doesn't yet exist." = "제안된 로컬 도큐멘트 폴더에 이미 파일이 포함되어 있습니다. 빈 폴더 또는 아직 존재하지 않는 폴더를 지정하십시오.";
 
 /* error description */
 "The proposed local documents folder is not on a local volume. Please pick a location that is local to your computer." = "제안된 로컬 도큐멘트 폴더가 로컬 볼륨에 없습니다. 컴퓨터에 로컬로 있는 위치를 선택하십시오.";
+
+/* error description */
+"The proposed local documents folder is not within the app's local documents. Please pick a location within that folder." = "제안된 로컬 도큐멘트 폴더가 앱의 로컬 도큐멘트 내에 없습니다. 해당 폴더 내의 위치를 선택하십시오.";
+
+/* error description */
+"The proposed local documents folder is within the app's trash. This could lead to files getting unintentionally removed." = "제안된 로컬 도큐멘트 폴더가 앱의 휴지통 내에 있습니다. 그 결과 파일이 의도치 않게 제거될 수 있습니다.";
 
 /* error description */
 "The selected local folder appears to be inside a %@ folder. Using two file synchronization systems on the same folder can result in data loss." = "선택한 로컬 폴더가 %@ 폴더 안에 있는 것으로 보입니다. 동일한 폴더 안에서 두 개의 파일 동기화 시스템을 사용하면 데이터가 손실될 수 있습니다.";

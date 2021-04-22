@@ -29,12 +29,6 @@ RCS_ID("$Id$");
                         action:@selector(_showFontFamilies:)];
 }
 
-- (void)dealloc;
-{
-    // Attempting to fix ARC weak reference cleanup crasher in <bug:///93163> (Crash after setting font color on Level 1 style)
-    _fontFacesPane.parentSlice = nil;
-}
-
 - (void)showFacesForFamilyBaseFont:(UIFont *)font;
 {
     _fontFacesPane.showFacesOfFont = font;

@@ -6,9 +6,9 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniUI/OUIHelpURLCommand.h>
-#import <OmniUI/OUIAppController.h>
 
-RCS_ID("$Id$");
+#import <OmniUI/OUIAppController.h>
+#import <OmniUI/OUIAppControllerSceneHelper.h>
 
 @interface OUIHelpURLCommand ()
 // Radar 37952455: Regression: Spurious "implementing unavailable method" warning when subclassing
@@ -25,8 +25,9 @@ RCS_ID("$Id$");
 
 - (void)invoke;
 {
-    OBFinishPortingLater("This needs to be invoked with a scene");
-    // [self.sceneDelegate showOnlineHelp:nil];
+    OUIAppControllerSceneHelper *helper = [[OUIAppControllerSceneHelper alloc] init];
+    helper.window = self.viewControllerForPresentation.view.window;
+    [helper showOnlineHelp:nil];
 }
 
 @end

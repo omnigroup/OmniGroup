@@ -40,7 +40,9 @@ extern NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification;
 
 + (UIColor *)backgroundColor;
 + (UIColor *)disabledLabelTextColor;
++ (UIColor *)placeholderTextColor;
 + (UIColor *)labelTextColor;
++ (UIColor *)headerTextColor;
 + (UIFont *)labelFont;
 + (UIColor *)valueTextColor;
 + (UIColor *)indirectValueTextColor; // This is the color for Value text that isn't actionable in-place. For instance, a value on a cell with a chevron for drilling down to a detail view.

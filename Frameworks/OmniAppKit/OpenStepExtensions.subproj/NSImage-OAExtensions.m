@@ -462,7 +462,7 @@ static NSDictionary *titleFontAttributes;
     return scaledImage;
 }
 
-static NSData *_imageDataWithFileType(NSImage *self, NSBitmapImageFileType imageType, CFStringRef imageFileType)
+static NSData *_imageDataWithFileType(NSImage *self, NSBitmapImageFileType imageType, CFStringRef imageFileType, NSDictionary<NSBitmapImageRepPropertyKey, id> *properties)
 {
     NSBitmapImageRep *bitmapImageRep = (id)[self imageRepOfClass:[NSBitmapImageRep class]];
     if (bitmapImageRep != nil) {
@@ -522,13 +522,18 @@ static NSData *_imageDataWithFileType(NSImage *self, NSBitmapImageFileType image
         image = self;
     }
 
-    return _imageDataWithFileType(image, NSBitmapImageFileTypeBMP, kUTTypeBMP);
+    return _imageDataWithFileType(image, NSBitmapImageFileTypeBMP, kUTTypeBMP, @{});
 }
 
 
 - (NSData *)pngData;
 {
-    return _imageDataWithFileType(self, NSBitmapImageFileTypePNG, kUTTypePNG);
+    return _imageDataWithFileType(self, NSBitmapImageFileTypePNG, kUTTypePNG, @{});
+}
+
+- (NSData *)jpegDataWithCompressionFactor:(CGFloat)compressionFactor;
+{
+    return _imageDataWithFileType(self, NSBitmapImageFileTypeJPEG, kUTTypeJPEG, @{NSImageCompressionFactor : @(compressionFactor)});
 }
 
 + (NSImage *)documentIconWithContent:(NSImage *)contentImage;

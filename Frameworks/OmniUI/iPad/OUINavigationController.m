@@ -143,7 +143,7 @@ RCS_ID("$Id$")
         [oldAccessory removeFromSuperview];
     }
 
-    self.additionalSafeAreaInsets = insets;
+    viewController.additionalSafeAreaInsets = insets;
 }
 
 - (void)pushViewController:(UIViewController *)viewController animated:(BOOL)animated;
@@ -200,9 +200,6 @@ RCS_ID("$Id$")
     [super themedAppearanceDidChange:changedAppearance];
     
     OUIInspectorAppearance *appearance = OB_CHECKED_CAST_OR_NIL(OUIInspectorAppearance, changedAppearance);
-    
-    self.navigationBar.barStyle = appearance.InspectorBarStyle;
-    
     UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:appearance.NavigationBarAccessoryBlurEffectStyle];
     self.accessoryAndBackgroundBar.effect = blurEffect;
 }

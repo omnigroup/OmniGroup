@@ -16,6 +16,8 @@
 
 @class NSString, NSMutableString;
 
+typedef BOOL (^OQRenderLayerFilter)(CALayer *layer);
+
 @interface CALayer (OQExtensions)
 - (CALayer *)rootLayer;
 - (BOOL)isSublayerOfLayer:(CALayer *)layer;
@@ -38,11 +40,13 @@
 
 - (BOOL)isModelLayer;
 
+@property(nonatomic,readonly,class) OQRenderLayerFilter defaultRenderLayerFilter;
 - (void)renderRect:(CGRect)rect inContextIgnoringCache:(CGContextRef)ctx;
 - (void)renderRect:(CGRect)rect inContextIgnoringCache:(CGContextRef)ctx useAnimatedValues:(BOOL)useAnimatedValues;
-- (void)renderRect:(CGRect)rect inContextIgnoringHiddenIgnoringCache:(CGContextRef)ctx useAnimatedValues:(BOOL)useAnimatedValues;
+- (void)renderRect:(CGRect)rect inContextIgnoringCache:(CGContextRef)ctx filter:(OQRenderLayerFilter)filter useAnimatedValues:(BOOL)useAnimatedValues;
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 - (NSImage *)imageForRect:(NSRect)rect useAnimatedValues:(BOOL)useAnimatedValues;
+- (NSImage *)imageForRect:(NSRect)rect flipped:(BOOL)flipped filter:(OQRenderLayerFilter)filter useAnimatedValues:(BOOL)useAnimatedValues;
 - (void)writeImagesAndOpen;
 #endif
 

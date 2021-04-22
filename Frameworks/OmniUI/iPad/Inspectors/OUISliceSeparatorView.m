@@ -7,6 +7,7 @@
 
 #import "OUISliceSeparatorView.h"
 #import <OmniUI/OUIInspectorAppearance.h>
+#import <OmniUI/OUIInspectorSlice.h>
 
 RCS_ID("$Id$")
 
@@ -18,8 +19,8 @@ RCS_ID("$Id$")
 
 static id _commonInit(OUISliceSeparatorView *self)
 {
-    self.backgroundColor = [UIColor systemBackgroundColor];
-    self.strokeColor = [UIColor separatorColor];
+    self.backgroundColor = [UIColor clearColor];
+    self.strokeColor = [OUIInspectorSlice sliceSeparatorColor];
     return self;
 }
 

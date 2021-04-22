@@ -56,8 +56,8 @@ extension UIViewController: MultiPaneContentController {
 extension UIViewController: MultiPaneControllerFinding {
     // This doesn't work when the left pane is displayed as an overlay -- in that case the `parent` of the sidebar navigation controller is nil and instead the multi-pane controller is its presenting view controller.
     @objc public var multiPaneController: MultiPaneController? {
-        if let mulitPane = self as? MultiPaneController {
-            return mulitPane
+        if let multiPane = self as? MultiPaneController {
+            return multiPane
         }
         
         return self.parent?.multiPaneController ?? nil
@@ -65,8 +65,8 @@ extension UIViewController: MultiPaneControllerFinding {
     
     // This works in the case that the method above does not. However, if a parent of your multipane controller is the controller that defines the presentation context for some presented VC, this can still return nil, since the multipane controller's parent will be the presentingViewController. If you own that parent VC, you can override this method and return its child multipane controller instead.
     @objc open var presentingOrAncestorMultipaneController: MultiPaneController? {
-        if let mulitPane = self as? MultiPaneController {
-            return mulitPane
+        if let multiPane = self as? MultiPaneController {
+            return multiPane
         }
         
         return self.parent?.presentingOrAncestorMultipaneController ?? self.presentingViewController?.presentingOrAncestorMultipaneController ?? nil

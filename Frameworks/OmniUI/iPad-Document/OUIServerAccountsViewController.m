@@ -9,9 +9,11 @@
 
 @import OmniFileExchange;
 
-#import "OUIAddCloudAccountViewController.h"
-#import <OmniUIDocument/OmniUIDocumentAppearance.h>
 #import <OmniUIDocument/OmniUIDocument-Swift.h>
+#import <OmniUIDocument/OmniUIDocumentAppearance.h>
+
+#import "OUIAddCloudAccountViewController.h"
+#import "OUIDocumentSyncActivityObserver.h"
 
 RCS_ID("$Id$")
 
@@ -30,13 +32,8 @@ typedef NS_ENUM(NSInteger, SetupSectionRows) {
 
 #pragma mark - Cells
 
-static NSString *const HomeScreenCellReuseIdentifier = @"documentPickerHomeScreenCell";
-static NSString *const AddCloudAccountReuseIdentifier = @"documentPickerAddCloudAccount";
-
-#pragma mark - KVO Contexts
-
-static void *AccountCellLabelObservationContext = &AccountCellLabelObservationContext; // Keys that don't affect ordering; just need to be pushed to cells
-static void *ServerAccountsObservationContext = &ServerAccountsObservationContext;
+static NSString *const ServerAccountCellReuseIdentifier = @"OUIServerAccounts.Account";
+static NSString *const AddCloudAccountReuseIdentifier = @"OUIServerAccounts.AddAccount";
 
 #pragma mark - Helper data types
 
@@ -53,41 +50,53 @@ static void *ServerAccountsObservationContext = &ServerAccountsObservationContex
 
 @end
 
+@interface _OUIServerAccountsActionHolder : UIResponder
++ (_OUIServerAccountsActionHolder *)actionHolderWithBlock:(void (^)(id sender))actionBlock;
+@property (nonatomic, copy) void (^actionBlock)(id sender);
+- (IBAction)_action:(id)sender;
+@end
+
 #pragma mark - View Controller
 
 @implementation OUIServerAccountsViewController
 {
-    OFXAgentActivity *_agentActivity;
-    
+    OUIDocumentSyncActivityObserver *_observer;
     NSArray <OFXServerAccount *> *_orderedServerAccounts;
-    NSMapTable <OFXServerAccount *, OFXAccountActivity *> *_observedAccountActivityByAccount;
+    BOOL _isForBrowsing;
 }
 
-+ (NSString *)localizedDisplayName;
++ (NSString *)localizedDisplayNameForBrowsing:(BOOL)isForBrowsing;
 {
-    return NSLocalizedStringFromTableInBundle(@"OmniPresence Accounts", @"OmniUIDocument", OMNI_BUNDLE, @"Manage OmniPresence accounts settings title");
+    if (isForBrowsing) {
+        return NSLocalizedStringFromTableInBundle(@"View OmniPresence Documents", @"OmniUIDocument", OMNI_BUNDLE, @"Screen title for viewing OmniPresence documents");
+    } else {
+        return NSLocalizedStringFromTableInBundle(@"Configure OmniPresence Syncing", @"OmniUIDocument", OMNI_BUNDLE, @"Screen title for configuring OmniPresence accounts");
+    }
 }
 
-+ (NSString *)localizedDisplayDetailText;
+- (instancetype)initWithAgentActivity:(OFXAgentActivity *)agentActivity forBrowsing:(BOOL)isForBrowsing;
 {
-    return NSLocalizedStringFromTableInBundle(@"Migrate OmniPresence accounts to other storage locations", @"OmniUIDocument", OMNI_BUNDLE, @"Manage OmniPresence accounts settings detail text");
-}
-
-- (instancetype)initWithAgentActivity:(OFXAgentActivity *)agentActivity;
-{
-    if (!(self = [super initWithStyle:UITableViewStyleGrouped]))
+    self = [super initWithStyle:isForBrowsing ? UITableViewStylePlain : UITableViewStyleGrouped];
+    if (self == nil)
         return nil;
-       
-    _agentActivity = agentActivity;
     
-    _observedAccountActivityByAccount = [NSMapTable strongToStrongObjectsMapTable];
+    _isForBrowsing = isForBrowsing;
+    _observer = [[OUIDocumentSyncActivityObserver alloc] initWithAgentActivity:agentActivity];
     
-    OFXServerAccountRegistry *accountRegistry = _agentActivity.agent.accountRegistry;
-    [accountRegistry addObserver:self forKeyPath:OFValidateKeyPath(accountRegistry, allAccounts) options:NSKeyValueObservingOptionInitial context:ServerAccountsObservationContext];
-
-    self.navigationItem.title = [[self class] localizedDisplayName];
+    __weak OUIServerAccountsViewController *weakSelf = self;
+    _observer.accountsUpdated = ^(NSArray<OFXServerAccount *> * _Nonnull updatedAccounts, NSArray<OFXServerAccount *> * _Nonnull addedAccounts, NSArray<OFXServerAccount *> * _Nonnull removedAccounts) {
+        [weakSelf _accountsUpdated:updatedAccounts addedAccounts:addedAccounts removedAccounts:removedAccounts];
+    };
+    
+    _observer.accountChanged = ^(OFXServerAccount *account){
+        [weakSelf _accountChanged:account];
+    };
+    
+    _orderedServerAccounts = [_observer.orderedServerAccounts copy];
+    
+    self.navigationItem.title = [[self class] localizedDisplayNameForBrowsing:isForBrowsing];
         
-    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(_done:)];
+    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(_done:)];
     
     UITableView *tableView = self.tableView;
     tableView.separatorInset = UIEdgeInsetsZero;
@@ -95,51 +104,12 @@ static void *ServerAccountsObservationContext = &ServerAccountsObservationContex
     return self;
 }
 
-- (void)dealloc;
-{
-    for (OFXServerAccount *account in _orderedServerAccounts) {
-        [self _stopObservingServerAccount:account];
-    }
-    
-    OFXServerAccountRegistry *accountRegistry = _agentActivity.agent.accountRegistry;
-    [accountRegistry removeObserver:self forKeyPath:OFValidateKeyPath(accountRegistry, allAccounts) context:ServerAccountsObservationContext];
-}
-
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context;
-{
-    if (context == ServerAccountsObservationContext) {
-        [self _updateOrderedServerAccounts];
-    } else if (context == AccountCellLabelObservationContext) {
-        OFXServerAccount *account;
-        NSUInteger accountIndex = [_orderedServerAccounts indexOfObject:object];
-        if ([object isKindOfClass:[OFXServerAccount class]]) {
-            account = object;
-            accountIndex = [_orderedServerAccounts indexOfObject:account];
-        } else if ([object isKindOfClass:[OFXRegistrationTable class]]) {
-            account = [_orderedServerAccounts first:^BOOL(OFXServerAccount *candidate) {
-                return [[_agentActivity activityForAccount:candidate] registrationTable] == object;
-            }];
-            accountIndex = [_orderedServerAccounts indexOfObject:account];
-        }
-        
-        if (accountIndex != NSNotFound) {
-            UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:accountIndex inSection:AccountsListSection]];
-            if (cell) {
-                [self _updateCell:cell forServerAccount:account];
-            }
-            accountIndex = [_orderedServerAccounts indexOfObject:account];
-        }
-    } else {
-        [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
-    }
-}
-
 #pragma mark - UIViewController subclass
 
 - (void)viewDidLoad;
 {
     UITableView *tableView = self.tableView;
-    tableView.backgroundColor = [UIColor whiteColor];
+    tableView.backgroundColor = UIColor.systemGroupedBackgroundColor;
     
     [super viewDidLoad];
 }
@@ -161,105 +131,11 @@ static void *ServerAccountsObservationContext = &ServerAccountsObservationContex
     [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
 }
 
-#pragma mark - API
-
-- (void)_accountActivityForAccountChangedNotification:(NSNotification *)note;
-{
-    OFXServerAccount *account = OB_CHECKED_CAST(OFXServerAccount, note.object);
-    OFXAccountActivity *accountActivity = [_agentActivity activityForAccount:account];
-    [self _updateAccountActivity:accountActivity forServerAccount:account];
-}
-
-- (void)_updateAccountActivity:(OFXAccountActivity *)newAccountActivity forServerAccount:(OFXServerAccount *)account;
-{
-    OFXAccountActivity *oldAccountActivity = [_observedAccountActivityByAccount objectForKey:account];
-    
-    if (oldAccountActivity == newAccountActivity) {
-        return;
-    }
-    if (oldAccountActivity) {
-        OFXRegistrationTable *table = oldAccountActivity.registrationTable;
-        [table removeObserver:self forKeyPath:OFValidateKeyPath(table, values) context:AccountCellLabelObservationContext];
-        [_observedAccountActivityByAccount removeObjectForKey:account];
-    }
-    if (newAccountActivity) {
-        [_observedAccountActivityByAccount setObject:newAccountActivity forKey:account];
-        OFXRegistrationTable *table = newAccountActivity.registrationTable;
-        [table addObserver:self forKeyPath:OFValidateKeyPath(table, values) options:0 context:AccountCellLabelObservationContext];
-    }
-}
-
-- (void)_startObservingServerAccount:(OFXServerAccount *)account;
-{
-    OBASSERT([_observedAccountActivityByAccount objectForKey:account] == nil);
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_accountActivityForAccountChangedNotification:) name:OFXAgentActivityActivityForAccountDidChangeNotification object:account];
-
-    OFXAccountActivity *accountActivity = [_agentActivity activityForAccount:account];
-    [self _updateAccountActivity:accountActivity forServerAccount:account];
-    
-    [account addObserver:self forKeyPath:OFValidateKeyPath(account, displayName) options:0 context:AccountCellLabelObservationContext];
-}
-
-- (void)_stopObservingServerAccount:(OFXServerAccount *)account;
-{
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:OFXAgentActivityActivityForAccountDidChangeNotification object:account];
-
-    [self _updateAccountActivity:nil forServerAccount:account];
-
-    [account removeObserver:self forKeyPath:OFValidateKeyPath(account, displayName) context:AccountCellLabelObservationContext];
-}
-
-- (void)_updateOrderedServerAccounts;
-{
-    OFXServerAccountRegistry *accountRegistry = _agentActivity.agent.accountRegistry;
-    NSMutableArray <OFXServerAccount *> *accountsToRemove = [_orderedServerAccounts mutableCopy];
-    NSMutableArray <OFXServerAccount *> *accountsToAdd = [[NSMutableArray alloc] initWithArray: accountRegistry.allAccounts];
-    
-    NSMutableArray *newOrderedServerAccounts = [accountsToAdd mutableCopy];
-    [newOrderedServerAccounts sortUsingComparator:^NSComparisonResult(OFXServerAccount *accountA, OFXServerAccount *accountB){
-        return [accountA.displayName localizedStandardCompare:accountB.displayName];
-    }];
-    
-    for (OFXServerAccount *account in accountsToAdd)
-        [accountsToRemove removeObject:account];
-
-    for (OFXServerAccount *account in _orderedServerAccounts)
-        [accountsToAdd removeObject:account];
-
-    UITableView *tableView = self.tableView;
-    [tableView beginUpdates];
-
-    for (OFXServerAccount *account in accountsToRemove) {
-        [self _stopObservingServerAccount:account];
-        
-        NSUInteger indexToDelete = [_orderedServerAccounts indexOfObject:account];
-        if (indexToDelete == NSNotFound)
-            @throw [NSException exceptionWithName:NSInternalInconsistencyException reason:@"Trying to delete an account that isn't in our table view data source!" userInfo:@{@"account" : account}];
-        
-        [tableView deleteRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:indexToDelete inSection:AccountsListSection]] withRowAnimation:UITableViewRowAnimationAutomatic];
-    }
-
-    _orderedServerAccounts = [newOrderedServerAccounts copy];
-    
-    for (OFXServerAccount *account in accountsToAdd) {
-        [self _startObservingServerAccount:account];
-        
-        NSUInteger indexToAdd = [_orderedServerAccounts indexOfObject:account];
-        if (indexToAdd == NSNotFound)
-            @throw [NSException exceptionWithName:NSInternalInconsistencyException reason:@"Trying to add an account that isn't in our table view data source!" userInfo:@{@"account" : account}];
-        
-        [tableView insertRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:indexToAdd inSection:AccountsListSection]] withRowAnimation:UITableViewRowAnimationAutomatic];
-    }
-
-    [tableView endUpdates];
-}
-
 #pragma mark - UITableViewDataSource
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView;
 {
-    return SectionCount;
+    return _isForBrowsing ? 1 : SectionCount;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section;
@@ -284,49 +160,76 @@ static void *ServerAccountsObservationContext = &ServerAccountsObservationContex
 {
     OBASSERT_NOTNULL(cell);
     
-    static UIImage *cloudImage;
     static dispatch_once_t onceToken;
+    static UIImage *accountIconImage;
+    static UIImage *accountSetupImage;
+    static UIImage *accountFolderImage;
     dispatch_once(&onceToken, ^{
-        cloudImage = [[UIImage imageNamed:@"OUIDocumentPickerCloudLocationIcon" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+        accountIconImage = [[UIImage imageNamed:@"OmniPresenceAccountIcon" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+        accountSetupImage = [[UIImage imageNamed:@"OmniPresenceAccountInfo" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+        accountFolderImage = [[UIImage imageNamed:@"OUIMenuItemFolder" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     });
     
     cell.textLabel.text = account.displayName;
-
-    OFXAccountActivity *accountActivity = [_observedAccountActivityByAccount objectForKey:account];
-    if (accountActivity) {
-        NSSet <OFXFileMetadata *> *metadataItems = accountActivity.registrationTable.values;
-        NSMutableArray <NSString *> *metadataStrings = [NSMutableArray array];
-        
-        [metadataStrings addObject:[NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%d items", @"OmniUIDocument", OMNI_BUNDLE, @"home screen detail label"), metadataItems.count]];
-        
-        if ([metadataItems count] > 0) {
-            NSUInteger totalSize = 0;
-            for (OFXFileMetadata *item in metadataItems) {
-                totalSize += item.fileSize;
-            }
-            
-            [metadataStrings addObject:[NSByteCountFormatter stringFromByteCount:totalSize countStyle:NSByteCountFormatterCountStyleFile]];
-        }
-        
-        cell.detailTextLabel.text = [metadataStrings componentsJoinedByString:@" • "];
+    id <OUIDocumentServerAccountSyncAccountStatus> syncAccountStatus = [OUIDocumentServerAccountFileListViewFactory syncAccountStatusWithServerAccount:account observer:_observer];
+    BOOL hasErrorStatus = syncAccountStatus.hasErrorStatus;
+    NSString *syncStatusText = syncAccountStatus.statusText;
+    if (hasErrorStatus && syncStatusText != nil) {
+        cell.detailTextLabel.text = syncStatusText;
+        cell.detailTextLabel.textColor = UIColor.systemRedColor;
     } else {
-        cell.detailTextLabel.text = @"";
+        NSMutableArray <NSString *> *metadataStrings = [NSMutableArray array];
+        OFXAccountActivity *accountActivity = [_observer accountActivityForServerAccount:account];
+        if (accountActivity != nil) {
+            NSSet <OFXFileMetadata *> *metadataItems = accountActivity.registrationTable.values;
+
+            [metadataStrings addObject:[NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%d items", @"OmniUIDocument", OMNI_BUNDLE, @"home screen detail label"), metadataItems.count]];
+
+            if ([metadataItems count] > 0) {
+                NSUInteger totalSize = 0;
+                for (OFXFileMetadata *item in metadataItems) {
+                    totalSize += item.fileSize;
+                }
+
+                [metadataStrings addObject:[NSByteCountFormatter stringFromByteCount:totalSize countStyle:NSByteCountFormatterCountStyleFile]];
+            }
+        }
+
+        if (syncStatusText != nil)
+            [metadataStrings addObject:syncStatusText];
+        NSString *statusText = [metadataStrings componentsJoinedByString:@" • "];
+        cell.detailTextLabel.text = statusText;
+        cell.detailTextLabel.textColor = nil;
     }
 
-    cell.imageView.image = cloudImage;
+    cell.imageView.image = accountIconImage;
     cell.editingAccessoryType = UITableViewCellAccessoryDisclosureIndicator;
     cell.textLabel.textColor = nil;
-    cell.detailTextLabel.textColor = nil;
     cell.tintAdjustmentMode = UIViewTintAdjustmentModeAutomatic;
+
+    if (!_isForBrowsing)
+        return;
+
+    __weak OUIServerAccountsViewController *weakSelf = self;
+    _OUIServerAccountsActionHolder *editAction = [_OUIServerAccountsActionHolder actionHolderWithBlock:^(id sender) {
+        OUIServerAccountsViewController *strongSelf = weakSelf;
+        if (strongSelf == nil)
+            return;
+        [strongSelf _showFolderForAccount:account];
+        [strongSelf _done:nil];
+    }];
+
+    objc_setAssociatedObject(cell, @"accessoryViewTargetActionHolder", editAction, OBJC_ASSOCIATION_RETAIN); // Make sure this action holder sticks around until we reuse the cell for something else
+    cell.accessoryView = [UIButton systemButtonWithImage:accountFolderImage target:editAction action:@selector(_action:)];
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath;
 {
     switch (indexPath.section) {
         case AccountsListSection: {
-            UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:HomeScreenCellReuseIdentifier];
+            UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:ServerAccountCellReuseIdentifier];
             if (!cell)
-                cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:HomeScreenCellReuseIdentifier];
+                cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:ServerAccountCellReuseIdentifier];
 
             OFXServerAccount *account = _orderedServerAccounts[indexPath.row];
             [self _updateCell:cell forServerAccount:account];
@@ -368,20 +271,43 @@ static void *ServerAccountsObservationContext = &ServerAccountsObservationContex
 
 - (void)_editAccountSettings:(OFXServerAccount *)account sender:(id)sender;
 {
-    OUIServerAccountSetupViewController *setupController = [[OUIServerAccountSetupViewController alloc] initWithAgentActivity:_agentActivity account:account];
+    OUIServerAccountSetupViewController *setupController = [[OUIServerAccountSetupViewController alloc] initWithAgentActivity:_observer.agentActivity account:account];
     setupController.finished = ^(id viewController, NSError *error) { };
     [self showViewController:setupController sender:sender];
+}
+
+- (void)_openFileListForAccount:(OFXServerAccount *)account sender:(id)sender;
+{
+    [self _showFolderForAccount:account];
+    OUIDocumentSyncActivityObserver *observer = [[OUIDocumentSyncActivityObserver alloc] initWithAgentActivity:_observer.agentActivity];
+    UIViewController *fileListViewController = [OUIDocumentServerAccountFileListViewFactory fileListViewControllerWithServerAccount:account observer:observer];
+    [self showViewController:fileListViewController sender:sender];
+}
+
+- (void)_showFolderForAccount:(OFXServerAccount *)account;
+{
+    OUIDocumentSceneDelegate *sceneDelegate = self.tableView.sceneDelegate;
+    [sceneDelegate openFolderForServerAccount:account];
+}
+
+- (void)_showAccount:(OFXServerAccount *)account;
+{
+    if (_isForBrowsing) {
+        [self _openFileListForAccount:account sender:self.tableView];
+    } else {
+        [self _editAccountSettings:account sender:self.tableView];
+    }
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     switch (indexPath.section) {
-    case AccountsListSection: {
-        OFXServerAccount *account = _orderedServerAccounts[indexPath.row];
-        [self _editAccountSettings:account sender:tableView];
-        break;
-    }
-        
+        case AccountsListSection: {
+            OFXServerAccount *account = _orderedServerAccounts[indexPath.row];
+            [self _showAccount:account];
+            break;
+        }
+
         case SetupSection:
             OBPRECONDITION(indexPath.row == AddCloudAccountRow);
 
@@ -391,9 +317,12 @@ static void *ServerAccountsObservationContext = &ServerAccountsObservationContex
                 return;
             }
 
-        OUIAddCloudAccountViewController *addController = [[OUIAddCloudAccountViewController alloc] initWithAgentActivity:_agentActivity usageMode:OFXServerAccountUsageModeCloudSync];
+            OUIAddCloudAccountViewController *addController = [[OUIAddCloudAccountViewController alloc] initWithAgentActivity:_observer.agentActivity usageMode:OFXServerAccountUsageModeCloudSync];
             addController.finished = ^(OFXServerAccount *newAccountOrNil) {
                 [self.navigationController popToViewController:self animated:YES];
+                if (newAccountOrNil != nil) {
+                    [self.sceneDelegate openFolderForServerAccount:newAccountOrNil];
+                }
             };
 
             [self.navigationController pushViewController:addController animated:YES];
@@ -430,9 +359,63 @@ static void *ServerAccountsObservationContext = &ServerAccountsObservationContex
 
 #pragma mark - Private
 
+- (void)_accountsUpdated:(NSArray <OFXServerAccount *> *)updatedAccounts addedAccounts:(NSArray <OFXServerAccount *> *)addedAccounts removedAccounts:(NSArray <OFXServerAccount *> *)removedAccounts;
+{
+    UITableView *tableView = self.tableView;
+    [tableView beginUpdates];
+    
+    for (OFXServerAccount *account in removedAccounts) {
+        NSUInteger indexToDelete = [_orderedServerAccounts indexOfObject:account];
+        if (indexToDelete == NSNotFound)
+            @throw [NSException exceptionWithName:NSInternalInconsistencyException reason:@"Trying to delete an account that isn't in our table view data source!" userInfo:@{@"account" : account}];
+        
+        [tableView deleteRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:indexToDelete inSection:AccountsListSection]] withRowAnimation:UITableViewRowAnimationAutomatic];
+    }
+    
+    _orderedServerAccounts = [updatedAccounts copy];
+    
+    for (OFXServerAccount *account in addedAccounts) {
+        NSUInteger indexToAdd = [_orderedServerAccounts indexOfObject:account];
+        if (indexToAdd == NSNotFound)
+            @throw [NSException exceptionWithName:NSInternalInconsistencyException reason:@"Trying to add an account that isn't in our table view data source!" userInfo:@{@"account" : account}];
+        
+        [tableView insertRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:indexToAdd inSection:AccountsListSection]] withRowAnimation:UITableViewRowAnimationAutomatic];
+    }
+    
+    [tableView endUpdates];
+}
+
+- (void)_accountChanged:(OFXServerAccount *)account;
+{
+    NSUInteger accountIndex = [_orderedServerAccounts indexOfObject:account];
+    if (accountIndex != NSNotFound) {
+        UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:accountIndex inSection:AccountsListSection]];
+        if (cell) {
+            [self _updateCell:cell forServerAccount:account];
+        }
+    }
+}
+
 - (void)_done:(id)sender;
 {
     [self.navigationController dismissViewControllerAnimated:YES completion:nil];
 }
 
 @end
+
+@implementation _OUIServerAccountsActionHolder
+
++ (_OUIServerAccountsActionHolder *)actionHolderWithBlock:(void (^)(id sender))actionBlock;
+{
+    _OUIServerAccountsActionHolder *actionHolder = [[_OUIServerAccountsActionHolder alloc] init];
+    actionHolder.actionBlock = actionBlock;
+    return actionHolder;
+}
+
+- (IBAction)_action:(id)sender;
+{
+    self.actionBlock(sender);
+}
+
+@end
+

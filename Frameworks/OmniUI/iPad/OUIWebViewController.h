@@ -55,8 +55,10 @@ NS_EXTENSION_UNAVAILABLE_IOS("OUIWebViewController not available in app extensio
 
 @optional
 /*!
- * \brief Called when the close button is tapped. Return YES if the view controller should dismiss itself.
+ * \brief Called when the close button is tapped. Return YES if the view controller should dismiss itself. Default value is YES if not implemented.
  */
 - (BOOL)webViewControllerShouldClose:(OUIWebViewController *)webViewController NS_EXTENSION_UNAVAILABLE_IOS("OUIWebViewController not available in app extensions.");
+
+- (void)webViewControllerDidClose:(OUIWebViewController *)webViewController NS_EXTENSION_UNAVAILABLE_IOS("OUIWebViewController not available in app extensions.");
 
 @end

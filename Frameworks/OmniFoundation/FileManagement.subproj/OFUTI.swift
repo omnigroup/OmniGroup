@@ -77,7 +77,7 @@ public struct UTI {
         self.rawFileType = fileType.lowercased()
     }
 
-    public static func fileTypePreperringNative(_ fileExtension: String) -> String? {
+    public static func fileTypePreferringNative(_ fileExtension: String) -> String? {
         if let uti = try? fileType(forPathExtension: fileExtension, isDirectory: nil, preferringNative: true) {
             return uti.rawFileType
         }

@@ -199,9 +199,10 @@ NS_ASSUME_NONNULL_BEGIN
     [tableView reloadData];
     OUITableViewAdjustHeightToFitContents(tableView); // -sizeToFit doesn't work after # options changes, sadly
 
-    // We draw our own separators using OUIMenuOptionTableViewCell.showsFullwidthSeparator
-    tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-    
+    // We used to draw our own separators using OUIMenuOptionTableViewCell.showsFullwidthSeparator
+    // tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    tableView.separatorStyle = _showsDividersBetweenOptions ? UITableViewCellSeparatorStyleSingleLine : UITableViewCellSeparatorStyleNone;
+
     // Limit the height of the menu to something reasonable (might have many folders in the 'move' menu, for example).
     if (tableView.frame.size.height > 400) {
         CGRect frame = tableView.frame;
@@ -224,7 +225,7 @@ NS_ASSUME_NONNULL_BEGIN
 {
     UITableView *tableView = (UITableView *)self.view;
     [tableView layoutIfNeeded];
-    
+
     CGFloat preferredWidth;
     if (!_sizesToOptionWidth) {
         preferredWidth = kOUIMenuControllerTableWidth;
@@ -244,8 +245,11 @@ NS_ASSUME_NONNULL_BEGIN
         // The padding calculated is the minimum value needed to avoid ellipsis in the label. Double it to get something more like UIActionSheet.
         preferredWidth = ceil(width + 2*padding);
     }
-    
-    self.preferredContentSize = (CGSize){.width = preferredWidth, .height = ((UITableView *)self.view).contentSize.height};
+
+    UIEdgeInsets contentInsets = tableView.contentInset;
+    CGFloat preferredHeight = tableView.contentSize.height + contentInsets.top + contentInsets.bottom;
+
+    self.preferredContentSize = (CGSize){.width = preferredWidth, .height = preferredHeight};
 }
 
 - (void)willMoveToParentViewController:(nullable UIViewController *)parent
@@ -416,6 +420,7 @@ NS_ASSUME_NONNULL_BEGIN
     cell.indentationWidth = kOUIMenuOptionIndentationWidth;
     cell.indentationLevel = option.indentationLevel;
 
+#if 0
     if (_showsDividersBetweenOptions) {
         cell.showsFullwidthSeparator = YES;
         if (row == 0) {
@@ -428,7 +433,8 @@ NS_ASSUME_NONNULL_BEGIN
             cell.isLastRowInSection = YES;
         }
     }
-    
+#endif
+
     if (option.options) {
         if (!cell.accessoryView) {
             UIImage *image = [[OUIInspectorWell navigationArrowImage] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];

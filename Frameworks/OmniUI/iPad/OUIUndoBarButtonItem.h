@@ -48,7 +48,7 @@ extern NSString * const OUIUndoPopoverWillShowNotification;
 @interface UIViewController (OUIUndoBarButtonItemPresentation)
 /*! Presents the undo menu for long-press gestures.
  *
- *  When the undo button is long-pressed, it sends -targetForAction:withSender: to the button's target, with this selector as the action argument. By deafult, this will result in the receiver returning itself if -canPerformAction:withSender: returns YES with the same selector argument. (If the button's target does not respond to -targetForAction:withSender:, it assumes that it would have returned self). It then sends -presentMenuForUndoBarButtonItem: to the result if it responds to that selector.
+ *  When the undo button is long-pressed, it sends -targetForAction:withSender: to the button's target, with this selector as the action argument. By default, this will result in the receiver returning itself if -canPerformAction:withSender: returns YES with the same selector argument. (If the button's target does not respond to -targetForAction:withSender:, it assumes that it would have returned self). It then sends -presentMenuForUndoBarButtonItem: to the result if it responds to that selector.
  *
  * Implement or override -targetForAction:withSender: in your button's target to specify a different receiver for -presentMenuForUndoBarButtonItem:.
  */

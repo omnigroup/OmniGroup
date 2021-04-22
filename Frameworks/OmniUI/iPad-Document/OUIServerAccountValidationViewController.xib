@@ -1,7 +1,9 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="9531" systemVersion="15C50" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES">
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14865.1" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9529"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14819.2"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="OUIServerAccountValidationViewController">
@@ -30,17 +32,15 @@
                         <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="750" misplaced="YES" text="Progess description — do not localize" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="LSX-Zy-nGT">
                             <rect key="frame" x="20" y="72" width="289" height="21"/>
                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                            <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
                             <nil key="highlightedColor"/>
                         </label>
                         <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="750" text="Server info — do not localize" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="10">
                             <rect key="frame" x="20" y="20" width="219" height="21"/>
                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                            <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
                             <nil key="highlightedColor"/>
                         </label>
                     </subviews>
-                    <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                    <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                     <constraints>
                         <constraint firstItem="FL3-ek-OGD" firstAttribute="leading" secondItem="lPM-kp-WoF" secondAttribute="leading" constant="20" symbolic="YES" id="41p-IG-RUx"/>
                         <constraint firstItem="FL3-ek-OGD" firstAttribute="top" secondItem="LSX-Zy-nGT" secondAttribute="bottom" constant="44" id="7GY-8u-Cb8"/>
@@ -58,12 +58,12 @@
                     </constraints>
                 </view>
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="xPW-VJ-wgq" userLabel="Success View">
-                    <rect key="frame" x="70" y="98" width="400" height="248"/>
+                    <rect key="frame" x="70" y="97.5" width="400" height="248"/>
                     <subviews>
                         <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="FyS-zd-cdJ">
-                            <rect key="frame" x="200" y="228" width="0.0" height="0.0"/>
+                            <rect key="frame" x="200.5" y="228" width="0.0" height="0.0"/>
                             <fontDescription key="fontDescription" type="system" weight="light" pointSize="32"/>
-                            <color key="textColor" white="0.29999999999999999" alpha="1" colorSpace="calibratedWhite"/>
+                            <color key="textColor" systemColor="secondaryLabelColor" red="0.23529411759999999" green="0.23529411759999999" blue="0.26274509800000001" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
                             <nil key="highlightedColor"/>
                         </label>
                         <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="bUr-WV-3x4">
@@ -74,7 +74,7 @@
                             </constraints>
                         </imageView>
                     </subviews>
-                    <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                    <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                     <constraints>
                         <constraint firstItem="bUr-WV-3x4" firstAttribute="leading" secondItem="xPW-VJ-wgq" secondAttribute="leading" constant="20" id="1sH-r1-8tE"/>
                         <constraint firstItem="FyS-zd-cdJ" firstAttribute="top" secondItem="bUr-WV-3x4" secondAttribute="bottom" constant="8" id="IqP-1U-GoN"/>
@@ -85,7 +85,7 @@
                     </constraints>
                 </view>
             </subviews>
-            <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+            <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
             <constraints>
                 <constraint firstAttribute="centerX" secondItem="xPW-VJ-wgq" secondAttribute="centerX" id="5W6-5C-Yfk"/>
                 <constraint firstItem="lPM-kp-WoF" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="4" secondAttribute="leading" id="Cp7-SS-4zn"/>
@@ -100,6 +100,7 @@
             </constraints>
             <nil key="simulatedStatusBarMetrics"/>
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <point key="canvasLocation" x="139" y="117"/>
         </view>
     </objects>
 </document>

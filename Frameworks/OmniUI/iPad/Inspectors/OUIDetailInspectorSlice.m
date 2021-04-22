@@ -155,7 +155,7 @@ NS_ASSUME_NONNULL_BEGIN
     if (_placeholderTextColor)
         return _placeholderTextColor;
     
-    return [OUIInspector disabledLabelTextColor];
+    return [OUIInspector placeholderTextColor];
 }
 
 - (void)setPlaceholderTextColor:(UIColor * _Nullable)placeholderTextColor;
@@ -256,10 +256,11 @@ NS_ASSUME_NONNULL_BEGIN
         title = [self placeholderTitleForItemAtIndex:itemIndex];
     }
     cell.textLabel.text = title;
-    if (placeholder)
-        cell.textLabel.textColor = self.placeholderTextColor;
-    else
-        cell.textLabel.textColor = [UIColor secondaryLabelColor];
+    if (placeholder) {
+        cell.textLabel.textColor = [OUIInspector placeholderTextColor];
+    } else {
+        cell.textLabel.textColor = [OUIInspector labelTextColor];
+    }
     cell.textLabel.font = [OUIInspectorTextWell defaultLabelFont];
     cell.textLabel.lineBreakMode = NSLineBreakByTruncatingTail;
 
@@ -284,21 +285,13 @@ NS_ASSUME_NONNULL_BEGIN
             cell.imageView.image = item.image;
         }
     }
-    
-    // No entry in UIInterface for this.
-    static UIColor *defaultDetailTextColor = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        defaultDetailTextColor = [UIColor labelColor];
-    });
-    
     cell.detailTextLabel.text = value;
     if (placeholder) {
-        cell.detailTextLabel.textColor = self.placeholderTextColor;
+        cell.detailTextLabel.textColor = [OUIInspector disabledLabelTextColor];
     } else if (cell.accessoryType == UITableViewCellAccessoryDisclosureIndicator) {
-        cell.detailTextLabel.textColor = [OUIInspector indirectValueTextColor];
+        cell.detailTextLabel.textColor = [OUIInspector valueTextColor];
     } else {
-        cell.detailTextLabel.textColor = defaultDetailTextColor;
+        cell.detailTextLabel.textColor = [OUIInspector valueTextColor];
     }
     if (item.boldValue == YES)
         cell.detailTextLabel.font = [OUIInspectorTextWell defaultLabelFont];

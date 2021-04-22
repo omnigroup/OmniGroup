@@ -388,12 +388,9 @@ static void _setWeightInTraitsDictionary(NSMutableDictionary *traits, CTFontSymb
                 OBASSERT_NOT_REACHED("The incoming font is not equal to self.font.");
             }
             
-            OBASSERT(OFFloatEqualToFloatWithAccuracy(self.font.xHeight, font.xHeight, .01), "The incoming font does not have the same xHeight as self.font.");
-            
-            if (self.font.capHeight != font.capHeight) {
-                OBASSERT_NOT_REACHED("The incoming font does not have the same capHeight as self.font.");
-            }
+            OBASSERT(OFFloatEqualToFloatWithAccuracy(self.font.xHeight, font.xHeight, 0.01), "The incoming font does not have the same xHeight as self.font.");
 
+            OBASSERT(OFFloatEqualToFloatWithAccuracy(self.font.capHeight, font.capHeight, 0.01), "The incoming font does not have the same capHeight as self.font.");
         }
 #elif OMNI_BUILDING_FOR_MAC
         if (!OFISEQUAL(self.font, font)) {

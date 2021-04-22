@@ -453,7 +453,13 @@ tryAgain:
             DEBUG_TRANSFER(2, @"  Just locally automatically moved.");
             return;
         }
-        
+
+        if (remoteState.deleted) {
+            DEBUG_TRANSFER(2, @"  Remotely deleted.");
+            // This case gets handled by -[OFXFileItem handleIncomingDeleteWithFilePresenter:error:]. If that fails to handle the delete for some reason, we'll fail an assertion there with "The item will likely be resurrected" and then also hit this condition here. (But we don't really need to fail a second assertion here for every failed assertion there.)
+            return;
+        }
+
         OBASSERT_NOT_REACHED("Unhandled file state");
     }];
     

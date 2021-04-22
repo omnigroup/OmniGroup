@@ -113,7 +113,7 @@ NS_ASSUME_NONNULL_BEGIN
     if (!_menuNavigationController) {
         _menuNavigationController = [[UINavigationController alloc] init];
         _menuNavigationController.delegate = self;
-        _menuNavigationController.modalPresentationStyle = UIModalPresentationPopover;
+        _menuNavigationController.modalPresentationStyle = self.modalPresentationStyle;
         self.wrappedViewController = _menuNavigationController;
     }
 
@@ -122,15 +122,6 @@ NS_ASSUME_NONNULL_BEGIN
     [_menuNavigationController setViewControllers:@[[self _makeTopMenu]] animated:NO];
 
     [super viewWillAppear:animated];
-}
-
-- (void)_setOptionsControllerBarButtonItemOnNavigationItem:(UINavigationItem *)navItem;
-{
-    if (self.presentingViewController.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassCompact) {
-        navItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(cancelButton:)];
-    } else {
-        navItem.rightBarButtonItem = nil;
-    }
 }
 
 - (OUIMenuOptionsController *)_makeTopMenu;
@@ -144,8 +135,8 @@ NS_ASSUME_NONNULL_BEGIN
     
     UINavigationItem *navItem = topMenu.navigationItem;
     navItem.title = self.title;
-    [self _setOptionsControllerBarButtonItemOnNavigationItem:navItem];
-    
+    navItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(cancelButton:)];
+
     (void)[topMenu view]; // So we can ask it its preferred content size
     
     return topMenu;
@@ -154,6 +145,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable UIPopoverPresentationController *)popoverPresentationController;
 {
     UIPopoverPresentationController *controller = [super popoverPresentationController];
+    if (!controller)
+        return nil;
     
     // Set up a default delegate that has the correct behavior, but only do it once per unique popover presentation controller in case a client of this class wants to change it.
     static char *delegateKey = "com.omnigroup.OUIMenuController.DefaultPopoverPresentationControllerDelegate";
@@ -207,17 +200,22 @@ NS_ASSUME_NONNULL_BEGIN
 
     if (!_isShowingAsPopover)
         return;
-    
+
+    BOOL shouldHideNavigationBar;
     if (self.alwaysShowsNavigationBar) {
-        navigationController.navigationBarHidden = NO;
+        shouldHideNavigationBar = NO;
     } else {
         NSArray *viewControllers = navigationController.viewControllers;
         BOOL atTopLevel = viewControllers.count > 0 && viewController == viewControllers[0];
-        navigationController.navigationBarHidden = atTopLevel;
+        shouldHideNavigationBar = atTopLevel;
     }
-    
-    navigationController.preferredContentSize = viewController.preferredContentSize;
-    self.preferredContentSize = navigationController.preferredContentSize;
+    navigationController.navigationBarHidden = shouldHideNavigationBar;
+    CGSize preferredContentSize = viewController.preferredContentSize;
+    if (!shouldHideNavigationBar) {
+        preferredContentSize.height += 2 * navigationController.navigationBar.frame.size.height;
+    }
+    navigationController.preferredContentSize = preferredContentSize;
+    self.preferredContentSize = preferredContentSize;
 }
 
 #pragma mark - UIPopoverPresentationControllerDelegate
@@ -243,7 +241,7 @@ NS_ASSUME_NONNULL_BEGIN
     self.preferredContentSize = _menuNavigationController.preferredContentSize;
 }
 
-- (void)popoverPresentationControllerDidDismissPopover:(UIPopoverPresentationController *)popoverPresentationController;
+- (void)presentationControllerDidDismiss:(UIPresentationController *)presentationController;
 {
     [self _discardMenu];
     [self _didFinish];

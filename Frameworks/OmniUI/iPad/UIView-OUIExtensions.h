@@ -45,6 +45,8 @@ typedef OUIViewVisitorResult(^OUIViewVisitorBlock)(UIView *view);
 - (nullable __kindof UIView *)enclosingViewMatching:(NS_NOESCAPE OFPredicateBlock)predicate;
 - (OUIViewVisitorResult)applyToViewTree:(OUIViewVisitorBlock)block; // in-order traversal
 
+@property (readonly, nonatomic, nullable) UIScene *containingScene;
+
 // Defaults to zeros, but subclasses can return spacing offsets for where their border appears to be relative to where their actual view edge is.
 // Edge borders: Used by the inspector system to help build seemingly contsistent spacing between controls.
 

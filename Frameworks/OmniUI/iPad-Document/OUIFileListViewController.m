@@ -84,7 +84,7 @@ RCS_ID("$Id$");
     cell.accessoryType = isFolder ? UITableViewCellAccessoryDisclosureIndicator : UITableViewCellAccessoryNone;
     
     BOOL canOpenFile = (isFolder || isDocument) && [fileInfo exists];
-    cell.textLabel.textColor = canOpenFile ? [UIColor blackColor] : [UIColor grayColor];
+    cell.textLabel.textColor = canOpenFile ? UIColor.labelColor : UIColor.secondaryLabelColor;
     
     if (self.shouldShowLastModifiedDate && isDocument) {
         NSDate *lastModifiedDate = [fileInfo lastModifiedDate];

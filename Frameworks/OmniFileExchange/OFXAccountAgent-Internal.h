@@ -26,11 +26,6 @@ typedef void (^OFXAfterMetadataUpdateAction)(void);
 
 @property(nonatomic,readonly) NSOperationQueue *operationQueue;
 
-#if !OFX_MAC_STYLE_ACCOUNT
-// Set by OFXAgent when a migration is started.
-@property(nonatomic,nullable,strong,readwrite) OFXAccountMigration *activeMigration;
-#endif
-
 @end
 
 extern NSString * const OFXAccountAgentDidStopForReplacementNotification;

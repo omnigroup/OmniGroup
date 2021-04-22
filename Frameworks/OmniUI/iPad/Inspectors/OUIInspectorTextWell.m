@@ -388,7 +388,7 @@ static NSString *_getText(OUIInspectorTextWell *self, NSString *text, TextType *
     if (_disabledTextColor)
         return _disabledTextColor;
     
-    return [OUIInspector disabledLabelTextColor];
+    return [OUIInspector placeholderTextColor];
 }
 
 - (void)setDisabledTextColor:(UIColor *)disabledTextColor;

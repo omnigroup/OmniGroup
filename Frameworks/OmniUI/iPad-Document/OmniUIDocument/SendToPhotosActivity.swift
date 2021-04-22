@@ -21,7 +21,7 @@ public class SendToPhotosActivity : DocumentConversionActivity<OUIDocument, UIIm
     }
     
     public override var activityImage: UIImage? {
-        return OUIDocumentExporter.sendToPhotosImage
+        return UIImage(systemName:"camera.fill")
     }
     
     public override func isSuitableDocumentType(_ type: OUIDocument.Type) -> Bool {

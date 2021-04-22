@@ -32,11 +32,12 @@ typedef NS_ENUM(NSUInteger, OFXServerAccountUsageMode) {
 
 @interface OFXServerAccount : NSObject
 
++ (nullable OFXServerAccount *)accountSyncingLocalURL:(NSURL *)url fromRegistry:(OFXServerAccountRegistry *)registry;
 + (BOOL)validateLocalDocumentsURL:(NSURL *)documentsURL reason:(OFXServerAccountLocalDirectoryValidationReason)reason error:(NSError **)outError;
 + (BOOL)validatePotentialLocalDocumentsParentURL:(NSURL *)documentsURL registry:(OFXServerAccountRegistry *)registry error:(NSError **)outError; // For NSSavePanel in the UI
 
 + (nullable NSURL *)signinURLFromWebDAVString:(NSString *)webdavString;
-+ (NSString *)suggestedDisplayNameForAccountType:(OFXServerAccountType *)accountType url:(NSURL *)url username:(nullable NSString *)username excludingAccount:(nullable OFXServerAccount *)excludeAccount;
++ (NSString *)suggestedDisplayNameForAccountType:(OFXServerAccountType *)accountType url:(nullable NSURL *)url username:(nullable NSString *)username excludingAccount:(nullable OFXServerAccount *)excludeAccount;
 
 #if !OFX_MAC_STYLE_ACCOUNT
 // Used by OUIServerAccountSetupViewController when creating a new account. Probably of not much use otherwise.
@@ -60,7 +61,7 @@ typedef NS_ENUM(NSUInteger, OFXServerAccountUsageMode) {
 #if !OFX_MAC_STYLE_ACCOUNT
 // Older iOS builds stored the local working copy of documents in a hidden directory. We need to migrate accounts to moving the documents folder inside the local documents directory (or entirely out to Files) before the files will be visible.
 @property(nonatomic,readonly) BOOL requiresMigration;
-- (BOOL)didMigrateToLocalDocumentsURL:(NSURL *)updatedDocumentsURL error:(NSError **)outError NS_SWIFT_NAME(didMigrateToLocalDocumentsURL(_:));
+- (void)startMigrationWithCompletionHandler:(void (^)(BOOL success, NSError * _Nullable error))completionHandler;
 #endif
 
 @property(nonatomic,readonly) NSURL *localDocumentsURL; // For document syncing; not needed for simple WebDAV access

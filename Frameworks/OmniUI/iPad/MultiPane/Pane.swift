@@ -4,18 +4,16 @@
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
-//
-// $Id$
 
 import UIKit
 
 /// Pane: type that wraps a view controller with the settings necessary for it to be managed by the MultiPaneController.
-// NOTE: Given the unknowns of how Omni would use MultiPane, many properties have been left as internal until there is a need for them to be public.
-//       The PaneConfiguration and the PaneEnviroment could be properties and types to expose to clients since they provide all the configuration that gets applied to a Pane and its managed view controller by the MPC.
-//       Properties and functions currently marked private probably don't make sense to change externally and should be left that way.
-//
+/// NOTE: Given the unknowns of how Omni would use MultiPane, many properties have been left as internal until there is a need for them to be public.
+///       The PaneConfiguration and the PaneEnviroment could be properties and types to expose to clients since they provide all the configuration that gets applied to a Pane and its managed view controller by the MPC.
+///       Properties and functions currently marked private probably don't make sense to change externally and should be left that way.
 @objc(OUIMultiPane) open class Pane: NSObject {
-    @objc /**REVIEW**/ public let viewController: UIViewController
+    public let viewController: UIViewController
+
     @objc public var preferredMinimumWidth: CGFloat {
         get {
             return configuration.preferredMinimumWidth
@@ -26,7 +24,7 @@ import UIKit
     }
     
     /// Does this pane style support pinning
-    @objc /**REVIEW**/ public var isPinnable: Bool {
+    public var isPinnable: Bool {
         return configuration.canBePinned
     }
     
@@ -56,12 +54,12 @@ import UIKit
     /// If pinning a pane would cause this threshold to be exceeded, then the pinning system will push the other sidebar pane out of the way.
     /// Otherwise, it will try to pin in place without changing the other pane.
     /// (Note, better to use this than the preferredMinimumWidth of the center pane so that other layout can happen regardless of whether you are opting into pinning or not.)
-    @objc /**REVIEW**/ public var centerPanePinWidthThreshold: CGFloat = 320
+    public var centerPanePinWidthThreshold: CGFloat = 320
     
     /// Signal that this pane wants to participate in Pinning.
     /// No-op if pane doesn't support pinning (.center panes don't support pinning)
     /// Note: This only lets the system know that this pane wants to be part of pinning.
-    @objc /**REVIEW**/ public var wantsToBePinnable: Bool {
+    public var wantsToBePinnable: Bool {
         set (newValue) {
             guard configuration is Sidebar else {
                 // Trying to pin the Center Pane isn't supported.
@@ -78,11 +76,10 @@ import UIKit
     }
     
     /// Is this Pane currently pinned.
-    @objc /**REVIEW**/ public var isPinned: Bool {
+    public var isPinned: Bool {
         return environment?.presentationMode == .embedded && configuration.isPinned
     }
-    
-    
+
     // describes the type of pane, where it lives, and how it behaves in the curent environment
     var configuration: PaneConfiguration
     
@@ -101,17 +98,17 @@ import UIKit
     }
     
     // embedded width
-    @objc /**REVIEW**/ var width: CGFloat {
+    var width: CGFloat {
         return self.widthConstraint?.constant ?? 0.0
     }
     
-    @objc /**REVIEW**/ var preferredWidth: CGFloat = 0.0 {
+    var preferredWidth: CGFloat = 0.0 {
         didSet {
             self.widthConstraint?.constant = preferredWidth
         }
     }
     
-    @objc /**REVIEW**/ var visibleWhenEmbedded = true
+    var visibleWhenEmbedded = true
     
     init(withViewController viewController: UIViewController, configuration: PaneConfiguration) {
         self.viewController = viewController
@@ -119,32 +116,41 @@ import UIKit
     }
     
     /// initialize a pane using the default Configuration for the location type
-    @objc /**REVIEW**/ convenience init(withViewController viewController: UIViewController, location: MultiPaneLocation) {
+    convenience init(withViewController viewController: UIViewController, location: MultiPaneLocation) {
         let config = location.defaultConfiguration
         self.init(withViewController: viewController, configuration: config)
     }
     
     /// called prior to displaying the view controller
-    @objc /**REVIEW**/ func prepareForDisplay() {
-        guard let env = self.environment else {
+    func prepareForDisplay() {
+        guard let environment = self.environment else {
             assertionFailure("expected to have an environment before display time")
             return
         }
         
         // apply any decorations to this pane for the current environment
         self.configuration.configure(withViewController: self.viewController)
-        self.apply(decorations: self.configuration.decorations(forEnvironment: env))
+        self.apply(decorations: self.configuration.decorations(forEnvironment: environment))
     }
     
-    func apply(decorations: [PaneDecoration]) {
-        decorations.forEach { (decoration) in
-            self.configuration.apply(decoration: decoration, toViewController: self.viewController)
+    func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        guard viewController.traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) else { return }
+
+        if let environment = environment {
+            apply(decorations: configuration.decorations(forEnvironment: environment))
         }
     }
-    
-//MARK: - Private
+
+    func apply(decorations: [PaneDecoration]) {
+        for decoration in decorations {
+            configuration.apply(decoration: decoration, toViewController: viewController)
+        }
+    }
+
+    //MARK: Private
+
     private var needsInitialSetup: Bool = true
-    
+
     private var widthConstraint: NSLayoutConstraint? {
         didSet {
             guard let widthConstraint = self.widthConstraint else { return }
@@ -188,8 +194,17 @@ import UIKit
         } else {
             self.widthConstraint?.isActive = false
             self.heightConstraint?.isActive = false
-            self.viewController.view.translatesAutoresizingMaskIntoConstraints = true
+            if viewControllerIsWrappedInWrapperController {
+                self.viewController.view.translatesAutoresizingMaskIntoConstraints = false
+                self.viewController.parent?.view.translatesAutoresizingMaskIntoConstraints = true
+            } else {
+                self.viewController.view.translatesAutoresizingMaskIntoConstraints = true
+            }
         }
+    }
+    
+    private var viewControllerIsWrappedInWrapperController: Bool {
+        return viewController.parent is MultipanePresentationWrapperViewController
     }
     
     private func initialSetup() {
@@ -204,6 +219,8 @@ import UIKit
     }
 }
 
+// MARK: -
+
 extension MultiPaneLocation {
     var defaultConfiguration: PaneConfiguration {
         switch self {
@@ -217,12 +234,17 @@ extension MultiPaneLocation {
     }
 }
 
-//MARK: - Pane Environment
+//MARK: -
+//MARK: Pane Environment
+//MARK: -
+
 // size-class dependent settings.
 protocol PaneEnvironment {
     var presentationMode: MultiPanePresentationMode { get }
     var containerSize: CGSize { get }
 }
+
+//MARK: -
 
 // Regular width environment
 struct RegularEnvironment: PaneEnvironment {
@@ -234,6 +256,8 @@ struct RegularEnvironment: PaneEnvironment {
     }
 }
 
+//MARK: -
+
 // compact width environment
 struct CompactEnvironment: PaneEnvironment {
     let presentationMode: MultiPanePresentationMode
@@ -244,6 +268,8 @@ struct CompactEnvironment: PaneEnvironment {
         self.containerSize = containerSize
     }
 }
+
+//MARK: -
 
 extension UIViewController {
     @objc var isVisible: Bool {
@@ -273,7 +299,7 @@ extension UIViewController {
         return isVisible
     }
     
-    public var deepestAncestor: UIViewController {
+    @objc public var furthestAncestor: UIViewController {
         var ancestor = self
         while let parent = ancestor.parent {
             ancestor = parent

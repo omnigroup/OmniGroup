@@ -23,6 +23,7 @@ NS_EXTENSION_UNAVAILABLE_IOS("OUIAppControllerSceneHelper not available in app e
 // Implicitly includes Done as the right bar button
 - (void)showAboutScreenInNavigationController:(nullable UINavigationController *)navigationController;
 - (void)showAboutScreenInNavigationController:(nullable UINavigationController *)navigationController withDoneButton:(BOOL)withDoneButton;
+- (void)showReleaseNotes:(nullable id)sender;
 - (void)showOnlineHelp:(nullable id)sender;
 - (nullable OUIWebViewController *)showNewsURLString:(NSString *)urlString evenIfShownAlready:(BOOL)showNoMatterWhat;
 

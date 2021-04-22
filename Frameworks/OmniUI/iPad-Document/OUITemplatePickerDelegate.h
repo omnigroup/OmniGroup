@@ -13,7 +13,6 @@
 
 @protocol OUITemplatePickerDelegate
 - (void)templatePicker:(OUITemplatePicker *)templatePicker didSelectTemplateURL:(NSURL *)templateURL animateFrom:(UIView *)fromView;
-- (NSArray <OUITemplateItem *> *)generalTemplatesInTemplatePicker:(OUITemplatePicker *)templatePicker;
 - (void)templatePickerDidCancel:(OUITemplatePicker *)templatePicker;
 @end
 

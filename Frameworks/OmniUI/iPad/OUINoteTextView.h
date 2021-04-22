@@ -33,6 +33,8 @@
 @end
 
 @protocol OUINoteTextViewAppearanceDelegate <NSObject>
+
+@optional
 - (UIColor *)textColorForTextView:(OUINoteTextView *)textView;
 - (UIColor *)placeholderTextColorForTextView:(OUINoteTextView *)textView;
 - (UIColor *)borderColorForTextView:(OUINoteTextView *)textView;

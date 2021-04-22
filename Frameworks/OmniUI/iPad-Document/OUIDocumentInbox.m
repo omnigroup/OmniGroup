@@ -15,8 +15,6 @@
 
 @implementation OUIDocumentInbox
 
-RCS_ID("$Id$");
-
 + (void)takeInboxItem:(NSURL *)inboxURL completionHandler:(void (^)(NSURL *newFileURL, NSError *errorOrNil))completionHandler;
 {
     completionHandler = [completionHandler copy];
@@ -71,7 +69,7 @@ RCS_ID("$Id$");
     }
     
     if (convertOnOpen && [convertOnOpen shouldOpenFileTypeForConversion:fileType]) {
-        [convertOnOpen saveConvertedFileIfAppropriateFromFileURL:inboxURL completionHandler:^(NSURL *savedFileURL, NSError *errorOrNnil) {
+        [convertOnOpen saveConvertedFileIfAppropriateFromFileURL:inboxURL completionHandler:^(NSURL *savedFileURL, NSError *errorOrNil) {
             OBFinishPorting;
 #if 0
             [docPicker.documentStore moveItems:[NSSet setWithObject:savedItem] fromScope:currentScope toScope:scope inFolder:scope.rootFolder completionHandler:^(NSSet *movedFileItems, NSArray *errorsOrNil) {
@@ -84,16 +82,11 @@ RCS_ID("$Id$");
     
     NSURL *availableURL;
     {
-        __autoreleasing NSError *error = nil;
-        NSURL *documentDirectoryURL = [[[NSFileManager defaultManager] URLForDirectory:NSDocumentDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:YES error:&error] copy];
-        if (!documentDirectoryURL) {
-            completionHandler(nil, error);
-        }
-
-        error = nil;
+        NSURL *documentDirectoryURL = OUIDocumentAppController.sharedController.localDocumentsURL;
         NSURL *desiredURL = [documentDirectoryURL URLByAppendingPathComponent:[inboxURL lastPathComponent]];
+        __autoreleasing NSError *error = nil;
         NSString *availablePath = [[NSFileManager defaultManager] uniqueFilenameFromName:[[desiredURL absoluteURL] path] allowOriginal:YES create:NO error:&error];
-        if (!availablePath) {
+        if (availablePath == nil) {
             completionHandler(nil, error);
             return;
         }

@@ -43,6 +43,7 @@ typedef NS_ENUM(NSInteger, OUIInspectorSliceGroupPosition) {
 @property(nonatomic,readonly) BOOL includesInspectorSliceGroupSpacerOnBottom;
 @property(nonatomic,readonly) BOOL wantsAutoConfiguredBottomSeparator;
 
++ (UIColor *)sliceBackgroundColor;
 - (UIColor *)sliceBackgroundColor; // Default color for the slice background
 
 + (void)configureTableViewBackground:(UITableView *)tableView;

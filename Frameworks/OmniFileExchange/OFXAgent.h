@@ -17,10 +17,6 @@ NS_ASSUME_NONNULL_BEGIN
 @class ODAVConnectionConfiguration;
 @class OFXServerAccountRegistry, OFXServerAccount, OFXRegistrationTable<ValueType>, OFXAccountClientParameters, OFXFileMetadata;
 
-#if !OFX_MAC_STYLE_ACCOUNT
-@class OFXAccountMigration, OFXAgentActivity;
-#endif
-
 // An immutable snapshot of the state of the currently known accounts.
 @interface OFXServerAccountsSnapshot : NSObject <NSCopying>
 
@@ -52,7 +48,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nullable,nonatomic,readonly) NSString *remoteDirectoryName; // For testing -- must be a plain string (no slashes)
 @property(nonatomic,retain) OFXAccountClientParameters *clientParameters; // For testing -- must be set before the agent is started
 
-@property(nonatomic,readonly) BOOL started;
+@property (nonatomic, readonly) BOOL started;
+@property (nonatomic, readonly) BOOL isOffline;
+
 - (void)applicationLaunched; // Starts syncing asynchronously
 - (void)applicationWillTerminateWithCompletionHandler:(void (^ _Nullable)(void))completionHandler; // Waits for syncing to finish and shuts down the agent
 
@@ -92,24 +90,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)countFileItemsWithLocalChangesForAccount:(OFXServerAccount *)serverAccount completionHandler:(void (^)(NSError * _Nullable errorOrNil, NSUInteger count))completionHandler;
 
 @property(nonatomic,copy) NSString *debugName;
-
-#if !OFX_MAC_STYLE_ACCOUNT
-- (nullable OFXAccountMigration *)startMigratingAccountToLocalDocuments:(OFXServerAccount *)serverAccount
-                                                               activity:(OFXAgentActivity *)agentActivity
-                                                      completionHandler:(void (^)(NSError * _Nullable errorOrNil))completionHandler
-                                                                  error:(NSError **)outError
-    NS_SWIFT_NAME(startMigratingAccountToLocalDocuments(_:activity:completionHandler:));
-
-
-typedef void (^OFXMigrationDestinationCompletion)(NSURL * _Nullable destinationURL, NSError * _Nullable errorOrNil);
-typedef void (^OFXMigrationChooseDestination)(OFXMigrationDestinationCompletion destinationChosen);
-
-- (nullable OFXAccountMigration *)startMigratingAccountToFiles:(OFXServerAccount *)serverAccount
-                                                      activity:(OFXAgentActivity *)agentActivity
-                                             chooseDestination:(OFXMigrationChooseDestination)chooseDestination
-                                             completionHandler:(void (^)(NSError * _Nullable errorOrNil))completionHandler error:(NSError **)outError
-    NS_SWIFT_NAME(startMigratingAccountToFiles(_:activity:chooseDestination:completionHandler:));
-#endif
 
 @end
 

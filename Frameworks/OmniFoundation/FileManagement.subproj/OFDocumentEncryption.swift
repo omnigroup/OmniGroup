@@ -48,7 +48,7 @@ class OFDocumentEncryptionSettings : NSObject {
      * May return false positives for other CMS-formatted objects, such as PKCS#7 or PKCS#12 objects, iTunes store receipts, etc.
      */
     @objc(fileWrapperMayBeEncrypted:)
-    public class func mayBeEncrypted(wrapper: FileWrapper) -> ObjCBool {
+    public class func mayBeEncrypted(wrapper: FileWrapper) -> Bool {
         if (OFCMSFileWrapper.mightBeEncrypted(wrapper)) {
             return true
         } else {

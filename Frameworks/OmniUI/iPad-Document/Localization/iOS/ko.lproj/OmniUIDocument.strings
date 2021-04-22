@@ -1,44 +1,14 @@
-/* Filename appendage to indicate file is a copy of a file that has been moved to a different location */
-" (Copy)" = " (복사)";
-
-/* bytes */
-"%@ B" = "%@B";
-
 /* error description */
 "%@ cannot open this type of file." = "%@은(는) 이 유형의 파일을 열 수 없습니다.";
 
-/* gigabytes */
-"%@ GB" = "%@GB";
+/* OmniPresence file list: status: items and size format */
+"%@ items, %@" = "%1$@개 항목, %2$@";
 
-/* doc picker multiple items accessibility value */
-"%@ items" = "%@개의 항목";
-
-/* kilobytes */
-"%@ KB" = "%@KB";
-
-/* megabytes */
-"%@ MB" = "%@MB";
+/* OmniPresence file list: status: items and size with downloads format */
+"%@ items, %@ (%@ downloaded, %@)" = "%1$@개 항목, %2$@(%3$@ 다운로드됨, %4$@)";
 
 /* home screen detail label */
 "%d items" = "%d개 항목";
-
-/* Main toolbar title for a multiple selected documents. */
-"%ld Documents Selected" = "%ld개 도큐멘트가 선택됨";
-
-/* Main toolbar title for a multiple selected items. */
-"%ld Items Selected" = "%ld개 항목 선택됨";
-
-/* home screen detail format -- count and item description */
-"%lu %@" = "%1$lu %2$@";
-
-/* Main toolbar title for a single selected document. */
-"1 Document Selected" = "1개 도큐멘트 선택됨";
-
-/* doc picker single item accessibility value */
-"1 item" = "1개 항목";
-
-/* Main toolbar title for a single selected folder. */
-"1 Item Selected" = "1개 항목 선택됨";
 
 /* replace document description */
 "A document with the name \"%@\" already exists. Do you want to replace it? This cannot be undone." = "“%@”(이)라는 이름의 도큐멘트가 이미 존재합니다. 바꾸시겠습니까? 이 작업은 실행 취소할 수 없습니다.";
@@ -48,14 +18,6 @@
 
 /* Server Account Setup label: account name */
 "Account Name" = "계정 이름";
-
-/* Menu option in the document picker view */
-"Actions" = "작업";
-
-/* Cloud Setup button title to add a new account
-   Cloud Setup button title to convert an existing account */
-
-"Add an Account" = "계정 추가";
 
 /* home screen button label */
 "Add OmniPresence Account" = "OmniPresence  계정 추가";
@@ -67,41 +29,16 @@
    Server account setup confirmation cancellation label
    title for alert option cancel */
 
-
-
-
-
 "Cancel" = "취소";
-
-/* item not fully downloaded error title */
-"Cannot Duplicate Item" = "항목을 복제할 수 없음";
-
-/* item not fully downloaded error title */
-"Cannot Export Item" = "항목을 내보낼 수 없음";
 
 /* email action description */
 "Choose a format for emailing \"%@\":" = "“%@” 전자 메일 전송 형식을 선택하십시오.";
-
-/* toolbar prompt when choosing a template */
-"Choose a Template" = "템플릿 선택";
 
 /* Cloud setup modal sheet title */
 "Choose Account Type" = "계정 유형 선택";
 
 /* export options title */
 "Choose Format" = "형식 선택";
-
-/* Clear from Recent Documents container toolbar item accessibility label. */
-"Clear" = "지우기";
-
-/* clear button title */
-"Clear %ld Documents" = "%ld 도큐멘트 지우기";
-
-/* remove button title */
-"Clear Document" = "도큐멘트 지우기";
-
-/* doc picker custom accessibility action name */
-"Clear name field" = "이름 필드 지우기";
 
 /* title view clear button accessibility label. */
 "Clear Title" = "제목 지우기";
@@ -112,47 +49,26 @@
 /* demo mode disabled message */
 "Cloud storage is disabled in this demo version." = "이 데모 버전에서는 클라우드 저장소가 비활성화되어 있습니다.";
 
+/* Screen title for configuring OmniPresence accounts */
+"Configure OmniPresence Syncing" = "OmniPresence 동기화 구성";
+
 /* Success label when connecting to an OmniPresence or WebDAV server account */
 "Connected" = "연결됨";
 
-/* webdav connecting label */
-"Connecting" = "연결 중";
+/* Update news: button title */
+"Continue" = "계속";
 
 /* Menu option in the document picker view */
 "Copy as Image" = "이미지로 복사";
 
-/* gear menu item */
-"Copy from WebDAV" = "WebDAV에서 복사";
-
-/* gear menu item */
-"Copy from…" = "복사 위치...";
-
-/* Create Document From Template Document Shortcut Title */
-"Create New Document" = "새 도큐멘트 생성";
-
-/* Create Document From Template Document Shortcut Title */
-"Create New Document From %@" = "%@에서 새 도큐멘트 생성";
-
 /* moved aside custom sample document name */
 "CustomizedSampleDocumentName" = "%@ 사용자 정의";
-
-/* sort by date */
-"Date" = "날짜";
-
-/* Delete toolbar item accessibility label. */
-"Delete" = "삭제";
 
 /* Server account setup confirmation action label format */
 "Delete \"%@\"" = "“%@” 삭제";
 
-/* delete button title */
-"Delete %ld Documents" = "%ld 도큐멘트 삭제";
-
 /* Server Account Setup button label */
 "Delete Account" = "계정 삭제";
-
-/* delete button title */
-"Delete Document" = "도큐멘트 삭제";
 
 /* Discard unsynced edits dialog: discard button label */
 "Discard Edits" = "편집 항목 무시";
@@ -169,31 +85,11 @@
 /* Toolbar button title for returning to list of documents. */
 "Documents <back button>" = "도큐멘트";
 
-/* Duplicate document preview action title.
-   Duplicate toolbar item accessibility label. */
-
-"Duplicate" = "복제";
-
-/* title for alert option confirming duplication of multiple files */
-"Duplicate %ld Documents" = "%ld 도큐멘트 복제";
-
-/* title for alert option confirming duplication of multiple items */
-"Duplicate %ld Items" = "%ld 항목 복제";
-
-/* omni sync server setup help */
-"Easily sync Omni documents between devices. Signup is free!" = "장치 간에 Omni 도큐멘트를 쉽게 동기화할 수 있습니다. 무료로 등록하십시오!";
-
-/* When displaying a sync error, this is the option to change the username and password. */
-"Edit Credentials" = "자격 증명 편집";
-
-/* doc picker custom accessibility action name */
-"Edit name" = "이름 편집";
+/* OmniPresence sync status */
+"Downloading files" = "파일 다운로드";
 
 /* title view edit button item accessibility hint. */
 "Edits the document's title." = "도큐멘트 제목을 편집합니다.";
-
-/* empty trash button title */
-"Empty Trash" = "휴지통 비우기";
 
 /* webdav help */
 "Enter the location of your WebDAV space." = "WebDAV 공간 위치를 입력하십시오.";
@@ -201,36 +97,16 @@
 /* export button title
    export options title
    Export toolbar item accessibility label. */
-
-
 "Export" = "내보내기";
 
 /* export to description */
 "Export \"%@\" as:" = "“%@”을(를) 다음으로 내보내기:";
 
-/* export action description */
-"Export \"%@\" to %@ as:" = "“%1$@”을(를) %2$@(으)로 다음으로 내보내기:";
-
-/* Menu option in the document picker view */
-"Export to WebDAV" = "WebDAV로 내보내기";
-
-/* Export document preview action title. */
-"Export…" = "내보내기...";
-
-/* finished */
-"Finished" = "완료됨";
-
-/* doc picker folder type accessibility value */
-"Folder" = "폴더";
-
-/* import sheet title */
-"Import" = "가져오기";
+/* OmniPresence file list: sort order option */
+"folder and name" = "폴더 및 이름";
 
 /* Info item accessibility label */
 "Info" = "정보";
-
-/* doc picker title label editing accessibility value */
-"Is editing" = "편집 중";
 
 /* Notice for the user about the last edit to a document (unknown device) */
 "Last edit: %@" = "마지막 편집: %@";
@@ -241,76 +117,43 @@
 /* Notice for the user about the last edit to a document (this device) */
 "Last edit: %@ on this device" = "마지막 편집: 이 장치의 %@";
 
+/* OmniPresence sync status: prefix for the 'last sync' status */
+"Last sync" = "마지막 동기화";
+
+/* Update news: button title */
+"Learn More" = "자세히 알아보기";
+
 /* Server Account Setup label: location */
 "Location" = "위치";
 
-/* top level doc picker title */
-"Locations" = "위치";
-
-/* modified date accessibility value */
-"Modified %@" = "%@ 수정됨";
-
-/* Menu option in the document picker view
-   Move toolbar item accessibility label. */
-
-"Move" = "이동";
-
-/* move to trash button title */
-"Move %ld Items to Trash" = "%ld 항목을 휴지통으로 이동";
-
-/* move to trash button title
-   Move to Trash toolbar item accessibility label. */
-
-"Move to Trash" = "휴지통으로 이동";
-
-/* Share menu title */
-"Move to..." = "이동 대상 선택…";
-
-/* Move document preview action title. */
-"Move…" = "이동...";
+/* OmniPresence file list: sort order option */
+"modification date" = "수정 날짜";
 
 /* Base name for newly created documents. This will have an number appended to it to make it unique. */
 "My Document" = "내 도큐멘트";
 
-/* Base name for newly created templates. This will have an number appended to it to make it unique. */
-"My Template" = "내 템플릿";
+/* OmniPresence file list: sort order option */
+"name" = "이름";
 
 /* New Document toolbar item accessibility label.
    New Template button title */
-
 "New Document" = "새로운 도큐멘트";
 
-/* Action sheet title for making a new folder from the selected documents */
-"New folder" = "새로운 폴더";
+/* Update news: title */
+"New in iOS 13:\nFull Adoption of Apple's Document Browser" = "iOS 13의 새로운 기능:\nApple의 도큐멘트 브라우저 완전 채택";
 
 /* Server Account Setup label: nickname */
 "Nickname" = "별명";
 
-/* Export message for empty table view */
-"No accounts are configured for exporting." = "내보내기용으로 구성된 계정이 없습니다.";
-
-/* Import message for empty table view */
-"No accounts are configured for importing." = "가져오기용으로 구성된 계정이 없습니다.";
-
-/* doc picker no items accessibility value */
-"No items" = "항목 없음";
-
-/* Not downloaded accessibility label. */
-"Not downloaded" = "다운로드되지 않음";
-
-/* Not uploaded accessibility label. */
-"Not uploaded" = "업로드되지 않음";
-
 /* button title
    When displaying a sync error, this is the option to ignore the error. */
-
 "OK" = "양호";
 
 /* demo disabled message */
 "OmniPresence allows you to use our free sync service or any compatible WebDAV server to automatically share documents between your devices, or to keep copies of your documents in the cloud in case you need to restore your device." = "OmniPresence에서는 저희가 제공하는 무료 동기화 서비스 또는 모든 호환되는 WebDAV 서버를 사용해서 사용자의 장치 간에 도큐멘트를 자동으로 공유하거나 장치 복원이 필요한 경우를 대비해서 클라우드에 도큐멘트 사본을 저장할 수 있습니다.";
 
-/* Omni Presence config email subject format */
-"OmniPresence Configuration: %@" = "OmniPresence 구성: %@";
+/* Update news: title */
+"OmniPresence Documents" = "OmniPresence 도큐멘트";
 
 /* demo disabled title */
 "OmniPresence is disabled in this demo version." = "이 데모 버전에서는 OmniPresence가 비활성화되어 있습니다.";
@@ -323,21 +166,6 @@
 
 /* Open Document Shortcut Title */
 "Open %@" = "%@ 열기";
-
-/* empty picker text for Recent Documents */
-"Open a document to add it to this view." = "이 보기에 추가할 도큐멘트를 여십시오.";
-
-/* Open External Document toolbar item accessibility label. */
-"Open External Document" = "외부 도큐멘트 열기";
-
-/* Omni Presence config email body */
-"Open this file on another device to configure OmniPresence there." = "다른 장치에서 이 파일을 열어서 해당 위치에서 OmniPresence를 구성합니다.";
-
-/* home screen button label */
-"Open…" = "열기…";
-
-/* Menu title for selecting an external document provider when moving a file */
-"Other…" = "기타...";
 
 /* Language section title */
 "ouiLanguagePicker.language" = "언어";
@@ -360,17 +188,8 @@
 /* purchase now button title */
 "Purchase Now." = "지금 구입하십시오.";
 
-/* Generic name for location of external documents */
-"Recent Documents" = "최근 도큐멘트";
-
 /* rename button title */
 "Rename" = "이름 변경";
-
-/* toolbar prompt while renaming a document */
-"Rename Document" = "도큐멘트 이름 변경";
-
-/* toolbar prompt while renaming a folder */
-"Rename Folder" = "폴더 이름 변경";
 
 /* Message format for alert informing user that the document has been renamed on another device */
 "Renamed to %@." = "%@(으)로 이름이 변경되었습니다.";
@@ -387,73 +206,39 @@
 /* Restore Sample Documents Title */
 "Restore Sample Documents" = "샘플 도큐멘트 복원";
 
-/* Share menu title */
-"Restore to..." = "복원 대상...";
-
 /* When displaying a sync error, this is the option to retry syncing. */
 "Retry Sync" = "동기화 재시도";
 
 /* Account setup toolbar button title to save account settings */
 "Save" = "저장";
 
-/* document picker compact title view accessibility hint */
-"Scroll down to show sort and filter controls" = "아래로 스크롤하여 정렬 및 필터 컨트롤 표시";
-
-/* document picker button label */
-"Search" = "검색";
-
-/* edit button title for doc picker in non-edit mode */
-"Select" = "선택";
-
-/* Main toolbar title for a no selected documents. */
-"Select a Document" = "도큐멘트 선택";
-
 /* send to app description */
 "Send \"%@\" to app as:" = "“%@”을(를) 앱에 다음으로 전송:";
-
-/* Omni Sync Server send settings button title */
-"Send Settings via Email" = "이메일을 통해 설정 전송";
-
-/* Menu option in the document picker view */
-"Send to App" = "앱으로 전송";
-
-/* Menu option in the document picker view */
-"Send to Files" = "파일로 전송";
 
 /* Menu option in the document picker view */
 "Send to Photos" = "사진으로 전송";
 
 /* export options title
    Menu option in the document picker view */
-
 "Send via Mail" = "Mail을 통해 전송";
-
-/* email action description */
-"Server address: %@" = "서버 주소: %@";
 
 /* Label format when setting up an OmniPresence or WebDAV server account */
 "Setting up \"%@\"" = "“%@” 설정";
 
+/* Share activity title */
+"Share As…" = "다른 이름으로 공유...";
+
 /* Omni Sync Server sign up button title */
 "Sign Up For a New Account" = "새 계정 등록";
 
-/* sort by accessibility label */
-"Sort by %@" = "%@(으)로 정렬";
+/* OmniPresence file list: sort order option */
+"size" = "크기";
+
+/* OmniPresence file list: sort order label */
+"Sort by:" = "정렬 기준:";
 
 /* Presence toolbar item accessibility label. */
 "Sync Now" = "지금 동기화";
-
-/* empty template picker button text */
-"Tap here to add a document without a template." = "템플릿 없이 도큐멘트를 추가하려면 여기를 누르십시오.";
-
-/* empty picker button text */
-"Tap here, or on the + in the toolbar, to add a custom template." = "여기 또는 도구 모음의 +를 눌러서 사용자 정의 템플릿을 추가하십시오.";
-
-/* empty picker button text */
-"Tap here, or on the + in the toolbar, to add a document." = "여기 또는 도구 모음의 +를 눌러서 도큐멘트를 추가하십시오.";
-
-/* file name label for template filte types */
-"Template:" = "템플릿:";
 
 /* Discard unsynced edits dialog: message format */
 "The \"%@\" account has %ld edited documents which have not yet been synced up to the cloud. Do you wish to discard those edits?" = "“%1$@” 계정에는 클라우드에 아직 동기화되지 않은 %2$ld개의 편집된 도큐멘트가 있습니다. 이러한 편집 항목을 무시하시겠습니까?";
@@ -476,26 +261,29 @@
 /* Photo Library permisssions error suggestion. */
 "This app does not have access to your Photo Library." = "이 앱은 사용자의 사진 라이브러리에 액세스할 수 없습니다.";
 
-/* empty picker because of removed account text */
-"This Cloud Account no longer exists." = "이 클라우드 계정은 더 이상 존재하지 않습니다.";
-
 /* Error reason for a document operation failing due to a missing file. */
 "This document is not accessible. It is possible the file was deleted, renamed or moved via iTunes or an external document provider. Please try removing the file and adding it again." = "이 도큐멘트에 액세스할 수 없습니다. 파일이 삭제되었거나, 이름이 바뀌었거나 iTunes 또는 외부 도큐멘트 공급자를 통해 이동되었을 수 있습니다. 파일을 제거해보고 다시 추가해보십시오.";
-
-/* item not fully downloaded error message */
-"This item cannot be duplicated because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "이 항목은 완전히 다운로드되지 않았기 때문에 복제할 수 없습니다. 다시 시도하기 전에 항목을 누르고 다운로드될 때까지 기다리십시오.";
-
-/* item not fully downloaded error message */
-"This item cannot be exported because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "이 항목은 완전히 내보내지지 않았기 때문에 복제할 수 없습니다. 다시 시도하기 전에 항목을 누르고 다운로드될 때까지 기다리십시오.";
-
-/* sort by title */
-"Title" = "제목";
 
 /* error title */
 "Unable to open file." = "파일을 열 수 없습니다.";
 
+/* OmniPresence sync status */
+"Uploading and downloading files" = "파일 업로드 및 다운로드";
+
+/* OmniPresence sync status */
+"Uploading files" = "파일 업로드";
+
 /* Account validation status string. */
 "Validating account..." = "계정 검증 중...";
 
-/* empty picker button text */
-"When plug-ins are installed, they will appear here." = "플러그인이 설치된 경우 여기에 표시됩니다.";
+/* Screen title for viewing OmniPresence documents */
+"View OmniPresence Documents" = "OmniPresence 도큐멘트 보기";
+
+/* Update news: description */
+"We've retired our custom document browser in favor of using Apple's built-in browser, making it easier than ever for you to choose where you want to keep your documents." = "Apple의 기본 제공 브라우저를 사용할 수 있도록 기존의 고유한 사용자 정의 도큐멘트 브라우저가 더 이상 사용되지 않습니다. 이제 도큐멘트 보관 위치를 훨씬 더 쉽게 선택할 수 있습니다.";
+
+/* error description */
+"While attempting to open %@, received an error from the system" = "%@ 열기를 시도할 때 시스템 오류 발생";
+
+/* Update news: description */
+"Your OmniPresence documents will only be visible in the new browser when they’ve been downloaded to this device.\n\nOmniPresence does not download larger synced files automatically. You can manually download larger files to this device now, or access the download manager later from the OmniPresence icon in the toolbar." = "OmniPresence 도큐멘트를 이 기기에 다운로드하면 이제 새로운 브라우저에서만 표시됩니다.\n\nOmniPresence는 더 큰 동기화된 파일을 자동으로 다운로드하지 않습니다. 이제 더 큰 파일을 이 기기에 수동으로 다운로드하거나 나중에 도구 모음에 있는 OmniPresence 아이콘을 이용해서 다운로드 관리자에 액세스할 수 있습니다.";

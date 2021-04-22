@@ -12,6 +12,7 @@
 #import <OmniAppKit/OAAppearanceColors.h>
 #import <OmniUI/OUINoteTextView.h>
 #import <OmniUI/NSTextStorage-OUIExtensions.h>
+#import <OmniUI/OUIInspectorSlice.h>
 
 RCS_ID("$Id$");
 
@@ -82,7 +83,7 @@ const CGFloat OUINoteTextViewPlacholderTopMarginAutomatic = -1000;
     _detectsLinks = ALLOW_LINK_DETECTION;
     
     self.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
-    
+    self.backgroundColor = [OUIInspectorSlice sliceBackgroundColor];
     self.contentMode = UIViewContentModeRedraw;
     self.editable = NO;
     self.dataDetectorTypes = typesToDetectWithUITextView;
@@ -352,11 +353,16 @@ static NSParagraphStyle *_placeholderParagraphStyle(void)
     self.changingThemedAppearance = YES;
     {
         if (self.appearanceDelegate != nil) {
-            self.layer.borderColor = [self.appearanceDelegate borderColorForTextView:self].CGColor;
-            self.keyboardAppearance = [self.appearanceDelegate keyboardAppearanceForTextView:self];
+            if ([self.appearanceDelegate respondsToSelector:@selector(borderColorForTextView:)]) {
+                self.layer.borderColor = [self.appearanceDelegate borderColorForTextView:self].CGColor;
+            } else {
+                self.layer.borderColor = [[UIColor lightGrayColor] CGColor];
+            }
+
+            if ([self.appearanceDelegate respondsToSelector:@selector(keyboardAppearanceForTextView:)]) {
+                self.keyboardAppearance = [self.appearanceDelegate keyboardAppearanceForTextView:self];
+            }
             [self reloadInputViews];
-        } else {
-            self.layer.borderColor = [[UIColor lightGrayColor] CGColor];
         }
         
         self.textColor = [self _textColor];
@@ -474,7 +480,7 @@ static NSParagraphStyle *_placeholderParagraphStyle(void)
 
 - (UIColor *)_textColor;
 {
-    if (self.appearanceDelegate != nil) {
+    if (self.appearanceDelegate != nil && [self.appearanceDelegate respondsToSelector:@selector(textColorForTextView:)]) {
         return [self.appearanceDelegate textColorForTextView:self];
     } else {
         return [OAAppearanceDefaultColors appearance].omniNeutralDeemphasizedColor;
@@ -483,7 +489,7 @@ static NSParagraphStyle *_placeholderParagraphStyle(void)
 
 - (UIColor *)_placeholderTextColor;
 {
-    if (self.appearanceDelegate != nil) {
+    if (self.appearanceDelegate != nil && [self.appearanceDelegate respondsToSelector:@selector(placeholderTextColorForTextView:)]) {
         return [self.appearanceDelegate placeholderTextColorForTextView:self];
     } else {
         return [OAAppearanceDefaultColors appearance].omniNeutralPlaceholderColor;

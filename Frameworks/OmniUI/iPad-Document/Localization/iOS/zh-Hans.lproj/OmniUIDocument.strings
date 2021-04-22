@@ -1,44 +1,14 @@
-/* Filename appendage to indicate file is a copy of a file that has been moved to a different location */
-" (Copy)" = " （复制）";
-
-/* bytes */
-"%@ B" = "%@ B";
-
 /* error description */
 "%@ cannot open this type of file." = "%@ 无法打开此类型文件。";
 
-/* gigabytes */
-"%@ GB" = "%@ GB";
+/* OmniPresence file list: status: items and size format */
+"%@ items, %@" = "%1$@ 个项，%2$@";
 
-/* doc picker multiple items accessibility value */
-"%@ items" = "%@ 个项";
-
-/* kilobytes */
-"%@ KB" = "%@ KB";
-
-/* megabytes */
-"%@ MB" = "%@ MB";
+/* OmniPresence file list: status: items and size with downloads format */
+"%@ items, %@ (%@ downloaded, %@)" = "%1$@ 个项，%2$@ (%3$@ 已下载，%4$@)";
 
 /* home screen detail label */
 "%d items" = "%d 个项";
-
-/* Main toolbar title for a multiple selected documents. */
-"%ld Documents Selected" = "已选择 %ld 个文稿";
-
-/* Main toolbar title for a multiple selected items. */
-"%ld Items Selected" = "已选择 %ld 个项目";
-
-/* home screen detail format -- count and item description */
-"%lu %@" = "%1$lu %2$@";
-
-/* Main toolbar title for a single selected document. */
-"1 Document Selected" = "已选择 1 个文稿";
-
-/* doc picker single item accessibility value */
-"1 item" = "1 个项";
-
-/* Main toolbar title for a single selected folder. */
-"1 Item Selected" = "已选择 1 个项目";
 
 /* replace document description */
 "A document with the name \"%@\" already exists. Do you want to replace it? This cannot be undone." = "已存在名称为“%@”的附件。是否要予以替换？此操作无法撤销。";
@@ -48,14 +18,6 @@
 
 /* Server Account Setup label: account name */
 "Account Name" = "帐户名";
-
-/* Menu option in the document picker view */
-"Actions" = "操作";
-
-/* Cloud Setup button title to add a new account
-   Cloud Setup button title to convert an existing account */
-
-"Add an Account" = "添加帐户";
 
 /* home screen button label */
 "Add OmniPresence Account" = "添加 OmniPresence 帐户";
@@ -67,41 +29,16 @@
    Server account setup confirmation cancellation label
    title for alert option cancel */
 
-
-
-
-
 "Cancel" = "取消";
-
-/* item not fully downloaded error title */
-"Cannot Duplicate Item" = "无法复制项目";
-
-/* item not fully downloaded error title */
-"Cannot Export Item" = "无法输出项目";
 
 /* email action description */
 "Choose a format for emailing \"%@\":" = "选择格式以邮寄“%@”：";
-
-/* toolbar prompt when choosing a template */
-"Choose a Template" = "选择模板";
 
 /* Cloud setup modal sheet title */
 "Choose Account Type" = "选择帐户类型";
 
 /* export options title */
 "Choose Format" = "选择格式";
-
-/* Clear from Recent Documents container toolbar item accessibility label. */
-"Clear" = "清除";
-
-/* clear button title */
-"Clear %ld Documents" = "清除 %ld 个文稿";
-
-/* remove button title */
-"Clear Document" = "清除文稿";
-
-/* doc picker custom accessibility action name */
-"Clear name field" = "清空名称字段";
 
 /* title view clear button accessibility label. */
 "Clear Title" = "清除标题";
@@ -112,47 +49,26 @@
 /* demo mode disabled message */
 "Cloud storage is disabled in this demo version." = "云存储已在此演示版本中禁用。";
 
+/* Screen title for configuring OmniPresence accounts */
+"Configure OmniPresence Syncing" = "配置 OmniPresence 同步";
+
 /* Success label when connecting to an OmniPresence or WebDAV server account */
 "Connected" = "已连接";
 
-/* webdav connecting label */
-"Connecting" = "连接";
+/* Update news: button title */
+"Continue" = "继续";
 
 /* Menu option in the document picker view */
 "Copy as Image" = "复制为图像";
 
-/* gear menu item */
-"Copy from WebDAV" = "从 WebDAV 复制";
-
-/* gear menu item */
-"Copy from…" = "复制自…";
-
-/* Create Document From Template Document Shortcut Title */
-"Create New Document" = "新建文稿";
-
-/* Create Document From Template Document Shortcut Title */
-"Create New Document From %@" = "新建文稿自 %@";
-
 /* moved aside custom sample document name */
 "CustomizedSampleDocumentName" = "%@ 自定义";
-
-/* sort by date */
-"Date" = "日期";
-
-/* Delete toolbar item accessibility label. */
-"Delete" = "删除";
 
 /* Server account setup confirmation action label format */
 "Delete \"%@\"" = "删除“%@”";
 
-/* delete button title */
-"Delete %ld Documents" = "删除 %ld 个文稿";
-
 /* Server Account Setup button label */
 "Delete Account" = "删除帐户";
-
-/* delete button title */
-"Delete Document" = "删除文稿";
 
 /* Discard unsynced edits dialog: discard button label */
 "Discard Edits" = "放弃编辑";
@@ -169,31 +85,11 @@
 /* Toolbar button title for returning to list of documents. */
 "Documents <back button>" = "文档";
 
-/* Duplicate document preview action title.
-   Duplicate toolbar item accessibility label. */
-
-"Duplicate" = "复制";
-
-/* title for alert option confirming duplication of multiple files */
-"Duplicate %ld Documents" = "复制 %ld 个文稿";
-
-/* title for alert option confirming duplication of multiple items */
-"Duplicate %ld Items" = "复制 %ld 个项目";
-
-/* omni sync server setup help */
-"Easily sync Omni documents between devices. Signup is free!" = "在多个设备间轻松同步 Omni 文稿。 注册免费！";
-
-/* When displaying a sync error, this is the option to change the username and password. */
-"Edit Credentials" = "编辑凭据";
-
-/* doc picker custom accessibility action name */
-"Edit name" = "编辑名称";
+/* OmniPresence sync status */
+"Downloading files" = "正在下载文件";
 
 /* title view edit button item accessibility hint. */
 "Edits the document's title." = "编辑文稿标题。";
-
-/* empty trash button title */
-"Empty Trash" = "清空废纸篓";
 
 /* webdav help */
 "Enter the location of your WebDAV space." = "输入 WebDAV 空间的位置。";
@@ -201,36 +97,16 @@
 /* export button title
    export options title
    Export toolbar item accessibility label. */
-
-
 "Export" = "输出";
 
 /* export to description */
 "Export \"%@\" as:" = "将“%@”导出为:";
 
-/* export action description */
-"Export \"%@\" to %@ as:" = "将“%1$@”输出至 %2$@ 的方式：";
-
-/* Menu option in the document picker view */
-"Export to WebDAV" = "导出至 WebDAV";
-
-/* Export document preview action title. */
-"Export…" = "输出…";
-
-/* finished */
-"Finished" = "已完成";
-
-/* doc picker folder type accessibility value */
-"Folder" = "文件夹";
-
-/* import sheet title */
-"Import" = "输入";
+/* OmniPresence file list: sort order option */
+"folder and name" = "文件夹和名称";
 
 /* Info item accessibility label */
 "Info" = "信息";
-
-/* doc picker title label editing accessibility value */
-"Is editing" = "编辑";
 
 /* Notice for the user about the last edit to a document (unknown device) */
 "Last edit: %@" = "上次编辑: %@";
@@ -241,76 +117,43 @@
 /* Notice for the user about the last edit to a document (this device) */
 "Last edit: %@ on this device" = "上次编辑: 在本设备上编辑 %@";
 
+/* OmniPresence sync status: prefix for the 'last sync' status */
+"Last sync" = "上次同步";
+
+/* Update news: button title */
+"Learn More" = "了解更多";
+
 /* Server Account Setup label: location */
 "Location" = "位置";
 
-/* top level doc picker title */
-"Locations" = "位置";
-
-/* modified date accessibility value */
-"Modified %@" = "已修改 %@";
-
-/* Menu option in the document picker view
-   Move toolbar item accessibility label. */
-
-"Move" = "移动";
-
-/* move to trash button title */
-"Move %ld Items to Trash" = "将 %ld 个项目移至废纸篓";
-
-/* move to trash button title
-   Move to Trash toolbar item accessibility label. */
-
-"Move to Trash" = "移至废纸篓";
-
-/* Share menu title */
-"Move to..." = "移至…";
-
-/* Move document preview action title. */
-"Move…" = "移动...";
+/* OmniPresence file list: sort order option */
+"modification date" = "修改日期";
 
 /* Base name for newly created documents. This will have an number appended to it to make it unique. */
 "My Document" = "我的文稿";
 
-/* Base name for newly created templates. This will have an number appended to it to make it unique. */
-"My Template" = "我的模板";
+/* OmniPresence file list: sort order option */
+"name" = "名称";
 
 /* New Document toolbar item accessibility label.
    New Template button title */
-
 "New Document" = "新建文稿";
 
-/* Action sheet title for making a new folder from the selected documents */
-"New folder" = "新建文件夹";
+/* Update news: title */
+"New in iOS 13:\nFull Adoption of Apple's Document Browser" = "iOS 13 新功能：\n全面采用苹果的文稿浏览器";
 
 /* Server Account Setup label: nickname */
 "Nickname" = "昵称";
 
-/* Export message for empty table view */
-"No accounts are configured for exporting." = "未针对导出配置帐户";
-
-/* Import message for empty table view */
-"No accounts are configured for importing." = "未针对导入配置帐户";
-
-/* doc picker no items accessibility value */
-"No items" = "无项";
-
-/* Not downloaded accessibility label. */
-"Not downloaded" = "未下载";
-
-/* Not uploaded accessibility label. */
-"Not uploaded" = "未上传";
-
 /* button title
    When displaying a sync error, this is the option to ignore the error. */
-
 "OK" = "好";
 
 /* demo disabled message */
 "OmniPresence allows you to use our free sync service or any compatible WebDAV server to automatically share documents between your devices, or to keep copies of your documents in the cloud in case you need to restore your device." = "OmniPresence 允许您使用我们的免费同步服务或任何兼容的 WebDAV 服务器在设备之间自动共享文稿，或者将您的文稿的副本保存在云中，以防您需要复原设备。";
 
-/* Omni Presence config email subject format */
-"OmniPresence Configuration: %@" = "OmniPresence 配置：%@";
+/* Update news: title */
+"OmniPresence Documents" = "OmniPresence 文稿";
 
 /* demo disabled title */
 "OmniPresence is disabled in this demo version." = "OmniPresence 已在此演示版本中禁用。";
@@ -323,21 +166,6 @@
 
 /* Open Document Shortcut Title */
 "Open %@" = "打开 %@";
-
-/* empty picker text for Recent Documents */
-"Open a document to add it to this view." = "打开文稿可将其添加至此视图。";
-
-/* Open External Document toolbar item accessibility label. */
-"Open External Document" = "打开外部文稿";
-
-/* Omni Presence config email body */
-"Open this file on another device to configure OmniPresence there." = "在其他设备上打开此文件，以配置那里的 OmniPresence。";
-
-/* home screen button label */
-"Open…" = "打开…";
-
-/* Menu title for selecting an external document provider when moving a file */
-"Other…" = "其他…";
 
 /* Language section title */
 "ouiLanguagePicker.language" = "语言";
@@ -360,17 +188,8 @@
 /* purchase now button title */
 "Purchase Now." = "立即购买。";
 
-/* Generic name for location of external documents */
-"Recent Documents" = "最近文稿";
-
 /* rename button title */
 "Rename" = "重命名";
-
-/* toolbar prompt while renaming a document */
-"Rename Document" = "重命名文稿";
-
-/* toolbar prompt while renaming a folder */
-"Rename Folder" = "重命名文件夹";
 
 /* Message format for alert informing user that the document has been renamed on another device */
 "Renamed to %@." = "已重命名为 %@。";
@@ -387,73 +206,39 @@
 /* Restore Sample Documents Title */
 "Restore Sample Documents" = "恢复样本文稿";
 
-/* Share menu title */
-"Restore to..." = "恢复至…";
-
 /* When displaying a sync error, this is the option to retry syncing. */
 "Retry Sync" = "重试同步";
 
 /* Account setup toolbar button title to save account settings */
 "Save" = "存储";
 
-/* document picker compact title view accessibility hint */
-"Scroll down to show sort and filter controls" = "向下滚动，显示排序和筛选控件";
-
-/* document picker button label */
-"Search" = "搜索";
-
-/* edit button title for doc picker in non-edit mode */
-"Select" = "选择";
-
-/* Main toolbar title for a no selected documents. */
-"Select a Document" = "选择文稿";
-
 /* send to app description */
 "Send \"%@\" to app as:" = "发送“%@”至应用程序作为：";
-
-/* Omni Sync Server send settings button title */
-"Send Settings via Email" = "通过电子邮件发送设置";
-
-/* Menu option in the document picker view */
-"Send to App" = "发送至 App";
-
-/* Menu option in the document picker view */
-"Send to Files" = "发送至“文件”";
 
 /* Menu option in the document picker view */
 "Send to Photos" = "发送至“照片”";
 
 /* export options title
    Menu option in the document picker view */
-
 "Send via Mail" = "通过邮件发送";
-
-/* email action description */
-"Server address: %@" = "服务器地址：%@";
 
 /* Label format when setting up an OmniPresence or WebDAV server account */
 "Setting up \"%@\"" = "设置“%@”";
 
+/* Share activity title */
+"Share As…" = "共享为...";
+
 /* Omni Sync Server sign up button title */
 "Sign Up For a New Account" = "注册新帐户";
 
-/* sort by accessibility label */
-"Sort by %@" = "按 %@ 排序";
+/* OmniPresence file list: sort order option */
+"size" = "大小";
+
+/* OmniPresence file list: sort order label */
+"Sort by:" = "排序方式：";
 
 /* Presence toolbar item accessibility label. */
 "Sync Now" = "立即同步";
-
-/* empty template picker button text */
-"Tap here to add a document without a template." = "轻按此处添加没有模板的文稿。";
-
-/* empty picker button text */
-"Tap here, or on the + in the toolbar, to add a custom template." = "轻按此处或工具栏中的 +，添加自定义模板。";
-
-/* empty picker button text */
-"Tap here, or on the + in the toolbar, to add a document." = "轻按此处或工具栏中的 +，添加文稿。";
-
-/* file name label for template filte types */
-"Template:" = "模板：";
 
 /* Discard unsynced edits dialog: message format */
 "The \"%@\" account has %ld edited documents which have not yet been synced up to the cloud. Do you wish to discard those edits?" = "“%1$@”帐户拥有 %2$ld 篇未同步至云的已编辑文稿。您是否希望放弃这些编辑？";
@@ -476,26 +261,29 @@
 /* Photo Library permisssions error suggestion. */
 "This app does not have access to your Photo Library." = "该应用程序不能访问您的图片库。";
 
-/* empty picker because of removed account text */
-"This Cloud Account no longer exists." = "此云帐户不再存在。";
-
 /* Error reason for a document operation failing due to a missing file. */
 "This document is not accessible. It is possible the file was deleted, renamed or moved via iTunes or an external document provider. Please try removing the file and adding it again." = "此文档不可访问。文件可能被删除、重命名或者通过 iTune 或外部文档提供者移动。请尝试再次删除文件并添加文件。";
-
-/* item not fully downloaded error message */
-"This item cannot be duplicated because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "此项目未完全下载，因而无法复制。再次尝试前，请轻按项目并等待下载。";
-
-/* item not fully downloaded error message */
-"This item cannot be exported because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "此项目未完全下载，因而无法输出。 再次尝试前，请轻按项目并等待下载。";
-
-/* sort by title */
-"Title" = "标题";
 
 /* error title */
 "Unable to open file." = "无法打开文件。";
 
+/* OmniPresence sync status */
+"Uploading and downloading files" = "正在上传和下载文件";
+
+/* OmniPresence sync status */
+"Uploading files" = "正在上传文件";
+
 /* Account validation status string. */
 "Validating account..." = "正在验证帐户…";
 
-/* empty picker button text */
-"When plug-ins are installed, they will appear here." = "安装之后，插件将出现在此处。";
+/* Screen title for viewing OmniPresence documents */
+"View OmniPresence Documents" = "查看 OmniPresence 文稿";
+
+/* Update news: description */
+"We've retired our custom document browser in favor of using Apple's built-in browser, making it easier than ever for you to choose where you want to keep your documents." = "我们停用了自定义的文稿浏览器，改用苹果的内建浏览器，这样您在选择保留文稿的位置时比以往更容易。";
+
+/* error description */
+"While attempting to open %@, received an error from the system" = "尝试打开 %@ 时，从系统收到错误";
+
+/* Update news: description */
+"Your OmniPresence documents will only be visible in the new browser when they’ve been downloaded to this device.\n\nOmniPresence does not download larger synced files automatically. You can manually download larger files to this device now, or access the download manager later from the OmniPresence icon in the toolbar." = "您的 OmniPresence 文稿在下载到本设备后，只能在新的浏览器中显示。\n\nOmniPresence 不会自动下载较大的已同步文件。您现在可以将较大的文件手动下载到本设备，或稍后从工具栏的 OmniPresence 图标访问下载管理器。";

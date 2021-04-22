@@ -8,9 +8,7 @@
 #import <OmniUIDocument/OUIDocumentNavigationItem.h>
 
 #import <OmniUIDocument/OUIDocumentTitleView.h>
-#import <OmniDocumentStore/ODSErrors.h>
-#import <OmniDocumentStore/ODSFileItem.h>
-#import <OmniDocumentStore/ODSScope.h>
+#import <OmniFileExchange/OFXServerAccount.h>
 #import <OmniFileExchange/OFXAccountActivity.h>
 #import <OmniFileExchange/OFXAgentActivity.h>
 #import <OmniFoundation/OFBinding.h>
@@ -18,12 +16,10 @@
 #import <OmniUI/OUIRotationLock.h>
 #import <OmniUI/OUIShieldView.h>
 #import <OmniUI/OUIInteractionLock.h>
+#import <OmniUIDocument/OUIDocument.h>
 #import <OmniUIDocument/OUIDocumentAppController.h>
 
-#import "OUIDocument-Internal.h"
 #import "OUIFullWidthNavigationItemTitleView.h"
-
-RCS_ID("$Id$");
 
 #if 0 && defined(DEBUG)
 #define DEBUG_EDIT_MODE(format, ...) NSLog(@"EDIT_MODE: " format, ## __VA_ARGS__)
@@ -61,25 +57,12 @@ NSString * const OUIDocumentNavigationItemOriginalDocumentNameUserInfoKey = @"OU
     BOOL _renaming;
 }
 
-+ (BOOL)canRenameDocument:(OUIDocument *)document;
-{
-    NSURL *documentURL = document.fileURL.URLByStandardizingPath;
-    if (documentURL == nil)
-        return NO;
-
-    NSURL *documentDirectoryURL = [[NSFileManager defaultManager] URLForDirectory:NSDocumentDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:YES error:NULL];
-    if (documentDirectoryURL == nil)
-        return NO;
-
-    return [documentURL.path hasPrefix:documentDirectoryURL.path];
-}
-
 - (instancetype)initWithDocument:(OUIDocument *)document;
 {
     // We do want to make sure our title property stays up to date with the document's title, so that if another view controller is pushed on to the navigation stack after us, the right name appears in the Back button.
     NSString *title = document.name;
     
-    _titleColor = [UIColor blackColor];
+    _titleColor = [UIColor labelColor];
     
     self = [super initWithTitle:title];
     if (self) {
@@ -90,7 +73,14 @@ NSString * const OUIDocumentNavigationItemOriginalDocumentNameUserInfoKey = @"OU
         _documentTitleView.delegate = self;
         _documentTitleView.hideTitle = NO;
                 
-        _documentTitleView.titleCanBeTapped = [[self class] canRenameDocument:document];
+        OFXServerAccount *account = [OFXServerAccount accountSyncingLocalURL:document.fileURL fromRegistry:OFXServerAccountRegistry.defaultAccountRegistry];
+        if (account != nil) {
+            OFXAgentActivity *agentActivity = [OUIDocumentAppController controller].agentActivity;
+            _documentTitleView.syncAccountActivity = [agentActivity activityForAccount:account];
+            OBASSERT(_documentTitleView.syncAccountActivity != nil);
+        }
+
+        _documentTitleView.titleCanBeTapped = document.canRename;
         self.title = title;
         
         self.titleView = _documentTitleView;
@@ -154,6 +144,12 @@ NSString * const OUIDocumentNavigationItemOriginalDocumentNameUserInfoKey = @"OU
     _documentTitleView.delegate = nil;
 }
 
+- (void)documentWillClose;
+{
+    [_fileNameBinding invalidate];
+    _fileNameBinding = nil;
+}
+
 - (BOOL)hideTitle;
 {
     return [self.title isEqualToString:@""];
@@ -213,7 +209,7 @@ NSString * const OUIDocumentNavigationItemOriginalDocumentNameUserInfoKey = @"OU
 
 - (void)setObservedDocumentName:(NSString *)observedDocumentName;
 {
-    OBPRECONDITION(![NSThread isMainThread], "We expect to be called in the background due to file coordination (which shouldn't be done on the main queue");
+    // We used to assert that this would only be called on a background thread, but on iOS 13 our Document.name binding gets called on the main thread as well
 
     _observedDocumentName = [observedDocumentName copy];
     
@@ -266,23 +262,16 @@ NSString * const OUIDocumentNavigationItemOriginalDocumentNameUserInfoKey = @"OU
     OBASSERT(uti);
 #endif
 
-    // Tell the document that the rename is local
-    [document _willBeRenamedLocally];
     self.title = newName; // edit field will be dismissed and the title label displayed before the rename is completed so this will make sure that the label shows the updated name
     
-    // Make sure we don't close the document while the rename is happening, or some such. It would probably be OK with the synchronization API, but there is no reason to allow it.
-    OUIInteractionLock *lock = [OUIInteractionLock applicationLock];
-
-    [self _renameDocument:document fromName:originalName toName:newName completionBlock:^(BOOL success, NSError *error) {
-        [lock unlock];
-
+    [document renameToName:newName completionBlock:^(BOOL success, NSError *error) {
         if (!success) {
             [error log:@"Error renaming document with URL \"%@\" to \"%@\"", document.fileURL.absoluteString, newName];
             OUI_PRESENT_ERROR_IN_SCENE(error, _documentTitleTextField.window.windowScene);
 
             self.title = originalName;
 
-            if ([error hasUnderlyingErrorDomain:ODSErrorDomain code:ODSFilenameAlreadyInUse]) {
+            if (NO /* [error hasUnderlyingErrorDomain:ODSErrorDomain code:ODSFilenameAlreadyInUse] */) {
                 // Leave the fixed name for the user to try again.
                 _hasAttemptedRename = NO;
             } else {
@@ -296,25 +285,6 @@ NSString * const OUIDocumentNavigationItemOriginalDocumentNameUserInfoKey = @"OU
     }];
 
     return NO; // Don't end editing until we succeed
-}
-
-- (void)_renameDocument:(OUIDocument *)document fromName:(NSString *)originalName toName:(NSString *)newName completionBlock:(void (^)(BOOL success, NSError *error))completionBlock;
-{
-    [document performAsynchronousFileAccessUsingBlock:^{
-        NSFileManager *manager = [NSFileManager defaultManager];
-        NSURL *originalURL = document.fileURL; // Possible we've moved or changed file types since the rename operation started?
-
-        NSString  *newFileName = [newName stringByAppendingPathExtension:[originalURL pathExtension]];
-        NSURL *newURL = [[originalURL URLByDeletingLastPathComponent] URLByAppendingPathComponent:newFileName];
-
-        __autoreleasing NSError *moveError = nil;
-
-        BOOL success = [manager moveItemAtURL:originalURL toURL:newURL error:&moveError];
-        NSError *strongError = success ? nil : moveError;
-        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-            completionBlock(success, strongError);
-        }];
-    }];
 }
 
 - (void)setRenaming:(BOOL)isRenaming;

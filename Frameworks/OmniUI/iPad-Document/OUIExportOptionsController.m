@@ -234,6 +234,8 @@ NS_ASSUME_NONNULL_BEGIN
     
     // Let the document know it can avoid work that isn't needed if the document isn't going to be presented to the user to edit.
     document.forExportOnly = YES;
+
+    document.activityViewController = parentViewController;
     
     [document openWithCompletionHandler:^(BOOL openSuccess) {
         if (!openSuccess) {
@@ -419,9 +421,6 @@ NS_ASSUME_NONNULL_BEGIN
             break;
     }
 #endif
-    NSString *actionDescription = NSLocalizedStringFromTableInBundle(@"Share as...", @"OmniUIDocument", OMNI_BUNDLE, @"share action description");
-
-    [picker setActionDescription:actionDescription];
     [picker setExportDestination:nil];
 
     return picker;

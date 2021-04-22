@@ -8,15 +8,10 @@
 #import "OUIRestoreSampleDocumentListController.h"
 
 #import <OmniDAV/ODAVFileInfo.h>
-#import <OmniDocumentStore/ODSScope.h>
-#import <OmniDocumentStore/ODSStore.h>
-#import <OmniUIDocument/OUIDocumentAppController.h>
-#import <OmniUIDocument/OUIDocumentPicker.h>
-#import <OmniUIDocument/OUIDocumentPickerViewController.h>
-#import <OmniUI/OUIBarButtonItem.h>
 #import <OmniFoundation/NSURL-OFExtensions.h>
-
-RCS_ID("$Id$");
+#import <OmniUI/OUIBarButtonItem.h>
+#import <OmniUIDocument/OUIDocumentAppController.h>
+#import <OmniUIDocument/OmniUIDocument-Swift.h>
 
 @interface OUIRestoreSampleDocumentListController ()
 
@@ -84,7 +79,8 @@ RCS_ID("$Id$");
         if (![fileURL getResourceValue:&fileSize forKey:NSURLTotalFileSizeKey error:NULL])
             OBASSERT_NOT_REACHED("Should be able to read our samples");
         
-        return [[ODAVFileInfo alloc] initWithOriginalURL:fileURL name:[ODAVFileInfo nameForURL:fileURL] exists:YES directory:isDirectory size:[fileSize unsignedLongLongValue] lastModifiedDate:modificationDate];
+        NSString *sampleName = fileURL.lastPathComponent;
+        return [[ODAVFileInfo alloc] initWithOriginalURL:fileURL name:sampleName exists:YES directory:isDirectory size:[fileSize unsignedLongLongValue] lastModifiedDate:modificationDate];
     }];
     
     sampleFileInfos = [sampleFileInfos sortedArrayUsingComparator:^(ODAVFileInfo *fileInfo1, ODAVFileInfo *fileInfo2) {
@@ -106,23 +102,19 @@ RCS_ID("$Id$");
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath;
 {
-    OBFinishPortingWithNote("<bug:///176698> (Frameworks-iOS Unassigned: OBFinishPorting: -restoreSampleDocuments: in OUIDocumentAppController)");
-#if 0
     ODAVFileInfo *fileInfo = self.files[indexPath.row];
-    
+    OUIDocumentSceneDelegate *sceneDelegate = self.sceneDelegate;
+    NSURL *originalURL = fileInfo.originalURL;
+    NSString *localizedName = [self localizedNameForFileName:fileInfo.name.stringByDeletingPathExtension];
+    NSURL *targetURL = [sceneDelegate urlForNewDocumentInFolderAtURL:nil baseName:localizedName extension:originalURL.pathExtension];
+    NSError *copyError = nil;
+    if (![NSFileManager.defaultManager copyItemAtURL:originalURL toURL:targetURL error:&copyError]) {
+        OUI_PRESENT_ERROR_FROM(copyError, self);
+        return;
+    }
     [self dismissViewControllerAnimated:YES completion:^{
-        OUIDocumentPickerViewController *scopeViewController = [[[OUIDocumentAppController controller] documentPicker] selectedScopeViewController];
-        if (scopeViewController)
-            [scopeViewController addSampleDocumentFromURL:fileInfo.originalURL];
-        else {
-            NSString *fileName = [fileInfo.originalURL lastPathComponent];
-            NSString *localizedBaseName = [[OUIDocumentAppController controller] localizedNameForSampleDocumentNamed:[fileName stringByDeletingPathExtension]];
-            
-            ODSScope *scope = [[[OUIDocumentAppController controller] documentPicker] localDocumentsScope];
-            [scope addDocumentInFolder:scope.rootFolder baseName:localizedBaseName fromURL:fileInfo.originalURL option:ODSStoreAddByCopyingSourceToAvailableDestinationURL completionHandler:nil];
-        }
+        [sceneDelegate revealURLInDocumentBrowser:targetURL completion:NULL];
     }];
-#endif
 }
 
 @end

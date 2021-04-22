@@ -37,25 +37,6 @@ RCS_ID("$Id$");
     BOOL _presentedItemDidChangeCalledWhileRescanning;
 }
 
-+ (void)initialize;
-{
-    OBINITIALIZE;
-    
-    ODSLocalDirectoryScope.localDocumentsDisplayName = NSLocalizedStringFromTableInBundle(@"Local Documents", @"OmniDocumentStore", OMNI_BUNDLE, @"Document store scope display name");
-}
-
-static NSString *_customLocalDocumentsDisplayName;
-
-+ (void)setLocalDocumentsDisplayName:(NSString *)localDocumentsDisplayName;
-{
-    _customLocalDocumentsDisplayName = [localDocumentsDisplayName copy];
-}
-
-+ (NSString *)localDocumentsDisplayName;
-{
-    return _customLocalDocumentsDisplayName != nil ? _customLocalDocumentsDisplayName : NSLocalizedStringFromTableInBundle(@"Local Documents", @"OmniDocumentStore", OMNI_BUNDLE, @"Document store scope display name");
-}
-
 + (NSURL *)userDocumentsDirectoryURL;
 {
     static NSURL *documentDirectoryURL = nil; // Avoid trying the creation on each call.
@@ -71,29 +52,6 @@ static NSString *_customLocalDocumentsDisplayName;
     }
     
     return documentDirectoryURL;
-}
-
-// This is for the trash scope for the OmniDocumentStore-based document picker. Note that Files.app on iOS 11 will create a .Trash directory inside the ~/Documents container for an app and move files there (which every application then needs to know to not look at).
-+ (NSURL *)trashDirectoryURL;
-{
-    static NSURL *trashDirectoryURL = nil; // Avoid trying the creation on each call.
-    
-    if (!trashDirectoryURL) {
-        __autoreleasing NSError *error = nil;
-        NSURL *appSupportURL = [[[NSFileManager defaultManager] URLForDirectory:NSApplicationSupportDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:YES error:&error] copy];
-        if (!appSupportURL) {
-            NSLog(@"Error creating application support directory: %@", [error toPropertyList]);
-        } else {
-            trashDirectoryURL = [[appSupportURL URLByAppendingPathComponent:@"Trash" isDirectory:YES] URLByAppendingPathComponent:@"Documents" isDirectory:YES];
-
-            error = nil;
-            if (![[NSFileManager defaultManager] createDirectoryAtURL:trashDirectoryURL withIntermediateDirectories:YES attributes:nil error:&error]) {
-                NSLog(@"Error creating trash directory: %@", [error toPropertyList]);
-            }
-        }
-    }
-    
-    return trashDirectoryURL;
 }
 
 + (NSURL *)templateDirectoryURL;
@@ -276,8 +234,10 @@ static NSString *_customLocalDocumentsDisplayName;
 {
     if (_isTemplate)
         return NSLocalizedStringFromTableInBundle(@"Built-in", @"OmniDocumentStore", OMNI_BUNDLE, @"Document store scope display name");
-    else
-        return ODSLocalDirectoryScope.localDocumentsDisplayName;
+    else {
+        OBFinishPorting;
+//        return ODSLocalDirectoryScope.localDocumentsDisplayName;
+    }
 }
 
 static void _updateObjectValue(ODSFileItem *fileItem, NSString *bindingKey, id newValue)

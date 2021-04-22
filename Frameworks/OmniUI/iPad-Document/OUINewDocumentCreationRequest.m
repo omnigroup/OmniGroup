@@ -8,6 +8,7 @@
 #import "OUINewDocumentCreationRequest.h"
 
 #import <OmniUIDocument/OUIDocumentAppController.h>
+#import <OmniUIDocument/OUIDocumentSceneDelegate.h>
 #import <OmniUIDocument/OmniUIDocument-Swift.h>
 
 @import OmniFoundation;
@@ -31,74 +32,61 @@ static NSString *PathExtensionForFileType(NSString *fileType, BOOL *outIsPackage
     return extension;
 }
 
+@interface OUINewDocumentCreationRequest ()
+@end
+
 @implementation OUINewDocumentCreationRequest
 {
     __weak id <OUIDocumentCreationRequestDelegate> _weak_delegate;
+    __weak UIViewController *_parentViewController;
     void (^_creationHandler)(NSURL *_Nullable urlToImport, UIDocumentBrowserImportMode importMode);
     UINavigationController *_navigationController;
 }
 
-- initWithDelegate:(id <OUIDocumentCreationRequestDelegate>)delegate creationHandler:(void(^)(NSURL *_Nullable urlToImport, UIDocumentBrowserImportMode importMode))creationHandler;
+- (instancetype)initWithDelegate:(id <OUIDocumentCreationRequestDelegate>)delegate viewController:(UIViewController *)parentViewController creationHandler:(void(^)(NSURL *_Nullable urlToImport, UIDocumentBrowserImportMode importMode))creationHandler;
 {
     _weak_delegate = delegate;
+    _parentViewController = parentViewController;
     _creationHandler = [creationHandler copy];
     
     return self;
 }
 
-- (void)runWithViewController:(UIViewController *)parentViewController internalTemplateDelegate:(nullable id <OUIInternalTemplateDelegate>)internalTemplateDelegate;
+- (void)runWithInternalTemplateDelegate:(nullable id <OUIInternalTemplateDelegate>)internalTemplateDelegate;
 {
     [OUIDocumentAppController.controller unlockCreateNewDocumentWithCompletion:^(BOOL isUnlocked) {
+        // Stay alive until a template is picked or cancelled.
+        OBStrongRetain(self);
+
         if (isUnlocked) {
-            [self _runWithViewController:parentViewController internalTemplateDelegate:internalTemplateDelegate];
+            [self _runWithInternalTemplateDelegate:internalTemplateDelegate];
         } else {
             [self _finishedWithURL:nil error:nil completion:nil];
         }
     }];
 }
 
-- (void)_runWithViewController:(UIViewController *)parentViewController internalTemplateDelegate:(nullable id <OUIInternalTemplateDelegate>)internalTemplateDelegate;
+- (void)_runWithInternalTemplateDelegate:(nullable id <OUIInternalTemplateDelegate>)internalTemplateDelegate;
 {
-    if (!OUIDocumentAppController.controller.canCreateNewDocument)
-        return;
+    OBPRECONDITION(OUIDocumentAppController.controller.canCreateNewDocument); // We tested this already
 
-    // Stay alive until a template is picked or cancelled.
-    OBStrongRetain(self);
-    
-    // Use the new template picker if the internalTemplateDelegate is set
-    if (internalTemplateDelegate != nil) {
-        UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"OUITemplatePicker" bundle:OMNI_BUNDLE];
-        OUITemplatePicker *viewController = (OUITemplatePicker *)[storyboard instantiateViewControllerWithIdentifier:@"templatePicker"];
+    // Use a template picker if the internalTemplateDelegate is set
+    if (internalTemplateDelegate != nil && [internalTemplateDelegate shouldUseTemplatePicker]) {
+        OUITemplatePicker *viewController = [OUITemplatePicker newTemplatePicker];
         viewController.modalInPresentation = YES;
         viewController.navigationTitle = NSLocalizedStringWithDefaultValue(@"ouiTemplatePicker.navigationTitle", @"OmniUIDocument", OMNI_BUNDLE, @"Choose a Template", @"Navigation bar title: Choose a Template");
         viewController.internalTemplateDelegate = internalTemplateDelegate;
         viewController.templateDelegate = self;
-        
+        viewController.wantsLanguageButton = [internalTemplateDelegate wantsLanguageButton];
         // TODO: fix to support animations
         _navigationController = [[UINavigationController alloc] initWithRootViewController:viewController];
-        [parentViewController presentViewController:_navigationController animated:YES completion:nil];
+        [_parentViewController presentViewController:_navigationController animated:YES completion:nil];
         
         return;
     }
 
-    OBFinishPortingLater("Add support for picking a template from a list of resources (or switch other apps to use the above");
-#if 0
-    ODSDocumentType type = [self documentTypeForCurrentFilter];
-
-    // Use old style template picker if delegate implements documentPickerTemplateDocumentFilter:
-    id <OUIDocumentPickerDelegate> delegate = _documentPicker.delegate;
-    if ([delegate respondsToSelector:@selector(documentPickerTemplateDocumentFilter:)]) {
-        OBASSERT([delegate documentPickerTemplateDocumentFilter:_documentPicker], @"Need to provide an actual filter for templates if you expect to use the template picker for new documents");
-
-        OUIDocumentCreationTemplatePickerViewController *templateChooser = [[OUIDocumentCreationTemplatePickerViewController alloc] initWithDocumentPicker:_documentPicker folderItem:_folderItem documentType:type];
-        templateChooser.isReadOnly = YES;
-        [parentViewController pushViewController:templateChooser animated:YES];
-    } else
-#endif
-    {
-        // Create a document w/o using a template.
-        [self newDocumentWithDocumentType:ODSDocumentTypeNormal preserveDocumentName:NO completion:nil];
-    }
+    // Create a document w/o using a template.
+    [self _newDocumentWithCompletionHandler:nil];
 }
 
 - (void)_finishedWithURL:(nullable NSURL *)fileURL error:(nullable NSError *)error completion:(void (^ _Nullable)(void))completion;
@@ -106,7 +94,7 @@ static NSString *PathExtensionForFileType(NSString *fileType, BOOL *outIsPackage
     completion = [completion copy];
     
     void (^finished)(void) = [^{
-        if (fileURL) {
+        if (fileURL != nil) {
             _creationHandler(fileURL, UIDocumentBrowserImportModeMove);
         } else {
             _creationHandler(nil, UIDocumentBrowserImportModeNone);
@@ -114,8 +102,8 @@ static NSString *PathExtensionForFileType(NSString *fileType, BOOL *outIsPackage
         _creationHandler = nil;
         OBAutorelease(self);
 
-        if (error) {
-            OBFinishPortingWithNote("<bug:///176686> (Frameworks-iOS Unassigned: OBFinishPorting: Display errors when creating new document)");
+        if (error != nil) {
+            OUI_PRESENT_ERROR_FROM(error, _parentViewController);
         }
         
         if (completion) {
@@ -160,7 +148,6 @@ static NSString *PathExtensionForFileType(NSString *fileType, BOOL *outIsPackage
     OBFinishPortingLater("May not need this UI lock any more");
     OUIInteractionLock *lock = [OUIInteractionLock applicationLock];
 
-    ODSDocumentType type = context.documentType;
     NSURL *templateURL = context.templateURL;
     NSString *documentName = context.documentName;
     //UIView *animateFromView = context.animateFromView;
@@ -175,7 +162,7 @@ static NSString *PathExtensionForFileType(NSString *fileType, BOOL *outIsPackage
 //    }
 
     // Instead of duplicating the template file item's URL (if we have one), we always read it into a OUIDocument and save it out, letting the document know that this is for the purposes of instantiating a new document. The OUIDocument may do extra work in this case that wouldn't get done if we just cloned the file (and this lets the work be done atomically by saving the new file to a temporary location before moving to a visible location).
-    NSURL *temporaryURL = [self temporaryURLForCreatingNewDocumentNamed:documentName withType:type];
+    NSURL *temporaryURL = [self temporaryURLForCreatingNewDocumentNamed:documentName];
 
     completion = [completion copy];
     void (^cleanup)(void) = [^{
@@ -248,49 +235,19 @@ static NSString *PathExtensionForFileType(NSString *fileType, BOOL *outIsPackage
     }];
 }
 
-- (void)newDocumentWithDocumentType:(ODSDocumentType)type preserveDocumentName:(BOOL)preserveDocumentName completion:(void (^ _Nullable)(void))completion;
+- (void)_newDocumentWithCompletionHandler:(void (^ _Nullable)(void))completion;
 {
-    if (preserveDocumentName) {
-        OBFinishPortingWithNote("<bug:///176687> (Frameworks-iOS Unassigned: OBFinishPorting: Handle the preserveDocumentName argument in OUINewDocumentCreationRequest)");
-    }
-    //NSString *documentName = preserveDocumentName ? templateFileItem.name : nil;
-
-    OUINewDocumentCreationContext *context = [[OUINewDocumentCreationContext alloc] initWithDocumentType:ODSDocumentTypeNormal templateURL:nil documentName:nil animateFromView:nil];
+    OUINewDocumentCreationContext *context = [[OUINewDocumentCreationContext alloc] initWithTemplateURL:nil documentName:nil animateFromView:nil];
 
     [self newDocumentWithContext:context completion:completion];
 }
 
-//- (void)newDocumentWithTemplateFileItem:(ODSFileItem *)templateFileItem documentType:(ODSDocumentType)type completion:(void (^ _Nullable)(void))completion;
-//{
-//    [self newDocumentWithTemplateFileItem:templateFileItem documentType:type preserveDocumentName:NO completion:completion];
-//}
-//
-//- (void)newDocumentWithTemplateFileItem:(ODSFileItem *)templateFileItem;
-//{
-//    [self newDocumentWithTemplateFileItem:templateFileItem documentType:ODSDocumentTypeNormal completion:NULL];
-//}
-
-- (nullable NSString *)documentTypeForNewFilesOfType:(ODSDocumentType)type;
+- (NSString *)documentTypeForNewFiles;
 {
     id <OUIDocumentCreationRequestDelegate> delegate = _weak_delegate;
 
-    switch (type) {
-        case ODSDocumentTypeNormal:
-            if ([delegate respondsToSelector:@selector(documentCreationRequestDocumentTypeForNewFiles:)])
-                return [delegate documentCreationRequestDocumentTypeForNewFiles:self];
-            break;
-        case ODSDocumentTypeTemplate:
-            if ([delegate respondsToSelector:@selector(documentCreationRequestDocumentTypeForNewTemplateFiles:)])
-                return [delegate documentCreationRequestDocumentTypeForNewTemplateFiles:self];
-            break;
-        case ODSDocumentTypeOther:
-            if ([delegate respondsToSelector:@selector(documentCreationRequestDocumentTypeForNewOtherFiles:)])
-                return [delegate documentCreationRequestDocumentTypeForNewOtherFiles:self];
-            break;
-        default:
-            OBFinishPortingLater("Is there a new document type we don't know about?");
-            break;
-    }
+    if ([delegate respondsToSelector:@selector(documentCreationRequestDocumentTypeForNewFiles:)])
+        return [delegate documentCreationRequestDocumentTypeForNewFiles:self];
 
     if ([delegate respondsToSelector:@selector(documentCreationRequestEditableDocumentTypes:)]) {
         NSArray *editableTypes = [delegate documentCreationRequestEditableDocumentTypes:self];
@@ -303,22 +260,16 @@ static NSString *PathExtensionForFileType(NSString *fileType, BOOL *outIsPackage
     return nil;
 }
 
-
-- (NSString *)documentTypeForNewFiles;
-{
-    return [self documentTypeForNewFilesOfType:ODSDocumentTypeNormal];
-}
-
-- (NSURL *)temporaryURLForCreatingNewDocumentNamed:(NSString *)documentName withType:(ODSDocumentType)type;
+- (NSURL *)temporaryURLForCreatingNewDocumentNamed:(nullable NSString *)documentName;
 {
     BOOL isDirectory;
-    NSString *documentType = [self documentTypeForNewFilesOfType:type];
+    NSString *documentType = [self documentTypeForNewFiles];
     if (!documentType) {
         return nil;
     }
     
     if (OFIsEmptyString(documentName)) {
-        documentName = @"My Document";
+        documentName = OUIDocumentSceneDelegate.defaultBaseNameForNewDocuments;
     }
     
     NSString *pathExtension = PathExtensionForFileType(documentType, &isDirectory);
@@ -329,37 +280,9 @@ static NSString *PathExtensionForFileType(NSString *fileType, BOOL *outIsPackage
 
 #pragma mark - OUITemplatePickerDelegate
 
-+ (NSArray <OUITemplateItem *> *)_generalTemplatesInTemplatePicker:(OUITemplatePicker *)templatePicker {
-    OBFinishPortingLater("Find templates");
-    return @[];
-        /*
-        var items = [OUITemplateItem]()
-        if let templateChooser = OUIDocumentCreationTemplatePickerViewController(documentPicker: templatePicker.documentPicker, folderItem: templatePicker.folderItem, documentType: OUIDocumentPickerViewController.documentTypeForCurrentFilter(with: templatePicker.documentPicker)) {
-            templateChooser.isReadOnly = true
-            templateChooser.selectedFilterChanged()
-
-            if let fileItems = templateChooser.sortedFilteredItems() {
-                for fileItem in fileItems {
-                    if let fileEdit = fileItem.fileEdit {
-                        let templateItem = OUITemplateItem(fileURL: fileItem.fileURL, fileEdit: fileEdit, displayName: fileItem.name())
-                        items.append(templateItem)
-                    }
-                }
-            }
-        }
-
-        return items
- */
- }
-
-- (NSArray<OUITemplateItem *> *)generalTemplatesInTemplatePicker:(OUITemplatePicker *)templatePicker;
-{
-    return [[self class] _generalTemplatesInTemplatePicker:templatePicker];
-}
-
 - (void)templatePicker:(OUITemplatePicker *)templatePicker didSelectTemplateURL:(NSURL *)templateURL animateFrom:(UIView *)animateFrom;
 {
-    OUINewDocumentCreationContext *context = [[OUINewDocumentCreationContext alloc] initWithDocumentType:ODSDocumentTypeNormal templateURL:templateURL documentName:nil animateFromView:nil];
+    OUINewDocumentCreationContext *context = [[OUINewDocumentCreationContext alloc] initWithTemplateURL:templateURL documentName:nil animateFromView:nil];
     [self _newDocumentWithContext:context completion:nil];
 }
 

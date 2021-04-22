@@ -14,12 +14,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_ENUM(NSInteger, ODSDocumentType) {
-    ODSDocumentTypeNormal,
-    ODSDocumentTypeTemplate,
-    ODSDocumentTypeOther,
-};
-
 @interface ODSStore : NSObject
 
 - initWithDelegate:(id <ODSStoreDelegate>)delegate;
@@ -47,12 +41,6 @@ typedef NS_ENUM(NSInteger, ODSDocumentType) {
 
 - (nullable ODSFileItem *)fileItemWithURL:(NSURL *)url;
 
-- (NSString *)defaultFilenameForDocumentType:(ODSDocumentType)type isDirectory:(BOOL *)outIsDirectory;
-// IF the provided documentName is nil, then we will use the default name for that new document type.
-- (void)moveNewTemporaryDocumentAtURL:(NSURL *)fileURL toScope:(ODSScope *)scope folder:(nullable ODSFolderItem *)folder documentType:(ODSDocumentType)type documentName:(nullable)documentName completionHandler:(void (^)(ODSFileItem *createdFileItem, NSError *error))handler;
-- (void)moveNewTemporaryDocumentAtURL:(NSURL *)fileURL toScope:(ODSScope *)scope folder:(nullable ODSFolderItem *)folder documentType:(ODSDocumentType)type completionHandler:(void (^)(ODSFileItem *createdFileItem, NSError *error))handler;
-
 @end
 
 NS_ASSUME_NONNULL_END
-

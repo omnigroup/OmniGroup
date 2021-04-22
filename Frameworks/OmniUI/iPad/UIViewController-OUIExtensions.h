@@ -22,6 +22,8 @@ typedef NS_ENUM(NSUInteger, OUIViewControllerVisibility) {
     OUIViewControllerVisibilityDisappearing,
 };
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface UIViewController (OUIExtensions)
 
 /**
@@ -31,17 +33,18 @@ typedef NS_ENUM(NSUInteger, OUIViewControllerVisibility) {
  @param otherVC The potential parent view controller
  @return YES if otherVC can be reached from the receiver through the given kinds of view controller relationships; NO otherwise
  */
-- (BOOL)isDescendant:(OUIViewControllerDescendantType)descendantType ofViewController:(UIViewController *)otherVC;
+- (BOOL)isDescendant:(OUIViewControllerDescendantType)descendantType ofViewController:(nullable UIViewController *)otherVC;
 
-- (BOOL)isChildViewController:(UIViewController *)child;
+- (BOOL)isChildViewController:(nullable UIViewController *)child;
 
+@property (readonly, nonatomic, nullable) UIScene *containingScene;
 
 /**
  Walks the -[UIViewController parentViewController] chain to find the most distant ancestor view controller.
 
  @return Returns the first view controller in the -[UIViewController parentViewController] chain whos parent is nil.
  */
-- (UIViewController *)mostDistantAncestorViewController;
+- (nullable UIViewController *)mostDistantAncestorViewController;
 
 @property(readonly,nonatomic) OUIViewControllerVisibility visibility;
 
@@ -60,3 +63,5 @@ typedef NS_ENUM(NSUInteger, OUIViewControllerVisibility) {
 - (void)expectDeallocationOfControllerTreeSoon;
 
 @end
+
+NS_ASSUME_NONNULL_END

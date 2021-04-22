@@ -9,6 +9,7 @@
 
 #import <OmniUI/OUIInspectorWell.h>
 #import <OmniUI/OUIDrawing.h>
+#import <OmniUI/OUIInspector.h>
 
 RCS_ID("$Id$");
 
@@ -22,6 +23,7 @@ RCS_ID("$Id$");
     switch (style) {
         case OUILabelStyleInspectorSliceGroupHeading:
             self.font = [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline];
+            self.textColor = [OUIInspector headerTextColor];
             break;
             
         case OUILabelStyleInspectorSliceInstructionText:

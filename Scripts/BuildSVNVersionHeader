@@ -17,21 +17,17 @@ Usage () {
     echo >&2 "    --build-versions-txt  - build Versions.txt"
     echo >&2 "    --golang              - build svnversion.go"
     echo >&2 "    --force               - force rebuild of SVNVersion.h"
+    echo >&2 "    --from-xcconfig       - Alternate file to count commits from"
+    echo >&2 "                            (default Omni-Version-Info.xcconfig)"
+    echo >&2 "    --header-suffix       - Suffix to append to generated filenames"
     exit 1
 }
-
-# If we cannot find an SVN or git repository, quietly exit.
-# This may be the case for the public source.
-# Check only for existence of .git, in case it's a submodule "gitdir:" link file instead of a full directory
-if [[ ! -d ../.svn && ! -e ../.git ]]; then
-    exit;
-fi
 
 FORCE_REBUILD=
 GENERATE_VERSIONS_TXT=NO
 GOLANG=NO
-: ${SVN:=svn}
-: ${GIT:=git}
+ALT_XCCONFIG=
+HEADER_SUFFIX=
 
 while [ $# -gt 0 ]
 do
@@ -52,6 +48,18 @@ do
         --force)
             FORCE_REBUILD=YES
             ;;
+        --from-xcconfig)
+            ALT_XCCONFIG="$2"
+            if [[ ! -f "$ALT_XCCONFIG" ]]; then
+                echo >&2 "error: --from-xcconfig $ALT_XCCONFIG is not a file"
+                exit 1
+            fi
+            shift
+            ;;
+        --header-suffix)
+            HEADER_SUFFIX="-$2"
+            shift
+            ;;
         --*)
             Usage
             ;;
@@ -62,15 +70,21 @@ do
     shift
 done
 
+if [[ ( -n "$ALT_XCCONFIG" && -z "$HEADER_SUFFIX" ) || ( -z "$ALT_XCCONFIG" && -n "$HEADER_SUFFIX" ) ]]; then
+    # We don't want people accidentally confusing the "toplevel" Versions.txt with other ones
+    echo >&2 "The --from-xcconfig and --header-suffix options must be used together"
+    exit 1
+fi
+
 # This will typically be CONFIGURATION_BUILD_DIR from Xcode. Version.txt will be placed in this directory and SVNVersion.h will be placed in an 'include' subdirectory
 if [ $# -ne 1 ]; then
     Usage
 fi
 BUILD_DIR="$1"
 
-OUTPUT_HEADER="$BUILD_DIR/include/SVNVersion.h"
-OUTPUT_VERSIONS_TXT="$BUILD_DIR/Versions.txt"
-OUTPUT_SVNVERSION_GO="$BUILD_DIR/svnversion.go"
+OUTPUT_HEADER="$BUILD_DIR/include/SVNVersion${HEADER_SUFFIX}.h"
+OUTPUT_VERSIONS_TXT="$BUILD_DIR/Versions${HEADER_SUFFIX}.txt"
+OUTPUT_SVNVERSION_GO="$BUILD_DIR/svnversion${HEADER_SUFFIX}.go"
 
 # Don't do the work to rebuild the header/Versions.txt (or check if they need rebuilding) by default. In particular, the `svn info` command takes a little while and slows down incremental builds.
 REBUILD=$FORCE_REBUILD
@@ -82,98 +96,100 @@ elif [ "$GOLANG" = "YES" -a \! -f "$OUTPUT_SVNVERSION_GO" ]; then
     REBUILD="YES"
 fi
 if [ -z "$REBUILD" ]; then
-    exit
+    echo "Output file already exists, and force-rebuild not specified."
+    exit 0
 fi
 
 BUILD_DATE=`TZ=UTC date +"%Y-%m-%dT%H:%M:%S.000Z"`
-INPUT_XCCONFIG="Omni-Version-Info.xcconfig"
+INPUT_XCCONFIG="${ALT_XCCONFIG:-Omni-Version-Info.xcconfig}"
+URL=`git ls-remote --get-url origin`
+COMMIT=`git rev-parse HEAD`
 
-# Figure out the actual COMMIT being used for this build (integer in SVN; hash
-# in Git) as well as an incrementing counter REVISION that represents the
-# number of changes since some reference point.
-if [ -d "../.svn" ]; then
-    URL=`$SVN info --xml . | xpath '/info/entry/url/text()' 2>& /dev/null`
-    if [ -n "${OMNI_VERSIONS-}" -a -f "${OMNI_VERSIONS-}" ]; then
-        REVISION=$(awk '/Revision: / {print $2}' $OMNI_VERSIONS)
-    else
-        REVISION=`$SVN info --xml . | xpath 'string(/info/entry/@revision)' 2>& /dev/null`
-    fi
-elif [ -e "../.git" ]; then
-    URL=`$GIT ls-remote --get-url origin`
-    COMMIT=`$GIT rev-parse HEAD`
-
-    # We always need to compare to the version info xcconfig; the only difference is whether we count commits to HEAD or to the recorded commit hash
-    TAIL=""
-    if [ -n "${OMNI_VERSIONS-}" -a -f "${OMNI_VERSIONS-}" ]; then
-        TAIL=$(awk '/Revision: / {print $2}' $OMNI_VERSIONS)
-    fi
-
-    if [ -f "${INPUT_XCCONFIG}" ]; then
-        $GIT blame -l "${INPUT_XCCONFIG}" | while read line; do
-            if [[ ! "$line" =~ "OMNI_[^ ]+_VERSION" ]]; then
-                continue
-            fi
-
-            BASE=`echo $line | cut -d' ' -f1`
-            REVISION_CANDIDATE=${=$(git rev-list $BASE..$TAIL --count)}
-            if [[ ! -v REVISION || $REVISION_CANDIDATE -lt $REVISION ]]; then
-                REVISION=$REVISION_CANDIDATE
-            fi
-        done
-        unset REVISION_CANDIDATE
-    fi
-
-    if [[ ! -v REVISION ]]; then
-        echo >&2 "Cannot determine number of revisions since reference commit; does Omni-Version-Info.xcconfig exist?"
-        exit 1
-    fi
-else
-    URL="not svn or git"
-    REVISION=0
+if [[ -z "$COMMIT" || -z "$URL" ]]; then
+    echo >&2 "error: Cannot determine current commit or origin url"
+    exit 1
 fi
 
-if [[ ! -v COMMIT ]]; then
-    COMMIT=$REVISION
+# If we have a prebuilt Versions.txt, make sure it matches our current checkout
+if [ -n "${OMNI_VERSIONS-}" ]; then
+    if [ ! -f "$OMNI_VERSIONS" ]; then
+        echo >&2 "error: OMNI_VERSIONS ($OMNI_VERSIONS) is not a file"
+        exit 1
+    fi
+    PREBUILT_VERSIONS_COMMIT=$(awk '/CommitHash: / {print $2}' "$OMNI_VERSIONS")
+    if [[ "$PREBUILT_VERSIONS_COMMIT" != "$COMMIT" ]]; then
+        echo >&2 "error: The file $OMNI_VERSIONS thinks we're building revision $PREBUILT_VERSIONS_COMMIT but our actual checkout (in $(pwd)) is $COMMIT"
+        exit 1
+    fi
+fi
+
+# Figure out an incrementing counter REVISION that represents the
+# number of changes since some reference point. The only important
+# thing about REVISION is that it must not decrease unless someone
+# updates the version numbers in the .xcconfig. We do this by counting
+# the number of commits since the last change to those lines in the
+# .xcconfig.
+
+# Make sure that the .xcconfig that we're using as the zero point for
+# our minor version is in the same repository as our
+# toplevel. (We could count commits to the submodule instead, but then
+# the meaning of the Versions.txt becomes pretty muddy.)
+if [[ "$(git -C "$(dirname -- "$INPUT_XCCONFIG")" rev-parse HEAD)" != "$COMMIT" ]] ; then
+    echo >&2 "error: xcconfig $INPUT_XCCONFIG seems to be in a different repository than our toplevel"
+    exit 1
+fi
+
+git blame -M -l "${INPUT_XCCONFIG}" | \
+    egrep 'OMNI_[^ ]+_VERSION' | cut -d' ' -f1 | sort | uniq | while read BASE
+do
+    REVISION_CANDIDATE=${=$(git rev-list $BASE..$COMMIT --count)}
+    if [[ ! -v REVISION || $REVISION_CANDIDATE -lt $REVISION ]]; then
+        REVISION=$REVISION_CANDIDATE
+    fi
+    unset REVISION_CANDIDATE
+done
+
+if [[ ! -v REVISION ]]; then
+    echo >&2 "Cannot determine number of revisions since reference commit of ${INPUT_XCCONFIG}"
+    exit 1
 fi
 
 mkdir -p "$BUILD_DIR/include"
 
 (
-    echo -n "#define SVNVERSION @\""
-    echo -n $URL
-    echo -n "@"
-    echo -n $COMMIT
-    echo "\""
-
+    echo "#define SVNVERSION @\"${URL}@${COMMIT}\""
     echo "#define SVNREVISION $REVISION"
     echo "#define SVNURL $URL"
+    echo "#define GIT_COMMIT ${COMMIT}"
+    echo "#define GIT_COMMIT_DATE $(git show -s --format='%cI' $COMMIT)"
+    echo "#define GIT_COMMIT_DESCRIPTION $(git describe --always --tags $COMMIT)"
     echo "#define BUILD_DATE @\"$BUILD_DATE\""
     echo "#define INFO_PLIST_BUILD_DATE $BUILD_DATE"
 
-    if [ -e "../.git" ]; then
-        if [ -f "${INPUT_XCCONFIG}" ]; then
-            awk -F = '{print "#define " $1 " " $2}' "${INPUT_XCCONFIG}"
-        else
-            echo "#define OMNI_INPUT_XCCONFIG_NOT_FOUND $(pwd)/${INPUT_XCCONFIG}"
-        fi
+    if [ -f "${INPUT_XCCONFIG}" ]; then
+        sed -ne 's/^\([A-Z0-9_]*\)\s*=\(.\)/#define \1 \2/p' "$INPUT_XCCONFIG"
+    else
+        echo "#define OMNI_INPUT_XCCONFIG_NOT_FOUND $(pwd)/${INPUT_XCCONFIG}"
     fi
 ) > "$OUTPUT_HEADER"
 
 if [ "$GENERATE_VERSIONS_TXT" = "YES" ]; then
     mkdir -p "$BUILD_DIR"
-    if [ -n "${OMNI_VERSIONS-}" -a -f "${OMNI_VERSIONS-}" ]; then
-        cp -p "$OMNI_VERSIONS" "$OUTPUT_VERSIONS_TXT"
-    else
-        (
+    (
+        if [ -n "${OMNI_VERSIONS-}" ]; then
+            # Use the build-system-supplied Versions.txt if possible.
+            cat "$OMNI_VERSIONS"
+        else
             echo "Build details:"
             echo ""
             echo "Product: [development build]"
             echo "Date:" `date +"%Y-%m-%d %H:%M:%S %z"`
             echo "Builder: $USER"
             echo "Host:" `hostname`
-            echo "Revision: $REVISION"
-        ) > "$OUTPUT_VERSIONS_TXT"
-    fi
+            echo "Revision: -"
+            echo "CommitHash: $COMMIT"
+        fi
+    ) | sed $'/^Revision:/ c\\\nRevision: '"$REVISION"$'\n' > "$OUTPUT_VERSIONS_TXT"
 fi
 
 if [ "$GOLANG" = "YES" ]; then
@@ -187,6 +203,8 @@ if [ "$GOLANG" = "YES" ]; then
         echo ""
         echo "const SVNVersion int = $REVISION"
         echo "const SVNURL string = \"$URL\""
+        echo "const CommitHash string = \"$COMMIT\""
+        echo "var CommitDate time.Time = time.Unix($(git show -s --format='%ct'), 0)"
         echo "var BuildDate time.Time = time.Unix(`date +\"%s\"`, 0)"
         echo "const BuildHost string = \"`hostname`\""
         echo "const BuildUser string = \"$USER\""

@@ -38,8 +38,10 @@ typedef OFWeakReference <id <OFControllerStatusObserver>> *OFControllerStatusObs
     
     OFPreference *_crashOnAssertionOrUnhandledExceptionPreference;
 
+#if USE_NOTIFICATION_CENTER
     NSLock *_notificationOwnersLock;
     NSMutableArray *_locked_notificationOwnerReferences;
+#endif
 }
 
 static OFController *sharedController = nil;
@@ -171,8 +173,10 @@ static NSString *ControllerClassName(NSBundle *bundle)
     _observerReferences = [[NSMutableArray alloc] init];
     postponingObservers = [[NSMutableSet alloc] init];
     
+#if USE_NOTIFICATION_CENTER
     _notificationOwnersLock = [[NSLock alloc] init];
     _locked_notificationOwnerReferences = [[NSMutableArray alloc] init];
+#endif
     
 #ifdef OMNI_ASSERTIONS_ON
     atexit(_OFControllerCheckTerminated);
@@ -194,12 +198,15 @@ static NSString *ControllerClassName(NSBundle *bundle)
     [postponingObservers release];
     [_queues release];
     
+#if USE_NOTIFICATION_CENTER
     [_locked_notificationOwnerReferences release];
     [_notificationOwnersLock release];
-
+#endif
+    
     [super dealloc];
 }
 
+#if USE_NOTIFICATION_CENTER
 #ifdef OMNI_ASSERTIONS_ON
 static void (*originalUserNotificationCenterSetDelegate)(id self, SEL _cmd, id object) = NULL;
 
@@ -208,9 +215,11 @@ static void _replacement_userNotificationCenterSetDelegate(id self, SEL _cmd, id
     OBASSERT_NOT_REACHED("The OAController instance should be the delgate of NSUserNotificationCenter. Use -[OAController addNotificationOwner:] instead.");
 }
 #endif
+#endif
 
 - (void)becameSharedController;
 {
+#if USE_NOTIFICATION_CENTER
     OBASSERT([NSUserNotificationCenter defaultUserNotificationCenter].delegate == nil, "NSUserNotificationCenter delegate was already set to %@, but will be clobbered by %@", [NSUserNotificationCenter defaultUserNotificationCenter].delegate, self);
     
     NSUserNotificationCenter *center = [NSUserNotificationCenter defaultUserNotificationCenter];
@@ -221,8 +230,8 @@ static void _replacement_userNotificationCenterSetDelegate(id self, SEL _cmd, id
     // The returned instance is of a concrete subclass; the superclass doesn't even implement -setDelegate:.
     originalUserNotificationCenterSetDelegate = (typeof(originalUserNotificationCenterSetDelegate))OBReplaceMethodImplementation([center class], @selector(setDelegate:), (IMP)_replacement_userNotificationCenterSetDelegate);
 #endif
+#endif
 }
-
 
 - (OFControllerStatus)status;
 {
@@ -630,6 +639,9 @@ static NSString *OFSymbolicBacktrace(NSException *exception) {
 
         IGNORE_CRASH(@"NSRemoteView", @selector(_evaluateKeyness:forWindow:))
 
+        // <bug:///142474> (Mac-OmniGraffle Crasher: [needs repro] [7.11.1] -[NSDocument(NSDocumentSaving) _runModalSavePanelForSaveOperation:delegate:didSaveSelector:contextInfo:])
+        IGNORE_CRASH(@"NSRemoteViewMarshal", @selector(dealloc))
+
         // bug:///139696 (Mac-OmniOutliner Crasher: Crash typing multibyte characters into save panel name field on touch bar MBP)
         IGNORE_CRASH(@"NSRemoteView", @selector(_showTouchBarPopover:fromItem:wthOverlayIdentifier:withCloseButton:withControlStrip:));
 
@@ -880,6 +892,7 @@ static NSString * const OFControllerAssertionHandlerException = @"OFControllerAs
     return NO; // we already did
 }
 
+#if USE_NOTIFICATION_CENTER
 #pragma mark - Notification owner registration
 
 - (void)addNotificationOwner:(id <OFNotificationOwner>)notificationOwner;
@@ -959,6 +972,7 @@ static NSString * const OFControllerAssertionHandlerException = @"OFControllerAs
     }
     return NO;
 }
+#endif
 
 #pragma mark - Private
 
@@ -1047,6 +1061,7 @@ static NSString * const OFControllerAssertionHandlerException = @"OFControllerAs
     }
 }
 
+#if USE_NOTIFICATION_CENTER
 - (NSUInteger)_locked_indexOfNotificationOwner:(id)owner;
 {
     OBPRECONDITION(_locked_notificationOwnerReferences);
@@ -1086,6 +1101,7 @@ static NSString * const OFControllerAssertionHandlerException = @"OFControllerAs
     
     return nil;
 }
+#endif
 
 @end
 

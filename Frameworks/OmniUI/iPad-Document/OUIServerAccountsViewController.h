@@ -12,12 +12,13 @@
 
 @interface OUIServerAccountsViewController : UITableViewController
 
-@property(class,readonly,nonatomic) NSString *localizedDisplayName;
-@property(class,readonly,nonatomic) NSString *localizedDisplayDetailText;
++ (NSString *)localizedDisplayNameForBrowsing:(BOOL)isForBrowsing;
 
-- (instancetype)initWithAgentActivity:(OFXAgentActivity *)agentActivity NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithAgentActivity:(OFXAgentActivity *)agentActivity forBrowsing:(BOOL)isForBrowsing NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 - (instancetype)initWithStyle:(UITableViewStyle)style NS_UNAVAILABLE;
+- (instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
+- (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
 
 - (void)editSettingsForAccount:(OFXServerAccount *)account;
 

@@ -8,59 +8,32 @@
 // $Id$
 
 @objc public protocol OUIInternalTemplateDelegate: class {
+    func shouldUseTemplatePicker() -> Bool
+    
+    func wantsLanguageButton() -> Bool
     func placeholderImage(for url: URL) -> UIImage
-    func numberOfInteralSections(in templatePicker: OUITemplatePicker) -> Int
+    func numberOfInternalSections(in templatePicker: OUITemplatePicker) -> Int
     func internalSupportedLanguages(in templatePicker: OUITemplatePicker) -> [String]
-    func supportsGeneralTemplates(in templatePicker: OUITemplatePicker) -> Bool
-    // total number of sections will be numberOfInteralSections + 1 (General templates, the user created templates) if supported.
+    var templatePickerCustomTemplateFileTypes: [String]? { get }
+    // total number of sections will be numberOfInternalSections + 1 (Custom templates, the user created templates) if supported.
     // The delegate is only responsible for the internal sections
     func templatePicker(_ templatePicker: OUITemplatePicker, numberOfRowsInSection section: Int, for language: String) -> Int
     func templatePicker(_ templatePicker: OUITemplatePicker, templateItemRowAt indexPath: IndexPath, for language: String) -> OUITemplateItem
     func templatePicker(_ templatePicker: OUITemplatePicker, titleForHeaderInSection section: Int, for language: String) -> String
+
 }
 
+public final class OUITemplateItem: NSObject {
 
+    @objc public let fileURL: URL
+    @objc public let fileType: String
 
-public final class OUITemplateItem: NSObject, ODSFileItemProtocol {
+    @objc public let displayName: String
 
-    @objc public var fileURL: URL
-    @objc public var fileEdit: OFFileEdit
-    @objc public var fileType: String
-    @objc public let isValid = true
-    @objc public var isDownloaded = true
-    @objc public var fileModificationDate: Date {
-        get {
-            return fileEdit.fileModificationDate
-        }
-    }
-    @objc public weak var scope: ODSScope? = nil
-
-    @objc public var displayName: String
-    @objc public var previewImage: UIImage? {
-        get {
-            var image: UIImage?
-            if let preview = OUIDocumentPreview.make(forDocumentClass: OUIDocumentAppController.shared().documentClass(for: fileURL), fileItem: self, with: .large) {
-                preview.incrementDisplayCount()
-                if let previewImage = preview.image {
-                    image = UIImage(cgImage: previewImage)
-                }
-                preview.decrementDisplayCount()
-            }
-            return image
-        }
-    }
-
-    @objc public init(fileURL: URL, fileEdit: OFFileEdit, displayName: String) {
+    @objc public init(fileURL: URL, displayName: String, fileType: String? = nil) {
         self.fileURL = fileURL
-        self.fileEdit = fileEdit
         self.displayName = displayName
-        self.fileType = UTI.fileTypePreperringNative(fileURL.pathExtension) ?? ""
-
-        super.init()
-    }
-
-    @objc public func name() -> String {
-        return displayName
+        self.fileType = fileType ?? UTI.fileTypePreferringNative(fileURL.pathExtension) ?? ""
     }
 }
 
@@ -69,26 +42,32 @@ public enum TemplateLabelHeight {
     private static var regular: [String: CGFloat] = [String: CGFloat]()
     private static var compact: [String: CGFloat] = [String: CGFloat]()
 
-    static let generalKey = "CustomTemplates"
+    static let customKey = "CustomTemplates"
     static let compactWidth: CGFloat = 90
-    static let regularWidth: CGFloat = 210
+    static let regularWidth: CGFloat = 170
 
-    private static func height(_ templateItem: OUITemplateItem, isCompact: Bool) -> CGFloat {
+    fileprivate static func templateLabelFont(compatibleWith traitCollection: UITraitCollection?) -> UIFont {
+        let isCompact = traitCollection?.horizontalSizeClass == .compact || traitCollection?.verticalSizeClass == .compact
+        let textStyle: UIFont.TextStyle = isCompact ? .caption1 : .title3
+        return UIFont.preferredFont(forTextStyle: textStyle, compatibleWith: traitCollection)
+    }
+    
+    private static func height(_ templateItem: OUITemplateItem, compatibleWith traitCollection: UITraitCollection?) -> CGFloat {
+        let isCompact = traitCollection?.horizontalSizeClass == .compact || traitCollection?.verticalSizeClass == .compact
         let width = isCompact ? compactWidth : regularWidth
-        let fontSize: CGFloat = isCompact ? 10 : 18
 
         let label = UILabel()
         label.numberOfLines = 0
         label.text = templateItem.displayName
-        label.font = UIFont.systemFont(ofSize: fontSize)
-        let displaySize = label.sizeThatFits(CGSize(width: width, height: 40))
+        label.font = templateLabelFont(compatibleWith: traitCollection)
+        let displaySize = label.sizeThatFits(CGSize(width: width, height: 0.25 * width))
 
         return displaySize.height
     }
 
     public static func regular(_ language: String) -> CGFloat {
         if let height = regular[language] {
-            return max(height, regular[generalKey] ?? 0)
+            return max(height, regular[customKey] ?? 0)
         } else {
             return 20
         }
@@ -102,13 +81,19 @@ public enum TemplateLabelHeight {
         }
     }
 
-    public static func update(with templateItem: OUITemplateItem, language: String) {
-        regular[language] = max(regular[language] ?? 0, height(templateItem, isCompact: false))
-        compact[language] = max(compact[language] ?? 0, height(templateItem, isCompact: true))
+    public static func update(with templateItem: OUITemplateItem, language: String, compatibleWith traitCollection: UITraitCollection?) {
+        regular[language] = max(regular[language] ?? 0, height(templateItem, compatibleWith: traitCollection))
+        compact[language] = max(compact[language] ?? 0, height(templateItem, compatibleWith: traitCollection))
     }
 }
 
 public class OUITemplatePicker: UIViewController {
+
+    @objc public static func newTemplatePicker() -> OUITemplatePicker {
+        let storyboard = UIStoryboard(name: "OUITemplatePicker", bundle: OUITemplatePicker.bundle())
+        let viewController = storyboard.instantiateViewController(withIdentifier: "templatePicker") as! OUITemplatePicker
+        return viewController
+    }
 
     fileprivate static let showLanguagePickerIdentifier = "showLanguagePicker"
     fileprivate static let cellIdentifier = "templateCell"
@@ -120,18 +105,20 @@ public class OUITemplatePicker: UIViewController {
     @objc public weak var internalTemplateDelegate: OUIInternalTemplateDelegate?
     @objc public weak var templateDelegate: OUITemplatePickerDelegate?
 
-    //@objc public var documentPicker: OUIDocumentPicker?
-    //@objc public var folderItem: ODSFolderItem?
     @objc public var navigationTitle: String?
     @objc public var wantsCancelButton = true
     @objc public var wantsLanguageButton = true
-    @objc public var isEmbedded = false
+    @objc public var supportedFileTypes = [String]()
 
-    fileprivate var currentLanguage: String = Locale.current.languageCode!
+    fileprivate var currentLanguage: String = Locale.current.languageCode! {
+        didSet {
+            collectionView.reloadData()
+        }
+    }
     fileprivate var languages = [String]()
     fileprivate var languageButton: UIBarButtonItem?
     fileprivate weak var languagePicker: OUILanguagePicker?
-    fileprivate var generalTemplates = [OUITemplateItem]()
+    fileprivate lazy var customTemplates: [OUITemplateItem] = scanForCustomTemplates()
 
     // MARK: - Actions
     @objc public static func knownLanguages() -> [String]? {
@@ -177,20 +164,67 @@ public class OUITemplatePicker: UIViewController {
             }
         }
     }
+
+    fileprivate func scanForCustomTemplates() -> [OUITemplateItem] {
+        guard let fileTypesArray = internalTemplateDelegate?.templatePickerCustomTemplateFileTypes else {
+            return []
+        }
+        let fileTypes = Set(fileTypesArray)
+
+        var templates = [OUITemplateItem]()
+        func scanFile(url: URL) {
+            let fileType = UTI.fileTypePreferringNative(url.pathExtension) ?? ""
+            if fileTypes.contains(fileType) {
+                let pathComponent = url.lastPathComponent as NSString
+                let displayName = pathComponent.deletingPathExtension
+                let item = OUITemplateItem(fileURL: url, displayName: displayName, fileType: fileType)
+                templates.append(item)
+            }
+        }
+
+        let fileManager = FileManager.default
+        func scanFolder(url: URL) {
+            let resourceKeys: [URLResourceKey] = [.isDirectoryKey, .isHiddenKey]
+            guard let directoryEnumerator = fileManager.enumerator(at: url, includingPropertiesForKeys: resourceKeys, options: [.skipsPackageDescendants]) else { return }
+            for case let fileURL as URL in directoryEnumerator {
+                guard let resourceValues = try? fileURL.resourceValues(forKeys: Set(resourceKeys)),
+                    let isDirectory = resourceValues.isDirectory,
+                    let isHidden = resourceValues.isHidden
+                    else {
+                        continue
+                }
+
+                if isDirectory && isHidden {
+                    directoryEnumerator.skipDescendants() // In particular, we want to skip .Trash
+                } else {
+                    scanFile(url: fileURL)
+                }
+            }
+        }
+
+        let appController = OUIDocumentAppController.shared()
+        scanFolder(url: appController.localDocumentsURL)
+        if let icloudStencilsURL = appController.iCloudDocumentsURL {
+            scanFolder(url: icloudStencilsURL)
+        }
+        return templates.sorted { (item1, item2) -> Bool in
+            let displayName1 = item1.displayName
+            let displayName2 = item2.displayName
+            if displayName1 == displayName2 {
+                return item1.fileURL.path < item2.fileURL.path
+            } else {
+                return displayName1 < displayName2
+            }
+        }
+    }
 }
 
 
 // MARK: - UIViewController subclass
 extension OUITemplatePicker {
 
-    @objc fileprivate func previewGenerationDidFinish(notification: Notification) {
-        collectionView.reloadData()
-    }
-
     open override func viewDidLoad() {
         super.viewDidLoad()
-
-        NotificationCenter.default.addObserver(self, selector: #selector(self.previewGenerationDidFinish(notification:)), name: NSNotification.Name(rawValue: "OUIDocumentPreviewsUpdatedForFileItemNotification"), object: nil)
 
         if let scrollView = self.collectionView.enclosingView(of: UIScrollView.self) {
             var inset = scrollView.contentInset
@@ -202,12 +236,9 @@ extension OUITemplatePicker {
         }
 
         if let delegate = internalTemplateDelegate {
-            if delegate.supportsGeneralTemplates(in: self) {
-                if let templateDelegate = templateDelegate {
-                    generalTemplates = templateDelegate.generalTemplates(in: self)
-                    for template in generalTemplates {
-                        TemplateLabelHeight.update(with: template, language: TemplateLabelHeight.generalKey)
-                    }
+            if let _ = delegate.templatePickerCustomTemplateFileTypes {
+                for template in customTemplates {
+                    TemplateLabelHeight.update(with: template, language: TemplateLabelHeight.customKey, compatibleWith: traitCollection)
                 }
             }
 
@@ -273,7 +304,6 @@ extension OUITemplatePicker: OUILanguagePickerDelegate {
 
             currentLanguage = language
             languageButton?.title = localizedLanguage(for: language)
-            collectionView.reloadData()
         }
         dismissLanguagePicker()
     }
@@ -293,14 +323,14 @@ extension OUITemplatePicker: OUILanguagePickerDelegate {
 extension OUITemplatePicker: UICollectionViewDataSource {
 
     fileprivate func wantsCompactSize() -> Bool {
-        return isEmbedded || traitCollection.horizontalSizeClass == .compact || traitCollection.verticalSizeClass == .compact
+        return traitCollection.horizontalSizeClass == .compact || traitCollection.verticalSizeClass == .compact
     }
 
     fileprivate func cellSize() -> CGSize {
         let compact = wantsCompactSize()
         let width = compact ? TemplateLabelHeight.compactWidth : TemplateLabelHeight.regularWidth
-        var height = compact ? TemplateLabelHeight.compact(currentLanguage) : TemplateLabelHeight.regular(currentLanguage)
-        height += width + 4.0
+        let labelHeight = compact ? TemplateLabelHeight.compact(currentLanguage) : TemplateLabelHeight.regular(currentLanguage)
+        let height = labelHeight + 4.0 + width
 
         return CGSize(width: width, height: height)
     }
@@ -308,7 +338,7 @@ extension OUITemplatePicker: UICollectionViewDataSource {
     fileprivate func wantsCustomTemplateSection() -> Bool {
         guard let delegate = internalTemplateDelegate else { return false }
 
-        return delegate.supportsGeneralTemplates(in: self) && generalTemplates.count > 0
+        return delegate.templatePickerCustomTemplateFileTypes != nil && customTemplates.count > 0
     }
 
     fileprivate func firstInternalSection() -> Int {
@@ -335,16 +365,16 @@ extension OUITemplatePicker: UICollectionViewDataSource {
             templateItem = delegate.templatePicker(self, templateItemRowAt: internalIndexPath, for: currentLanguage)
         } else {
             let index = indexPath.row
-            guard index < generalTemplates.count else { return nil }
-            templateItem = generalTemplates[index]
+            guard index < customTemplates.count else { return nil }
+            templateItem = customTemplates[index]
         }
         return templateItem
     }
 
     public func numberOfSections(in collectionView: UICollectionView) -> Int {
-        guard let delegate = internalTemplateDelegate else { return 0 }
+        guard self.isViewLoaded, let delegate = internalTemplateDelegate else { return 0 }
 
-        var numberOfSections = delegate.numberOfInteralSections(in: self)
+        var numberOfSections = delegate.numberOfInternalSections(in: self)
         if wantsCustomTemplateSection() {
             numberOfSections += 1
         }
@@ -358,32 +388,25 @@ extension OUITemplatePicker: UICollectionViewDataSource {
         if isInternal(section: section) {
             return delegate.templatePicker(self, numberOfRowsInSection: internalSection(for: section), for: currentLanguage)
         } else {
-            return generalTemplates.count
+            return customTemplates.count
         }
     }
 
     public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: OUITemplatePicker.cellIdentifier, for: indexPath) as! OUITemplatePickerCell
 
-        let templateItem = self.templateItem(for: indexPath)
-
-        let size = cellSize()
-        cell.imageWidthConstraint.constant = size.width
-        cell.imageHeightConstraint.constant = size.width
-        cell.preview.layer.cornerRadius = 5.0
-        cell.preview.layer.masksToBounds = true
-
-        if let displayName = cell.displayName {
-            let fontSize: CGFloat = wantsCompactSize() ? 10 : 18
-            displayName.text = templateItem?.displayName
-            displayName.font = UIFont.systemFont(ofSize: fontSize)
-            let displaySize = displayName.sizeThatFits(CGSize(width: size.width, height: 40))
-            cell.displayNameHeightConstraint.constant = displaySize.height
+        guard let templateItem = self.templateItem(for: indexPath) else {
+            assertionFailure()
+            return cell
         }
 
-        cell.preview.image = templateItem?.previewImage
-        cell.url = templateItem?.fileURL
+        if let displayName = cell.displayName {
+            displayName.text = templateItem.displayName
+            displayName.font = TemplateLabelHeight.templateLabelFont(compatibleWith: traitCollection)
+        }
 
+        cell.templateItem = templateItem
+        
         return cell
     }
 
@@ -403,7 +426,7 @@ extension OUITemplatePicker: UICollectionViewDelegate {
 
         var headerTitle: String?
         if isInternal(section: indexPath.section) {
-            if !wantsCustomTemplateSection() && delegate.numberOfInteralSections(in: self) == 1 {
+            if !wantsCustomTemplateSection() && delegate.numberOfInternalSections(in: self) == 1 {
                 // There is only one section do not provide a header.
                 view.isHidden = true
                 return view
@@ -424,6 +447,11 @@ extension OUITemplatePicker: UICollectionViewDelegate {
         }
     }
 
+    public func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        if let cell = cell as? OUITemplatePickerCell {
+            cell.willDisplay()
+        }
+    }
 }
 
 
@@ -458,7 +486,7 @@ extension OUITemplatePicker: UICollectionViewDelegateFlowLayout {
         }
         let width = collectionView.contentSize.width - insetAdjustment
 
-        if let delegate = internalTemplateDelegate, isInternal(section: section) && !wantsCustomTemplateSection() && delegate.numberOfInteralSections(in: self) == 1 {
+        if let delegate = internalTemplateDelegate, isInternal(section: section) && !wantsCustomTemplateSection() && delegate.numberOfInternalSections(in: self) == 1 {
             return CGSize(width: width, height: 10)
         }
 

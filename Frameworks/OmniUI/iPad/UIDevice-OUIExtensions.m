@@ -85,62 +85,56 @@ RCS_ID("$Id$");
 
 - (NSUInteger)pixelsPerInch;
 {
-    NSUInteger ppi = 0;
     UIDeviceHardwareInfo *hardwareInfo = [[UIDevice currentDevice] hardwareInfo];
     switch (hardwareInfo.family) {
         case UIDeviceHardwareFamily_iPhoneSimulator: {
-            // TODO: making a guess based on screen size
-            OBASSERT_NOT_REACHED("WYSIWYG does not work in simulator. bug:///137376");
-
-            ppi = 326;
-            break;
+            // TODO: make a guess based on screen size?
+            OBASSERT_NOT_REACHED("<bug:///137376> (iOS-OmniGraffle Engineering: Failed assertion: pixelsPerInch: WYSIWYG does not work in simulator)");
+            return 326;
         }
+
         case UIDeviceHardwareFamily_iPhone: {
             switch (hardwareInfo.majorHardwareIdentifier) {
                 case 1: // iPhone 3G
                 case 2: // iPhone 3GS
-                {
-                    ppi = 163;
-                    break;
-                }
+                    return 163;
+
                 case 3: // iPhone 4
                 case 4: // iPhone 4s
-                {
-                    ppi = 326;
-                    break;
-                }
+                    return 326;
+
                 case 5: // iPhone 5
                 case 6: // iPhone 5s
-                {
-                    ppi = 326;
-                    break;
-                }
+                    return 326;
+
                 case 7:
-                {
                     if (hardwareInfo.minorHardwareIdentifier == 1) {    // iPhone 6+
-                        ppi = 401;
+                        return 401;
                     } else {    // iPhone 6
-                        ppi = 326;
+                        return 326;
                     }
-                    
-                    break;
-                }
+
                 case 8:
-                {
                     if (hardwareInfo.minorHardwareIdentifier == 2) {    // iPhone 6s+
-                        ppi = 401;
+                        return 401;
                     } else {    // iPhone 6s
-                        ppi = 326;
+                        return 326;
                     }
-                    
-                    break;
-                }
+
+                case 11: // iPhone Xs = iPhone 11,2
+                    if (hardwareInfo.minorHardwareIdentifier == 2) {    // iPhone Xs = iPhone11,2
+                        return 458;
+                    } else { // Xs Max?
+                        return 458;
+                    }
+
                 default:
-                {
-                    OBASSERT_NOT_REACHED("Unknown iPhone hardware model");
-                }
+                    OBASSERT_NOT_REACHED("Unknown iPhone hardware model, please add its specs");
+                    return 401;
             }
-            break;
+
+            OBASSERT_NOT_REACHED("All conditions should have returned directly");
+            return 0;
         }
             
         case UIDeviceHardwareFamily_iPodTouch: {
@@ -148,67 +142,76 @@ RCS_ID("$Id$");
                 case 1: // iPod 1G
                 case 2: // iPod 2G
                 case 3: // iPod 3G
-                {
-                    ppi = 163;
-                    break;
-                }
+                    return 163;
+
                 case 4: // iPod 4G
                 case 5: // iPod 5G
-                {
-                    ppi = 326;
-                    break;
-                }
+                    return 326;
+
                 default:
-                {
-                    OBASSERT_NOT_REACHED("Unknown iPod hardware model");
-                }
+                    OBASSERT_NOT_REACHED("Unknown iPod hardware model, please add its specs");
+                    return 326;
             }
-            break;
+
+            OBASSERT_NOT_REACHED("All conditions should have returned directly");
+            return 0;
         }
             
         case UIDeviceHardwareFamily_iPad: {
             switch (hardwareInfo.majorHardwareIdentifier) {
                 case 1: // iPad 1
                 case 2: // iPad 2, Mini
-                {
-                    ppi = 132;
-                    break;
-                }
+                    return 132;
+
                 case 3: // iPad 3, iPad 4
-                {
-                    ppi = 264;
-                    break;
-                }
+                    return 264;
+
                 case 4: // iPad Air, Mini 2, Mini 3
-                {
                     if (hardwareInfo.minorHardwareIdentifier == 1 || hardwareInfo.minorHardwareIdentifier == 2 || hardwareInfo.minorHardwareIdentifier == 3) {  // iPad Air
-                        ppi = 264;
+                        return 264;
                     } else {    // iPad Mini 2, Mini 3
-                        ppi = 326;
+                        return 326;
                     }
-                    
-                    break;
-                }
-                case 5: // iPad Air 2
+
+                case 5: // iPad Air 2, mini 4
+                    if (hardwareInfo.minorHardwareIdentifier == 2) { // iPad mini 4
+                        return 326;
+                    } else {
+                        return 264;
+                    }
+
                 case 6: // iPad Pro, 2017 iPad
                 case 7: // iPad Pro 10.5, 2018 iPad
-                {
-                    ppi = 264;
-                    break;
-                }
+                    return 264;
+
+                case 8:
+                    // iPad Pro (3rd generation) = 8,7
+                    return 326;
+
+                case 11: // ???
+                    if (hardwareInfo.minorHardwareIdentifier == 2) { // iPad mini 5 = 11,2
+                        return 326;
+                    } else {
+                        return 264;
+                    }
+
                 default:
-                {
-                    OBASSERT_NOT_REACHED("Unknown iPad hardware model");
-                }
+                    OBASSERT_NOT_REACHED("Unknown iPad hardware model, please add its specs");
+                    return 264;
             }
-            break;
+
+            OBASSERT_NOT_REACHED("All conditions should have returned directly");
+            return 0;
         }
             
         case UIDeviceHardwareFamily_Unknown: {
-            break;
+            OBASSERT_NOT_REACHED("Unknown hardware");
+            return 0;
         }
     }
-    return ppi;
+
+    OBASSERT_NOT_REACHED("All conditions should have returned directly");
+    return 0;
 }
 
 #pragma mark Private

@@ -12,6 +12,7 @@ extern NSErrorDomain const OUIDocumentErrorDomain;
 typedef NS_ERROR_ENUM(OUIDocumentErrorDomain, OUIDocumentError) {
     // Zero typically means no error
     OUIDocumentErrorCannotMoveItemFromInbox = 1,
+    OUIDocumentErrorImportFailed,
     OUIDocumentErrorPhotoLibraryAccessRestrictedOrDenied,
 };
 

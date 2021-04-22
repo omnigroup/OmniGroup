@@ -16,10 +16,8 @@
     @objc public var documentName: String?
     // This is the actual view of the template we will animate from when opening the newly created file
     @objc public var animateFromView: UIView?
-    @objc public let documentType: ODSDocumentType
 
-    @objc public init(documentType: ODSDocumentType, templateURL: URL? = nil, documentName: String? = nil, animateFromView: UIView? = nil) {
-        self.documentType = documentType
+    @objc public init(templateURL: URL? = nil, documentName: String? = nil, animateFromView: UIView? = nil) {
         self.templateURL = templateURL
         self.documentName = documentName
         self.animateFromView = animateFromView

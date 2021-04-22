@@ -1,44 +1,14 @@
-/* Filename appendage to indicate file is a copy of a file that has been moved to a different location */
-" (Copy)" = " (copia)";
-
-/* bytes */
-"%@ B" = "%@ B";
-
 /* error description */
 "%@ cannot open this type of file." = "%@ no puede abrir este tipo de archivo.";
 
-/* gigabytes */
-"%@ GB" = "%@ GB";
+/* OmniPresence file list: status: items and size format */
+"%@ items, %@" = "%1$@ ítems, %2$@";
 
-/* doc picker multiple items accessibility value */
-"%@ items" = "%@ elementos";
-
-/* kilobytes */
-"%@ KB" = "%@ KB";
-
-/* megabytes */
-"%@ MB" = "%@ MB";
+/* OmniPresence file list: status: items and size with downloads format */
+"%@ items, %@ (%@ downloaded, %@)" = "%1$@ ítems, %2$@ (%3$@ descargados, %4$@)";
 
 /* home screen detail label */
 "%d items" = "%d ítems";
-
-/* Main toolbar title for a multiple selected documents. */
-"%ld Documents Selected" = "%ld documentos seleccionados";
-
-/* Main toolbar title for a multiple selected items. */
-"%ld Items Selected" = "%ld elementos seleccionados";
-
-/* home screen detail format -- count and item description */
-"%lu %@" = "%1$lu %2$@";
-
-/* Main toolbar title for a single selected document. */
-"1 Document Selected" = "1 documento seleccionado";
-
-/* doc picker single item accessibility value */
-"1 item" = "1 elemento";
-
-/* Main toolbar title for a single selected folder. */
-"1 Item Selected" = "1 elemento seleccionado";
 
 /* replace document description */
 "A document with the name \"%@\" already exists. Do you want to replace it? This cannot be undone." = "Ya existe un documento con el nombre “%@”. ¿Deseas sustituirlo? Esta acción no se puede deshacer.";
@@ -48,14 +18,6 @@
 
 /* Server Account Setup label: account name */
 "Account Name" = "Nombre de cuenta";
-
-/* Menu option in the document picker view */
-"Actions" = "Acciones";
-
-/* Cloud Setup button title to add a new account
-   Cloud Setup button title to convert an existing account */
-
-"Add an Account" = "Añadir una cuenta";
 
 /* home screen button label */
 "Add OmniPresence Account" = "Añadir cuenta de OmniPresence";
@@ -67,41 +29,16 @@
    Server account setup confirmation cancellation label
    title for alert option cancel */
 
-
-
-
-
 "Cancel" = "Cancelar";
-
-/* item not fully downloaded error title */
-"Cannot Duplicate Item" = "No se puede duplicar el elemento";
-
-/* item not fully downloaded error title */
-"Cannot Export Item" = "No se puede exportar el elemento";
 
 /* email action description */
 "Choose a format for emailing \"%@\":" = "Selecciona un formato para enviar “%@” por e-mail:";
-
-/* toolbar prompt when choosing a template */
-"Choose a Template" = "Elegir una plantilla";
 
 /* Cloud setup modal sheet title */
 "Choose Account Type" = "Elegir tipo de cuenta";
 
 /* export options title */
 "Choose Format" = "Selecciona un formato";
-
-/* Clear from Recent Documents container toolbar item accessibility label. */
-"Clear" = "Borrar";
-
-/* clear button title */
-"Clear %ld Documents" = "Borrar %ld documentos";
-
-/* remove button title */
-"Clear Document" = "Borrar documento";
-
-/* doc picker custom accessibility action name */
-"Clear name field" = "Borrar campo de nombre";
 
 /* title view clear button accessibility label. */
 "Clear Title" = "Borrar título";
@@ -112,47 +49,26 @@
 /* demo mode disabled message */
 "Cloud storage is disabled in this demo version." = "El almacenamiento en la nube está desactivado en esta versión demo.";
 
+/* Screen title for configuring OmniPresence accounts */
+"Configure OmniPresence Syncing" = "Configurar sincr. de OmniPresence";
+
 /* Success label when connecting to an OmniPresence or WebDAV server account */
 "Connected" = "Conectado";
 
-/* webdav connecting label */
-"Connecting" = "Conectando";
+/* Update news: button title */
+"Continue" = "Continuar";
 
 /* Menu option in the document picker view */
 "Copy as Image" = "Copiar como imagen";
 
-/* gear menu item */
-"Copy from WebDAV" = "Copiar desde WebDAV";
-
-/* gear menu item */
-"Copy from…" = "Copiar desde…";
-
-/* Create Document From Template Document Shortcut Title */
-"Create New Document" = "Crear un documento nuevo";
-
-/* Create Document From Template Document Shortcut Title */
-"Create New Document From %@" = "Crear un documento nuevo desde %@";
-
 /* moved aside custom sample document name */
 "CustomizedSampleDocumentName" = "%@ (personalizado)";
-
-/* sort by date */
-"Date" = "Fecha";
-
-/* Delete toolbar item accessibility label. */
-"Delete" = "Eliminar";
 
 /* Server account setup confirmation action label format */
 "Delete \"%@\"" = "Eliminar “%@”";
 
-/* delete button title */
-"Delete %ld Documents" = "Eliminar %ld documentos";
-
 /* Server Account Setup button label */
 "Delete Account" = "Eliminar cuenta";
-
-/* delete button title */
-"Delete Document" = "Eliminar documento";
 
 /* Discard unsynced edits dialog: discard button label */
 "Discard Edits" = "Descartar modificaciones";
@@ -169,31 +85,11 @@
 /* Toolbar button title for returning to list of documents. */
 "Documents <back button>" = "Documentos";
 
-/* Duplicate document preview action title.
-   Duplicate toolbar item accessibility label. */
-
-"Duplicate" = "Duplicar";
-
-/* title for alert option confirming duplication of multiple files */
-"Duplicate %ld Documents" = "Duplicar %ld documentos";
-
-/* title for alert option confirming duplication of multiple items */
-"Duplicate %ld Items" = "Duplicar %ld elementos";
-
-/* omni sync server setup help */
-"Easily sync Omni documents between devices. Signup is free!" = "Sincroniza documentos Omni entre dispositivos. El registro es gratuito.";
-
-/* When displaying a sync error, this is the option to change the username and password. */
-"Edit Credentials" = "Editar credenciales";
-
-/* doc picker custom accessibility action name */
-"Edit name" = "Editar nombre";
+/* OmniPresence sync status */
+"Downloading files" = "Descargando archivos";
 
 /* title view edit button item accessibility hint. */
 "Edits the document's title." = "Modifica el título del documento.";
-
-/* empty trash button title */
-"Empty Trash" = "Vaciar papelera";
 
 /* webdav help */
 "Enter the location of your WebDAV space." = "Introduce la ubicación de tu espacio WebDAV.";
@@ -201,36 +97,16 @@
 /* export button title
    export options title
    Export toolbar item accessibility label. */
-
-
 "Export" = "Exportar";
 
 /* export to description */
 "Export \"%@\" as:" = "Exportar “%@” como:";
 
-/* export action description */
-"Export \"%@\" to %@ as:" = "Exportar “%1$@” a %2$@ como:";
-
-/* Menu option in the document picker view */
-"Export to WebDAV" = "Exportar a WebDAV";
-
-/* Export document preview action title. */
-"Export…" = "Exportar…";
-
-/* finished */
-"Finished" = "Finalizado";
-
-/* doc picker folder type accessibility value */
-"Folder" = "Carpeta";
-
-/* import sheet title */
-"Import" = "Importar";
+/* OmniPresence file list: sort order option */
+"folder and name" = "carpeta y nombre";
 
 /* Info item accessibility label */
 "Info" = "Información";
-
-/* doc picker title label editing accessibility value */
-"Is editing" = "Está editando";
 
 /* Notice for the user about the last edit to a document (unknown device) */
 "Last edit: %@" = "Última modificación: %@";
@@ -241,76 +117,43 @@
 /* Notice for the user about the last edit to a document (this device) */
 "Last edit: %@ on this device" = "Última modificación: %@ en este dispositivo";
 
+/* OmniPresence sync status: prefix for the 'last sync' status */
+"Last sync" = "Última sincronización";
+
+/* Update news: button title */
+"Learn More" = "Más información";
+
 /* Server Account Setup label: location */
 "Location" = "Ubicación";
 
-/* top level doc picker title */
-"Locations" = "Ubicaciones";
-
-/* modified date accessibility value */
-"Modified %@" = "Modificado %@";
-
-/* Menu option in the document picker view
-   Move toolbar item accessibility label. */
-
-"Move" = "Trasladar";
-
-/* move to trash button title */
-"Move %ld Items to Trash" = "Mover %ld elementos a la papelera";
-
-/* move to trash button title
-   Move to Trash toolbar item accessibility label. */
-
-"Move to Trash" = "Trasladar a la Papelera";
-
-/* Share menu title */
-"Move to..." = "Mover a…";
-
-/* Move document preview action title. */
-"Move…" = "Trasladar...";
+/* OmniPresence file list: sort order option */
+"modification date" = "fecha de modificación";
 
 /* Base name for newly created documents. This will have an number appended to it to make it unique. */
 "My Document" = "Mi documento";
 
-/* Base name for newly created templates. This will have an number appended to it to make it unique. */
-"My Template" = "Mi plantilla";
+/* OmniPresence file list: sort order option */
+"name" = "nombre";
 
 /* New Document toolbar item accessibility label.
    New Template button title */
-
 "New Document" = "Nuevo documento";
 
-/* Action sheet title for making a new folder from the selected documents */
-"New folder" = "Nueva carpeta";
+/* Update news: title */
+"New in iOS 13:\nFull Adoption of Apple's Document Browser" = "Nuevo en iOS 13:\nAdopción completa del navegador de documentos de Apple";
 
 /* Server Account Setup label: nickname */
 "Nickname" = "Alias";
 
-/* Export message for empty table view */
-"No accounts are configured for exporting." = "No hay ninguna cuenta configurada para su exportación.";
-
-/* Import message for empty table view */
-"No accounts are configured for importing." = "No hay ninguna cuenta configurada para su importación.";
-
-/* doc picker no items accessibility value */
-"No items" = "No hay elementos";
-
-/* Not downloaded accessibility label. */
-"Not downloaded" = "No descargado";
-
-/* Not uploaded accessibility label. */
-"Not uploaded" = "No se ha subido";
-
 /* button title
    When displaying a sync error, this is the option to ignore the error. */
-
 "OK" = "Aceptar";
 
 /* demo disabled message */
 "OmniPresence allows you to use our free sync service or any compatible WebDAV server to automatically share documents between your devices, or to keep copies of your documents in the cloud in case you need to restore your device." = "OmniPresence permite usar nuestro servicio de sincronización gratuito (o cualquier servidor WebDAV compatible) para compartir documentos automáticamente entre dispositivos, o bien para guardar copias de los documentos en la nube por si necesitas restaurar tu dispositivo en algún momento.";
 
-/* Omni Presence config email subject format */
-"OmniPresence Configuration: %@" = "Configuración de OmniPresence: %@";
+/* Update news: title */
+"OmniPresence Documents" = "Documentos OmniPresence";
 
 /* demo disabled title */
 "OmniPresence is disabled in this demo version." = "OmniPresence está desactivado en esta versión demo.";
@@ -323,21 +166,6 @@
 
 /* Open Document Shortcut Title */
 "Open %@" = "Abrir %@";
-
-/* empty picker text for Recent Documents */
-"Open a document to add it to this view." = "Abre un documento para añadirlo a esta vista.";
-
-/* Open External Document toolbar item accessibility label. */
-"Open External Document" = "Abrir documento externo";
-
-/* Omni Presence config email body */
-"Open this file on another device to configure OmniPresence there." = "Abre este archivo en otro dispositivo para configurar OmniPresence en el mismo.";
-
-/* home screen button label */
-"Open…" = "Abrir…";
-
-/* Menu title for selecting an external document provider when moving a file */
-"Other…" = "Otros…";
 
 /* Language section title */
 "ouiLanguagePicker.language" = "Idioma";
@@ -360,17 +188,8 @@
 /* purchase now button title */
 "Purchase Now." = "Comprar ahora";
 
-/* Generic name for location of external documents */
-"Recent Documents" = "Documentos recientes";
-
 /* rename button title */
 "Rename" = "Renombrar";
-
-/* toolbar prompt while renaming a document */
-"Rename Document" = "Renombrar documento";
-
-/* toolbar prompt while renaming a folder */
-"Rename Folder" = "Renombrar carpeta";
 
 /* Message format for alert informing user that the document has been renamed on another device */
 "Renamed to %@." = "Renombrado como %@.";
@@ -387,73 +206,39 @@
 /* Restore Sample Documents Title */
 "Restore Sample Documents" = "Restaurar ejemplos";
 
-/* Share menu title */
-"Restore to..." = "Restaurar a…";
-
 /* When displaying a sync error, this is the option to retry syncing. */
 "Retry Sync" = "Reintentar sincronización";
 
 /* Account setup toolbar button title to save account settings */
 "Save" = "Guardar";
 
-/* document picker compact title view accessibility hint */
-"Scroll down to show sort and filter controls" = "Desplázate hacia abajo para mostrar, clasificar y filtrar controles";
-
-/* document picker button label */
-"Search" = "Buscar";
-
-/* edit button title for doc picker in non-edit mode */
-"Select" = "Seleccionar";
-
-/* Main toolbar title for a no selected documents. */
-"Select a Document" = "Selecciona un documento";
-
 /* send to app description */
 "Send \"%@\" to app as:" = "Enviar “%@” a una aplicación como:";
-
-/* Omni Sync Server send settings button title */
-"Send Settings via Email" = "Enviar ajustes por e-mail";
-
-/* Menu option in the document picker view */
-"Send to App" = "Enviar a una aplicación";
-
-/* Menu option in the document picker view */
-"Send to Files" = "Enviar a Archivos";
 
 /* Menu option in the document picker view */
 "Send to Photos" = "Enviar a Fotos";
 
 /* export options title
    Menu option in the document picker view */
-
 "Send via Mail" = "Enviar por correo";
-
-/* email action description */
-"Server address: %@" = "Dirección del servidor: %@";
 
 /* Label format when setting up an OmniPresence or WebDAV server account */
 "Setting up \"%@\"" = "Configurando “%@”";
 
+/* Share activity title */
+"Share As…" = "Compartir como...";
+
 /* Omni Sync Server sign up button title */
 "Sign Up For a New Account" = "Abrir una cuenta nueva";
 
-/* sort by accessibility label */
-"Sort by %@" = "Clasificar por %@";
+/* OmniPresence file list: sort order option */
+"size" = "tamaño";
+
+/* OmniPresence file list: sort order label */
+"Sort by:" = "Ordenar por:";
 
 /* Presence toolbar item accessibility label. */
 "Sync Now" = "Sincronizar ahora";
-
-/* empty template picker button text */
-"Tap here to add a document without a template." = "Toca aquí para añadir un documento sin plantilla.";
-
-/* empty picker button text */
-"Tap here, or on the + in the toolbar, to add a custom template." = "Pulsa aquí o el signo + de la barra de herramientas para añadir una plantilla personalizada.";
-
-/* empty picker button text */
-"Tap here, or on the + in the toolbar, to add a document." = "Pulsa aquí o el signo + de la barra de herramientas para añadir un documento.";
-
-/* file name label for template filte types */
-"Template:" = "Plantilla:";
 
 /* Discard unsynced edits dialog: message format */
 "The \"%@\" account has %ld edited documents which have not yet been synced up to the cloud. Do you wish to discard those edits?" = "La cuenta “%1$@” tiene %2$ld documentos editados que todavía no se han sincronizado en la nube. ¿Deseas descartar las modificaciones?";
@@ -476,26 +261,29 @@
 /* Photo Library permisssions error suggestion. */
 "This app does not have access to your Photo Library." = "Esta aplicación no tiene acceso a tu fototeca.";
 
-/* empty picker because of removed account text */
-"This Cloud Account no longer exists." = "Esta cuenta de la nube ya no existe.";
-
 /* Error reason for a document operation failing due to a missing file. */
 "This document is not accessible. It is possible the file was deleted, renamed or moved via iTunes or an external document provider. Please try removing the file and adding it again." = "Este documento no es accesible. Es posible que el archivo se haya eliminado, renombrado o desplazado vía iTunes u otro proveedor externo de documentos. Intenta eliminar al archivo y añadirlo de nuevo.";
-
-/* item not fully downloaded error message */
-"This item cannot be duplicated because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "No se puede duplicar el elemento porque no se ha descargado completamente. Toca el elemento y espera a que se descargue antes de intentarlo de nuevo.";
-
-/* item not fully downloaded error message */
-"This item cannot be exported because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "No se puede exportar el elemento porque no se ha descargado completamente. Pulsa el elemento y espera a que se descargue antes de intentarlo de nuevo.";
-
-/* sort by title */
-"Title" = "Título";
 
 /* error title */
 "Unable to open file." = "No se ha podido abrir el archivo.";
 
+/* OmniPresence sync status */
+"Uploading and downloading files" = "Cargando y descargando archivos";
+
+/* OmniPresence sync status */
+"Uploading files" = "Cargando archivos";
+
 /* Account validation status string. */
 "Validating account..." = "Validando cuenta…";
 
-/* empty picker button text */
-"When plug-ins are installed, they will appear here." = "Cuando se instalen módulos, aparecerán aquí.";
+/* Screen title for viewing OmniPresence documents */
+"View OmniPresence Documents" = "Ver documentos OmniPresence";
+
+/* Update news: description */
+"We've retired our custom document browser in favor of using Apple's built-in browser, making it easier than ever for you to choose where you want to keep your documents." = "Hemos retirado nuestro navegador de documentos propio con el fin de incorporar el navegador integrado de Apple, facilitando así más que nunca la  elección de dónde conservar tus documentos.";
+
+/* error description */
+"While attempting to open %@, received an error from the system" = "Se ha recibido un error del sistema al intentar abrir %@";
+
+/* Update news: description */
+"Your OmniPresence documents will only be visible in the new browser when they’ve been downloaded to this device.\n\nOmniPresence does not download larger synced files automatically. You can manually download larger files to this device now, or access the download manager later from the OmniPresence icon in the toolbar." = "Tus documentos de OmniPresence solo se verán en el nuevo navegador cuando se hayan descargado en este dispositivo.\n\nOmniPresence no descarga los archivos sincronizados más grandes automáticamente. Puedes descargar ahora los archivos más grandes manualmente a este dispositivo, o bien acceder al gestor de descargas más tarde desde el icono de OmniPresence de la barra de herramientas.";

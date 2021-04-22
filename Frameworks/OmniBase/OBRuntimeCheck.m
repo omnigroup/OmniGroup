@@ -667,8 +667,7 @@ static void _validateMethodSignatures(Class cls, BOOL isSystemClass)
             HAS_PREFIX(clsName, "_CN") ||
             HAS_PREFIX(clsName, "VGL") ||
             HAS_PREFIX(clsName, "VK") ||
-            strcmp(clsName, "DRDevice") == 0 ||
-            strcmp(clsName, "OMUUID") == 0 /* TextExpander bundles an old version of OMUUID that incorrectly declares -hash. Ignore it. */
+            strcmp(clsName, "DRDevice") == 0
             ) {
             /* In particular, _NS[View]Animator chokes in this case. But we don't really need to check any _NS classes. */
             return;

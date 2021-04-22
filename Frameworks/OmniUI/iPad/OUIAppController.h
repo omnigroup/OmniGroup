@@ -10,28 +10,18 @@
 #import <MessageUI/MFMailComposeViewController.h>
 #import <OmniUI/OUIFeatures.h>
 #import <OmniUI/OUIWebViewController.h>
+#import <OmniUI/OUIEnqueueableAlertController.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
 @class UIBarButtonItem;
 @class OUIMenuOption;
 
-// IMPORTANT note about the error/alert presentation macros.
-//
-// Avoid using the _IN_ACTIVE_SCENE variants. These will attempt to look up an active scene, but all the scenes that are currently on screen (side-by-side, or in slideover) are in the active state, so it will pick one subject to the semantics of `+windowForScene:options:` when passed a nil scene and allowing cascading lookup.
-//
-// Prefer to specify a non-nil scene, or a view controller to present from.
-
 #define OUI_PRESENT_ERROR_IN_SCENE(error, scene) [[[OUIAppController controller] class] presentError:(error) inScene:scene file:__FILE__ line:__LINE__]
-#define OUI_PRESENT_ERROR_IN_ACTIVE_SCENE(error) [[[OUIAppController controller] class] presentError:(error) inScene:nil file:__FILE__ line:__LINE__]
 #define OUI_PRESENT_ERROR_FROM(error, viewController) [[[OUIAppController controller] class] presentError:(error) fromViewController:(viewController) file:__FILE__ line:__LINE__]
 
 #define OUI_PRESENT_ALERT_IN_SCENE(error, scene) [[[OUIAppController controller] class] presentAlert:(error) inScene:scene file:__FILE__ line:__LINE__]
-#define OUI_PRESENT_ALERT_IN_ACTIVE_SCENE(error) [[[OUIAppController controller] class] presentAlert:(error) inScene:nil file:__FILE__ line:__LINE__]
 #define OUI_PRESENT_ALERT_FROM(error, viewController) [[[OUIAppController controller] class] presentAlert:(error) fromViewController:(viewController) file:__FILE__ line:__LINE__]
-
-#define OUI_PRESENT_ERROR_DEPRECATED(error) [[[OUIAppController controller] class] presentError:(error) fromViewController:[OUIAppController controller].window.rootViewController file:__FILE__ line:__LINE__]
-#define OUI_PRESENT_ALERT_DEPRECATED(error) [[[OUIAppController controller] class] presentAlert:(error) fromViewController:[OUIAppController controller].window.rootViewController file:__FILE__ line:__LINE__]
 
 /// An error with a @(NO) for this user info key will not get an error reporting option.
 extern NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey;
@@ -46,6 +36,8 @@ extern NSString * const OUIAttentionSeekingForNewsKey;
 @optional
 - (NSString *)featureDisabledForDemoAlertMessage;
 @end
+
+
 
 @interface OUIAppController : UIResponder <UIApplicationDelegate, MFMailComposeViewControllerDelegate, OUIWebViewControllerDelegate>
 
@@ -66,9 +58,9 @@ typedef NS_OPTIONS(NSUInteger, OUIApplicationEditionOptions) {
 
 typedef NS_OPTIONS(NSUInteger, OUIWindowForSceneOptions) {
     OUIWindowForSceneOptionsNone                            = 0,
-    OUIWindowForSceneOptionsAllowCascadingLookup            = 1 << 0,
-    OUIWindowForSceneOptionsRequireForegroundActiveScene    = 1 << 1,
-    OUIWindowForSceneOptionsRequireForegroundScene          = 1 << 2,
+    OUIWindowForSceneOptionsAllowFallbackLookup             = 1 << 0,
+    OUIWindowForSceneOptionsRequireForegroundActiveScene    = 1 << 1, // Requirement is only applied in the fallback lookup path
+    OUIWindowForSceneOptionsRequireForegroundScene          = 1 << 2, // Requirement is only applied in the fallback lookup path
 };
 
 @property (class, nonatomic, nullable, readonly) NSString *applicationEdition;
@@ -90,23 +82,50 @@ extern NSString *const OUIHelpBookNameKey; // @"OUIHelpBookName" is the Info.pli
 + (void)presentError:(NSError *)error NS_EXTENSION_UNAVAILABLE_IOS("Use +presentError:fromViewController: or another variant instead.");
 + (void)presentError:(NSError *)error fromViewController:(UIViewController *)viewController;
 + (void)presentError:(NSError *)error inScene:(nullable UIScene *)scene file:(const char * _Nullable)file line:(int)line NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based approach.");
-+ (void)presentError:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char * _Nullable)file line:(int)line;
-+ (void)presentError:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char * _Nullable)file line:(int)line optionalActionTitle:(nullable NSString *)optionalActionTitle optionalAction:(void (^ __nullable)(UIAlertAction *action))optionalAction;
-+ (void)presentError:(NSError *)error fromViewController:(UIViewController *)viewController cancelButtonTitle:(NSString *)cancelButtonTitle optionalActionTitle:(nullable NSString *)optionalActionTitle optionalAction:(void (^ __nullable)(UIAlertAction *action))optionalAction;
++ (void)presentError:(NSError *)error fromViewController:(nullable UIViewController *)viewController file:(const char * _Nullable)file line:(int)line;
++ (void)presentError:(NSError *)error fromViewController:(nullable UIViewController *)viewController file:(const char * _Nullable)file line:(int)line optionalActionTitle:(nullable NSString *)optionalActionTitle optionalAction:(void (^ __nullable)(OUIExtendedAlertAction *action))optionalAction;
++ (void)presentError:(NSError *)error fromViewController:(nullable UIViewController *)viewController cancelButtonTitle:(NSString *)cancelButtonTitle optionalActionTitle:(nullable NSString *)optionalActionTitle optionalAction:(void (^ __nullable)(OUIExtendedAlertAction *action))optionalAction;
 
 + (void)presentAlert:(NSError *)error inScene:(nullable UIScene *)scene file:(const char * _Nullable)file line:(int)line NS_EXTENSION_UNAVAILABLE_IOS("Use +presentAlert:fromViewController:file:line: instead.");  // 'OK' instead of 'Cancel' for the button title
 + (void)presentAlert:(NSError *)error file:(const char * _Nullable)file line:(int)line NS_EXTENSION_UNAVAILABLE_IOS("Use +presentAlert:fromViewController:file:line: instead.") NS_DEPRECATED_IOS(13_0, 13_0, "The singleton app controller cannot know the correct presentation source in a multi-scene context. Use +presentAlert:fromViewController:file:line: instead.");  // 'OK' instead of 'Cancel' for the button title
 
-+ (void)presentAlert:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char * _Nullable)file line:(int)line;  // 'OK' instead of 'Cancel' for the button title
++ (void)presentAlert:(NSError *)error fromViewController:(nullable UIViewController *)viewController file:(const char * _Nullable)file line:(int)line;  // 'OK' instead of 'Cancel' for the button title
+
+// Sometimes, extended alert actions trigger errors that we need to present to the user. Some error presentations need to spawn their own extended interaction (if we offer to report that error, the user will receive an email sheet)
++ (void)presentError:(NSError *)error fromViewController:(nonnull UIViewController *)viewController completingExtendedAction:(OUIExtendedAlertAction *)action;
 
 - (NSOperationQueue *)backgroundPromptQueue;
 
 @property (nonatomic, nullable, strong) IBOutlet UIWindow *window NS_DEPRECATED_IOS(5_0, 13_0, "Use view controller and scene based alternatives.");
 
-/// When passing a nil scene and OUIWindowForSceneOptionsAllowCascadingLookup, this method will attempt to find a scene which mathces the other options passed.
+// If there is more than one scene active, this returns the scene that had key focus.
+@property (nonatomic, nullable, readonly) UIScene *mostRecentlyActiveScene;
+@property (nonatomic, readonly) NSArray<UIScene *> *allConnectedScenes;
+- (nullable UIScene *)mostRecentlyActiveSceneSatisfyingCondition:(BOOL (^)(UIScene *))condition;
+- (NSArray<UIScene *> *)allConnectedScenesSatisfyingCondition:(BOOL (^)(UIScene *))condition;
+
+/// When passing a nil scene and OUIWindowForSceneOptionsAllowFallbackLookup, this method will attempt to find a scene which mathces the other options passed.
 ///
 /// However, when doing this search, all the scenes that are currently on screen (side-by-side, or in slideover) are in the active state. The resolved window will be the main window for the scene associated with the key window, but failing that, a random scene out of the active ones will be picked, which is likely not what you want.
 + (nullable UIWindow *)windowForScene:(nullable UIScene *)scene options:(OUIWindowForSceneOptions)options NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based approach.");
+
+// If some scene is foreground and active, the controller will be presented immediately on that scene. If there is no foreground active scene, the controller will be displayed upon the next scene that enters the foreground.
++ (void)enqueueInteractionControllerPresentationForAnyForegroundScene:(UIViewController<ExtendedInteractionDefining> *)controller NS_SWIFT_NAME(enqueueAlertPresentationForForegroundScene(_:));
+
+/* If the specified scene is foregrounded and active, then the controller is presented immediately. If the scene is not foreground active but some other scene is, then we will immediately present an alert on that active scene with the following format:
+ 
+    "<activityContextTitle> is open in another window"
+    [ activityContinuationButtonTitle ][ postponeActivityButtonTitle ]
+ 
+    The activityContinuationButton will jump the user to the desired scene, where we will then present the enqueued alert. The postponeActivityButton will keep the user in the current workspace, and keep the alert enqueued. Subsequent scene activations will follow the same rules: if the desired scene is active then the controller is dequeued and presented; if some other scene is presented the user will see the above alert again.
+ 
+    If no scene is foreground active, then the controller will be enqueued. If the desired scene is foregrounded, then the controller will be presented. If some other scene is foregrounded, we will present the alert detailed above, prompting the user to switch to the desired scene.
+ 
+    Enqueuing your controller in this manner will prompt the user each time they open a non-desired scene, so be sure to use this method carefully. Only prompt for app-critical functionality, like OmniFocus syncing, or Omni Account setup. If you have a more local interaction, like showing a photo picker availability error or something else that doesn't need immediate consideration, instead just present that error on the backgrounded scene, leaving the user to find it when they foreground that scene again.
+ */
++ (void)enqueueInteractionController:(UIViewController<ExtendedInteractionDefining> *)controller forPresentationInScene:(UIScene *)scene withActivityContextTitle:(NSString *)activityContextTitle activityContinuationButtonTitle:(NSString *)activityContinuationButtonTitle postponeActivityButtonTitle:(NSString *)postponeActivityButtonTitle;
+
+@property (readonly, class) BOOL hasEnqueuedInteractionControllers;
 
 // Can be set by early startup code and queried by later startup code to determine whether to launch into a plain state (no inbox item opened, no last document opened, etc). This can be used by applications integrating crash reporting software when they detect a crash from a previous launch and want to report it w/o other launch-time activities.
 @property(nonatomic,assign) BOOL shouldPostponeLaunchActions;
@@ -116,9 +135,15 @@ extern NSString *const OUIHelpBookNameKey; // @"OUIHelpBookName" is the Info.pli
 @property (nonatomic, nullable, readonly) NSURL *onlineHelpURL; // URL pointing at our help (could be embedded in the app)
 @property (nonatomic, readonly) BOOL hasOnlineHelp;
 
+// UIApplication lifecycle subclassing points
+@property (nonatomic, readonly, getter=isApplicationInForeground) BOOL applicationInForeground;
+- (void)applicationDidBecomeActive NS_REQUIRES_SUPER;
+- (void)applicationWillResignActive NS_REQUIRES_SUPER;
+- (void)applicationWillEnterForeground NS_REQUIRES_SUPER;
+- (void)applicationDidEnterBackground NS_REQUIRES_SUPER;
+
 // UIApplicationDelegate methods that we implement
 - (void)applicationWillTerminate:(UIApplication *)application;
-- (void)applicationDidEnterBackground:(UIApplication *)application;
 - (void)applicationDidReceiveMemoryWarning:(UIApplication *)application;
 
 // A UIResponder to make first responder if the app delegate is asked to become first responder.
@@ -144,7 +169,7 @@ extern NSString *const OUIHelpBookNameKey; // @"OUIHelpBookName" is the Info.pli
 - (void)didShowReleaseNotes:(NSString *)urlString;
 
 /// The most recent news URL, which could be an unread one or just the most recently shown one. Will be nil if there is no unread news and no already-read news stored in preferences.
-- (NSString *)mostRecentNewsURLString;
+@property (nonatomic, nullable, readonly) NSString *mostRecentNewsURLString;
 
 typedef NS_ENUM(NSInteger, OUIAppMenuOptionPosition) {
     OUIAppMenuOptionPositionBeforeReleaseNotes,
@@ -163,7 +188,7 @@ extern NSString *const OUIAboutScreenBindingsDictionaryCopyrightStringKey; // @"
 extern NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey; // @"feedbackAddress"
 
 - (NSString *)feedbackMenuTitle;
-- (NSString *)currentSKU;
+- (nullable NSString *)currentSKU;
 - (NSString *)purchaseDateString;
 - (NSString *)appSpecificDebugInfo;
 
@@ -173,7 +198,7 @@ extern NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey; // @"
 - (nullable OUIMenuOption *)specialFirstAppMenuOption; // Override to place an option at the top of the list, separate from the rest
 - (void)sendFeedbackWithSubject:(NSString * _Nullable)subject body:(NSString * _Nullable)body inScene:(nullable UIScene *)scene NS_EXTENSION_UNAVAILABLE_IOS("Feedback cannot be sent from extensions.");
 - (void)signUpForOmniNewsletterFromViewController:(UIViewController *)viewController NS_EXTENSION_UNAVAILABLE_IOS("Extensions cannot sign up for the Omni newsletter");
-- (MFMailComposeViewController * _Nullable)mailComposeController;
+- (MFMailComposeViewController * _Nullable)newMailComposeController;
 - (void)sendMailTo:(NSArray<NSString *> *)recipients withComposeController:(MFMailComposeViewController *)mailComposeController inScene:(nullable UIScene *)scene;
 
 @property(nonatomic,readonly) UIImage *appMenuImage;
@@ -184,6 +209,7 @@ extern NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey; // @"
 @property(nonatomic,readonly) UIImage *announcementMenuImage;
 @property(nonatomic,readonly) UIImage *announcementBadgedMenuImage;
 @property(nonatomic,readonly) UIImage *releaseNotesMenuImage;
+@property(nonatomic,readonly) UIImage *configureOmniPresenceMenuImage;
 @property(nonatomic,readonly) UIImage *settingsMenuImage;
 @property(nonatomic,readonly) UIImage *inAppPurchasesMenuImage;
 @property(nonatomic,readonly) UIImage *quickStartMenuImage;
@@ -206,7 +232,7 @@ extern NSNotificationName const OUISystemIsSnapshottingNotification;
 @property (readonly) BOOL shouldEnableCreateNewDocument;
 - (void)unlockCreateNewDocumentWithCompletion:(void (^ __nonnull)(BOOL isUnlocked))completionBlock;
 
-- (void)checkTemporaryLicensingStateWithCompletionHandler:(void (^ __nullable)(void))completionHandler;
+- (void)checkTemporaryLicensingStateInViewController:(UIViewController *)viewController withCompletionHandler:(void (^ __nullable)(void))completionHandler;
 
 @end
 

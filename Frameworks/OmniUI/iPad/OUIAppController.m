@@ -17,6 +17,7 @@
 #import <OmniBase/system.h>
 #import <OmniFoundation/NSString-OFURLEncoding.h>
 #import <OmniFoundation/OFBundleRegistry.h>
+#import <OmniFoundation/OFPointerStack.h>
 #import <OmniFoundation/OFPreference.h>
 #import <OmniFoundation/OFVersionNumber.h>
 #import <OmniUI/OUIAppController+SpecialURLHandling.h>
@@ -40,6 +41,18 @@
 
 RCS_ID("$Id$");
 
+// Private storage class used to manage enqueued controllers
+@interface OUIEnqueueableInteractionControllerContext: NSObject
+- (instancetype)initWithInteractionController:(UIViewController<ExtendedInteractionDefining> *)controller parentExtendedAction:(nullable OUIExtendedAlertAction *)parentAction requiredScene:(nullable UIScene *)scene activityContextTitle:(NSString *)activityContextTitle activityContinuationButtonTitle:(NSString *)activityContinuationButtonTitle postponeActivityButtonTitle:(NSString *)postponeActivityButtonTitle;
++ (OUIEnqueueableInteractionControllerContext *)contextWithInteractionController:(UIViewController<ExtendedInteractionDefining> *)alert parentExtendedAction:(nullable OUIExtendedAlertAction *)parentAction; // Calls the above initializer with nil for the other arguments
+@property (nonatomic, strong, nonnull) UIViewController<ExtendedInteractionDefining> *controller;
+@property (nonatomic, strong, nullable) OUIExtendedAlertAction *parentExtendedAction;
+@property (nonatomic, strong, nullable) UIScene *requiredScene;
+@property (nonatomic, strong, nullable) NSString *activityContextTitle;
+@property (nonatomic, strong, nullable) NSString *activityContinuationButtonTitle;
+@property (nonatomic, strong, nullable) NSString *postponeActivityButtonTitle;
+@end
+
 NSNotificationName const OUISystemIsSnapshottingNotification = @"OUISystemIsSnapshottingNotification";
 NSString * const NeedToShowURLKey = @"OSU_need_to_show_URL";
 NSString * const PreviouslyShownURLsKey = @"OSU_previously_shown_URLs";
@@ -49,6 +62,12 @@ NSString * const OUIAttentionSeekingForNewsKey = @"OUIAttentionSeekingForNewsKey
 
 @interface OUIAppController ()
 @property(strong, nonatomic) NSTimer *timerForSnapshots;
+
+@property (strong, nonatomic) OFPointerStack<UIScene *> *connectedSceneStack;
+
+@property (strong, nonatomic) NSMutableArray<OUIEnqueueableInteractionControllerContext *> *enqueuedInteractionControllerContexts;
+
+@property (nonatomic, strong, nonnull) NSMapTable<UIScene *, void (^)(void)> *mailInteractionCompletionHandlersByScene;
 @end
 
 @implementation OUIAppController
@@ -58,7 +77,7 @@ NSString * const OUIAttentionSeekingForNewsKey = @"OUIAttentionSeekingForNewsKey
 }
 
 static NSString *_defaultReportErrorActionTitle;
-static void (^_defaultReportErrorActionBlock)(UIViewController *viewController, NSError *error);
+static void (^_defaultReportErrorActionBlock)(UIViewController *viewController, NSError *error, void (^interactionCompletion)(void));
 
 
 BOOL OUIShouldLogPerformanceMetrics = NO;
@@ -132,6 +151,9 @@ static void __iOS7B5CleanConsoleOutput(void)
     __iOS7B5CleanConsoleOutput();
 #endif
     
+    OBPRECONDITION(OBClassImplementingMethod(self, @selector(applicationWillEnterForeground:)) == Nil, "Multi-scene applications don't get these lifecycle messages");
+    OBPRECONDITION(OBClassImplementingMethod(self, @selector(applicationDidEnterBackground:)) == Nil, "Multi-scene applications don't get these lifecycle messages");
+
     @autoreleasepool {
         
         // Poke OFPreference to get default values registered
@@ -181,9 +203,9 @@ static void __iOS7B5CleanConsoleOutput(void)
 + (void)registerDefaultReportErrorAction NS_EXTENSION_UNAVAILABLE_IOS("Cannot register the default report error action from extensions as it uses API which extensions can't use");
 {
     _defaultReportErrorActionTitle = NSLocalizedStringFromTableInBundle(@"Report Error", @"OmniUI", OMNI_BUNDLE, @"When displaying a generic error, this is the option to report the error.");
-    _defaultReportErrorActionBlock = ^(UIViewController *viewController, NSError *error) {
+    _defaultReportErrorActionBlock = ^(UIViewController *viewController, NSError *error, void (^interactionCompletion)(void)) {
         NSString *body = [NSString stringWithFormat:@"\n%@\n\n%@\n", [OUIAppController.controller fullReleaseString], [error toPropertyList]];
-        [OUIAppController.sharedController sendFeedbackWithSubject:[NSString stringWithFormat:@"Error encountered: %@", [error localizedDescription]] body:body inScene:viewController.view.window.windowScene];
+        [OUIAppController.sharedController sendFeedbackWithSubject:[NSString stringWithFormat:@"Error encountered: %@", [error localizedDescription]] body:body inScene:viewController.view.window.windowScene completion:interactionCompletion];
     };
 }
 
@@ -318,15 +340,8 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
 // Very basic.
 + (void)presentError:(NSError *)error;
 {
-    UIWindow *window = [self windowForScene:nil options:OUIWindowForSceneOptionsAllowCascadingLookup];
-    UIViewController *viewController = window.rootViewController;
-
-    if (viewController == nil) {
-        OBASSERT_NOT_REACHED("Couldn't find suitable scene for error alert presentation.");
-        NSLog(@"Couldn't present error alert: %@", error);
-    } else {
-        [self presentError:error fromViewController:viewController file:NULL line:0];
-    }
+    // Passing a nil view controller causes a lookup
+    [self presentError:error fromViewController:nil file:NULL line:0];
 }
 
 + (void)presentError:(NSError *)error fromViewController:(UIViewController *)viewController;
@@ -338,25 +353,19 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
 // Prefer passing a scene; will attempt to pick a sensible scene when nil
 + (void)presentError:(NSError *)error inScene:(nullable UIScene *)scene file:(const char * _Nullable)file line:(int)line;
 {
-    OUIWindowForSceneOptions options = (scene == nil) ? OUIWindowForSceneOptionsNone : OUIWindowForSceneOptionsAllowCascadingLookup;
-    UIWindow *window = [self windowForScene:scene options:options];
+    UIWindow *window = [self windowForScene:scene options:OUIWindowForSceneOptionsNone];
     UIViewController *rootViewController = window.rootViewController;
-    
-    if (rootViewController == nil) {
-        OBASSERT_NOT_REACHED("Couldn't find suitable scene for error presentation.");
-        NSLog(@"Couldn't present error: %@", error);
-    } else {
-        [self presentAlert:error fromViewController:rootViewController file:file line:line];
-    }
+    [self presentAlert:error fromViewController:rootViewController file:file line:line];
 }
 
-+ (void)presentError:(NSError *)error fromViewController:(UIViewController *)viewController cancelButtonTitle:(NSString *)cancelButtonTitle optionalActionTitle:(nullable NSString *)optionalActionTitle optionalAction:(void (^ __nullable)(UIAlertAction *action))optionalAction;
++ (void)presentError:(NSError *)error fromViewController:(UIViewController *)viewController cancelButtonTitle:(NSString *)cancelButtonTitle optionalActionTitle:(nullable NSString *)optionalActionTitle optionalAction:(void (^ __nullable)(OUIExtendedAlertAction *action))optionalAction;
 {
-    [self _presentError:error fromViewController:viewController file:nil line:0 cancelButtonTitle:cancelButtonTitle optionalActionTitle:optionalActionTitle optionalAction:optionalAction];
+    [self _presentError:error fromViewController:viewController file:nil line:0 cancelButtonTitle:cancelButtonTitle optionalActionTitle:optionalActionTitle optionalAction:optionalAction parentExtendedAction:nil];
 }
 
-+ (void)_presentError:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char * _Nullable)file line:(int)line cancelButtonTitle:(NSString *)cancelButtonTitle optionalActionTitle:(nullable NSString *)optionalActionTitle optionalAction:(void (^ __nullable)(UIAlertAction *action))optionalAction;
++ (void)_presentError:(NSError *)error fromViewController:(nullable UIViewController *)viewController file:(const char * _Nullable)file line:(int)line cancelButtonTitle:(NSString *)cancelButtonTitle optionalActionTitle:(nullable NSString *)optionalActionTitle optionalAction:(void (^ __nullable)(OUIExtendedAlertAction *action))optionalActionHandler parentExtendedAction:(nullable OUIExtendedAlertAction *)parentExtendedAction;
 {
+    OBPRECONDITION([NSThread isMainThread]);
     if (error == nil || [error causedByUserCancelling])
         return;
 
@@ -364,94 +373,91 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
         NSLog(@"Error reported from %s:%d", file, line);
     NSLog(@"%@", [error toPropertyList]);
 
-    // This delayed presentation avoids the "wait_fences: failed to receive reply: 10004003" lag/timeout which can happen depending on the context we start the reporting from.
-    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-        NSMutableArray *messages = [NSMutableArray array];
+    NSMutableArray *messages = [NSMutableArray array];
 
-        NSString *reason = [error localizedFailureReason];
-        if (![NSString isEmptyString:reason])
-            [messages addObject:reason];
+    NSString *reason = [error localizedFailureReason];
+    if (![NSString isEmptyString:reason])
+        [messages addObject:reason];
 
-        NSString *suggestion = [error localizedRecoverySuggestion];
-        if (![NSString isEmptyString:suggestion])
-            [messages addObject:suggestion];
+    NSString *suggestion = [error localizedRecoverySuggestion];
+    if (![NSString isEmptyString:suggestion])
+        [messages addObject:suggestion];
 
-        NSString *message = [messages componentsJoinedByString:@"\n"];
+    NSString *message = [messages componentsJoinedByString:@"\n"];
 
-        UIAlertController *alertController = [UIAlertController alertControllerWithTitle:[error localizedDescription] message:message preferredStyle:UIAlertControllerStyleAlert];
+    OUIEnqueueableAlertController *alertController = [OUIEnqueueableAlertController alertControllerWithTitle:[error localizedDescription] message:message preferredStyle:UIAlertControllerStyleAlert];
 
-        [alertController addAction:[UIAlertAction actionWithTitle:cancelButtonTitle style:UIAlertActionStyleDefault handler:^(UIAlertAction * __nonnull action) {}]];
-        if (optionalActionTitle && optionalAction) {
-            [alertController addAction:[UIAlertAction actionWithTitle:optionalActionTitle style:UIAlertActionStyleDefault handler:optionalAction]];
-        }
-
-        UIViewController *topViewController = viewController;
-        UIViewController *vc;
-        while ((vc = topViewController.presentedViewController)) {
-            if (vc.isBeingDismissed) {
-                // This can happen when topViewController is presenting a OUIMenuController using a popover presentation. This check seems goofy though.
-                break;
+    [alertController addActionWithTitle:cancelButtonTitle style:UIAlertActionStyleDefault handler:nil];
+    if (optionalActionTitle != nil && optionalActionHandler != nil) {
+        OUIExtendedAlertAction *optionalAction = [OUIExtendedAlertAction extendedActionWithTitle:optionalActionTitle style:UIAlertActionStyleDefault handler:optionalActionHandler];
+        [alertController addExtendedAction:optionalAction];
+    }
+    
+    if (viewController != nil && viewController.containingScene.activationState == UISceneActivationStateForegroundActive) {
+        // This delayed presentation avoids the "wait_fences: failed to receive reply: 10004003" lag/timeout which can happen depending on the context we start the reporting from.
+        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+            UIViewController *topViewController = viewController;
+            UIViewController *vc;
+            while ((vc = topViewController.presentedViewController)) {
+                if (vc.isBeingDismissed) {
+                    // This can happen when topViewController is presenting a OUIMenuController using a popover presentation. This check seems goofy though.
+                    break;
+                }
+                topViewController = vc;
             }
-            topViewController = vc;
-        }
-
-        [topViewController presentViewController:alertController animated:YES completion:^{}];
-    }];
+            
+            [topViewController presentViewController:alertController animated:YES completion:nil];
+        }];
+    } else {
+        // We'll present this when a scene becomes active
+        [self _enqueueInteractionControllerPresentationForAnyForegroundScene:alertController parentExtendedAction:parentExtendedAction];
+    }
 }
 
-+ (void)_presentError:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char * _Nullable)file line:(int)line cancelButtonTitle:(NSString *)cancelButtonTitle;
++ (void)_presentError:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char * _Nullable)file line:(int)line cancelButtonTitle:(NSString *)cancelButtonTitle parentExtendedAction:(nullable OUIExtendedAlertAction *)parentAction;
 {
-    void (^optionalAction)(UIAlertAction *action);
+    void (^optionalAction)(OUIExtendedAlertAction *action);
     if (_defaultReportErrorActionBlock != NULL && [self shouldOfferToReportError:error]) {
-        optionalAction = ^(UIAlertAction * __nonnull action) {
-            _defaultReportErrorActionBlock(viewController, error);
+        optionalAction = ^(OUIExtendedAlertAction * __nonnull action) {
+            _defaultReportErrorActionBlock(viewController, error, ^{ [action extendedActionComplete]; });
         };
     }
 
-    [self _presentError:error fromViewController:viewController file:file line:line cancelButtonTitle:cancelButtonTitle optionalActionTitle:_defaultReportErrorActionTitle optionalAction:optionalAction];
+    [self _presentError:error fromViewController:viewController file:file line:line cancelButtonTitle:cancelButtonTitle optionalActionTitle:_defaultReportErrorActionTitle optionalAction:optionalAction parentExtendedAction:parentAction];
 }
 
-+ (void)presentError:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char *)file line:(int)line optionalActionTitle:(NSString *)optionalActionTitle optionalAction:(void (^ __nullable)(UIAlertAction *action))optionalAction;
++ (void)presentError:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char *)file line:(int)line optionalActionTitle:(NSString *)optionalActionTitle optionalAction:(void (^ __nullable)(OUIExtendedAlertAction *action))optionalAction;
 {
-    [self _presentError:error fromViewController:viewController file:file line:line cancelButtonTitle:NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniUI", OMNI_BUNDLE, @"button title") optionalActionTitle:optionalActionTitle optionalAction:optionalAction];
+    [self _presentError:error fromViewController:viewController file:file line:line cancelButtonTitle:NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniUI", OMNI_BUNDLE, @"button title") optionalActionTitle:optionalActionTitle optionalAction:optionalAction parentExtendedAction:nil];
 }
 
-+ (void)presentError:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char *)file line:(int)line;
++ (void)presentError:(NSError *)error fromViewController:(nullable UIViewController *)viewController file:(const char *)file line:(int)line;
 {
-    [self _presentError:error fromViewController:viewController file:file line:line cancelButtonTitle:NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniUI", OMNI_BUNDLE, @"button title")];
+    [self _presentError:error fromViewController:viewController file:file line:line cancelButtonTitle:NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniUI", OMNI_BUNDLE, @"button title") parentExtendedAction:nil];
 }
 
 // Prefer passing a scene; will attempt to pick a sensible scene when nil
 + (void)presentAlert:(NSError *)error inScene:(nullable UIScene *)scene file:(const char * _Nullable)file line:(int)line;  // 'OK' instead of 'Cancel' for the button title
 {
-    OUIWindowForSceneOptions options = (scene == nil) ? OUIWindowForSceneOptionsNone : OUIWindowForSceneOptionsAllowCascadingLookup;
-    UIWindow *window = [self windowForScene:scene options:options];
-    UIViewController *rootViewController = window.rootViewController;
 
-    if (rootViewController == nil) {
-        OBASSERT_NOT_REACHED("Couldn't find suitable scene for error alert presentation.");
-        NSLog(@"Couldn't present error alert: %@", error);
-    } else {
-        [self presentAlert:error fromViewController:rootViewController file:file line:line];
-    }
+    UIWindow *window = [self windowForScene:scene options:OUIWindowForSceneOptionsNone];
+    UIViewController *rootViewController = window.rootViewController;
+    [self presentAlert:error fromViewController:rootViewController file:file line:line];
 }
 
 + (void)presentAlert:(NSError *)error file:(const char * _Nullable)file line:(int)line;  // 'OK' instead of 'Cancel' for the button title
 {
-    UIWindow *window = [self windowForScene:nil options:OUIWindowForSceneOptionsAllowCascadingLookup];
-    UIViewController *viewController = window.rootViewController;
-
-    if (viewController == nil) {
-        OBASSERT_NOT_REACHED("Couldn't find suitable scene for error alert presentation.");
-        NSLog(@"Couldn't present error alert: %@", error);
-    } else {
-        [self _presentError:error fromViewController:viewController file:file line:line cancelButtonTitle:NSLocalizedStringFromTableInBundle(@"OK", @"OmniUI", OMNI_BUNDLE, @"button title")];
-    }
+    [self _presentError:error fromViewController:nil file:file line:line cancelButtonTitle:NSLocalizedStringFromTableInBundle(@"OK", @"OmniUI", OMNI_BUNDLE, @"button title") parentExtendedAction:nil];
 }
 
-+ (void)presentAlert:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char * _Nullable)file line:(int)line;  // 'OK' instead of 'Cancel' for the button title
++ (void)presentAlert:(NSError *)error fromViewController:(nullable UIViewController *)viewController file:(const char * _Nullable)file line:(int)line;  // 'OK' instead of 'Cancel' for the button title
 {
-    [self _presentError:error fromViewController:viewController file:file line:line cancelButtonTitle:NSLocalizedStringFromTableInBundle(@"OK", @"OmniUI", OMNI_BUNDLE, @"button title")];
+    [self _presentError:error fromViewController:viewController file:file line:line cancelButtonTitle:NSLocalizedStringFromTableInBundle(@"OK", @"OmniUI", OMNI_BUNDLE, @"button title") parentExtendedAction:nil];
+}
+
++ (void)presentError:(NSError *)error fromViewController:(nonnull UIViewController *)viewController completingExtendedAction:(OUIExtendedAlertAction *)action;
+{
+    [self _presentError:error fromViewController:viewController file:nil line:0 cancelButtonTitle:NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniUI", OMNI_BUNDLE, @"button title") parentExtendedAction:action];
 }
 
 - (id)init NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based solutions where available instead.");
@@ -469,18 +475,35 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
     [myClass registerCommandClass:[OUISendFeedbackURLCommand class] forSpecialURLPath:@"/send-feedback"];
     [myClass registerDefaultReportErrorAction];
     
+    NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+    [center addObserver:self selector:@selector(_oui_applicationDidBecomeActive:) name:UIApplicationDidBecomeActiveNotification object:nil];
+    [center addObserver:self selector:@selector(_oui_applicationWillResignActive:) name:UIApplicationWillResignActiveNotification object:nil];
+    [center addObserver:self selector:@selector(_oui_applicationWillEnterForeground:) name:UIApplicationWillEnterForegroundNotification object:nil];
+    [center addObserver:self selector:@selector(_oui_applicationDidEnterBackground:) name:UIApplicationDidEnterBackgroundNotification object:nil];
+    
+    _connectedSceneStack = [[OFPointerStack alloc] init];
+    // Filter unattached scenes
+    [_connectedSceneStack addAdditionalCompactionCondition:^BOOL(UIScene * _Nonnull scene) {
+        return scene.activationState != UISceneActivationStateUnattached;
+    }];
+    [center addObserver:self selector:@selector(_sceneDidBecomeActive:) name:UISceneDidActivateNotification object:nil];
+    [center addObserver:self selector:@selector(_windowDidBecomeKey:) name:UIWindowDidBecomeKeyNotification object:nil];
+
     return self;
 }
 
 #if 1 && defined(DEBUG_correia)
-    #define WINDOW_DEPRECATION_ASSERTIONS_ON 1
+    // UIKit calls the getter fairly frequently, so asserting on that is way to noisy to be of practical use.
+    #define WINDOW_DEPRECATION_GETTER_ASSERTIONS_ON 0
+    #define WINDOW_DEPRECATION_SETTER_ASSERTIONS_ON 1
 #else
-    #define WINDOW_DEPRECATION_ASSERTIONS_ON 0
+    #define WINDOW_DEPRECATION_GETTER_ASSERTIONS_ON 0
+    #define WINDOW_DEPRECATION_SETTER_ASSERTIONS_ON 0
 #endif
 
 - (UIWindow *)window;
 {
-#if WINDOW_DEPRECATION_ASSERTIONS_ON
+#if WINDOW_DEPRECATION_GETTER_ASSERTIONS_ON
     OBASSERT_NOT_REACHED("The `window` property is deprecated.");
 #endif
 
@@ -489,60 +512,41 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
 
 - (void)setWindow:(UIWindow *)window;
 {
-#if WINDOW_DEPRECATION_ASSERTIONS_ON
+#if WINDOW_DEPRECATION_SETTER_ASSERTIONS_ON
     OBASSERT_NOT_REACHED("The `window` property is deprecated.");
 #endif
 }
 
 + (nullable UIWindow *)windowForScene:(nullable UIScene *)scene options:(OUIWindowForSceneOptions)options;
 {
-    BOOL allowCascadingLookup = (options & OUIWindowForSceneOptionsAllowCascadingLookup) != 0;
+    BOOL allowCascadingLookup = (options & OUIWindowForSceneOptionsAllowFallbackLookup) != 0;
+    BOOL requireForegroundActiveScene = (options & OUIWindowForSceneOptionsRequireForegroundActiveScene) != 0;
+    BOOL requireForegroundScene = (options & OUIWindowForSceneOptionsRequireForegroundScene) != 0;
+
     UIScene *resolvedScene = scene;
 
-    // First try to find a scene for the key window
     if (resolvedScene == nil && allowCascadingLookup) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-        resolvedScene = [UIApplication sharedApplication].keyWindow.windowScene;
-#pragma clang diagnostic pop
-    }
-    
-    if (resolvedScene == nil && allowCascadingLookup) {
-        for (UIScene *connectedScene in UIApplication.sharedApplication.connectedScenes) {
-            if (![connectedScene isKindOfClass:[UIWindowScene class]]) {
-                continue;
-            }
-            
-            UIWindowScene *windowScene = OB_CHECKED_CAST(UIWindowScene, connectedScene);
-            switch (windowScene.activationState) {
-                case UISceneActivationStateForegroundActive: {
-                    resolvedScene = windowScene;
-                    break;
-                }
-
-                case UISceneActivationStateForegroundInactive: {
-                    if ((options & OUIWindowForSceneOptionsRequireForegroundActiveScene) == 0) {
-                        resolvedScene = windowScene;
+        resolvedScene = [[self controller] mostRecentlyActiveSceneSatisfyingCondition:^BOOL(UIScene * _Nonnull proposedScene) {
+            if (requireForegroundActiveScene && proposedScene.activationState != UISceneActivationStateForegroundActive) {
+                return NO;
+            } else if (requireForegroundScene) {
+                switch (proposedScene.activationState) {
+                    case UISceneActivationStateUnattached: {
+                        return NO;
                     }
-                    break;
-                }
-
-                case UISceneActivationStateBackground: {
-                    if ((options & OUIWindowForSceneOptionsRequireForegroundScene) == 0) {
-                        resolvedScene = windowScene;
+                    case UISceneActivationStateForegroundActive:
+                    case UISceneActivationStateForegroundInactive: {
+                        return YES;
                     }
-                    break;
-                }
 
-                case UISceneActivationStateUnattached: {
-                    break;
+                    case UISceneActivationStateBackground: {
+                        return NO;
+                    }
                 }
             }
             
-            if (resolvedScene != nil) {
-                break;
-            }
-        }
+            return YES;
+        }];
     }
 
     UIWindow *window = nil;
@@ -561,6 +565,78 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
     }
 
     return window;
+}
+
++ (UIViewController *)_viewControllerForPresentationInWindow:(UIWindow *)window
+{
+    UIViewController *controller = window.rootViewController;
+    while (controller.presentedViewController != nil) {
+        controller = controller.presentedViewController;
+    }
+    return controller;
+}
+
++ (void)_enqueueInteractionControllerPresentationForAnyForegroundScene:(UIViewController<ExtendedInteractionDefining> *)alert parentExtendedAction:(nullable OUIExtendedAlertAction *)parentAction;
+{
+    OBPRECONDITION([NSThread isMainThread]);
+    
+    // Check for an active scene, and present on it if there is one.
+    UIScene *mostRecentlyActiveScene = [[self controller] mostRecentlyActiveScene];
+    if (mostRecentlyActiveScene.activationState == UISceneActivationStateForegroundActive) {
+        if (parentAction != nil) {
+            [alert addInteractionCompletion:^{
+                [parentAction extendedActionComplete];
+            }];
+        }
+        
+        UIWindow *window = [self windowForScene:mostRecentlyActiveScene options:OUIWindowForSceneOptionsNone];
+        UIViewController *controller = [self _viewControllerForPresentationInWindow:window];
+        [controller presentViewController:alert animated:YES completion:nil];
+    } else {
+        if ([self.controller enqueuedInteractionControllerContexts] == nil) {
+            [self.controller setEnqueuedInteractionControllerContexts:[NSMutableArray array]];
+        }
+        
+        [[self.controller enqueuedInteractionControllerContexts] addObject:[OUIEnqueueableInteractionControllerContext contextWithInteractionController:alert parentExtendedAction:parentAction]];
+    }
+}
+
++ (void)enqueueInteractionControllerPresentationForAnyForegroundScene:(UIViewController<ExtendedInteractionDefining> *)alert;
+{
+    [self _enqueueInteractionControllerPresentationForAnyForegroundScene:alert parentExtendedAction:nil];
+}
+
++ (void)enqueueInteractionController:(UIViewController<ExtendedInteractionDefining> *)alert forPresentationInScene:(UIScene *)scene withActivityContextTitle:(NSString *)activityContextTitle activityContinuationButtonTitle:(NSString *)activityContinuationButtonTitle postponeActivityButtonTitle:(NSString *)postponeActivityButtonTitle;
+{
+    if (scene.activationState == UISceneActivationStateForegroundActive) {
+        UIWindow *window = [self windowForScene:scene options:OUIWindowForSceneOptionsNone];
+        UIViewController *controller = [self _viewControllerForPresentationInWindow:window];
+        [controller presentViewController:alert animated:YES completion:nil];
+    } else {
+        
+        if ([self.controller enqueuedInteractionControllerContexts] == nil) {
+            [self.controller setEnqueuedInteractionControllerContexts:[NSMutableArray array]];
+        }
+        
+        // We're only explicitly passing nil for the parentExtendedAction because we don't need the parent action mechanism for anything but reporting errors that occur during app-level-defined extended actions. Those errors are reported via -presentError:fromViewController:completingExtendedAction: and that code path ends up calling the _enqueueInteractionControllerPresentationForAnyForegroundScene method of queuing its alerts. There is no explicit reason we can't have a parent action for interactions enqueued by this method, we just haven't needed it yet.
+        OUIEnqueueableInteractionControllerContext *context = [[OUIEnqueueableInteractionControllerContext alloc] initWithInteractionController:alert parentExtendedAction:nil requiredScene:scene activityContextTitle:activityContextTitle activityContinuationButtonTitle:activityContinuationButtonTitle postponeActivityButtonTitle:postponeActivityButtonTitle];
+        
+        UIScene *mostRecentlyActiveScene = [self.controller mostRecentlyActiveScene];
+        if (mostRecentlyActiveScene.activationState == UISceneActivationStateForegroundActive) {
+            // Bump this context to the front of the queue and try to present it. We won't *actually* present it since the requiredScene is backgrounded. Instead, we will prompt the user with an alert saying that "<activityContextTitle> is active in another window" and give them the option to view whatever this is.
+            // Scene-specific queued alerts are generally high-priority interactions, so we should prompt the user that something has happened immediately.
+            [[self.controller enqueuedInteractionControllerContexts] insertObject:context atIndex:0];
+            [self.controller _presentNextEnqueuedInteractionControllerOnScene:mostRecentlyActiveScene];
+        } else {
+            // Every scene is backgrounded, just add this to the queue.
+            [[self.controller enqueuedInteractionControllerContexts] addObject:context];
+        }
+    }
+}
+
++ (BOOL)hasEnqueuedInteractionControllers;
+{
+    return [[self.controller enqueuedInteractionControllerContexts] count] > 0;
 }
 
 - (void)resetKeychain;
@@ -650,12 +726,12 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
 
 - (void)setShouldPostponeLaunchActions:(BOOL)shouldPostpone;
 {
-    OBPRECONDITION(_shouldPostponeLaunchActions ^ shouldPostpone);
+    OBPRECONDITION(_shouldPostponeLaunchActions != shouldPostpone);
     
     _shouldPostponeLaunchActions = shouldPostpone;
     
     // Invoking actions might re-postpone.
-    while (_shouldPostponeLaunchActions == NO && [_launchActions count] > 0) {
+    while (!_shouldPostponeLaunchActions && [_launchActions count] > 0) {
         void (^launchAction)(void) = [_launchActions objectAtIndex:0];
         [_launchActions removeObjectAtIndex:0];
         
@@ -675,6 +751,25 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
     
     launchAction = [launchAction copy];
     [_launchActions addObject:launchAction];
+}
+
+#pragma mark - UIApplication lifecycle subclassing points
+
+- (void)applicationDidBecomeActive;
+{
+}
+
+- (void)applicationWillResignActive;
+{
+}
+
+- (void)applicationWillEnterForeground;
+{
+}
+
+- (void)applicationDidEnterBackground;
+{
+    [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
 - (UIResponder *)defaultFirstResponder;
@@ -736,14 +831,18 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
     return @"";
 }
 
-- (NSString *)fullReleaseString;
+- (NSString *)_versionString;
 {
     NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
     NSString *testFlightString = [[self class] inSandboxStore] ? @" TestFlight" : @"";
     NSString *appEdition = [[self class] applicationEdition];
     NSString *editionString = [NSString isEmptyString:appEdition] ? @"" : [@" " stringByAppendingString:appEdition];
-    
-    NSString *baseString = [NSString stringWithFormat:@"%@ %@%@%@ (v%@)", [[self class] applicationName], [infoDictionary objectForKey:@"CFBundleShortVersionString"], editionString, testFlightString, [infoDictionary objectForKey:@"CFBundleVersion"]];
+    return [NSString stringWithFormat:@"%@%@%@ (v%@)", [infoDictionary objectForKey:@"CFBundleShortVersionString"], editionString, testFlightString, [infoDictionary objectForKey:@"CFBundleVersion"]];
+}
+
+- (NSString *)fullReleaseString;
+{
+    NSString *baseString = [NSString stringWithFormat:@"%@ %@", [[self class] applicationName], self._versionString];
     
     NSString *currentSKU = [self currentSKU];
     if (![NSString isEmptyString:currentSKU]) {
@@ -782,16 +881,19 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
     return [self _feedbackURLWithSubject:[self _defaultFeedbackSubject] body:nil];
 }
 
-- (void)sendFeedbackWithSubject:(NSString * _Nullable)subject body:(NSString * _Nullable)body inScene:(nullable UIScene *)scene;
+- (void)sendFeedbackWithSubject:(NSString * _Nullable)subject body:(NSString * _Nullable)body inScene:(nullable UIScene *)scene completion:(void (^)(void))mailInteractionCompletionHandler;
 {
     // May need to allow the app delegate to provide this conditionally later (OmniFocus has a retail build, for example)
     NSString *feedbackAddress = [self _feedbackAddress];
-    OBASSERT(feedbackAddress);
-    if (feedbackAddress == nil)
+    OBASSERT(feedbackAddress != nil);
+    if (feedbackAddress == nil) {
+        mailInteractionCompletionHandler();
         return;
+    }
 
-    MFMailComposeViewController *controller = [self mailComposeController];
-    if (!controller) {
+    MFMailComposeViewController *controller = [self newMailComposeController];
+    if (controller == nil) {
+        mailInteractionCompletionHandler();
         return;
     }
     
@@ -804,7 +906,7 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
     if (body != nil && ![NSString isEmptyString:body])
         [controller setMessageBody:body isHTML:NO];
     
-    [self sendMailTo:[NSArray arrayWithObject:feedbackAddress] withComposeController:controller inScene:scene];
+    [self sendMailTo:[NSArray arrayWithObject:feedbackAddress] withComposeController:controller inScene:scene completion:mailInteractionCompletionHandler];
 }
 
 - (void)signUpForOmniNewsletterFromViewController:(UIViewController *)viewController NS_EXTENSION_UNAVAILABLE_IOS("Extensions cannot sign up for the Omni newsletter");
@@ -814,7 +916,7 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
     [helper signUpForOmniNewsletter:nil];
 }
 
-- (MFMailComposeViewController *)mailComposeController {
+- (MFMailComposeViewController *)newMailComposeController {
     if (![MFMailComposeViewController canSendMail]) {
         return nil;
     }
@@ -824,16 +926,29 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
     return controller;
 }
 
-- (void)sendMailTo:(NSArray<NSString *> *)recipients withComposeController:(MFMailComposeViewController *)mailComposeController inScene:(nullable UIScene *)scene;
+- (void)sendMailTo:(NSArray<NSString *> *)recipients withComposeController:(MFMailComposeViewController *)mailComposeController inScene:(nullable UIScene *)scene
 {
-    UIWindow *window = [[self class] windowForScene:scene options:OUIWindowForSceneOptionsAllowCascadingLookup];
+    [self sendMailTo:recipients withComposeController:mailComposeController inScene:scene completion:nil];
+}
 
-    UIViewController *viewControllerToPresentFrom = window.rootViewController;
-    while (viewControllerToPresentFrom.presentedViewController != nil) {
-        viewControllerToPresentFrom = viewControllerToPresentFrom.presentedViewController;
-    }
+- (void)sendMailTo:(NSArray<NSString *> *)recipients withComposeController:(MFMailComposeViewController *)mailComposeController inScene:(nullable UIScene *)scene completion:(void (^)(void))mailInteractionCompletionHandler;
+{
+    UIWindow *window = [[self class] windowForScene:scene options:OUIWindowForSceneOptionsAllowFallbackLookup];
+
+    OBASSERT(window.windowScene.activationState == UISceneActivationStateForegroundActive, "Presenting mail window on a background scene.");
+    
+    UIViewController *viewControllerToPresentFrom = [OUIAppController _viewControllerForPresentationInWindow:window];
 
     [mailComposeController setToRecipients:recipients];
+    
+    if (self.mailInteractionCompletionHandlersByScene == nil) {
+        // Weakly hold the scenes, strongly hold the blocks
+        self.mailInteractionCompletionHandlersByScene = [NSMapTable weakToStrongObjectsMapTable];
+    }
+    
+    OBASSERT([self.mailInteractionCompletionHandlersByScene objectForKey:scene] == nil, "Did a completion handler not get run, or is there an existing mail interaction on this scene?");
+    [self.mailInteractionCompletionHandlersByScene setObject:[mailInteractionCompletionHandler copy] forKey:scene];
+    
     [viewControllerToPresentFrom presentViewController:mailComposeController animated:YES completion:nil];
 }
 
@@ -867,17 +982,22 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
 
 - (UIImage *)announcementMenuImage;
 {
-    return menuImage(@"OUIMenuItemAnnouncement.png");
+    return menuImage(@"OUIMenuItemNews.png");
 }
 
 - (UIImage *)announcementBadgedMenuImage;
 {
-    return menuImage(@"OUIMenuItemAnnouncement-Badged.png");
+    return menuImage(@"OUIMenuItemNews-Badged.png");
 }
 
 - (UIImage *)releaseNotesMenuImage;
 {
     return menuImage(@"OUIMenuItemReleaseNotes.png");
+}
+
+- (UIImage *)configureOmniPresenceMenuImage;
+{
+    return menuImage(@"OUIMenuItemOmniPresence.png");
 }
 
 - (UIImage *)settingsMenuImage;
@@ -947,7 +1067,7 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
     completionBlock(self.canCreateNewDocument);
 }
 
-- (void)checkTemporaryLicensingStateWithCompletionHandler:(void (^)(void))completionHandler;
+- (void)checkTemporaryLicensingStateInViewController:(UIViewController *)viewController withCompletionHandler:(void (^ __nullable)(void))completionHandler;
 {
     if (completionHandler) {
         completionHandler();
@@ -987,7 +1107,7 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
     // N.B.: specifically using mainBundle here rather than OMNI_BUNDLE because OmniUI will (hopefully) eventually become a framework.
     
     NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
-    NSString *versionString = infoDictionary[@"CFBundleShortVersionString"];
+    NSString *versionString = self._versionString;
     NSString *copyrightString = infoDictionary[@"NSHumanReadableCopyright"];
     NSString *feedbackAddress = [self _feedbackAddress];
     
@@ -1124,11 +1244,6 @@ static UIImage *menuImage(NSString *name)
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
-- (void)applicationDidEnterBackground:(UIApplication *)application;
-{
-    [[NSUserDefaults standardUserDefaults] synchronize];
-}
-
 - (void)applicationDidReceiveMemoryWarning:(UIApplication *)application;
 {
     [OAFontDescriptor forgetUnusedInstances];
@@ -1140,7 +1255,17 @@ static UIImage *menuImage(NSString *name)
 - (void)mailComposeController:(MFMailComposeViewController *)controller didFinishWithResult:(MFMailComposeResult)result error:(NSError *)error;
 {
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-        [controller.presentingViewController dismissViewControllerAnimated:YES completion:nil];
+        UIScene *scene = controller.containingScene;
+        OBASSERT_NOTNULL(scene);
+        [controller.presentingViewController dismissViewControllerAnimated:YES completion:^{
+            void (^completion)(void) = [self.mailInteractionCompletionHandlersByScene objectForKey:scene];
+            if (completion != nil) {
+                completion();
+                [self.mailInteractionCompletionHandlersByScene setObject:nil forKey:scene];
+            }
+        }];
+        
+
     }];
 }
 
@@ -1170,6 +1295,167 @@ static UIImage *menuImage(NSString *name)
     //Whatever work you want done after the app finishes waiting for Apple's snapshots, implement it inside this method in your subclasses.
 }
 
+#pragma mark - Scene API
+
+- (nullable UIScene *)mostRecentlyActiveScene
+{
+    return [self.connectedSceneStack peekAfterCompacting:YES];
+}
+
+- (nullable UIScene *)mostRecentlyActiveSceneSatisfyingCondition:(BOOL (^)(UIScene *))condition;
+{
+    return [self.connectedSceneStack firstElementSatisfyingCondition:condition];
+}
+
+- (NSArray<UIScene *> *)allConnectedScenesSatisfyingCondition:(BOOL (^)(UIScene *))condition;
+{
+    return [self.connectedSceneStack allElementsSatisfyingCondition:condition];
+}
+
+- (NSArray<UIScene *> *)allConnectedScenes
+{
+    return [self.connectedSceneStack allObjects];
+}
+
+#pragma mark - Private
+
+- (void)_sceneDidBecomeActive:(NSNotification *)notification NS_EXTENSION_UNAVAILABLE_IOS("Calls into -[UIApplication sharedApplication]");
+{
+    UIScene *scene = OB_CHECKED_CAST(UIScene, notification.object);
+    [self.connectedSceneStack push:scene uniquing:YES];
+    
+    [self _presentNextEnqueuedInteractionControllerOnScene:scene];
+}
+
+- (void)_presentNextEnqueuedInteractionControllerOnScene:(UIScene *)anActiveScene NS_EXTENSION_UNAVAILABLE_IOS("Calls into -[UIApplication sharedApplication]");
+{
+    OBPRECONDITION(anActiveScene.activationState == UISceneActivationStateForegroundActive);
+    
+    if (![[self class] hasEnqueuedInteractionControllers]) {
+        return;
+    }
+    
+    OUIEnqueueableInteractionControllerContext *context = self.enqueuedInteractionControllerContexts[0];
+    
+    UIScene *sceneForPresentation = anActiveScene;
+    
+    BOOL shouldDequeue = YES;
+    UIViewController<ExtendedInteractionDefining> *controller;
+    if (context.requiredScene == nil) {
+        // This alert can be presented on any active scene. Dequeue it and present.
+        controller = context.controller;
+        
+        // If there is a parent interaction, complete it instead of dequeuing
+        __weak UIScene *weakScene = sceneForPresentation;
+        OUIExtendedAlertAction *parentAction = context.parentExtendedAction;
+        [controller addInteractionCompletion:^{
+            if (parentAction != nil) {
+                [parentAction extendedActionComplete];
+            } else {
+                __strong UIScene *strongScene = weakScene;
+                if (strongScene != nil) {
+                    [self _presentNextEnqueuedInteractionControllerOnScene:strongScene];
+                }
+            }
+        }];
+    } else if (context.requiredScene.activationState == UISceneActivationStateForegroundActive) {
+        // This alert's required scene is foreground active. Dequeue it and present on the scene. (This can happen if multiple scenes are reactivated at once)
+        sceneForPresentation = context.requiredScene;
+        controller = context.controller;
+        
+        // If there is a parent interaction, complete it instead of dequeuing
+        OUIExtendedAlertAction *parentAction = context.parentExtendedAction;
+        __weak UIScene *weakScene = sceneForPresentation;
+        [controller addInteractionCompletion:^{
+            if (parentAction != nil) {
+                [parentAction extendedActionComplete];
+            } else {
+                __strong UIScene *strongScene = weakScene;
+                if (strongScene != nil) {
+                    [self _presentNextEnqueuedInteractionControllerOnScene:strongScene];
+                }
+            }
+        }];
+    } else {
+        // This alert's required scene is not on screen. Present an alert on the active scene offering to take the user to the alert. Be sure to not dequeue the alert.
+        shouldDequeue = NO;
+        
+        NSString *alertTitleFormat = NSLocalizedStringFromTableInBundle(@"%@ is open in another window", @"OmniUI", OMNI_BUNDLE, @"Something open in another window alert title - the token is a short description of the activity open in the other window, for example: 'Account Setup'");
+        NSString *alertTitle = [NSString stringWithFormat:alertTitleFormat, context.activityContextTitle];
+        OUIEnqueueableAlertController *alert = [OUIEnqueueableAlertController alertControllerWithTitle:alertTitle message:nil preferredStyle:UIAlertControllerStyleAlert];
+        
+        UIAlertAction *continueAction = [alert addActionWithTitle:context.activityContinuationButtonTitle style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+            UISceneActivationRequestOptions *options = [[UISceneActivationRequestOptions alloc] init];
+            options.requestingScene = anActiveScene;
+            [[UIApplication sharedApplication] requestSceneSessionActivation:context.requiredScene.session userActivity:nil options:options errorHandler:^(NSError * _Nonnull error) {
+                NSLog(@"Error switching scenes: %@", error);
+                // The scene didn't activate, resume dequeuing any other alerts we may have, placing this one at the end so we aren't caught in a loop.
+                [[self enqueuedInteractionControllerContexts] removeObject:context];
+                [self _presentNextEnqueuedInteractionControllerOnScene:anActiveScene];
+                [[self enqueuedInteractionControllerContexts] addObject:context];
+            }];
+        }];
+        
+        [alert addActionWithTitle:context.postponeActivityButtonTitle style:UIAlertActionStyleCancel handler:nil];
+        
+        // Encourage the user to handle the error that needed to be presented in a specific place.
+        alert.preferredAction = continueAction;
+        
+        controller = alert;
+    }
+    
+    UIWindow *window = [[self class] windowForScene:sceneForPresentation options:OUIWindowForSceneOptionsNone];
+    if (window == nil) {
+        return;
+    }
+    
+    if (shouldDequeue) {
+        [[self enqueuedInteractionControllerContexts] removeObjectAtIndex:0];
+    }
+    
+    UIViewController *controllerForPresentation = [OUIAppController _viewControllerForPresentationInWindow:window];
+    [controllerForPresentation presentViewController:controller animated:YES completion:nil];
+}
+
+- (void)_windowDidBecomeKey:(NSNotification *)notification;
+{
+    UIWindow *window = OB_CHECKED_CAST(UIWindow, notification.object);
+    UIScene *scene = window.windowScene;
+    if (scene != nil) {
+        [self.connectedSceneStack push:scene uniquing:YES];
+    }
+}
+
+- (void)_oui_applicationDidBecomeActive:(NSNotification *)notification NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based solutions where available instead.");
+{
+    [self applicationDidBecomeActive];
+}
+
+- (void)_oui_applicationWillResignActive:(NSNotification *)notification NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based solutions where available instead.");
+{
+    [self applicationWillResignActive];
+}
+
+- (void)_oui_applicationWillEnterForeground:(NSNotification *)notification NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based solutions where available instead.");
+{
+    // Debounce the case of active -> inactive -> active
+    if (_applicationInForeground) {
+        return;
+    }
+    _applicationInForeground = YES;
+    [self applicationWillEnterForeground];
+}
+
+- (void)_oui_applicationDidEnterBackground:(NSNotification *)notification NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based solutions where available instead.");
+{
+    // Debounce the case of background -> inactive -> background, if that ever happens.
+    if (!_applicationInForeground) {
+        return;
+    }
+    _applicationInForeground = NO;
+    [self applicationDidEnterBackground];
+}
+
 @end
 
 @implementation UIViewController (OUIDisabledDemoFeatureAlerter)
@@ -1177,4 +1463,26 @@ static UIImage *menuImage(NSString *name)
 {
     return NSLocalizedStringFromTableInBundle(@"Feature not enabled for this demo", @"OmniUI", OMNI_BUNDLE, @"disabled for demo");
 }
+@end
+
+@implementation OUIEnqueueableInteractionControllerContext
+
++ (OUIEnqueueableInteractionControllerContext *)contextWithInteractionController:(UIViewController<ExtendedInteractionDefining> *)controller parentExtendedAction:(nullable OUIExtendedAlertAction *)parentAction
+{
+    return [[OUIEnqueueableInteractionControllerContext alloc] initWithInteractionController:controller parentExtendedAction:parentAction requiredScene:nil activityContextTitle:nil activityContinuationButtonTitle:nil postponeActivityButtonTitle:nil];
+}
+
+- (instancetype)initWithInteractionController:(UIViewController<ExtendedInteractionDefining> *)controller parentExtendedAction:(nullable OUIExtendedAlertAction *)parentAction requiredScene:(UIScene *)scene activityContextTitle:(NSString *)activityContextTitle activityContinuationButtonTitle:(NSString *)activityContinuationButtonTitle postponeActivityButtonTitle:(NSString *)postponeActivityButtonTitle
+{
+    if (self = [super init]) {
+        _controller = controller;
+        _parentExtendedAction = parentAction;
+        _requiredScene = scene;
+        _activityContextTitle = activityContextTitle;
+        _activityContinuationButtonTitle = activityContinuationButtonTitle;
+        _postponeActivityButtonTitle = postponeActivityButtonTitle;
+    }
+    return self;
+}
+
 @end

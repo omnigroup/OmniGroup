@@ -132,7 +132,7 @@ static id _commonInit(OUISegmentedControlButton *self)
 {
     super.selected = selected;
     if (selected) {
-        self.imageView.tintColor = [UIColor whiteColor];
+        self.imageView.tintColor = [UIColor systemBackgroundColor];
     } else {
         self.imageView.tintColor = nil;
     }

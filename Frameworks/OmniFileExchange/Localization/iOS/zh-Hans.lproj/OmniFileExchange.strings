@@ -29,9 +29,6 @@
 "Cannot locate synchronized documents folder." = "无法定位已同步文稿文件夹。";
 
 /* Error description */
-"Cannot move document." = "无法移动文稿。";
-
-/* Error description */
 "Cannot start account agent." = "无法启动帐户代理。";
 
 /* Error description */
@@ -43,29 +40,17 @@
 /* Account validation step description */
 "Checking Credentials" = "正在检查凭证";
 
-/* iTunes import title */
-"Copy from iTunes" = "从 iTunes 复制";
-
 /* error reason */
 "Could not access synchronized documents folder." = "无法访问有已同步文稿文件夹。";
 
 /* error reason */
 "Could not resolve archived bookmark for synchronized documents folder." = "无法解析已同步文稿文件夹的存档书签。";
 
-/* iTunes import/export account detail string */
-"Documents" = "文稿";
-
 /* Add server account description */
 "Easily sync Omni documents. Signup is free!" = "轻松同步 Omni 文稿。 注册免费！";
 
 /* Server account export title format */
 "Export to \"%@\"" = "\"输出至“%@”";
-
-/* iTunes export title */
-"Export to iTunes" = "输出至 iTunes";
-
-/* Server account type */
-"iTunes" = "iTunes";
 
 /* Error reason */
 "Local account documents folder is missing." = "本地帐户文稿文件夹遗失。";
@@ -111,14 +96,17 @@
 /* error reason */
 "The cloud account requires OmniPresence format %@, but this device is using format %@. Please upgrade this copy of OmniPresence." = "云帐户要求 OmniPresence 格式 %1$@，但此设备正在使用格式 %2$@。 请升级 OmniPresence 的此份拷贝。";
 
-/* Error description */
-"The document \"%@\" is not fully downloaded." = "未完整下载文稿“%@”。";
-
 /* error description */
 "The proposed local documents folder already contains files. Please specify an empty folder or one that doesn't yet exist." = "建议的本地文稿文件夹已包含文件。 请指定空文件夹或尚不存在的文件夹。";
 
 /* error description */
 "The proposed local documents folder is not on a local volume. Please pick a location that is local to your computer." = "建议的本地文稿文件夹未位于本地卷中。 请选择您的电脑的本地位置。";
+
+/* error description */
+"The proposed local documents folder is not within the app's local documents. Please pick a location within that folder." = "建议的本地文稿文件夹不在应用程序的本地文稿内。请在该文件夹中选择一个位置。";
+
+/* error description */
+"The proposed local documents folder is within the app's trash. This could lead to files getting unintentionally removed." = "建议的本地文稿文件夹在应用程序的废纸篓中。这可能导致文件被意外移除。";
 
 /* error description */
 "The selected local folder appears to be inside a %@ folder. Using two file synchronization systems on the same folder can result in data loss." = "选择的本地文件夹似乎在 %@ 文件夹中。针对相同文件夹使用两个文件同步系统可能导致数据丢失。";

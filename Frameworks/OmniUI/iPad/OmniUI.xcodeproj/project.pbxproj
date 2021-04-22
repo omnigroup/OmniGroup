@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		10455AC6230B21680046AD5E /* OUIAppController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10455AC5230B21680046AD5E /* OUIAppController.swift */; };
+		10FE6E6D232C5D1000AF5A88 /* OUIEnqueueableAlertController.m in Sources */ = {isa = PBXBuildFile; fileRef = 10FE6E6B232C5D0F00AF5A88 /* OUIEnqueueableAlertController.m */; };
+		10FE6E6E232C5D1000AF5A88 /* OUIEnqueueableAlertController.h in Headers */ = {isa = PBXBuildFile; fileRef = 10FE6E6C232C5D1000AF5A88 /* OUIEnqueueableAlertController.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		15632E5A1E527F25003EB174 /* ko.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 15632E581E527F25003EB174 /* ko.lproj */; };
 		15632E5B1E527F25003EB174 /* pt-BR.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 15632E591E527F25003EB174 /* pt-BR.lproj */; };
 		18FF12F41B684DFF00EC1466 /* OUIInspectorPresentationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 42384A1C19F82D4C00A42BFA /* OUIInspectorPresentationController.m */; };
@@ -33,7 +36,6 @@
 		236CA7751B5D690B00D66AFA /* UIVisualEffectView-OUIExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 236CA7731B5D690B00D66AFA /* UIVisualEffectView-OUIExtensions.m */; };
 		342C5F7B1B5D935400B5A80D /* UIImage-OUIExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 342C5F791B5D935400B5A80D /* UIImage-OUIExtensions.h */; };
 		342C5F7C1B5D935400B5A80D /* UIImage-OUIExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 342C5F7A1B5D935400B5A80D /* UIImage-OUIExtensions.m */; };
-		3458F09B1B5D7217000011A6 /* OUITransparencyCheckerboardBackground-24@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3458F09A1B5D7217000011A6 /* OUITransparencyCheckerboardBackground-24@3x.png */; };
 		348A79D91B584A830082D55D /* OUIFeatures.h in Headers */ = {isa = PBXBuildFile; fileRef = 34EA43E41267A32200BAC7FD /* OUIFeatures.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		348A79DA1B584A870082D55D /* OUIParameters.h in Headers */ = {isa = PBXBuildFile; fileRef = 3481D37712A8632400DAC58C /* OUIParameters.h */; };
 		348A79DB1B584A890082D55D /* OmniUI.defaults in Resources */ = {isa = PBXBuildFile; fileRef = 340B1E2C12B17C00004823B3 /* OmniUI.defaults */; };
@@ -63,40 +65,20 @@
 		348A79FB1B584AE10082D55D /* OUIColorAttributeInspectorSlice.m in Sources */ = {isa = PBXBuildFile; fileRef = 34E8924F1309E1B100E9C7F0 /* OUIColorAttributeInspectorSlice.m */; };
 		348A79FC1B584AE10082D55D /* OUIColorComponentSlider.h in Headers */ = {isa = PBXBuildFile; fileRef = 346C4A741193273600BE8C49 /* OUIColorComponentSlider.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		348A79FD1B584AE10082D55D /* OUIColorComponentSlider.m in Sources */ = {isa = PBXBuildFile; fileRef = 346C4A751193273600BE8C49 /* OUIColorComponentSlider.m */; };
-		348A79FE1B584AE10082D55D /* OUIColorComponentSliderKnob.png in Resources */ = {isa = PBXBuildFile; fileRef = 3469713112ADB81200CF318D /* OUIColorComponentSliderKnob.png */; };
-		348A79FF1B584AE10082D55D /* OUIColorComponentSliderKnob@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 34E150F315100D1E0022E380 /* OUIColorComponentSliderKnob@2x.png */; };
-		348A7A001B584AE10082D55D /* OUIColorInspectorGraySegment.png in Resources */ = {isa = PBXBuildFile; fileRef = 346C4A771193273600BE8C49 /* OUIColorInspectorGraySegment.png */; };
-		348A7A011B584AE10082D55D /* OUIColorInspectorGraySegment@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3458DD6F151166CF00FAAA6C /* OUIColorInspectorGraySegment@2x.png */; };
-		348A7A021B584AE10082D55D /* OUIColorInspectorHSVSegment.png in Resources */ = {isa = PBXBuildFile; fileRef = 346C4A781193273600BE8C49 /* OUIColorInspectorHSVSegment.png */; };
-		348A7A031B584AE10082D55D /* OUIColorInspectorHSVSegment@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3458DD70151166CF00FAAA6C /* OUIColorInspectorHSVSegment@2x.png */; };
-		348A7A041B584AE10082D55D /* OUIColorInspectorNoneSegment.png in Resources */ = {isa = PBXBuildFile; fileRef = 34816EDB1332B90B0030A6B2 /* OUIColorInspectorNoneSegment.png */; };
-		348A7A051B584AE10082D55D /* OUIColorInspectorNoneSegment@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3458DD71151166CF00FAAA6C /* OUIColorInspectorNoneSegment@2x.png */; };
-		348A7A061B584AE10082D55D /* OUIColorInspectorPaletteSegment.png in Resources */ = {isa = PBXBuildFile; fileRef = 346C4A791193273600BE8C49 /* OUIColorInspectorPaletteSegment.png */; };
-		348A7A071B584AE10082D55D /* OUIColorInspectorPaletteSegment@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 344F8DFE1512760C0025D819 /* OUIColorInspectorPaletteSegment@2x.png */; };
 		348A7A081B584AE10082D55D /* OUIColorInspectorPane.h in Headers */ = {isa = PBXBuildFile; fileRef = 34D333AD12A19557006D244E /* OUIColorInspectorPane.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		348A7A091B584AE10082D55D /* OUIColorInspectorPane.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D333AE12A19557006D244E /* OUIColorInspectorPane.m */; };
 		348A7A0A1B584AE40082D55D /* OUIColorInspectorPane.xib in Resources */ = {isa = PBXBuildFile; fileRef = 346C4A761193273600BE8C49 /* OUIColorInspectorPane.xib */; };
 		348A7A0B1B584AE90082D55D /* OUIColorInspectorPaneParentSlice.h in Headers */ = {isa = PBXBuildFile; fileRef = 34E892441309B0BE00E9C7F0 /* OUIColorInspectorPaneParentSlice.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		348A7A0C1B584AE90082D55D /* OUIColorInspectorRGBSegment.png in Resources */ = {isa = PBXBuildFile; fileRef = 346C4A7A1193273600BE8C49 /* OUIColorInspectorRGBSegment.png */; };
-		348A7A0D1B584AE90082D55D /* OUIColorInspectorRGBSegment@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3458DD72151166CF00FAAA6C /* OUIColorInspectorRGBSegment@2x.png */; };
-		348A7A0E1B584AE90082D55D /* OUIColorInspectorSelected.png in Resources */ = {isa = PBXBuildFile; fileRef = 346C4A7B1193273600BE8C49 /* OUIColorInspectorSelected.png */; };
-		348A7A0F1B584AE90082D55D /* OUIColorInspectorSelected@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3458DD73151166CF00FAAA6C /* OUIColorInspectorSelected@2x.png */; };
 		348A7A101B584AE90082D55D /* OUIColorInspectorSlice.h in Headers */ = {isa = PBXBuildFile; fileRef = 346C4A7C1193273600BE8C49 /* OUIColorInspectorSlice.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		348A7A111B584AE90082D55D /* OUIColorInspectorSlice.m in Sources */ = {isa = PBXBuildFile; fileRef = 346C4A7D1193273600BE8C49 /* OUIColorInspectorSlice.m */; };
 		348A7A121B584AE90082D55D /* OUIColorPicker.h in Headers */ = {isa = PBXBuildFile; fileRef = 346C4A801193273600BE8C49 /* OUIColorPicker.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		348A7A131B584AE90082D55D /* OUIColorPicker.m in Sources */ = {isa = PBXBuildFile; fileRef = 346C4A811193273600BE8C49 /* OUIColorPicker.m */; };
-		348A7A141B584AE90082D55D /* OUIColorPickerSwatch.png in Resources */ = {isa = PBXBuildFile; fileRef = 346C4A821193273600BE8C49 /* OUIColorPickerSwatch.png */; };
-		348A7A151B584AE90082D55D /* OUIColorPickerSwatch@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3458DD74151166CF00FAAA6C /* OUIColorPickerSwatch@2x.png */; };
 		348A7A161B584AE90082D55D /* OUIColorSwatch.h in Headers */ = {isa = PBXBuildFile; fileRef = 346C4A831193273600BE8C49 /* OUIColorSwatch.h */; };
 		348A7A171B584AE90082D55D /* OUIColorSwatch.m in Sources */ = {isa = PBXBuildFile; fileRef = 346C4A841193273600BE8C49 /* OUIColorSwatch.m */; };
-		348A7A181B584AE90082D55D /* OUIColorSwatchNavigationArrow.png in Resources */ = {isa = PBXBuildFile; fileRef = 34DD382612A81DC00054C7DB /* OUIColorSwatchNavigationArrow.png */; };
-		348A7A191B584AE90082D55D /* OUIColorSwatchNavigationArrow@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3458DD76151166CF00FAAA6C /* OUIColorSwatchNavigationArrow@2x.png */; };
 		348A7A1A1B584AE90082D55D /* OUIColorSwatchPicker.h in Headers */ = {isa = PBXBuildFile; fileRef = 346C4A861193273600BE8C49 /* OUIColorSwatchPicker.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		348A7A1B1B584AE90082D55D /* OUIColorSwatchPicker.m in Sources */ = {isa = PBXBuildFile; fileRef = 346C4A871193273600BE8C49 /* OUIColorSwatchPicker.m */; };
 		348A7A1C1B584AE90082D55D /* OUIColorSwatchPickerInspectorSlice.h in Headers */ = {isa = PBXBuildFile; fileRef = 34E8924A1309D17300E9C7F0 /* OUIColorSwatchPickerInspectorSlice.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		348A7A1D1B584AE90082D55D /* OUIColorSwatchPickerInspectorSlice.m in Sources */ = {isa = PBXBuildFile; fileRef = 34E8924B1309D17700E9C7F0 /* OUIColorSwatchPickerInspectorSlice.m */; };
-		348A7A1E1B584AE90082D55D /* OUIColorSwatchTranslucentBackground.png in Resources */ = {isa = PBXBuildFile; fileRef = 346C4A881193273600BE8C49 /* OUIColorSwatchTranslucentBackground.png */; };
-		348A7A1F1B584AE90082D55D /* OUIColorSwatchTranslucentBackground@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3458DD78151166CF00FAAA6C /* OUIColorSwatchTranslucentBackground@2x.png */; };
 		348A7A201B584AE90082D55D /* OUIColorValue.h in Headers */ = {isa = PBXBuildFile; fileRef = 346C4ACE1193273600BE8C49 /* OUIColorValue.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		348A7A211B584AE90082D55D /* OUIComponentColorPicker.h in Headers */ = {isa = PBXBuildFile; fileRef = 346C4A891193273600BE8C49 /* OUIComponentColorPicker.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		348A7A221B584AE90082D55D /* OUIComponentColorPicker.m in Sources */ = {isa = PBXBuildFile; fileRef = 346C4A8A1193273600BE8C49 /* OUIComponentColorPicker.m */; };
@@ -119,14 +101,6 @@
 		348A7A331B584B3C0082D55D /* OUIFontAttributesInspectorSlice.m in Sources */ = {isa = PBXBuildFile; fileRef = 3493285813561B95000E7DCD /* OUIFontAttributesInspectorSlice.m */; };
 		348A7A341B584B3C0082D55D /* OUIFontInspectorPane.h in Headers */ = {isa = PBXBuildFile; fileRef = 343220911270EFAF001B57CB /* OUIFontInspectorPane.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		348A7A351B584B3C0082D55D /* OUIFontInspectorPane.m in Sources */ = {isa = PBXBuildFile; fileRef = 343220921270EFAF001B57CB /* OUIFontInspectorPane.m */; };
-		348A7A391B584B430082D55D /* OUIFontStyle-Bold@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 94029E6D15114ACF00507B5D /* OUIFontStyle-Bold@2x.png */; };
-		348A7A3A1B584B430082D55D /* OUIFontStyle-Italic@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 94029E6E15114ACF00507B5D /* OUIFontStyle-Italic@2x.png */; };
-		348A7A3B1B584B430082D55D /* OUIFontStyle-Strikethrough@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 94029E6F15114ACF00507B5D /* OUIFontStyle-Strikethrough@2x.png */; };
-		348A7A3C1B584B430082D55D /* OUIFontStyle-Underline@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 94029E7015114AD000507B5D /* OUIFontStyle-Underline@2x.png */; };
-		348A7A3D1B584B430082D55D /* OUIFontStyle-Bold.png in Resources */ = {isa = PBXBuildFile; fileRef = 34F1D20E127232B700F59E56 /* OUIFontStyle-Bold.png */; };
-		348A7A3E1B584B430082D55D /* OUIFontStyle-Italic.png in Resources */ = {isa = PBXBuildFile; fileRef = 34F1D20F127232B700F59E56 /* OUIFontStyle-Italic.png */; };
-		348A7A3F1B584B430082D55D /* OUIFontStyle-Strikethrough.png in Resources */ = {isa = PBXBuildFile; fileRef = 34F1D210127232B700F59E56 /* OUIFontStyle-Strikethrough.png */; };
-		348A7A401B584B430082D55D /* OUIFontStyle-Underline.png in Resources */ = {isa = PBXBuildFile; fileRef = 34F1D211127232B700F59E56 /* OUIFontStyle-Underline.png */; };
 		348A7A411B584B430082D55D /* OUIFontUtilities.h in Headers */ = {isa = PBXBuildFile; fileRef = 343220A51270F06E001B57CB /* OUIFontUtilities.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		348A7A421B584B430082D55D /* OUIFontUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 343220A61270F06E001B57CB /* OUIFontUtilities.m */; };
 		348A7A431B584B590082D55D /* OUIAbstractTableViewInspectorSlice.h in Headers */ = {isa = PBXBuildFile; fileRef = 3470CE5F1561718500B84909 /* OUIAbstractTableViewInspectorSlice.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -171,20 +145,8 @@
 		348A7A6B1B584B590082D55D /* OUIStackedSlicesInspectorPane.m in Sources */ = {isa = PBXBuildFile; fileRef = 34CC468912A18CDA00270F59 /* OUIStackedSlicesInspectorPane.m */; };
 		348A7A6C1B584B590082D55D /* OUITextExampleInspectorSlice.h in Headers */ = {isa = PBXBuildFile; fileRef = 3455E65613045A7100DD7C4E /* OUITextExampleInspectorSlice.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		348A7A6D1B584B590082D55D /* OUITextExampleInspectorSlice.m in Sources */ = {isa = PBXBuildFile; fileRef = 3455E65713045A7100DD7C4E /* OUITextExampleInspectorSlice.m */; };
-		348A7A6E1B584B590082D55D /* OUITransparencyCheckerboardBackground-24.png in Resources */ = {isa = PBXBuildFile; fileRef = 3468A76A13256EE000DAC267 /* OUITransparencyCheckerboardBackground-24.png */; };
-		348A7A6F1B584B590082D55D /* OUITransparencyCheckerboardBackground-24@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3404540C151175B9003C80C4 /* OUITransparencyCheckerboardBackground-24@2x.png */; };
-		348A7A701B584B590082D55D /* OUINavigationArrow-White.png in Resources */ = {isa = PBXBuildFile; fileRef = 94B4A3F415FEDB9300AB01BE /* OUINavigationArrow-White.png */; };
-		348A7A711B584B590082D55D /* OUINavigationArrow-White@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 94B4A3F515FEDB9300AB01BE /* OUINavigationArrow-White@2x.png */; };
 		348A7A721B584BA20082D55D /* OUIParagraphStyleInspectorSlice.h in Headers */ = {isa = PBXBuildFile; fileRef = 346C4AB81193273600BE8C49 /* OUIParagraphStyleInspectorSlice.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		348A7A731B584BA20082D55D /* OUIParagraphStyleInspectorSlice.m in Sources */ = {isa = PBXBuildFile; fileRef = 346C4AB91193273600BE8C49 /* OUIParagraphStyleInspectorSlice.m */; };
-		348A7A741B584BA20082D55D /* OUIParagraphAlignmentCenter.png in Resources */ = {isa = PBXBuildFile; fileRef = 342F978412F71D0F00C09A4A /* OUIParagraphAlignmentCenter.png */; };
-		348A7A751B584BA20082D55D /* OUIParagraphAlignmentCenter@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 34B5CA561511CEF90093EF8C /* OUIParagraphAlignmentCenter@2x.png */; };
-		348A7A761B584BA20082D55D /* OUIParagraphAlignmentJustified.png in Resources */ = {isa = PBXBuildFile; fileRef = 342F978512F71D0F00C09A4A /* OUIParagraphAlignmentJustified.png */; };
-		348A7A771B584BA20082D55D /* OUIParagraphAlignmentJustified@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 34B5CA571511CEF90093EF8C /* OUIParagraphAlignmentJustified@2x.png */; };
-		348A7A781B584BA20082D55D /* OUIParagraphAlignmentLeft.png in Resources */ = {isa = PBXBuildFile; fileRef = 342F978612F71D0F00C09A4A /* OUIParagraphAlignmentLeft.png */; };
-		348A7A791B584BA20082D55D /* OUIParagraphAlignmentLeft@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 34B5CA581511CEF90093EF8C /* OUIParagraphAlignmentLeft@2x.png */; };
-		348A7A7A1B584BA20082D55D /* OUIParagraphAlignmentRight.png in Resources */ = {isa = PBXBuildFile; fileRef = 342F978712F71D0F00C09A4A /* OUIParagraphAlignmentRight.png */; };
-		348A7A7B1B584BA20082D55D /* OUIParagraphAlignmentRight@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 34B5CA591511CEF90093EF8C /* OUIParagraphAlignmentRight@2x.png */; };
 		348A7A7C1B584BAE0082D55D /* OUIColorAttributeInspectorWell.h in Headers */ = {isa = PBXBuildFile; fileRef = 34E892401309A34100E9C7F0 /* OUIColorAttributeInspectorWell.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		348A7A7D1B584BAE0082D55D /* OUIColorAttributeInspectorWell.m in Sources */ = {isa = PBXBuildFile; fileRef = 34E892411309A34100E9C7F0 /* OUIColorAttributeInspectorWell.m */; };
 		348A7A7E1B584BAE0082D55D /* OUIInspectorBackgroundView.h in Headers */ = {isa = PBXBuildFile; fileRef = 3407448B12A5E83F00EFDA68 /* OUIInspectorBackgroundView.h */; };
@@ -208,8 +170,6 @@
 		348A7A961B584BAE0082D55D /* OUIInspectorTextWell.m in Sources */ = {isa = PBXBuildFile; fileRef = 346C4AAD1193273600BE8C49 /* OUIInspectorTextWell.m */; };
 		348A7A971B584BAE0082D55D /* OUIInspectorWell.h in Headers */ = {isa = PBXBuildFile; fileRef = 346C4AB01193273600BE8C49 /* OUIInspectorWell.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		348A7A981B584BAE0082D55D /* OUIInspectorWell.m in Sources */ = {isa = PBXBuildFile; fileRef = 346C4AB11193273600BE8C49 /* OUIInspectorWell.m */; };
-		348A7A991B584BAE0082D55D /* OUINavigationArrow.png in Resources */ = {isa = PBXBuildFile; fileRef = 346C4AB21193273600BE8C49 /* OUINavigationArrow.png */; };
-		348A7A9A1B584BAE0082D55D /* OUINavigationArrow@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 94029EBD15116CA400507B5D /* OUINavigationArrow@2x.png */; };
 		348A7A9B1B584BAE0082D55D /* OUIPaletteTheme.h in Headers */ = {isa = PBXBuildFile; fileRef = 346C4AB61193273600BE8C49 /* OUIPaletteTheme.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		348A7A9C1B584BAE0082D55D /* OUIPaletteTheme.m in Sources */ = {isa = PBXBuildFile; fileRef = 346C4AB71193273600BE8C49 /* OUIPaletteTheme.m */; };
 		348A7A9D1B584BAE0082D55D /* OUITabBar.h in Headers */ = {isa = PBXBuildFile; fileRef = 6C9DAE8F1798A37F0092347A /* OUITabBar.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -241,12 +201,6 @@
 		348A7AC81B584C650082D55D /* OUILoupeOverlaySubject.h in Headers */ = {isa = PBXBuildFile; fileRef = 34DE83E51211EE420078D1DF /* OUILoupeOverlaySubject.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		348A7AC91B584C650082D55D /* OUILoupeOverlay.h in Headers */ = {isa = PBXBuildFile; fileRef = 346C4AF31193273600BE8C49 /* OUILoupeOverlay.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		348A7ACA1B584C650082D55D /* OUILoupeOverlay.m in Sources */ = {isa = PBXBuildFile; fileRef = 346C4AF41193273600BE8C49 /* OUILoupeOverlay.m */; };
-		348A7ACB1B584C650082D55D /* OUIRectangularOverlayArrow.png in Resources */ = {isa = PBXBuildFile; fileRef = A2F48E86126D16B20032C2C4 /* OUIRectangularOverlayArrow.png */; };
-		348A7ACC1B584C650082D55D /* OUIRectangularOverlayArrow@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 34A8439413E4BE6800012098 /* OUIRectangularOverlayArrow@2x.png */; };
-		348A7ACD1B584C650082D55D /* OUIRectangularOverlayFrame.png in Resources */ = {isa = PBXBuildFile; fileRef = 346C4A691193273600BE8C49 /* OUIRectangularOverlayFrame.png */; };
-		348A7ACE1B584C650082D55D /* OUIRectangularOverlayFrame@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 34A8439513E4BE6800012098 /* OUIRectangularOverlayFrame@2x.png */; };
-		348A7ACF1B584C650082D55D /* OUITextSelectionOverlay.png in Resources */ = {isa = PBXBuildFile; fileRef = 346C4A6F1193273600BE8C49 /* OUITextSelectionOverlay.png */; };
-		348A7AD01B584C650082D55D /* OUITextSelectionOverlay@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 34A8439713E4BE6800012098 /* OUITextSelectionOverlay@2x.png */; };
 		348A7AD11B584C720082D55D /* OUITransition.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CAC9DC91951F2D6004F5C28 /* OUITransition.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		348A7AD21B584C720082D55D /* OUITransition.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CAC9DCA1951F2D6004F5C28 /* OUITransition.m */; };
 		348A7AD31B584C720082D55D /* OUICrossfadeViewControllerTransition.h in Headers */ = {isa = PBXBuildFile; fileRef = 3EC4402117C5410000715DD9 /* OUICrossfadeViewControllerTransition.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -381,51 +335,6 @@
 		348A7B5C1B584D130082D55D /* UIDevice-OUIExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 945042961A8BE4CF00FFF97C /* UIDevice-OUIExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		348A7B5D1B584D130082D55D /* UIDevice-OUIExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 945042971A8BE4CF00FFF97C /* UIDevice-OUIExtensions.m */; };
 		348A7B5E1B584D400082D55D /* en.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 346C4C0C1193297600BE8C49 /* en.lproj */; };
-		348A7B5F1B584D480082D55D /* OUIToolbarUndo@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = ABBCB4701A0AB6A700285862 /* OUIToolbarUndo@2x.png */; };
-		348A7B601B584D480082D55D /* OUIToolbarUndo@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = ABBCB4711A0AB6A700285862 /* OUIToolbarUndo@3x.png */; };
-		348A7B611B584D480082D55D /* OUIColorComponentSliderKnob@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = AB69E40119D222A900F31468 /* OUIColorComponentSliderKnob@3x.png */; };
-		348A7B691B584D480082D55D /* OUIMenuItemSync@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = AB69E40919D222A900F31468 /* OUIMenuItemSync@3x.png */; };
-		348A7B6A1B584D480082D55D /* OUIParagraphAlignmentCenter@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = AB69E40A19D222A900F31468 /* OUIParagraphAlignmentCenter@3x.png */; };
-		348A7B6B1B584D480082D55D /* OUIParagraphAlignmentJustified@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = AB69E40B19D222A900F31468 /* OUIParagraphAlignmentJustified@3x.png */; };
-		348A7B6C1B584D480082D55D /* OUIParagraphAlignmentLeft@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = AB69E40C19D222A900F31468 /* OUIParagraphAlignmentLeft@3x.png */; };
-		348A7B6D1B584D480082D55D /* OUIParagraphAlignmentRight@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = AB69E40D19D222A900F31468 /* OUIParagraphAlignmentRight@3x.png */; };
-		348A7B6E1B584D480082D55D /* OUIScalingViewBackgroundPattern@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = AB69E40E19D222A900F31468 /* OUIScalingViewBackgroundPattern@3x.png */; };
-		348A7B6F1B584D480082D55D /* OUIStepperMinus@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = AB69E40F19D222A900F31468 /* OUIStepperMinus@3x.png */; };
-		348A7B701B584D480082D55D /* OUIStepperPlus@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = AB69E41019D222A900F31468 /* OUIStepperPlus@3x.png */; };
-		348A7B711B584D480082D55D /* OUITableViewItemSelection-Highlighted@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = AB69E41119D222A900F31468 /* OUITableViewItemSelection-Highlighted@3x.png */; };
-		348A7B721B584D480082D55D /* OUITableViewItemSelection-Mixed@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = AB69E41219D222A900F31468 /* OUITableViewItemSelection-Mixed@3x.png */; };
-		348A7B731B584D480082D55D /* OUITableViewItemSelection-Normal@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = AB69E41319D222A900F31468 /* OUITableViewItemSelection-Normal@3x.png */; };
-		348A7B741B584D480082D55D /* OUITableViewItemSelection-Selected@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = AB69E41419D222A900F31468 /* OUITableViewItemSelection-Selected@3x.png */; };
-		348A7B751B584D480082D55D /* OUITextSelectionOverlay@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = AB69E41519D222A900F31468 /* OUITextSelectionOverlay@3x.png */; };
-		348A7B761B584D480082D55D /* OUIToolbarInfo@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = AB69E41619D222A900F31468 /* OUIToolbarInfo@3x.png */; };
-		348A7B771B584D480082D55D /* OUINoteFullScreenZoom.png in Resources */ = {isa = PBXBuildFile; fileRef = 50AA859C195B92CB00103938 /* OUINoteFullScreenZoom.png */; };
-		348A7B781B584D480082D55D /* OUINoteFullScreenZoomBackground.png in Resources */ = {isa = PBXBuildFile; fileRef = 50AA859A195B8F4C00103938 /* OUINoteFullScreenZoomBackground.png */; };
-		348A7B871B584D480082D55D /* OUIMenuItemSync.png in Resources */ = {isa = PBXBuildFile; fileRef = 5F9E2B5115B0BEE000E33AA3 /* OUIMenuItemSync.png */; };
-		348A7B881B584D480082D55D /* OUIMenuItemSync@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 5F9E2B5215B0BEE000E33AA3 /* OUIMenuItemSync@2x.png */; };
-		348A7B891B584D480082D55D /* OUINavigationBarTextFieldBackground.png in Resources */ = {isa = PBXBuildFile; fileRef = 273C58731A1ADF6D00CE4C40 /* OUINavigationBarTextFieldBackground.png */; };
-		348A7B8A1B584D480082D55D /* OUINavigationBarTextFieldBackground@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 273C58741A1ADF9E00CE4C40 /* OUINavigationBarTextFieldBackground@2x.png */; };
-		348A7B8B1B584D480082D55D /* OUINavigationBarTextFieldBackground@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 273C58751A1ADF9E00CE4C40 /* OUINavigationBarTextFieldBackground@3x.png */; };
-		348A7B8C1B584D4C0082D55D /* OUIOverlayBackground.png in Resources */ = {isa = PBXBuildFile; fileRef = 0AD6C5CE121D7EDB000577FE /* OUIOverlayBackground.png */; };
-		348A7B8D1B584D4C0082D55D /* OUIOverlayBackground@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = AB3EC723150FCCF70027AC6F /* OUIOverlayBackground@2x.png */; };
-		348A7B8E1B584D4C0082D55D /* OUIScalingViewBackgroundPattern.png in Resources */ = {isa = PBXBuildFile; fileRef = 346C4A6A1193273600BE8C49 /* OUIScalingViewBackgroundPattern.png */; };
-		348A7B8F1B584D4C0082D55D /* OUIScalingViewBackgroundPattern@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 34B5CA5A1511CEF90093EF8C /* OUIScalingViewBackgroundPattern@2x.png */; };
-		348A7B941B584D4C0082D55D /* OUIStepperMinus.png in Resources */ = {isa = PBXBuildFile; fileRef = 493DD81017CEBF840021D057 /* OUIStepperMinus.png */; };
-		348A7B951B584D4C0082D55D /* OUIStepperMinus@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 498EFFD417CF0C420078F593 /* OUIStepperMinus@2x.png */; };
-		348A7B961B584D4C0082D55D /* OUIStepperPlus.png in Resources */ = {isa = PBXBuildFile; fileRef = 493DD81117CEBF840021D057 /* OUIStepperPlus.png */; };
-		348A7B971B584D4C0082D55D /* OUIStepperPlus@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 498EFFD317CF0B1C0078F593 /* OUIStepperPlus@2x.png */; };
-		348A7B981B584D4C0082D55D /* OUITableViewItemSelection-Highlighted.png in Resources */ = {isa = PBXBuildFile; fileRef = 3402B727127100C50031C27D /* OUITableViewItemSelection-Highlighted.png */; };
-		348A7B991B584D4C0082D55D /* OUITableViewItemSelection-Highlighted@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 94A8790F1511ABDB008CD19F /* OUITableViewItemSelection-Highlighted@2x.png */; };
-		348A7B9A1B584D4C0082D55D /* OUITableViewItemSelection-Mixed.png in Resources */ = {isa = PBXBuildFile; fileRef = E2C58D8F17DA5ACE00FCE975 /* OUITableViewItemSelection-Mixed.png */; };
-		348A7B9B1B584D4C0082D55D /* OUITableViewItemSelection-Mixed@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E2C58D9017DA5ACE00FCE975 /* OUITableViewItemSelection-Mixed@2x.png */; };
-		348A7B9C1B584D4C0082D55D /* OUITableViewItemSelection-Normal.png in Resources */ = {isa = PBXBuildFile; fileRef = 3402B728127100C50031C27D /* OUITableViewItemSelection-Normal.png */; };
-		348A7B9D1B584D4C0082D55D /* OUITableViewItemSelection-Normal@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 34B5CA5B1511CEF90093EF8C /* OUITableViewItemSelection-Normal@2x.png */; };
-		348A7B9E1B584D4C0082D55D /* OUITableViewItemSelection-Selected.png in Resources */ = {isa = PBXBuildFile; fileRef = 3402B70B1270FBBA0031C27D /* OUITableViewItemSelection-Selected.png */; };
-		348A7B9F1B584D4C0082D55D /* OUITableViewItemSelection-Selected@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 94A879101511ABEE008CD19F /* OUITableViewItemSelection-Selected@2x.png */; };
-		348A7BA01B584D4C0082D55D /* OUIToolbarButtonFauxHighlight.png in Resources */ = {isa = PBXBuildFile; fileRef = 4AE47BD4138B567E003D72DF /* OUIToolbarButtonFauxHighlight.png */; };
-		348A7BA11B584D4C0082D55D /* OUIToolbarButtonFauxHighlight@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 344F8DFD151275F00025D819 /* OUIToolbarButtonFauxHighlight@2x.png */; };
-		348A7BA21B584D4C0082D55D /* OUIToolbarUndo.png in Resources */ = {isa = PBXBuildFile; fileRef = 4256FAFA1A081AFB0085A680 /* OUIToolbarUndo.png */; };
-		348A7BA31B584D4C0082D55D /* OUIToolbarInfo.png in Resources */ = {isa = PBXBuildFile; fileRef = 34EC35FD12E753CD00503D4A /* OUIToolbarInfo.png */; };
-		348A7BA41B584D4C0082D55D /* OUIToolbarInfo@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 34B5CA601511CEF90093EF8C /* OUIToolbarInfo@2x.png */; };
 		348A7BA51B584D570082D55D /* de.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 154E96BE1863DE080097E5B3 /* de.lproj */; };
 		348A7BA61B584D570082D55D /* es.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 154E96BF1863DE080097E5B3 /* es.lproj */; };
 		348A7BA71B584D570082D55D /* fr.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 154E96C01863DE080097E5B3 /* fr.lproj */; };
@@ -447,24 +356,9 @@
 		348A7C1D1B584FCD0082D55D /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 348A7C1C1B584FCD0082D55D /* OmniBase.framework */; };
 		348A7C1E1B584FF40082D55D /* OmniAppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2787A6691991F4E0008D3495 /* OmniAppKit.framework */; };
 		348A7C201B5850140082D55D /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 348A7C1F1B5850140082D55D /* MessageUI.framework */; };
-		3497785D1B5D7BC400E2B216 /* OUIAppMenu.png in Resources */ = {isa = PBXBuildFile; fileRef = 3497785A1B5D7BC400E2B216 /* OUIAppMenu.png */; };
-		3497785E1B5D7BC400E2B216 /* OUIAppMenu@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3497785B1B5D7BC400E2B216 /* OUIAppMenu@2x.png */; };
-		3497785F1B5D7BC400E2B216 /* OUIAppMenu@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3497785C1B5D7BC400E2B216 /* OUIAppMenu@3x.png */; };
-		34A747481E302A1E005CD73F /* OUIExport-Compact.png in Resources */ = {isa = PBXBuildFile; fileRef = 34A747421E302A1E005CD73F /* OUIExport-Compact.png */; };
-		34A747491E302A1E005CD73F /* OUIExport-Compact@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 34A747431E302A1E005CD73F /* OUIExport-Compact@2x.png */; };
-		34A7474A1E302A1E005CD73F /* OUIExport-Compact@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 34A747441E302A1E005CD73F /* OUIExport-Compact@3x.png */; };
-		34A7474B1E302A1E005CD73F /* OUIExport.png in Resources */ = {isa = PBXBuildFile; fileRef = 34A747451E302A1E005CD73F /* OUIExport.png */; };
-		34A7474C1E302A1E005CD73F /* OUIExport@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 34A747461E302A1E005CD73F /* OUIExport@2x.png */; };
-		34A7474D1E302A1E005CD73F /* OUIExport@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 34A747471E302A1E005CD73F /* OUIExport@3x.png */; };
 		34C782C21BDEB71C00536364 /* OmniUI.h in Headers */ = {isa = PBXBuildFile; fileRef = 34C782C11BDEB71C00536364 /* OmniUI.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34D4E1EE20AF708A0025E2AB /* OmniUIKeycommands.strings in Resources */ = {isa = PBXBuildFile; fileRef = 34D4E1EC20AF708A0025E2AB /* OmniUIKeycommands.strings */; };
 		34D4F4251B6AA8F00003556D /* OUIDocumentPreviewArea.h in Headers */ = {isa = PBXBuildFile; fileRef = 34D4F41B1B6AA8B70003556D /* OUIDocumentPreviewArea.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34FBAA7820B5D1EA0099D424 /* OUIToolbarBack@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 34FBAA6B20B5D1E90099D424 /* OUIToolbarBack@2x.png */; };
-		34FBAA7920B5D1EA0099D424 /* OUIToolbarForward@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 34FBAA7520B5D1E90099D424 /* OUIToolbarForward@2x.png */; };
-		34FBAA7A20B5D1EA0099D424 /* OUIToolbarForward.png in Resources */ = {isa = PBXBuildFile; fileRef = 34FBAA7620B5D1E90099D424 /* OUIToolbarForward.png */; };
-		34FBAA7B20B5D1EA0099D424 /* OUIToolbarBack.png in Resources */ = {isa = PBXBuildFile; fileRef = 34FBAA7720B5D1EA0099D424 /* OUIToolbarBack.png */; };
-		34FBAA7D20B5E1E60099D424 /* OUIToolbarBack@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 34FBAA7C20B5E1E50099D424 /* OUIToolbarBack@3x.png */; };
-		34FBAA7F20B5E1F40099D424 /* OUIToolbarForward@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 34FBAA7E20B5E1F40099D424 /* OUIToolbarForward@3x.png */; };
 		3E1F09D62034C0BD001EE416 /* OmniUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 348A79BB1B5849C70082D55D /* OmniUI.framework */; };
 		3E1F0A202034C4BB001EE416 /* DiffableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E1F09E62034C4BB001EE416 /* DiffableTests.swift */; };
 		3E7656D21F59D5BF008B76B7 /* NSURL-OUIExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 3E7656D01F59D5BF008B76B7 /* NSURL-OUIExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -472,7 +366,7 @@
 		3E7F667421B884EF00AB4961 /* OUISettingsButtonTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E7F666921B884EE00AB4961 /* OUISettingsButtonTableViewCell.m */; };
 		3E7F667521B884EF00AB4961 /* OUISettingsButtonTableViewCell.h in Headers */ = {isa = PBXBuildFile; fileRef = 3E7F667321B884EE00AB4961 /* OUISettingsButtonTableViewCell.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3EA7ECE21D52A98C00040F4B /* OUIPasswordAlert-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 3EA7ECD81D52A95600040F4B /* OUIPasswordAlert-Internal.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		3EDBA0D021E809C3000CF1DD /* OmniUI.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3EDBA0CF21E809C3000CF1DD /* OmniUI.xcassets */; };
+		3EDBA0D021E809C3000CF1DD /* OmniUIColors.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3EDBA0CF21E809C3000CF1DD /* OmniUIColors.xcassets */; };
 		4234FD851F3AA14F0062695C /* DisclosableTableViewInspectorSlice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4234FD841F3AA14F0062695C /* DisclosableTableViewInspectorSlice.swift */; };
 		423DFE1C1C24B526006BB12B /* OUIAbstractFontInspectorSlice.h in Headers */ = {isa = PBXBuildFile; fileRef = 423DFE161C24B526006BB12B /* OUIAbstractFontInspectorSlice.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		423DFE1D1C24B526006BB12B /* OUIAbstractFontInspectorSlice.m in Sources */ = {isa = PBXBuildFile; fileRef = 423DFE171C24B526006BB12B /* OUIAbstractFontInspectorSlice.m */; };
@@ -482,20 +376,20 @@
 		423DFE211C24B526006BB12B /* OUIFontSizeInspectorSlice.m in Sources */ = {isa = PBXBuildFile; fileRef = 423DFE1B1C24B526006BB12B /* OUIFontSizeInspectorSlice.m */; };
 		4240B0181F1D616900D72C02 /* DisclosableInspectorPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4240B0171F1D616900D72C02 /* DisclosableInspectorPane.swift */; };
 		425ED6ED1F61C04F008D7515 /* ToggleInspectorSlice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 425ED6EC1F61C04F008D7515 /* ToggleInspectorSlice.swift */; };
-		429585D91C4964BE009ED770 /* OUIToolbarUndo-Compact.png in Resources */ = {isa = PBXBuildFile; fileRef = 429585D61C4964BE009ED770 /* OUIToolbarUndo-Compact.png */; };
-		429585DA1C4964BE009ED770 /* OUIToolbarUndo-Compact@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 429585D71C4964BE009ED770 /* OUIToolbarUndo-Compact@2x.png */; };
-		429585DB1C4964BE009ED770 /* OUIToolbarUndo-Compact@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 429585D81C4964BE009ED770 /* OUIToolbarUndo-Compact@3x.png */; };
-		429586641C497D26009ED770 /* OUIToolbarInfo-Compact.png in Resources */ = {isa = PBXBuildFile; fileRef = 429586611C497D26009ED770 /* OUIToolbarInfo-Compact.png */; };
-		429586651C497D26009ED770 /* OUIToolbarInfo-Compact@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 429586621C497D26009ED770 /* OUIToolbarInfo-Compact@2x.png */; };
-		429586661C497D26009ED770 /* OUIToolbarInfo-Compact@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 429586631C497D26009ED770 /* OUIToolbarInfo-Compact@3x.png */; };
 		42B7ECF71F4E2704003F3F4E /* DisclosableMultiSegmentInspectorPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42B7ECF61F4E2704003F3F4E /* DisclosableMultiSegmentInspectorPane.swift */; };
 		42D6E8AA1F2154F9006B9697 /* DisclosableSliceGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42D6E8A91F2154F9006B9697 /* DisclosableSliceGroup.swift */; };
 		4A0CE67B20435DFB00154E5D /* OUIHelpURLCommand.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A0CE66F20435DFA00154E5D /* OUIHelpURLCommand.m */; };
 		4A0CE67C20435DFB00154E5D /* OUIHelpURLCommand.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A0CE67A20435DFB00154E5D /* OUIHelpURLCommand.h */; };
 		4A1BDAC5204CAC00003917CB /* OUIChangeAppIconURLCommand.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A1BDAC3204CAC00003917CB /* OUIChangeAppIconURLCommand.h */; };
 		4A1BDAC6204CAC00003917CB /* OUIChangeAppIconURLCommand.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1BDAC4204CAC00003917CB /* OUIChangeAppIconURLCommand.m */; };
+		4A3C8BA023078F1300D69096 /* OUIInspectorAppearanceColors.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4A3C8B9623078F1300D69096 /* OUIInspectorAppearanceColors.xcassets */; };
+		4A62A81C23216348000032F7 /* Media.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4A62A81B23216348000032F7 /* Media.xcassets */; };
+		4A62A81E232163F4000032F7 /* ColorInspector.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4A62A81D232163F4000032F7 /* ColorInspector.xcassets */; };
+		4A62A8202321653F000032F7 /* OUIInspectorImages.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4A62A81F2321653F000032F7 /* OUIInspectorImages.xcassets */; };
+		4A62A83D23216725000032F7 /* OUILoupeImages.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4A62A83C23216725000032F7 /* OUILoupeImages.xcassets */; };
 		4AA1E2F822FBA22000B81411 /* OUIAppControllerSceneHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AA1E2F622FBA22000B81411 /* OUIAppControllerSceneHelper.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E2F922FBA22000B81411 /* OUIAppControllerSceneHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AA1E2F722FBA22000B81411 /* OUIAppControllerSceneHelper.m */; };
+		4AF14C5D2318850B00B8A58F /* OUINews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AF14C5C2318850B00B8A58F /* OUINews.swift */; };
 		4AF368E52006E665004EED9D /* OUIPasswordPromptViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AF368E32006E665004EED9D /* OUIPasswordPromptViewController.swift */; };
 		4AF368E62006E665004EED9D /* OUIPasswordPromptViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4AF368E42006E665004EED9D /* OUIPasswordPromptViewController.xib */; };
 		4AF93D7E1E9D328D00DA8E01 /* OUISendFeedbackURLCommand.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AF93D7C1E9D328D00DA8E01 /* OUISendFeedbackURLCommand.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -516,10 +410,6 @@
 		E22B37381FC4BF90004423FE /* OUINoteInspectorPane.xib in Resources */ = {isa = PBXBuildFile; fileRef = E22B37371FC4BF90004423FE /* OUINoteInspectorPane.xib */; };
 		E26E8D9A1F44E7830045CBF2 /* OUIFloatingContentToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = E26E8D991F44E7830045CBF2 /* OUIFloatingContentToolbar.swift */; };
 		E27879721BD1C0C200B38C43 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E27879711BD1C0C200B38C43 /* WebKit.framework */; };
-		E27F39031FCDEDC900754844 /* OUINoteFullScreenZoomBackground@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = E27F38F71FCDEDC300754844 /* OUINoteFullScreenZoomBackground@3x.png */; };
-		E27F39041FCDEDC900754844 /* OUINoteFullScreenZoomBackground@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E27F39021FCDEDC800754844 /* OUINoteFullScreenZoomBackground@2x.png */; };
-		E27F39071FCDEEA900754844 /* OUINoteFullScreenZoom@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E27F39051FCDEEA800754844 /* OUINoteFullScreenZoom@2x.png */; };
-		E27F39081FCDEEA900754844 /* OUINoteFullScreenZoom@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = E27F39061FCDEEA800754844 /* OUINoteFullScreenZoom@3x.png */; };
 		E28342021EB988C200FDB90F /* OUIThemedTableViewCell.h in Headers */ = {isa = PBXBuildFile; fileRef = E28342001EB988C200FDB90F /* OUIThemedTableViewCell.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E28342031EB988C200FDB90F /* OUIThemedTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = E28342011EB988C200FDB90F /* OUIThemedTableViewCell.m */; };
 		E2967E361EB3C8CF007E99B6 /* OUIInspectorAppearance.h in Headers */ = {isa = PBXBuildFile; fileRef = E2967E341EB3C8CF007E99B6 /* OUIInspectorAppearance.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -529,20 +419,8 @@
 		E2967E471EB3FA08007E99B6 /* OUIInspectorAppearanceDark.plist in Resources */ = {isa = PBXBuildFile; fileRef = E2967E461EB3FA08007E99B6 /* OUIInspectorAppearanceDark.plist */; };
 		E2967E491EB3FA75007E99B6 /* OUIInspectorAppearanceLight.plist in Resources */ = {isa = PBXBuildFile; fileRef = E2967E481EB3FA75007E99B6 /* OUIInspectorAppearanceLight.plist */; };
 		FB0C63911F59BB44000FF76C /* GearMenuIcons.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FB0C63901F59BB44000FF76C /* GearMenuIcons.xcassets */; };
-		FB11AB081C518D570050F4EF /* OUIAppMenu-Badged.png in Resources */ = {isa = PBXBuildFile; fileRef = FB11AAFF1C518D570050F4EF /* OUIAppMenu-Badged.png */; };
-		FB11AB091C518D570050F4EF /* OUIAppMenu-Badged@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = FB11AB001C518D570050F4EF /* OUIAppMenu-Badged@2x.png */; };
-		FB11AB0A1C518D570050F4EF /* OUIAppMenu-Badged@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = FB11AB011C518D570050F4EF /* OUIAppMenu-Badged@3x.png */; };
-		FB11AB0B1C518D570050F4EF /* OUIAttentionDot.png in Resources */ = {isa = PBXBuildFile; fileRef = FB11AB021C518D570050F4EF /* OUIAttentionDot.png */; };
-		FB11AB0C1C518D570050F4EF /* OUIAttentionDot@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = FB11AB031C518D570050F4EF /* OUIAttentionDot@2x.png */; };
-		FB11AB0D1C518D570050F4EF /* OUIAttentionDot@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = FB11AB041C518D570050F4EF /* OUIAttentionDot@3x.png */; };
-		FB11AB0E1C518D570050F4EF /* OUIMenuItemAnnouncement-Badged.png in Resources */ = {isa = PBXBuildFile; fileRef = FB11AB051C518D570050F4EF /* OUIMenuItemAnnouncement-Badged.png */; };
-		FB11AB0F1C518D570050F4EF /* OUIMenuItemAnnouncement-Badged@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = FB11AB061C518D570050F4EF /* OUIMenuItemAnnouncement-Badged@2x.png */; };
-		FB11AB101C518D570050F4EF /* OUIMenuItemAnnouncement-Badged@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = FB11AB071C518D570050F4EF /* OUIMenuItemAnnouncement-Badged@3x.png */; };
 		FB11AB3B1C51A7930050F4EF /* OUIAttentionSeekingButton.h in Headers */ = {isa = PBXBuildFile; fileRef = FB11AB391C51A7930050F4EF /* OUIAttentionSeekingButton.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FB11AB3C1C51A7930050F4EF /* OUIAttentionSeekingButton.m in Sources */ = {isa = PBXBuildFile; fileRef = FB11AB3A1C51A7930050F4EF /* OUIAttentionSeekingButton.m */; };
-		FB36A8081C3DC63F00767F49 /* OUIMenuItemAnnouncement.png in Resources */ = {isa = PBXBuildFile; fileRef = FB36A8051C3DC63F00767F49 /* OUIMenuItemAnnouncement.png */; };
-		FB36A8091C3DC63F00767F49 /* OUIMenuItemAnnouncement@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = FB36A8061C3DC63F00767F49 /* OUIMenuItemAnnouncement@2x.png */; };
-		FB36A80A1C3DC63F00767F49 /* OUIMenuItemAnnouncement@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = FB36A8071C3DC63F00767F49 /* OUIMenuItemAnnouncement@3x.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -667,7 +545,9 @@
 		008A8DEA12F0ADB7005C1402 /* OUIRotationGestureRecognizer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIRotationGestureRecognizer.m; sourceTree = "<group>"; };
 		00AA54A411FE743500A23064 /* OUILongPressGestureRecognizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUILongPressGestureRecognizer.h; sourceTree = "<group>"; };
 		00AA54A511FE743500A23064 /* OUILongPressGestureRecognizer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUILongPressGestureRecognizer.m; sourceTree = "<group>"; };
-		0AD6C5CE121D7EDB000577FE /* OUIOverlayBackground.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = OUIOverlayBackground.png; path = Images/OUIOverlayBackground.png; sourceTree = SOURCE_ROOT; };
+		10455AC5230B21680046AD5E /* OUIAppController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OUIAppController.swift; sourceTree = "<group>"; };
+		10FE6E6B232C5D0F00AF5A88 /* OUIEnqueueableAlertController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIEnqueueableAlertController.m; sourceTree = "<group>"; };
+		10FE6E6C232C5D1000AF5A88 /* OUIEnqueueableAlertController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIEnqueueableAlertController.h; sourceTree = "<group>"; };
 		154E96BE1863DE080097E5B3 /* de.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = de.lproj; path = ../iOS/de.lproj; sourceTree = "<group>"; };
 		154E96BF1863DE080097E5B3 /* es.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = es.lproj; path = ../iOS/es.lproj; sourceTree = "<group>"; };
 		154E96C01863DE080097E5B3 /* fr.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = fr.lproj; path = ../iOS/fr.lproj; sourceTree = "<group>"; };
@@ -714,9 +594,6 @@
 		23FF1F6E18BBF7B30009C3D6 /* OUISegmentedViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUISegmentedViewController.m; sourceTree = "<group>"; };
 		273C58681A1AC65900CE4C40 /* OUINavigationBarTextField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUINavigationBarTextField.h; sourceTree = "<group>"; };
 		273C58691A1AC65900CE4C40 /* OUINavigationBarTextField.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUINavigationBarTextField.m; sourceTree = "<group>"; };
-		273C58731A1ADF6D00CE4C40 /* OUINavigationBarTextFieldBackground.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUINavigationBarTextFieldBackground.png; sourceTree = "<group>"; };
-		273C58741A1ADF9E00CE4C40 /* OUINavigationBarTextFieldBackground@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUINavigationBarTextFieldBackground@2x.png"; sourceTree = "<group>"; };
-		273C58751A1ADF9E00CE4C40 /* OUINavigationBarTextFieldBackground@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUINavigationBarTextFieldBackground@3x.png"; sourceTree = "<group>"; };
 		274723421992F31600B1DE5D /* OUISplitViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUISplitViewController.h; sourceTree = "<group>"; };
 		274723431992F31600B1DE5D /* OUISplitViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUISplitViewController.m; sourceTree = "<group>"; };
 		274798541991E1200022D28C /* OUIWrappingViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIWrappingViewController.h; sourceTree = "<group>"; };
@@ -726,10 +603,6 @@
 		2787A6541991F4E0008D3495 /* OmniAppKit.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniAppKit.xcodeproj; path = ../../OmniAppKit/OmniAppKit.xcodeproj; sourceTree = "<group>"; };
 		27D1BBCD1991F78A00976618 /* OmniQuartz.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniQuartz.xcodeproj; path = ../../OmniQuartz/OmniQuartz.xcodeproj; sourceTree = "<group>"; };
 		27D1BBDE1991F7D800976618 /* OmniUnzip.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniUnzip.xcodeproj; path = ../../OmniUnzip/OmniUnzip.xcodeproj; sourceTree = "<group>"; };
-		3402B70B1270FBBA0031C27D /* OUITableViewItemSelection-Selected.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUITableViewItemSelection-Selected.png"; sourceTree = "<group>"; };
-		3402B727127100C50031C27D /* OUITableViewItemSelection-Highlighted.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUITableViewItemSelection-Highlighted.png"; sourceTree = "<group>"; };
-		3402B728127100C50031C27D /* OUITableViewItemSelection-Normal.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUITableViewItemSelection-Normal.png"; sourceTree = "<group>"; };
-		3404540C151175B9003C80C4 /* OUITransparencyCheckerboardBackground-24@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUITransparencyCheckerboardBackground-24@2x.png"; sourceTree = "<group>"; };
 		3407448B12A5E83F00EFDA68 /* OUIInspectorBackgroundView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIInspectorBackgroundView.h; sourceTree = "<group>"; };
 		3407448C12A5E83F00EFDA68 /* OUIInspectorBackgroundView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIInspectorBackgroundView.m; sourceTree = "<group>"; };
 		340B1E2C12B17C00004823B3 /* OmniUI.defaults */ = {isa = PBXFileReference; explicitFileType = text.xml; fileEncoding = 4; indentWidth = 8; name = OmniUI.defaults; path = Inspectors/OmniUI.defaults; sourceTree = "<group>"; usesTabs = 1; };
@@ -739,10 +612,6 @@
 		342C5F7A1B5D935400B5A80D /* UIImage-OUIExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImage-OUIExtensions.m"; sourceTree = "<group>"; };
 		342E6A2717CEBA4400D62582 /* OUIInteractionLock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIInteractionLock.h; sourceTree = "<group>"; };
 		342E6A2817CEBA4400D62582 /* OUIInteractionLock.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIInteractionLock.m; sourceTree = "<group>"; };
-		342F978412F71D0F00C09A4A /* OUIParagraphAlignmentCenter.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = OUIParagraphAlignmentCenter.png; path = Images/OUIParagraphAlignmentCenter.png; sourceTree = SOURCE_ROOT; };
-		342F978512F71D0F00C09A4A /* OUIParagraphAlignmentJustified.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = OUIParagraphAlignmentJustified.png; path = Images/OUIParagraphAlignmentJustified.png; sourceTree = SOURCE_ROOT; };
-		342F978612F71D0F00C09A4A /* OUIParagraphAlignmentLeft.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = OUIParagraphAlignmentLeft.png; path = Images/OUIParagraphAlignmentLeft.png; sourceTree = SOURCE_ROOT; };
-		342F978712F71D0F00C09A4A /* OUIParagraphAlignmentRight.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = OUIParagraphAlignmentRight.png; path = Images/OUIParagraphAlignmentRight.png; sourceTree = SOURCE_ROOT; };
 		342F97F512F72BA200C09A4A /* OUIDetailInspectorSlice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIDetailInspectorSlice.h; sourceTree = "<group>"; };
 		342F97F612F72BA200C09A4A /* OUIDetailInspectorSlice.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIDetailInspectorSlice.m; sourceTree = "<group>"; };
 		343220911270EFAF001B57CB /* OUIFontInspectorPane.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIFontInspectorPane.h; sourceTree = "<group>"; };
@@ -765,27 +634,14 @@
 		344B6DA212A4C7B300D876CD /* OUIImages.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIImages.m; sourceTree = "<group>"; };
 		344B6DCE12A4CC9E00D876CD /* UITableView-OUIExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UITableView-OUIExtensions.h"; sourceTree = "<group>"; };
 		344B6DCF12A4CC9E00D876CD /* UITableView-OUIExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UITableView-OUIExtensions.m"; sourceTree = "<group>"; };
-		344F8DFD151275F00025D819 /* OUIToolbarButtonFauxHighlight@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIToolbarButtonFauxHighlight@2x.png"; sourceTree = "<group>"; };
-		344F8DFE1512760C0025D819 /* OUIColorInspectorPaletteSegment@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIColorInspectorPaletteSegment@2x.png"; sourceTree = "<group>"; };
 		3455E65413045A7100DD7C4E /* OUIInspectorTextExampleView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIInspectorTextExampleView.h; sourceTree = "<group>"; };
 		3455E65513045A7100DD7C4E /* OUIInspectorTextExampleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIInspectorTextExampleView.m; sourceTree = "<group>"; };
 		3455E65613045A7100DD7C4E /* OUITextExampleInspectorSlice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUITextExampleInspectorSlice.h; sourceTree = "<group>"; };
 		3455E65713045A7100DD7C4E /* OUITextExampleInspectorSlice.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUITextExampleInspectorSlice.m; sourceTree = "<group>"; };
-		3458DD6F151166CF00FAAA6C /* OUIColorInspectorGraySegment@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIColorInspectorGraySegment@2x.png"; sourceTree = "<group>"; };
-		3458DD70151166CF00FAAA6C /* OUIColorInspectorHSVSegment@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIColorInspectorHSVSegment@2x.png"; sourceTree = "<group>"; };
-		3458DD71151166CF00FAAA6C /* OUIColorInspectorNoneSegment@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIColorInspectorNoneSegment@2x.png"; sourceTree = "<group>"; };
-		3458DD72151166CF00FAAA6C /* OUIColorInspectorRGBSegment@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIColorInspectorRGBSegment@2x.png"; sourceTree = "<group>"; };
-		3458DD73151166CF00FAAA6C /* OUIColorInspectorSelected@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIColorInspectorSelected@2x.png"; sourceTree = "<group>"; };
-		3458DD74151166CF00FAAA6C /* OUIColorPickerSwatch@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIColorPickerSwatch@2x.png"; sourceTree = "<group>"; };
-		3458DD76151166CF00FAAA6C /* OUIColorSwatchNavigationArrow@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIColorSwatchNavigationArrow@2x.png"; sourceTree = "<group>"; };
-		3458DD78151166CF00FAAA6C /* OUIColorSwatchTranslucentBackground@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIColorSwatchTranslucentBackground@2x.png"; sourceTree = "<group>"; };
-		3458F09A1B5D7217000011A6 /* OUITransparencyCheckerboardBackground-24@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUITransparencyCheckerboardBackground-24@3x.png"; sourceTree = "<group>"; };
 		345A398D121C992900ABA3F0 /* OUIToolbarButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIToolbarButton.h; sourceTree = "<group>"; };
 		345A398E121C992900ABA3F0 /* OUIToolbarButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIToolbarButton.m; sourceTree = "<group>"; };
 		345D7252130339BB00A9D55F /* OUIEditableTextWellInspectorSlice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIEditableTextWellInspectorSlice.h; sourceTree = "<group>"; };
 		345D7253130339BE00A9D55F /* OUIEditableTextWellInspectorSlice.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIEditableTextWellInspectorSlice.m; sourceTree = "<group>"; };
-		3468A76A13256EE000DAC267 /* OUITransparencyCheckerboardBackground-24.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUITransparencyCheckerboardBackground-24.png"; sourceTree = "<group>"; };
-		3469713112ADB81200CF318D /* OUIColorComponentSliderKnob.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = OUIColorComponentSliderKnob.png; path = Images/OUIColorComponentSliderKnob.png; sourceTree = SOURCE_ROOT; };
 		346C49F1119326AD00BE8C49 /* Omni-Application-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common.xcconfig"; sourceTree = "<group>"; };
 		346C49F3119326AD00BE8C49 /* Omni-Application-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Debug.xcconfig"; sourceTree = "<group>"; };
 		346C49F4119326AD00BE8C49 /* Omni-Application-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Release.xcconfig"; sourceTree = "<group>"; };
@@ -812,27 +668,17 @@
 		346C4A0F119326AD00BE8C49 /* Touch-Library-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Common.xcconfig"; sourceTree = "<group>"; };
 		346C4A11119326AD00BE8C49 /* Touch-Library-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Debug.xcconfig"; sourceTree = "<group>"; };
 		346C4A12119326AD00BE8C49 /* Touch-Library-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Release.xcconfig"; sourceTree = "<group>"; };
-		346C4A691193273600BE8C49 /* OUIRectangularOverlayFrame.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = OUIRectangularOverlayFrame.png; path = Images/OUIRectangularOverlayFrame.png; sourceTree = SOURCE_ROOT; };
-		346C4A6A1193273600BE8C49 /* OUIScalingViewBackgroundPattern.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = OUIScalingViewBackgroundPattern.png; path = Images/OUIScalingViewBackgroundPattern.png; sourceTree = SOURCE_ROOT; };
-		346C4A6F1193273600BE8C49 /* OUITextSelectionOverlay.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = OUITextSelectionOverlay.png; path = Images/OUITextSelectionOverlay.png; sourceTree = SOURCE_ROOT; };
 		346C4A741193273600BE8C49 /* OUIColorComponentSlider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIColorComponentSlider.h; sourceTree = "<group>"; };
 		346C4A751193273600BE8C49 /* OUIColorComponentSlider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = OUIColorComponentSlider.m; sourceTree = "<group>"; };
 		346C4A761193273600BE8C49 /* OUIColorInspectorPane.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = OUIColorInspectorPane.xib; sourceTree = "<group>"; };
-		346C4A771193273600BE8C49 /* OUIColorInspectorGraySegment.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIColorInspectorGraySegment.png; sourceTree = "<group>"; };
-		346C4A781193273600BE8C49 /* OUIColorInspectorHSVSegment.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIColorInspectorHSVSegment.png; sourceTree = "<group>"; };
-		346C4A791193273600BE8C49 /* OUIColorInspectorPaletteSegment.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIColorInspectorPaletteSegment.png; sourceTree = "<group>"; };
-		346C4A7A1193273600BE8C49 /* OUIColorInspectorRGBSegment.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIColorInspectorRGBSegment.png; sourceTree = "<group>"; };
-		346C4A7B1193273600BE8C49 /* OUIColorInspectorSelected.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIColorInspectorSelected.png; sourceTree = "<group>"; };
 		346C4A7C1193273600BE8C49 /* OUIColorInspectorSlice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIColorInspectorSlice.h; sourceTree = "<group>"; };
 		346C4A7D1193273600BE8C49 /* OUIColorInspectorSlice.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIColorInspectorSlice.m; sourceTree = "<group>"; };
 		346C4A801193273600BE8C49 /* OUIColorPicker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIColorPicker.h; sourceTree = "<group>"; };
 		346C4A811193273600BE8C49 /* OUIColorPicker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIColorPicker.m; sourceTree = "<group>"; };
-		346C4A821193273600BE8C49 /* OUIColorPickerSwatch.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIColorPickerSwatch.png; sourceTree = "<group>"; };
 		346C4A831193273600BE8C49 /* OUIColorSwatch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIColorSwatch.h; sourceTree = "<group>"; };
 		346C4A841193273600BE8C49 /* OUIColorSwatch.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = OUIColorSwatch.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		346C4A861193273600BE8C49 /* OUIColorSwatchPicker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIColorSwatchPicker.h; sourceTree = "<group>"; };
 		346C4A871193273600BE8C49 /* OUIColorSwatchPicker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIColorSwatchPicker.m; sourceTree = "<group>"; };
-		346C4A881193273600BE8C49 /* OUIColorSwatchTranslucentBackground.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIColorSwatchTranslucentBackground.png; sourceTree = "<group>"; };
 		346C4A891193273600BE8C49 /* OUIComponentColorPicker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIComponentColorPicker.h; sourceTree = "<group>"; };
 		346C4A8A1193273600BE8C49 /* OUIComponentColorPicker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIComponentColorPicker.m; sourceTree = "<group>"; };
 		346C4A8E1193273600BE8C49 /* OUIGrayColorPicker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIGrayColorPicker.h; sourceTree = "<group>"; };
@@ -864,7 +710,6 @@
 		346C4AAF1193273600BE8C49 /* OUIInspectorButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIInspectorButton.m; sourceTree = "<group>"; };
 		346C4AB01193273600BE8C49 /* OUIInspectorWell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = OUIInspectorWell.h; sourceTree = "<group>"; };
 		346C4AB11193273600BE8C49 /* OUIInspectorWell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = OUIInspectorWell.m; sourceTree = "<group>"; };
-		346C4AB21193273600BE8C49 /* OUINavigationArrow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUINavigationArrow.png; sourceTree = "<group>"; };
 		346C4AB31193273600BE8C49 /* OUIPaletteColorPicker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIPaletteColorPicker.h; sourceTree = "<group>"; };
 		346C4AB41193273600BE8C49 /* OUIPaletteColorPicker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIPaletteColorPicker.m; sourceTree = "<group>"; };
 		346C4AB51193273600BE8C49 /* OUIPaletteColorPicker.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = OUIPaletteColorPicker.xib; sourceTree = "<group>"; };
@@ -928,7 +773,6 @@
 		347F630417C01C760011139A /* OUIMenuOptionsController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIMenuOptionsController.m; sourceTree = "<group>"; };
 		34816ED71332B7230030A6B2 /* OUINoneColorPicker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUINoneColorPicker.h; sourceTree = "<group>"; };
 		34816ED81332B72A0030A6B2 /* OUINoneColorPicker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUINoneColorPicker.m; sourceTree = "<group>"; };
-		34816EDB1332B90B0030A6B2 /* OUIColorInspectorNoneSegment.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIColorInspectorNoneSegment.png; sourceTree = "<group>"; };
 		3481D37712A8632400DAC58C /* OUIParameters.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIParameters.h; sourceTree = "<group>"; };
 		3485C3E9133BFCAA00FD0086 /* English */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = English; path = en.lproj/OUIDefaultPaletteThemes.strings; sourceTree = SOURCE_ROOT; };
 		348A79BB1B5849C70082D55D /* OmniUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = OmniUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -958,27 +802,8 @@
 		348A7C1F1B5850140082D55D /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
 		3493285713561B95000E7DCD /* OUIFontAttributesInspectorSlice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIFontAttributesInspectorSlice.h; sourceTree = "<group>"; };
 		3493285813561B95000E7DCD /* OUIFontAttributesInspectorSlice.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIFontAttributesInspectorSlice.m; sourceTree = "<group>"; };
-		3497785A1B5D7BC400E2B216 /* OUIAppMenu.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIAppMenu.png; sourceTree = "<group>"; };
-		3497785B1B5D7BC400E2B216 /* OUIAppMenu@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIAppMenu@2x.png"; sourceTree = "<group>"; };
-		3497785C1B5D7BC400E2B216 /* OUIAppMenu@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIAppMenu@3x.png"; sourceTree = "<group>"; };
 		34A5F1DC13841E980025353B /* UIScrollView-OUIExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIScrollView-OUIExtensions.h"; sourceTree = "<group>"; };
 		34A5F1DD13841E990025353B /* UIScrollView-OUIExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIScrollView-OUIExtensions.m"; sourceTree = "<group>"; };
-		34A747421E302A1E005CD73F /* OUIExport-Compact.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIExport-Compact.png"; sourceTree = "<group>"; };
-		34A747431E302A1E005CD73F /* OUIExport-Compact@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIExport-Compact@2x.png"; sourceTree = "<group>"; };
-		34A747441E302A1E005CD73F /* OUIExport-Compact@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIExport-Compact@3x.png"; sourceTree = "<group>"; };
-		34A747451E302A1E005CD73F /* OUIExport.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIExport.png; sourceTree = "<group>"; };
-		34A747461E302A1E005CD73F /* OUIExport@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIExport@2x.png"; sourceTree = "<group>"; };
-		34A747471E302A1E005CD73F /* OUIExport@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIExport@3x.png"; sourceTree = "<group>"; };
-		34A8439413E4BE6800012098 /* OUIRectangularOverlayArrow@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "OUIRectangularOverlayArrow@2x.png"; path = "Images/OUIRectangularOverlayArrow@2x.png"; sourceTree = "<group>"; };
-		34A8439513E4BE6800012098 /* OUIRectangularOverlayFrame@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "OUIRectangularOverlayFrame@2x.png"; path = "Images/OUIRectangularOverlayFrame@2x.png"; sourceTree = "<group>"; };
-		34A8439713E4BE6800012098 /* OUITextSelectionOverlay@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "OUITextSelectionOverlay@2x.png"; path = "Images/OUITextSelectionOverlay@2x.png"; sourceTree = "<group>"; };
-		34B5CA561511CEF90093EF8C /* OUIParagraphAlignmentCenter@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "OUIParagraphAlignmentCenter@2x.png"; path = "../Images/OUIParagraphAlignmentCenter@2x.png"; sourceTree = "<group>"; };
-		34B5CA571511CEF90093EF8C /* OUIParagraphAlignmentJustified@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "OUIParagraphAlignmentJustified@2x.png"; path = "../Images/OUIParagraphAlignmentJustified@2x.png"; sourceTree = "<group>"; };
-		34B5CA581511CEF90093EF8C /* OUIParagraphAlignmentLeft@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "OUIParagraphAlignmentLeft@2x.png"; path = "../Images/OUIParagraphAlignmentLeft@2x.png"; sourceTree = "<group>"; };
-		34B5CA591511CEF90093EF8C /* OUIParagraphAlignmentRight@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "OUIParagraphAlignmentRight@2x.png"; path = "../Images/OUIParagraphAlignmentRight@2x.png"; sourceTree = "<group>"; };
-		34B5CA5A1511CEF90093EF8C /* OUIScalingViewBackgroundPattern@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIScalingViewBackgroundPattern@2x.png"; sourceTree = "<group>"; };
-		34B5CA5B1511CEF90093EF8C /* OUITableViewItemSelection-Normal@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUITableViewItemSelection-Normal@2x.png"; sourceTree = "<group>"; };
-		34B5CA601511CEF90093EF8C /* OUIToolbarInfo@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIToolbarInfo@2x.png"; sourceTree = "<group>"; };
 		34BE3CCB1768CD7500D27885 /* OUITextView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUITextView.h; sourceTree = "<group>"; };
 		34BE3CCC1768CD7500D27885 /* OUITextView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUITextView.m; sourceTree = "<group>"; };
 		34C782C11BDEB71C00536364 /* OmniUI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniUI.h; sourceTree = "<group>"; };
@@ -993,11 +818,9 @@
 		34D4F41B1B6AA8B70003556D /* OUIDocumentPreviewArea.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OUIDocumentPreviewArea.h; sourceTree = "<group>"; };
 		34D61FDA12E619B70034869C /* OUIBarButtonItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIBarButtonItem.h; sourceTree = "<group>"; };
 		34D61FDB12E619B70034869C /* OUIBarButtonItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIBarButtonItem.m; sourceTree = "<group>"; };
-		34DD382612A81DC00054C7DB /* OUIColorSwatchNavigationArrow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIColorSwatchNavigationArrow.png; sourceTree = "<group>"; };
 		34DE83E51211EE420078D1DF /* OUILoupeOverlaySubject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUILoupeOverlaySubject.h; sourceTree = "<group>"; };
 		34E07E7915B4D01F006656F9 /* OUIEditableLabeledTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIEditableLabeledTableViewCell.h; sourceTree = "<group>"; };
 		34E07E7A15B4D01F006656F9 /* OUIEditableLabeledTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIEditableLabeledTableViewCell.m; sourceTree = "<group>"; };
-		34E150F315100D1E0022E380 /* OUIColorComponentSliderKnob@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "OUIColorComponentSliderKnob@2x.png"; path = "../Images/OUIColorComponentSliderKnob@2x.png"; sourceTree = "<group>"; };
 		34E3994D148E84B8004B01B6 /* OUIMenuOption.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIMenuOption.h; sourceTree = "<group>"; };
 		34E3994E148E84B8004B01B6 /* OUIMenuOption.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIMenuOption.m; sourceTree = "<group>"; };
 		34E5332612543FDE00AFA8E3 /* OUIAnimationSequence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIAnimationSequence.h; sourceTree = "<group>"; };
@@ -1014,20 +837,9 @@
 		34E8924E1309E1AB00E9C7F0 /* OUIColorAttributeInspectorSlice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIColorAttributeInspectorSlice.h; sourceTree = "<group>"; };
 		34E8924F1309E1B100E9C7F0 /* OUIColorAttributeInspectorSlice.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIColorAttributeInspectorSlice.m; sourceTree = "<group>"; };
 		34EA43E41267A32200BAC7FD /* OUIFeatures.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIFeatures.h; sourceTree = "<group>"; };
-		34EC35FD12E753CD00503D4A /* OUIToolbarInfo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIToolbarInfo.png; sourceTree = "<group>"; };
-		34F1D20E127232B700F59E56 /* OUIFontStyle-Bold.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIFontStyle-Bold.png"; sourceTree = "<group>"; };
-		34F1D20F127232B700F59E56 /* OUIFontStyle-Italic.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIFontStyle-Italic.png"; sourceTree = "<group>"; };
-		34F1D210127232B700F59E56 /* OUIFontStyle-Strikethrough.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIFontStyle-Strikethrough.png"; sourceTree = "<group>"; };
-		34F1D211127232B700F59E56 /* OUIFontStyle-Underline.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIFontStyle-Underline.png"; sourceTree = "<group>"; };
 		34F495201549CA1100F848EE /* OUIActivityIndicator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIActivityIndicator.h; sourceTree = "<group>"; };
 		34F495211549CA1100F848EE /* OUIActivityIndicator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIActivityIndicator.m; sourceTree = "<group>"; };
 		34FAFD0B1343159F00A0AF06 /* OUIInspectorUpdateReason.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIInspectorUpdateReason.h; sourceTree = "<group>"; };
-		34FBAA6B20B5D1E90099D424 /* OUIToolbarBack@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIToolbarBack@2x.png"; sourceTree = "<group>"; };
-		34FBAA7520B5D1E90099D424 /* OUIToolbarForward@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIToolbarForward@2x.png"; sourceTree = "<group>"; };
-		34FBAA7620B5D1E90099D424 /* OUIToolbarForward.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIToolbarForward.png; sourceTree = "<group>"; };
-		34FBAA7720B5D1EA0099D424 /* OUIToolbarBack.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIToolbarBack.png; sourceTree = "<group>"; };
-		34FBAA7C20B5E1E50099D424 /* OUIToolbarBack@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIToolbarBack@3x.png"; sourceTree = "<group>"; };
-		34FBAA7E20B5E1F40099D424 /* OUIToolbarForward@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIToolbarForward@3x.png"; sourceTree = "<group>"; };
 		34FF2F941304531300680983 /* OUIGradientView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIGradientView.h; sourceTree = "<group>"; };
 		34FF2F951304531300680983 /* OUIGradientView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIGradientView.m; sourceTree = "<group>"; };
 		34FF3497178B150B005A4F1F /* OUIKeyCommands.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIKeyCommands.h; sourceTree = "<group>"; };
@@ -1052,7 +864,7 @@
 		3EA7ECD81D52A95600040F4B /* OUIPasswordAlert-Internal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "OUIPasswordAlert-Internal.h"; sourceTree = "<group>"; };
 		3EC4402117C5410000715DD9 /* OUICrossfadeViewControllerTransition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUICrossfadeViewControllerTransition.h; sourceTree = "<group>"; };
 		3EC4402217C5410000715DD9 /* OUICrossfadeViewControllerTransition.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUICrossfadeViewControllerTransition.m; sourceTree = "<group>"; };
-		3EDBA0CF21E809C3000CF1DD /* OmniUI.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = OmniUI.xcassets; sourceTree = "<group>"; };
+		3EDBA0CF21E809C3000CF1DD /* OmniUIColors.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = OmniUIColors.xcassets; sourceTree = "<group>"; };
 		4234FD841F3AA14F0062695C /* DisclosableTableViewInspectorSlice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisclosableTableViewInspectorSlice.swift; sourceTree = "<group>"; };
 		42384A1B19F82D4C00A42BFA /* OUIInspectorPresentationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIInspectorPresentationController.h; sourceTree = "<group>"; };
 		42384A1C19F82D4C00A42BFA /* OUIInspectorPresentationController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIInspectorPresentationController.m; sourceTree = "<group>"; };
@@ -1063,36 +875,30 @@
 		423DFE1A1C24B526006BB12B /* OUIFontSizeInspectorSlice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIFontSizeInspectorSlice.h; sourceTree = "<group>"; };
 		423DFE1B1C24B526006BB12B /* OUIFontSizeInspectorSlice.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIFontSizeInspectorSlice.m; sourceTree = "<group>"; };
 		4240B0171F1D616900D72C02 /* DisclosableInspectorPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisclosableInspectorPane.swift; sourceTree = "<group>"; };
-		4256FAFA1A081AFB0085A680 /* OUIToolbarUndo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIToolbarUndo.png; sourceTree = "<group>"; };
 		425ED6EC1F61C04F008D7515 /* ToggleInspectorSlice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToggleInspectorSlice.swift; sourceTree = "<group>"; };
-		429585D61C4964BE009ED770 /* OUIToolbarUndo-Compact.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIToolbarUndo-Compact.png"; sourceTree = "<group>"; };
-		429585D71C4964BE009ED770 /* OUIToolbarUndo-Compact@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIToolbarUndo-Compact@2x.png"; sourceTree = "<group>"; };
-		429585D81C4964BE009ED770 /* OUIToolbarUndo-Compact@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIToolbarUndo-Compact@3x.png"; sourceTree = "<group>"; };
-		429586611C497D26009ED770 /* OUIToolbarInfo-Compact.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIToolbarInfo-Compact.png"; sourceTree = "<group>"; };
-		429586621C497D26009ED770 /* OUIToolbarInfo-Compact@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIToolbarInfo-Compact@2x.png"; sourceTree = "<group>"; };
-		429586631C497D26009ED770 /* OUIToolbarInfo-Compact@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIToolbarInfo-Compact@3x.png"; sourceTree = "<group>"; };
 		42B7ECF61F4E2704003F3F4E /* DisclosableMultiSegmentInspectorPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisclosableMultiSegmentInspectorPane.swift; sourceTree = "<group>"; };
 		42D6E8A91F2154F9006B9697 /* DisclosableSliceGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisclosableSliceGroup.swift; sourceTree = "<group>"; };
 		4906932417C70543004BD77B /* OUINumericFieldTableCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUINumericFieldTableCell.h; sourceTree = "<group>"; };
 		4906932517C70543004BD77B /* OUINumericFieldTableCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUINumericFieldTableCell.m; sourceTree = "<group>"; };
 		4906932617C70543004BD77B /* OUINumericFieldTableCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = OUINumericFieldTableCell.xib; sourceTree = "<group>"; };
-		493DD81017CEBF840021D057 /* OUIStepperMinus.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIStepperMinus.png; sourceTree = "<group>"; };
-		493DD81117CEBF840021D057 /* OUIStepperPlus.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIStepperPlus.png; sourceTree = "<group>"; };
 		494134C517C9A79A00E372FE /* OUINumericFieldInspectorSlice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUINumericFieldInspectorSlice.h; sourceTree = "<group>"; };
 		494134C617C9A79A00E372FE /* OUINumericFieldInspectorSlice.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUINumericFieldInspectorSlice.m; sourceTree = "<group>"; };
 		495E991A17DA8A7A001AFF2B /* OUIInspectorSearchWell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIInspectorSearchWell.h; sourceTree = "<group>"; };
 		495E991B17DA8A7A001AFF2B /* OUIInspectorSearchWell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIInspectorSearchWell.m; sourceTree = "<group>"; };
-		498EFFD317CF0B1C0078F593 /* OUIStepperPlus@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIStepperPlus@2x.png"; sourceTree = "<group>"; };
-		498EFFD417CF0C420078F593 /* OUIStepperMinus@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIStepperMinus@2x.png"; sourceTree = "<group>"; };
 		49C3E85517B96CF40087A458 /* OUIInspectorSliceView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIInspectorSliceView.h; sourceTree = "<group>"; };
 		49C3E85617B96CF40087A458 /* OUIInspectorSliceView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIInspectorSliceView.m; sourceTree = "<group>"; };
 		4A0CE66F20435DFA00154E5D /* OUIHelpURLCommand.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIHelpURLCommand.m; sourceTree = "<group>"; };
 		4A0CE67A20435DFB00154E5D /* OUIHelpURLCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIHelpURLCommand.h; sourceTree = "<group>"; };
 		4A1BDAC3204CAC00003917CB /* OUIChangeAppIconURLCommand.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OUIChangeAppIconURLCommand.h; sourceTree = "<group>"; };
 		4A1BDAC4204CAC00003917CB /* OUIChangeAppIconURLCommand.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = OUIChangeAppIconURLCommand.m; sourceTree = "<group>"; };
+		4A3C8B9623078F1300D69096 /* OUIInspectorAppearanceColors.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = OUIInspectorAppearanceColors.xcassets; sourceTree = "<group>"; };
+		4A62A81B23216348000032F7 /* Media.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Media.xcassets; sourceTree = "<group>"; };
+		4A62A81D232163F4000032F7 /* ColorInspector.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = ColorInspector.xcassets; sourceTree = "<group>"; };
+		4A62A81F2321653F000032F7 /* OUIInspectorImages.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = OUIInspectorImages.xcassets; sourceTree = "<group>"; };
+		4A62A83C23216725000032F7 /* OUILoupeImages.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = OUILoupeImages.xcassets; sourceTree = "<group>"; };
 		4AA1E2F622FBA22000B81411 /* OUIAppControllerSceneHelper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OUIAppControllerSceneHelper.h; sourceTree = "<group>"; };
 		4AA1E2F722FBA22000B81411 /* OUIAppControllerSceneHelper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = OUIAppControllerSceneHelper.m; sourceTree = "<group>"; };
-		4AE47BD4138B567E003D72DF /* OUIToolbarButtonFauxHighlight.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIToolbarButtonFauxHighlight.png; sourceTree = "<group>"; };
+		4AF14C5C2318850B00B8A58F /* OUINews.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OUINews.swift; sourceTree = "<group>"; };
 		4AF368E32006E665004EED9D /* OUIPasswordPromptViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OUIPasswordPromptViewController.swift; sourceTree = "<group>"; };
 		4AF368E42006E665004EED9D /* OUIPasswordPromptViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = OUIPasswordPromptViewController.xib; sourceTree = "<group>"; };
 		4AF93D7C1E9D328D00DA8E01 /* OUISendFeedbackURLCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUISendFeedbackURLCommand.h; sourceTree = "<group>"; };
@@ -1117,8 +923,6 @@
 		4DD7456B1ADDBA4C00E36CE8 /* OUITabBarAppearanceDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUITabBarAppearanceDelegate.h; sourceTree = "<group>"; };
 		50AA85941958E89E00103938 /* OUINoteInspectorPane.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUINoteInspectorPane.h; sourceTree = "<group>"; };
 		50AA85951958E89E00103938 /* OUINoteInspectorPane.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUINoteInspectorPane.m; sourceTree = "<group>"; };
-		50AA859A195B8F4C00103938 /* OUINoteFullScreenZoomBackground.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUINoteFullScreenZoomBackground.png; sourceTree = "<group>"; };
-		50AA859C195B92CB00103938 /* OUINoteFullScreenZoom.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUINoteFullScreenZoom.png; sourceTree = "<group>"; };
 		5F1A5AE815ADF7C3003FD79D /* OUIPasswordAlert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIPasswordAlert.h; sourceTree = "<group>"; };
 		5F1A5AE915ADF7C3003FD79D /* OUIPasswordAlert.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIPasswordAlert.m; sourceTree = "<group>"; };
 		5F31A2371F9678F200F409CE /* UIResponder-OUIExtensions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIResponder-OUIExtensions.m"; sourceTree = "<group>"; };
@@ -1135,8 +939,6 @@
 		5F85377E17CBC03600AEB4A1 /* UIFont-OUIExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIFont-OUIExtensions.m"; sourceTree = "<group>"; };
 		5F85378117CBC5B800AEB4A1 /* UIFontDescriptor-OUIExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIFontDescriptor-OUIExtensions.h"; sourceTree = "<group>"; };
 		5F85378217CBC5B800AEB4A1 /* UIFontDescriptor-OUIExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIFontDescriptor-OUIExtensions.m"; sourceTree = "<group>"; };
-		5F9E2B5115B0BEE000E33AA3 /* OUIMenuItemSync.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIMenuItemSync.png; sourceTree = "<group>"; };
-		5F9E2B5215B0BEE000E33AA3 /* OUIMenuItemSync@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIMenuItemSync@2x.png"; sourceTree = "<group>"; };
 		5FA863981B5DAE0F00873A12 /* UIPopoverPresentationController-OUIExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIPopoverPresentationController-OUIExtensions.h"; sourceTree = "<group>"; };
 		5FA863991B5DAE0F00873A12 /* UIPopoverPresentationController-OUIExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIPopoverPresentationController-OUIExtensions.m"; sourceTree = "<group>"; };
 		6C0F03FF13F5DAE300B4D5C2 /* OUIMultiSegmentStackedSlicesInspectorPane.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIMultiSegmentStackedSlicesInspectorPane.h; sourceTree = "<group>"; };
@@ -1152,11 +954,6 @@
 		6CAC9DCD1951F4CB004F5C28 /* OUIVerticalSplitTransition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIVerticalSplitTransition.h; sourceTree = "<group>"; };
 		6CAC9DCE1951F4CB004F5C28 /* OUIVerticalSplitTransition.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIVerticalSplitTransition.m; sourceTree = "<group>"; };
 		6CD826BF15139FF500A5247B /* OUICustomKeyboardProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUICustomKeyboardProtocol.h; sourceTree = "<group>"; };
-		94029E6D15114ACF00507B5D /* OUIFontStyle-Bold@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIFontStyle-Bold@2x.png"; sourceTree = "<group>"; };
-		94029E6E15114ACF00507B5D /* OUIFontStyle-Italic@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIFontStyle-Italic@2x.png"; sourceTree = "<group>"; };
-		94029E6F15114ACF00507B5D /* OUIFontStyle-Strikethrough@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIFontStyle-Strikethrough@2x.png"; sourceTree = "<group>"; };
-		94029E7015114AD000507B5D /* OUIFontStyle-Underline@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIFontStyle-Underline@2x.png"; sourceTree = "<group>"; };
-		94029EBD15116CA400507B5D /* OUINavigationArrow@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "OUINavigationArrow@2x.png"; path = "Inspectors/OUINavigationArrow@2x.png"; sourceTree = SOURCE_ROOT; };
 		942888ED12A833EA008A7D07 /* OUICertificateTrustAlert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUICertificateTrustAlert.h; sourceTree = "<group>"; };
 		942888EE12A833EA008A7D07 /* OUICertificateTrustAlert.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUICertificateTrustAlert.m; sourceTree = "<group>"; };
 		943B0EA712F35C0D00F7BB22 /* OUIGestureRecognizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIGestureRecognizer.h; sourceTree = "<group>"; };
@@ -1167,35 +964,12 @@
 		945042971A8BE4CF00FFF97C /* UIDevice-OUIExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIDevice-OUIExtensions.m"; sourceTree = "<group>"; };
 		94909AEB11AD9F9400BA9C40 /* OUIUndoButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIUndoButton.h; sourceTree = "<group>"; };
 		94909AEC11AD9F9400BA9C40 /* OUIUndoButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIUndoButton.m; sourceTree = "<group>"; };
-		94A8790F1511ABDB008CD19F /* OUITableViewItemSelection-Highlighted@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUITableViewItemSelection-Highlighted@2x.png"; sourceTree = "<group>"; };
-		94A879101511ABEE008CD19F /* OUITableViewItemSelection-Selected@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUITableViewItemSelection-Selected@2x.png"; sourceTree = "<group>"; };
-		94B4A3F415FEDB9300AB01BE /* OUINavigationArrow-White.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUINavigationArrow-White.png"; sourceTree = "<group>"; };
-		94B4A3F515FEDB9300AB01BE /* OUINavigationArrow-White@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUINavigationArrow-White@2x.png"; sourceTree = "<group>"; };
 		94BD5256125E31530048530E /* OUIEditableLabeledValueCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIEditableLabeledValueCell.h; sourceTree = "<group>"; };
 		94BD5257125E31530048530E /* OUIEditableLabeledValueCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIEditableLabeledValueCell.m; sourceTree = "<group>"; };
 		94BD525A125E31E90048530E /* OUILabeledValueCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUILabeledValueCell.h; sourceTree = "<group>"; };
 		94BD525B125E31E90048530E /* OUILabeledValueCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUILabeledValueCell.m; sourceTree = "<group>"; };
-		A2F48E86126D16B20032C2C4 /* OUIRectangularOverlayArrow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = OUIRectangularOverlayArrow.png; path = Images/OUIRectangularOverlayArrow.png; sourceTree = "<group>"; };
 		AA747D9E0F9514B9006C5449 /* OmniUI_Prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniUI_Prefix.h; sourceTree = "<group>"; };
 		AACBBE490F95108600F1A2B1 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
-		AB3EC723150FCCF70027AC6F /* OUIOverlayBackground@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIOverlayBackground@2x.png"; sourceTree = "<group>"; };
-		AB69E40119D222A900F31468 /* OUIColorComponentSliderKnob@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIColorComponentSliderKnob@3x.png"; sourceTree = "<group>"; };
-		AB69E40919D222A900F31468 /* OUIMenuItemSync@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIMenuItemSync@3x.png"; sourceTree = "<group>"; };
-		AB69E40A19D222A900F31468 /* OUIParagraphAlignmentCenter@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIParagraphAlignmentCenter@3x.png"; sourceTree = "<group>"; };
-		AB69E40B19D222A900F31468 /* OUIParagraphAlignmentJustified@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIParagraphAlignmentJustified@3x.png"; sourceTree = "<group>"; };
-		AB69E40C19D222A900F31468 /* OUIParagraphAlignmentLeft@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIParagraphAlignmentLeft@3x.png"; sourceTree = "<group>"; };
-		AB69E40D19D222A900F31468 /* OUIParagraphAlignmentRight@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIParagraphAlignmentRight@3x.png"; sourceTree = "<group>"; };
-		AB69E40E19D222A900F31468 /* OUIScalingViewBackgroundPattern@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIScalingViewBackgroundPattern@3x.png"; sourceTree = "<group>"; };
-		AB69E40F19D222A900F31468 /* OUIStepperMinus@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIStepperMinus@3x.png"; sourceTree = "<group>"; };
-		AB69E41019D222A900F31468 /* OUIStepperPlus@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIStepperPlus@3x.png"; sourceTree = "<group>"; };
-		AB69E41119D222A900F31468 /* OUITableViewItemSelection-Highlighted@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUITableViewItemSelection-Highlighted@3x.png"; sourceTree = "<group>"; };
-		AB69E41219D222A900F31468 /* OUITableViewItemSelection-Mixed@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUITableViewItemSelection-Mixed@3x.png"; sourceTree = "<group>"; };
-		AB69E41319D222A900F31468 /* OUITableViewItemSelection-Normal@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUITableViewItemSelection-Normal@3x.png"; sourceTree = "<group>"; };
-		AB69E41419D222A900F31468 /* OUITableViewItemSelection-Selected@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUITableViewItemSelection-Selected@3x.png"; sourceTree = "<group>"; };
-		AB69E41519D222A900F31468 /* OUITextSelectionOverlay@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUITextSelectionOverlay@3x.png"; sourceTree = "<group>"; };
-		AB69E41619D222A900F31468 /* OUIToolbarInfo@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIToolbarInfo@3x.png"; sourceTree = "<group>"; };
-		ABBCB4701A0AB6A700285862 /* OUIToolbarUndo@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIToolbarUndo@2x.png"; sourceTree = "<group>"; };
-		ABBCB4711A0AB6A700285862 /* OUIToolbarUndo@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIToolbarUndo@3x.png"; sourceTree = "<group>"; };
 		D9D1B82B22EA807B00BF2F1B /* ContextMenus.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = ContextMenus.xcassets; sourceTree = "<group>"; };
 		D9ED40EE1B040E420084B622 /* OUIUndoBarButtonMenuAppearanceDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIUndoBarButtonMenuAppearanceDelegate.h; sourceTree = "<group>"; };
 		E215F45C16542E2000E2CD70 /* OUISegmentedControlInspectorSlice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUISegmentedControlInspectorSlice.h; sourceTree = "<group>"; };
@@ -1209,10 +983,6 @@
 		E263D2A817DE6FED0064BC3D /* OUIBorderedAuxiliaryButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIBorderedAuxiliaryButton.m; sourceTree = "<group>"; };
 		E26E8D991F44E7830045CBF2 /* OUIFloatingContentToolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OUIFloatingContentToolbar.swift; sourceTree = "<group>"; };
 		E27879711BD1C0C200B38C43 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS9.0.sdk/System/Library/Frameworks/WebKit.framework; sourceTree = DEVELOPER_DIR; };
-		E27F38F71FCDEDC300754844 /* OUINoteFullScreenZoomBackground@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUINoteFullScreenZoomBackground@3x.png"; sourceTree = "<group>"; };
-		E27F39021FCDEDC800754844 /* OUINoteFullScreenZoomBackground@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUINoteFullScreenZoomBackground@2x.png"; sourceTree = "<group>"; };
-		E27F39051FCDEEA800754844 /* OUINoteFullScreenZoom@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUINoteFullScreenZoom@2x.png"; sourceTree = "<group>"; };
-		E27F39061FCDEEA800754844 /* OUINoteFullScreenZoom@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUINoteFullScreenZoom@3x.png"; sourceTree = "<group>"; };
 		E28342001EB988C200FDB90F /* OUIThemedTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIThemedTableViewCell.h; sourceTree = "<group>"; };
 		E28342011EB988C200FDB90F /* OUIThemedTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIThemedTableViewCell.m; sourceTree = "<group>"; };
 		E2967E341EB3C8CF007E99B6 /* OUIInspectorAppearance.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIInspectorAppearance.h; sourceTree = "<group>"; };
@@ -1226,23 +996,9 @@
 		E2A0014A1835913F00B13EB7 /* OUIFullScreenNoteTextViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIFullScreenNoteTextViewController.m; sourceTree = "<group>"; };
 		E2A0014B1835913F00B13EB7 /* OUIFullScreenNoteTransition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIFullScreenNoteTransition.h; sourceTree = "<group>"; };
 		E2A0014C1835913F00B13EB7 /* OUIFullScreenNoteTransition.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIFullScreenNoteTransition.m; sourceTree = "<group>"; };
-		E2C58D8F17DA5ACE00FCE975 /* OUITableViewItemSelection-Mixed.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUITableViewItemSelection-Mixed.png"; sourceTree = "<group>"; };
-		E2C58D9017DA5ACE00FCE975 /* OUITableViewItemSelection-Mixed@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUITableViewItemSelection-Mixed@2x.png"; sourceTree = "<group>"; };
 		FB0C63901F59BB44000FF76C /* GearMenuIcons.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = GearMenuIcons.xcassets; sourceTree = "<group>"; };
-		FB11AAFF1C518D570050F4EF /* OUIAppMenu-Badged.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIAppMenu-Badged.png"; sourceTree = "<group>"; };
-		FB11AB001C518D570050F4EF /* OUIAppMenu-Badged@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIAppMenu-Badged@2x.png"; sourceTree = "<group>"; };
-		FB11AB011C518D570050F4EF /* OUIAppMenu-Badged@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIAppMenu-Badged@3x.png"; sourceTree = "<group>"; };
-		FB11AB021C518D570050F4EF /* OUIAttentionDot.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIAttentionDot.png; sourceTree = "<group>"; };
-		FB11AB031C518D570050F4EF /* OUIAttentionDot@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIAttentionDot@2x.png"; sourceTree = "<group>"; };
-		FB11AB041C518D570050F4EF /* OUIAttentionDot@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIAttentionDot@3x.png"; sourceTree = "<group>"; };
-		FB11AB051C518D570050F4EF /* OUIMenuItemAnnouncement-Badged.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIMenuItemAnnouncement-Badged.png"; sourceTree = "<group>"; };
-		FB11AB061C518D570050F4EF /* OUIMenuItemAnnouncement-Badged@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIMenuItemAnnouncement-Badged@2x.png"; sourceTree = "<group>"; };
-		FB11AB071C518D570050F4EF /* OUIMenuItemAnnouncement-Badged@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIMenuItemAnnouncement-Badged@3x.png"; sourceTree = "<group>"; };
 		FB11AB391C51A7930050F4EF /* OUIAttentionSeekingButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIAttentionSeekingButton.h; sourceTree = "<group>"; };
 		FB11AB3A1C51A7930050F4EF /* OUIAttentionSeekingButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIAttentionSeekingButton.m; sourceTree = "<group>"; };
-		FB36A8051C3DC63F00767F49 /* OUIMenuItemAnnouncement.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIMenuItemAnnouncement.png; sourceTree = "<group>"; };
-		FB36A8061C3DC63F00767F49 /* OUIMenuItemAnnouncement@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIMenuItemAnnouncement@2x.png"; sourceTree = "<group>"; };
-		FB36A8071C3DC63F00767F49 /* OUIMenuItemAnnouncement@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIMenuItemAnnouncement@3x.png"; sourceTree = "<group>"; };
 		FBB1B3AD1A5F491E00DE0A8E /* UINavigationController-OUIExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "UINavigationController-OUIExtensions.h"; path = "../iOS/UINavigationController-OUIExtensions.h"; sourceTree = "<group>"; };
 		FBB1B3AE1A5F491E00DE0A8E /* UINavigationController-OUIExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "UINavigationController-OUIExtensions.m"; path = "../iOS/UINavigationController-OUIExtensions.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -1342,7 +1098,7 @@
 				34C782CC1BDEB79B00536364 /* OmniUI.modulemap */,
 				340B1E2C12B17C00004823B3 /* OmniUI.defaults */,
 				3478690922383244001914C2 /* OmniUI-iOS.xcfilelist */,
-				3EDBA0CF21E809C3000CF1DD /* OmniUI.xcassets */,
+				3EDBA0CF21E809C3000CF1DD /* OmniUIColors.xcassets */,
 				E28341FF1EB9889800FDB90F /* Theming Support */,
 				346C4BAA119327B800BE8C49 /* Main App Controllers */,
 				346C4A731193273600BE8C49 /* Inspectors */,
@@ -1440,6 +1196,8 @@
 		23FF1F6B18BBF7A00009C3D6 /* View Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				10FE6E6C232C5D1000AF5A88 /* OUIEnqueueableAlertController.h */,
+				10FE6E6B232C5D0F00AF5A88 /* OUIEnqueueableAlertController.m */,
 				274723391992F30400B1DE5D /* Split View Controller */,
 				23FF1F6C18BBF7A70009C3D6 /* Segmented Controller */,
 				6C3A4628177E017D00FCA4B8 /* Nav Controller */,
@@ -1511,15 +1269,10 @@
 		343B4A1A176F915C00F3C725 /* Loupe */ = {
 			isa = PBXGroup;
 			children = (
+				4A62A83C23216725000032F7 /* OUILoupeImages.xcassets */,
 				34DE83E51211EE420078D1DF /* OUILoupeOverlaySubject.h */,
 				346C4AF31193273600BE8C49 /* OUILoupeOverlay.h */,
 				346C4AF41193273600BE8C49 /* OUILoupeOverlay.m */,
-				A2F48E86126D16B20032C2C4 /* OUIRectangularOverlayArrow.png */,
-				34A8439413E4BE6800012098 /* OUIRectangularOverlayArrow@2x.png */,
-				346C4A691193273600BE8C49 /* OUIRectangularOverlayFrame.png */,
-				34A8439513E4BE6800012098 /* OUIRectangularOverlayFrame@2x.png */,
-				346C4A6F1193273600BE8C49 /* OUITextSelectionOverlay.png */,
-				34A8439713E4BE6800012098 /* OUITextSelectionOverlay@2x.png */,
 			);
 			name = Loupe;
 			sourceTree = "<group>";
@@ -1579,88 +1332,7 @@
 			children = (
 				FB0C63901F59BB44000FF76C /* GearMenuIcons.xcassets */,
 				D9D1B82B22EA807B00BF2F1B /* ContextMenus.xcassets */,
-				FB11AAFF1C518D570050F4EF /* OUIAppMenu-Badged.png */,
-				FB11AB001C518D570050F4EF /* OUIAppMenu-Badged@2x.png */,
-				FB11AB011C518D570050F4EF /* OUIAppMenu-Badged@3x.png */,
-				3497785A1B5D7BC400E2B216 /* OUIAppMenu.png */,
-				3497785B1B5D7BC400E2B216 /* OUIAppMenu@2x.png */,
-				3497785C1B5D7BC400E2B216 /* OUIAppMenu@3x.png */,
-				FB11AB021C518D570050F4EF /* OUIAttentionDot.png */,
-				FB11AB031C518D570050F4EF /* OUIAttentionDot@2x.png */,
-				FB11AB041C518D570050F4EF /* OUIAttentionDot@3x.png */,
-				AB69E40119D222A900F31468 /* OUIColorComponentSliderKnob@3x.png */,
-				34A747421E302A1E005CD73F /* OUIExport-Compact.png */,
-				34A747431E302A1E005CD73F /* OUIExport-Compact@2x.png */,
-				34A747441E302A1E005CD73F /* OUIExport-Compact@3x.png */,
-				34A747451E302A1E005CD73F /* OUIExport.png */,
-				34A747461E302A1E005CD73F /* OUIExport@2x.png */,
-				34A747471E302A1E005CD73F /* OUIExport@3x.png */,
-				FB11AB051C518D570050F4EF /* OUIMenuItemAnnouncement-Badged.png */,
-				FB11AB061C518D570050F4EF /* OUIMenuItemAnnouncement-Badged@2x.png */,
-				FB11AB071C518D570050F4EF /* OUIMenuItemAnnouncement-Badged@3x.png */,
-				FB36A8051C3DC63F00767F49 /* OUIMenuItemAnnouncement.png */,
-				FB36A8061C3DC63F00767F49 /* OUIMenuItemAnnouncement@2x.png */,
-				FB36A8071C3DC63F00767F49 /* OUIMenuItemAnnouncement@3x.png */,
-				5F9E2B5115B0BEE000E33AA3 /* OUIMenuItemSync.png */,
-				5F9E2B5215B0BEE000E33AA3 /* OUIMenuItemSync@2x.png */,
-				AB69E40919D222A900F31468 /* OUIMenuItemSync@3x.png */,
-				273C58731A1ADF6D00CE4C40 /* OUINavigationBarTextFieldBackground.png */,
-				273C58741A1ADF9E00CE4C40 /* OUINavigationBarTextFieldBackground@2x.png */,
-				273C58751A1ADF9E00CE4C40 /* OUINavigationBarTextFieldBackground@3x.png */,
-				50AA859C195B92CB00103938 /* OUINoteFullScreenZoom.png */,
-				E27F39051FCDEEA800754844 /* OUINoteFullScreenZoom@2x.png */,
-				E27F39061FCDEEA800754844 /* OUINoteFullScreenZoom@3x.png */,
-				50AA859A195B8F4C00103938 /* OUINoteFullScreenZoomBackground.png */,
-				E27F39021FCDEDC800754844 /* OUINoteFullScreenZoomBackground@2x.png */,
-				E27F38F71FCDEDC300754844 /* OUINoteFullScreenZoomBackground@3x.png */,
-				0AD6C5CE121D7EDB000577FE /* OUIOverlayBackground.png */,
-				AB3EC723150FCCF70027AC6F /* OUIOverlayBackground@2x.png */,
-				AB69E40A19D222A900F31468 /* OUIParagraphAlignmentCenter@3x.png */,
-				AB69E40B19D222A900F31468 /* OUIParagraphAlignmentJustified@3x.png */,
-				AB69E40C19D222A900F31468 /* OUIParagraphAlignmentLeft@3x.png */,
-				AB69E40D19D222A900F31468 /* OUIParagraphAlignmentRight@3x.png */,
-				346C4A6A1193273600BE8C49 /* OUIScalingViewBackgroundPattern.png */,
-				34B5CA5A1511CEF90093EF8C /* OUIScalingViewBackgroundPattern@2x.png */,
-				AB69E40E19D222A900F31468 /* OUIScalingViewBackgroundPattern@3x.png */,
-				493DD81017CEBF840021D057 /* OUIStepperMinus.png */,
-				498EFFD417CF0C420078F593 /* OUIStepperMinus@2x.png */,
-				AB69E40F19D222A900F31468 /* OUIStepperMinus@3x.png */,
-				493DD81117CEBF840021D057 /* OUIStepperPlus.png */,
-				498EFFD317CF0B1C0078F593 /* OUIStepperPlus@2x.png */,
-				AB69E41019D222A900F31468 /* OUIStepperPlus@3x.png */,
-				3402B727127100C50031C27D /* OUITableViewItemSelection-Highlighted.png */,
-				94A8790F1511ABDB008CD19F /* OUITableViewItemSelection-Highlighted@2x.png */,
-				AB69E41119D222A900F31468 /* OUITableViewItemSelection-Highlighted@3x.png */,
-				E2C58D8F17DA5ACE00FCE975 /* OUITableViewItemSelection-Mixed.png */,
-				E2C58D9017DA5ACE00FCE975 /* OUITableViewItemSelection-Mixed@2x.png */,
-				AB69E41219D222A900F31468 /* OUITableViewItemSelection-Mixed@3x.png */,
-				3402B728127100C50031C27D /* OUITableViewItemSelection-Normal.png */,
-				34B5CA5B1511CEF90093EF8C /* OUITableViewItemSelection-Normal@2x.png */,
-				AB69E41319D222A900F31468 /* OUITableViewItemSelection-Normal@3x.png */,
-				3402B70B1270FBBA0031C27D /* OUITableViewItemSelection-Selected.png */,
-				94A879101511ABEE008CD19F /* OUITableViewItemSelection-Selected@2x.png */,
-				AB69E41419D222A900F31468 /* OUITableViewItemSelection-Selected@3x.png */,
-				AB69E41519D222A900F31468 /* OUITextSelectionOverlay@3x.png */,
-				34FBAA7720B5D1EA0099D424 /* OUIToolbarBack.png */,
-				34FBAA6B20B5D1E90099D424 /* OUIToolbarBack@2x.png */,
-				34FBAA7C20B5E1E50099D424 /* OUIToolbarBack@3x.png */,
-				4AE47BD4138B567E003D72DF /* OUIToolbarButtonFauxHighlight.png */,
-				344F8DFD151275F00025D819 /* OUIToolbarButtonFauxHighlight@2x.png */,
-				34FBAA7620B5D1E90099D424 /* OUIToolbarForward.png */,
-				34FBAA7520B5D1E90099D424 /* OUIToolbarForward@2x.png */,
-				34FBAA7E20B5E1F40099D424 /* OUIToolbarForward@3x.png */,
-				429586611C497D26009ED770 /* OUIToolbarInfo-Compact.png */,
-				429586621C497D26009ED770 /* OUIToolbarInfo-Compact@2x.png */,
-				429586631C497D26009ED770 /* OUIToolbarInfo-Compact@3x.png */,
-				34EC35FD12E753CD00503D4A /* OUIToolbarInfo.png */,
-				34B5CA601511CEF90093EF8C /* OUIToolbarInfo@2x.png */,
-				AB69E41619D222A900F31468 /* OUIToolbarInfo@3x.png */,
-				429585D61C4964BE009ED770 /* OUIToolbarUndo-Compact.png */,
-				429585D71C4964BE009ED770 /* OUIToolbarUndo-Compact@2x.png */,
-				429585D81C4964BE009ED770 /* OUIToolbarUndo-Compact@3x.png */,
-				4256FAFA1A081AFB0085A680 /* OUIToolbarUndo.png */,
-				ABBCB4701A0AB6A700285862 /* OUIToolbarUndo@2x.png */,
-				ABBCB4711A0AB6A700285862 /* OUIToolbarUndo@3x.png */,
+				4A62A81B23216348000032F7 /* Media.xcassets */,
 			);
 			path = Images;
 			sourceTree = SOURCE_ROOT;
@@ -1668,6 +1340,7 @@
 		346C4A731193273600BE8C49 /* Inspectors */ = {
 			isa = PBXGroup;
 			children = (
+				4A62A81F2321653F000032F7 /* OUIInspectorImages.xcassets */,
 				4240B0171F1D616900D72C02 /* DisclosableInspectorPane.swift */,
 				42B7ECF61F4E2704003F3F4E /* DisclosableMultiSegmentInspectorPane.swift */,
 				42D6E8A91F2154F9006B9697 /* DisclosableSliceGroup.swift */,
@@ -1692,6 +1365,7 @@
 				232F1EF61DF7436500201BEC /* OUIInspectorNavigationController.m */,
 				346C4A921193273600BE8C49 /* OUIInspector.h */,
 				346C4A931193273600BE8C49 /* OUIInspector.m */,
+				4A3C8B9623078F1300D69096 /* OUIInspectorAppearanceColors.xcassets */,
 				E2967E341EB3C8CF007E99B6 /* OUIInspectorAppearance.h */,
 				E2967E351EB3C8CF007E99B6 /* OUIInspectorAppearance.m */,
 				E2967E461EB3FA08007E99B6 /* OUIInspectorAppearanceDark.plist */,
@@ -1729,11 +1403,6 @@
 				6C17091F1C2372BA00350F40 /* OUISliceSeparatorView.m */,
 				3455E65613045A7100DD7C4E /* OUITextExampleInspectorSlice.h */,
 				3455E65713045A7100DD7C4E /* OUITextExampleInspectorSlice.m */,
-				3468A76A13256EE000DAC267 /* OUITransparencyCheckerboardBackground-24.png */,
-				3404540C151175B9003C80C4 /* OUITransparencyCheckerboardBackground-24@2x.png */,
-				3458F09A1B5D7217000011A6 /* OUITransparencyCheckerboardBackground-24@3x.png */,
-				94B4A3F415FEDB9300AB01BE /* OUINavigationArrow-White.png */,
-				94B4A3F515FEDB9300AB01BE /* OUINavigationArrow-White@2x.png */,
 				34CC454F12A187D800270F59 /* Paragraph */,
 				34CC454E12A187B700270F59 /* Widgets */,
 			);
@@ -1904,6 +1573,7 @@
 			children = (
 				346C4ACA1193273600BE8C49 /* OUIAppController.h */,
 				346C4ACB1193273600BE8C49 /* OUIAppController.m */,
+				10455AC5230B21680046AD5E /* OUIAppController.swift */,
 				3E609C0D198B78C1006BCF43 /* Special URL Handling */,
 				346C4AF61193273600BE8C49 /* OUIMenuController.h */,
 				346C4AF71193273600BE8C49 /* OUIMenuController.m */,
@@ -1915,6 +1585,7 @@
 				4AA1E2F722FBA22000B81411 /* OUIAppControllerSceneHelper.m */,
 				346C4B141193273600BE8C49 /* OUIWebViewController.h */,
 				346C4B151193273600BE8C49 /* OUIWebViewController.m */,
+				4AF14C5C2318850B00B8A58F /* OUINews.swift */,
 			);
 			name = "Main App Controllers";
 			sourceTree = "<group>";
@@ -1928,40 +1599,21 @@
 				34E8924F1309E1B100E9C7F0 /* OUIColorAttributeInspectorSlice.m */,
 				346C4A741193273600BE8C49 /* OUIColorComponentSlider.h */,
 				346C4A751193273600BE8C49 /* OUIColorComponentSlider.m */,
-				3469713112ADB81200CF318D /* OUIColorComponentSliderKnob.png */,
-				34E150F315100D1E0022E380 /* OUIColorComponentSliderKnob@2x.png */,
-				346C4A771193273600BE8C49 /* OUIColorInspectorGraySegment.png */,
-				3458DD6F151166CF00FAAA6C /* OUIColorInspectorGraySegment@2x.png */,
-				346C4A781193273600BE8C49 /* OUIColorInspectorHSVSegment.png */,
-				3458DD70151166CF00FAAA6C /* OUIColorInspectorHSVSegment@2x.png */,
-				34816EDB1332B90B0030A6B2 /* OUIColorInspectorNoneSegment.png */,
-				3458DD71151166CF00FAAA6C /* OUIColorInspectorNoneSegment@2x.png */,
-				346C4A791193273600BE8C49 /* OUIColorInspectorPaletteSegment.png */,
-				344F8DFE1512760C0025D819 /* OUIColorInspectorPaletteSegment@2x.png */,
+				4A62A81D232163F4000032F7 /* ColorInspector.xcassets */,
 				34D333AD12A19557006D244E /* OUIColorInspectorPane.h */,
 				34D333AE12A19557006D244E /* OUIColorInspectorPane.m */,
 				346C4A761193273600BE8C49 /* OUIColorInspectorPane.xib */,
 				34E892441309B0BE00E9C7F0 /* OUIColorInspectorPaneParentSlice.h */,
-				346C4A7A1193273600BE8C49 /* OUIColorInspectorRGBSegment.png */,
-				3458DD72151166CF00FAAA6C /* OUIColorInspectorRGBSegment@2x.png */,
-				346C4A7B1193273600BE8C49 /* OUIColorInspectorSelected.png */,
-				3458DD73151166CF00FAAA6C /* OUIColorInspectorSelected@2x.png */,
 				346C4A7C1193273600BE8C49 /* OUIColorInspectorSlice.h */,
 				346C4A7D1193273600BE8C49 /* OUIColorInspectorSlice.m */,
 				346C4A801193273600BE8C49 /* OUIColorPicker.h */,
 				346C4A811193273600BE8C49 /* OUIColorPicker.m */,
-				346C4A821193273600BE8C49 /* OUIColorPickerSwatch.png */,
-				3458DD74151166CF00FAAA6C /* OUIColorPickerSwatch@2x.png */,
 				346C4A831193273600BE8C49 /* OUIColorSwatch.h */,
 				346C4A841193273600BE8C49 /* OUIColorSwatch.m */,
-				34DD382612A81DC00054C7DB /* OUIColorSwatchNavigationArrow.png */,
-				3458DD76151166CF00FAAA6C /* OUIColorSwatchNavigationArrow@2x.png */,
 				346C4A861193273600BE8C49 /* OUIColorSwatchPicker.h */,
 				346C4A871193273600BE8C49 /* OUIColorSwatchPicker.m */,
 				34E8924A1309D17300E9C7F0 /* OUIColorSwatchPickerInspectorSlice.h */,
 				34E8924B1309D17700E9C7F0 /* OUIColorSwatchPickerInspectorSlice.m */,
-				346C4A881193273600BE8C49 /* OUIColorSwatchTranslucentBackground.png */,
-				3458DD78151166CF00FAAA6C /* OUIColorSwatchTranslucentBackground@2x.png */,
 				346C4ACE1193273600BE8C49 /* OUIColorValue.h */,
 				346C4A891193273600BE8C49 /* OUIComponentColorPicker.h */,
 				346C4A8A1193273600BE8C49 /* OUIComponentColorPicker.m */,
@@ -1997,14 +1649,6 @@
 				423DFE191C24B526006BB12B /* OUIFontFamilyInspectorSlice.m */,
 				423DFE1A1C24B526006BB12B /* OUIFontSizeInspectorSlice.h */,
 				423DFE1B1C24B526006BB12B /* OUIFontSizeInspectorSlice.m */,
-				94029E6D15114ACF00507B5D /* OUIFontStyle-Bold@2x.png */,
-				94029E6E15114ACF00507B5D /* OUIFontStyle-Italic@2x.png */,
-				94029E6F15114ACF00507B5D /* OUIFontStyle-Strikethrough@2x.png */,
-				94029E7015114AD000507B5D /* OUIFontStyle-Underline@2x.png */,
-				34F1D20E127232B700F59E56 /* OUIFontStyle-Bold.png */,
-				34F1D20F127232B700F59E56 /* OUIFontStyle-Italic.png */,
-				34F1D210127232B700F59E56 /* OUIFontStyle-Strikethrough.png */,
-				34F1D211127232B700F59E56 /* OUIFontStyle-Underline.png */,
 				343220A51270F06E001B57CB /* OUIFontUtilities.h */,
 				343220A61270F06E001B57CB /* OUIFontUtilities.m */,
 			);
@@ -2079,8 +1723,6 @@
 				346C4AAD1193273600BE8C49 /* OUIInspectorTextWell.m */,
 				346C4AB01193273600BE8C49 /* OUIInspectorWell.h */,
 				346C4AB11193273600BE8C49 /* OUIInspectorWell.m */,
-				346C4AB21193273600BE8C49 /* OUINavigationArrow.png */,
-				94029EBD15116CA400507B5D /* OUINavigationArrow@2x.png */,
 				346C4AB61193273600BE8C49 /* OUIPaletteTheme.h */,
 				346C4AB71193273600BE8C49 /* OUIPaletteTheme.m */,
 				6C9DAE8F1798A37F0092347A /* OUITabBar.h */,
@@ -2097,14 +1739,6 @@
 			children = (
 				346C4AB81193273600BE8C49 /* OUIParagraphStyleInspectorSlice.h */,
 				346C4AB91193273600BE8C49 /* OUIParagraphStyleInspectorSlice.m */,
-				342F978412F71D0F00C09A4A /* OUIParagraphAlignmentCenter.png */,
-				34B5CA561511CEF90093EF8C /* OUIParagraphAlignmentCenter@2x.png */,
-				342F978512F71D0F00C09A4A /* OUIParagraphAlignmentJustified.png */,
-				34B5CA571511CEF90093EF8C /* OUIParagraphAlignmentJustified@2x.png */,
-				342F978612F71D0F00C09A4A /* OUIParagraphAlignmentLeft.png */,
-				34B5CA581511CEF90093EF8C /* OUIParagraphAlignmentLeft@2x.png */,
-				342F978712F71D0F00C09A4A /* OUIParagraphAlignmentRight.png */,
-				34B5CA591511CEF90093EF8C /* OUIParagraphAlignmentRight@2x.png */,
 			);
 			name = Paragraph;
 			sourceTree = "<group>";
@@ -2308,6 +1942,7 @@
 				348A7AB11B584C240082D55D /* OUISegmentedViewController.h in Headers */,
 				348A7A621B584B590082D55D /* OUINumericFieldInspectorSlice.h in Headers */,
 				348A7B0B1B584CC30082D55D /* OUIBorderedAuxiliaryButton.h in Headers */,
+				10FE6E6E232C5D1000AF5A88 /* OUIEnqueueableAlertController.h in Headers */,
 				348A7AF61B584CAD0082D55D /* OUITapGestureRecognizer.h in Headers */,
 				348A7AB51B584C240082D55D /* OUINavigationController.h in Headers */,
 				348A7B331B584D050082D55D /* OUIFullScreenNoteTransition.h in Headers */,
@@ -2574,166 +2209,40 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				348A7A001B584AE10082D55D /* OUIColorInspectorGraySegment.png in Resources */,
 				348A7BA61B584D570082D55D /* es.lproj in Resources */,
-				348A7B871B584D480082D55D /* OUIMenuItemSync.png in Resources */,
-				34A747481E302A1E005CD73F /* OUIExport-Compact.png in Resources */,
-				348A7A9A1B584BAE0082D55D /* OUINavigationArrow@2x.png in Resources */,
-				348A7B9A1B584D4C0082D55D /* OUITableViewItemSelection-Mixed.png in Resources */,
-				348A7B8A1B584D480082D55D /* OUINavigationBarTextFieldBackground@2x.png in Resources */,
 				348A7A0A1B584AE40082D55D /* OUIColorInspectorPane.xib in Resources */,
 				348A7B301B584D000082D55D /* OUIFullScreenNoteTextView.xib in Resources */,
 				348A7B171B584CED0082D55D /* OUIEmptyOverlayView.xib in Resources */,
-				348A7B8C1B584D4C0082D55D /* OUIOverlayBackground.png in Resources */,
+				4A62A8202321653F000032F7 /* OUIInspectorImages.xcassets in Resources */,
 				E22B37381FC4BF90004423FE /* OUINoteInspectorPane.xib in Resources */,
-				348A7A191B584AE90082D55D /* OUIColorSwatchNavigationArrow@2x.png in Resources */,
-				348A7B981B584D4C0082D55D /* OUITableViewItemSelection-Highlighted.png in Resources */,
-				348A7A0D1B584AE90082D55D /* OUIColorInspectorRGBSegment@2x.png in Resources */,
-				348A7B6D1B584D480082D55D /* OUIParagraphAlignmentRight@3x.png in Resources */,
-				FB11AB0E1C518D570050F4EF /* OUIMenuItemAnnouncement-Badged.png in Resources */,
-				3497785E1B5D7BC400E2B216 /* OUIAppMenu@2x.png in Resources */,
-				348A7A1E1B584AE90082D55D /* OUIColorSwatchTranslucentBackground.png in Resources */,
-				348A7A3D1B584B430082D55D /* OUIFontStyle-Bold.png in Resources */,
-				FB11AB0A1C518D570050F4EF /* OUIAppMenu-Badged@3x.png in Resources */,
-				348A7A781B584BA20082D55D /* OUIParagraphAlignmentLeft.png in Resources */,
-				348A7A991B584BAE0082D55D /* OUINavigationArrow.png in Resources */,
-				E27F39031FCDEDC900754844 /* OUINoteFullScreenZoomBackground@3x.png in Resources */,
-				E27F39071FCDEEA900754844 /* OUINoteFullScreenZoom@2x.png in Resources */,
-				348A7A6E1B584B590082D55D /* OUITransparencyCheckerboardBackground-24.png in Resources */,
-				348A7ACC1B584C650082D55D /* OUIRectangularOverlayArrow@2x.png in Resources */,
-				348A7BA21B584D4C0082D55D /* OUIToolbarUndo.png in Resources */,
-				FB36A80A1C3DC63F00767F49 /* OUIMenuItemAnnouncement@3x.png in Resources */,
+				4A3C8BA023078F1300D69096 /* OUIInspectorAppearanceColors.xcassets in Resources */,
 				15632E5B1E527F25003EB174 /* pt-BR.lproj in Resources */,
-				34FBAA7820B5D1EA0099D424 /* OUIToolbarBack@2x.png in Resources */,
-				348A7A031B584AE10082D55D /* OUIColorInspectorHSVSegment@2x.png in Resources */,
-				348A7BA01B584D4C0082D55D /* OUIToolbarButtonFauxHighlight.png in Resources */,
-				3497785D1B5D7BC400E2B216 /* OUIAppMenu.png in Resources */,
-				34FBAA7D20B5E1E60099D424 /* OUIToolbarBack@3x.png in Resources */,
-				348A7B691B584D480082D55D /* OUIMenuItemSync@3x.png in Resources */,
 				4AF368E62006E665004EED9D /* OUIPasswordPromptViewController.xib in Resources */,
-				429585DA1C4964BE009ED770 /* OUIToolbarUndo-Compact@2x.png in Resources */,
-				34A7474D1E302A1E005CD73F /* OUIExport@3x.png in Resources */,
-				348A7A771B584BA20082D55D /* OUIParagraphAlignmentJustified@2x.png in Resources */,
-				348A7B971B584D4C0082D55D /* OUIStepperPlus@2x.png in Resources */,
-				429585DB1C4964BE009ED770 /* OUIToolbarUndo-Compact@3x.png in Resources */,
 				348A7BA81B584D570082D55D /* it.lproj in Resources */,
-				FB11AB0D1C518D570050F4EF /* OUIAttentionDot@3x.png in Resources */,
-				348A7B611B584D480082D55D /* OUIColorComponentSliderKnob@3x.png in Resources */,
-				348A7BA41B584D4C0082D55D /* OUIToolbarInfo@2x.png in Resources */,
-				348A7ACE1B584C650082D55D /* OUIRectangularOverlayFrame@2x.png in Resources */,
-				34A7474B1E302A1E005CD73F /* OUIExport.png in Resources */,
-				348A7B731B584D480082D55D /* OUITableViewItemSelection-Normal@3x.png in Resources */,
-				348A7A1F1B584AE90082D55D /* OUIColorSwatchTranslucentBackground@2x.png in Resources */,
-				429586651C497D26009ED770 /* OUIToolbarInfo-Compact@2x.png in Resources */,
 				348A7B371B584D0C0082D55D /* OUINumericFieldTableCell.xib in Resources */,
-				348A7A041B584AE10082D55D /* OUIColorInspectorNoneSegment.png in Resources */,
-				348A7A021B584AE10082D55D /* OUIColorInspectorHSVSegment.png in Resources */,
 				348A7BA91B584D570082D55D /* ja.lproj in Resources */,
-				348A7B6E1B584D480082D55D /* OUIScalingViewBackgroundPattern@3x.png in Resources */,
 				348A7A2D1B584AF90082D55D /* OUIPaletteColorPicker.xib in Resources */,
-				348A7B8B1B584D480082D55D /* OUINavigationBarTextFieldBackground@3x.png in Resources */,
-				348A7AD01B584C650082D55D /* OUITextSelectionOverlay@2x.png in Resources */,
-				348A7ACD1B584C650082D55D /* OUIRectangularOverlayFrame.png in Resources */,
-				348A7B951B584D4C0082D55D /* OUIStepperMinus@2x.png in Resources */,
-				FB11AB101C518D570050F4EF /* OUIMenuItemAnnouncement-Badged@3x.png in Resources */,
-				348A7B741B584D480082D55D /* OUITableViewItemSelection-Selected@3x.png in Resources */,
-				FB11AB091C518D570050F4EF /* OUIAppMenu-Badged@2x.png in Resources */,
 				348A7AC71B584C3B0082D55D /* OmniUI.keycommands in Resources */,
-				348A7ACF1B584C650082D55D /* OUITextSelectionOverlay.png in Resources */,
-				348A7A0F1B584AE90082D55D /* OUIColorInspectorSelected@2x.png in Resources */,
-				348A7B711B584D480082D55D /* OUITableViewItemSelection-Highlighted@3x.png in Resources */,
+				4A62A83D23216725000032F7 /* OUILoupeImages.xcassets in Resources */,
 				348A7BAA1B584D570082D55D /* nl.lproj in Resources */,
 				348A7A2C1B584AF40082D55D /* OUIDefaultPaletteThemes.strings in Resources */,
 				348A7BA51B584D570082D55D /* de.lproj in Resources */,
 				34D4E1EE20AF708A0025E2AB /* OmniUIKeycommands.strings in Resources */,
-				348A79FF1B584AE10082D55D /* OUIColorComponentSliderKnob@2x.png in Resources */,
-				348A7A401B584B430082D55D /* OUIFontStyle-Underline.png in Resources */,
-				348A7B6C1B584D480082D55D /* OUIParagraphAlignmentLeft@3x.png in Resources */,
 				D9D1B82C22EA807B00BF2F1B /* ContextMenus.xcassets in Resources */,
 				FB0C63911F59BB44000FF76C /* GearMenuIcons.xcassets in Resources */,
-				348A7BA31B584D4C0082D55D /* OUIToolbarInfo.png in Resources */,
-				348A7B6A1B584D480082D55D /* OUIParagraphAlignmentCenter@3x.png in Resources */,
-				E27F39041FCDEDC900754844 /* OUINoteFullScreenZoomBackground@2x.png in Resources */,
-				348A7B8E1B584D4C0082D55D /* OUIScalingViewBackgroundPattern.png in Resources */,
-				348A7B601B584D480082D55D /* OUIToolbarUndo@3x.png in Resources */,
-				34A7474A1E302A1E005CD73F /* OUIExport-Compact@3x.png in Resources */,
 				348A7A231B584AE90082D55D /* OUIDefaultPaletteThemes.plist in Resources */,
 				348A7B5E1B584D400082D55D /* en.lproj in Resources */,
-				348A7B941B584D4C0082D55D /* OUIStepperMinus.png in Resources */,
-				348A7B9B1B584D4C0082D55D /* OUITableViewItemSelection-Mixed@2x.png in Resources */,
-				348A7A3A1B584B430082D55D /* OUIFontStyle-Italic@2x.png in Resources */,
-				348A7B8F1B584D4C0082D55D /* OUIScalingViewBackgroundPattern@2x.png in Resources */,
-				3EDBA0D021E809C3000CF1DD /* OmniUI.xcassets in Resources */,
-				348A7A051B584AE10082D55D /* OUIColorInspectorNoneSegment@2x.png in Resources */,
-				348A7B881B584D480082D55D /* OUIMenuItemSync@2x.png in Resources */,
-				34FBAA7A20B5D1EA0099D424 /* OUIToolbarForward.png in Resources */,
-				348A7A701B584B590082D55D /* OUINavigationArrow-White.png in Resources */,
-				348A7B8D1B584D4C0082D55D /* OUIOverlayBackground@2x.png in Resources */,
-				348A7A3E1B584B430082D55D /* OUIFontStyle-Italic.png in Resources */,
-				E27F39081FCDEEA900754844 /* OUINoteFullScreenZoom@3x.png in Resources */,
-				348A7A741B584BA20082D55D /* OUIParagraphAlignmentCenter.png in Resources */,
-				34A747491E302A1E005CD73F /* OUIExport-Compact@2x.png in Resources */,
-				FB11AB0C1C518D570050F4EF /* OUIAttentionDot@2x.png in Resources */,
+				4A62A81E232163F4000032F7 /* ColorInspector.xcassets in Resources */,
+				3EDBA0D021E809C3000CF1DD /* OmniUIColors.xcassets in Resources */,
+				4A62A81C23216348000032F7 /* Media.xcassets in Resources */,
 				E2967E491EB3FA75007E99B6 /* OUIInspectorAppearanceLight.plist in Resources */,
 				348A7BAC1B584D570082D55D /* zh-Hans.lproj in Resources */,
-				34FBAA7920B5D1EA0099D424 /* OUIToolbarForward@2x.png in Resources */,
-				429585D91C4964BE009ED770 /* OUIToolbarUndo-Compact.png in Resources */,
 				23105FDF1EAFD9AE008E0647 /* OUIMultiPaneController.xcassets in Resources */,
-				348A7A071B584AE10082D55D /* OUIColorInspectorPaletteSegment@2x.png in Resources */,
-				348A7B5F1B584D480082D55D /* OUIToolbarUndo@2x.png in Resources */,
 				15632E5A1E527F25003EB174 /* ko.lproj in Resources */,
-				348A7B781B584D480082D55D /* OUINoteFullScreenZoomBackground.png in Resources */,
-				348A7A391B584B430082D55D /* OUIFontStyle-Bold@2x.png in Resources */,
-				348A7A761B584BA20082D55D /* OUIParagraphAlignmentJustified.png in Resources */,
 				E2967E471EB3FA08007E99B6 /* OUIInspectorAppearanceDark.plist in Resources */,
-				348A7A0E1B584AE90082D55D /* OUIColorInspectorSelected.png in Resources */,
-				429586661C497D26009ED770 /* OUIToolbarInfo-Compact@3x.png in Resources */,
-				3497785F1B5D7BC400E2B216 /* OUIAppMenu@3x.png in Resources */,
-				FB11AB0B1C518D570050F4EF /* OUIAttentionDot.png in Resources */,
-				348A7B991B584D4C0082D55D /* OUITableViewItemSelection-Highlighted@2x.png in Resources */,
-				348A7B961B584D4C0082D55D /* OUIStepperPlus.png in Resources */,
-				348A7A751B584BA20082D55D /* OUIParagraphAlignmentCenter@2x.png in Resources */,
-				34A7474C1E302A1E005CD73F /* OUIExport@2x.png in Resources */,
-				348A7A3B1B584B430082D55D /* OUIFontStyle-Strikethrough@2x.png in Resources */,
-				348A7A7B1B584BA20082D55D /* OUIParagraphAlignmentRight@2x.png in Resources */,
-				348A7A3C1B584B430082D55D /* OUIFontStyle-Underline@2x.png in Resources */,
-				FB36A8091C3DC63F00767F49 /* OUIMenuItemAnnouncement@2x.png in Resources */,
-				348A7B771B584D480082D55D /* OUINoteFullScreenZoom.png in Resources */,
-				348A7B9E1B584D4C0082D55D /* OUITableViewItemSelection-Selected.png in Resources */,
-				348A7A151B584AE90082D55D /* OUIColorPickerSwatch@2x.png in Resources */,
-				348A7A061B584AE10082D55D /* OUIColorInspectorPaletteSegment.png in Resources */,
 				348A7BA71B584D570082D55D /* fr.lproj in Resources */,
-				348A7B6B1B584D480082D55D /* OUIParagraphAlignmentJustified@3x.png in Resources */,
-				429586641C497D26009ED770 /* OUIToolbarInfo-Compact.png in Resources */,
-				348A7A711B584B590082D55D /* OUINavigationArrow-White@2x.png in Resources */,
-				348A7B721B584D480082D55D /* OUITableViewItemSelection-Mixed@3x.png in Resources */,
-				348A7ACB1B584C650082D55D /* OUIRectangularOverlayArrow.png in Resources */,
-				348A7A791B584BA20082D55D /* OUIParagraphAlignmentLeft@2x.png in Resources */,
 				348A7BAB1B584D570082D55D /* ru.lproj in Resources */,
-				348A7B761B584D480082D55D /* OUIToolbarInfo@3x.png in Resources */,
-				34FBAA7B20B5D1EA0099D424 /* OUIToolbarBack.png in Resources */,
-				348A7B9D1B584D4C0082D55D /* OUITableViewItemSelection-Normal@2x.png in Resources */,
-				348A7A0C1B584AE90082D55D /* OUIColorInspectorRGBSegment.png in Resources */,
-				348A7A3F1B584B430082D55D /* OUIFontStyle-Strikethrough.png in Resources */,
-				34FBAA7F20B5E1F40099D424 /* OUIToolbarForward@3x.png in Resources */,
-				348A7B891B584D480082D55D /* OUINavigationBarTextFieldBackground.png in Resources */,
-				FB11AB081C518D570050F4EF /* OUIAppMenu-Badged.png in Resources */,
-				348A7B9C1B584D4C0082D55D /* OUITableViewItemSelection-Normal.png in Resources */,
-				348A7A181B584AE90082D55D /* OUIColorSwatchNavigationArrow.png in Resources */,
-				348A7BA11B584D4C0082D55D /* OUIToolbarButtonFauxHighlight@2x.png in Resources */,
-				348A7A141B584AE90082D55D /* OUIColorPickerSwatch.png in Resources */,
-				348A79FE1B584AE10082D55D /* OUIColorComponentSliderKnob.png in Resources */,
-				348A7B9F1B584D4C0082D55D /* OUITableViewItemSelection-Selected@2x.png in Resources */,
-				348A7A6F1B584B590082D55D /* OUITransparencyCheckerboardBackground-24@2x.png in Resources */,
-				3458F09B1B5D7217000011A6 /* OUITransparencyCheckerboardBackground-24@3x.png in Resources */,
-				348A7B6F1B584D480082D55D /* OUIStepperMinus@3x.png in Resources */,
-				FB11AB0F1C518D570050F4EF /* OUIMenuItemAnnouncement-Badged@2x.png in Resources */,
-				348A7A011B584AE10082D55D /* OUIColorInspectorGraySegment@2x.png in Resources */,
-				348A7B751B584D480082D55D /* OUITextSelectionOverlay@3x.png in Resources */,
-				348A7A7A1B584BA20082D55D /* OUIParagraphAlignmentRight.png in Resources */,
 				348A79DB1B584A890082D55D /* OmniUI.defaults in Resources */,
-				FB36A8081C3DC63F00767F49 /* OUIMenuItemAnnouncement.png in Resources */,
-				348A7B701B584D480082D55D /* OUIStepperPlus@3x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2828,6 +2337,7 @@
 				348A7B251B584CF10082D55D /* OUIInteractionLock.m in Sources */,
 				348A7B3D1B584D130082D55D /* OUIShieldView.m in Sources */,
 				348A7A291B584AF10082D55D /* OUINoneColorPicker.m in Sources */,
+				10FE6E6D232C5D1000AF5A88 /* OUIEnqueueableAlertController.m in Sources */,
 				348A7A671B584B590082D55D /* OUISegmentedControlInspectorSlice.m in Sources */,
 				423DFE1F1C24B526006BB12B /* OUIFontFamilyInspectorSlice.m in Sources */,
 				348A7B2F1B584CF10082D55D /* OUINoteTextView.m in Sources */,
@@ -2845,6 +2355,7 @@
 				E28342031EB988C200FDB90F /* OUIThemedTableViewCell.m in Sources */,
 				22B72F601F84153E00938D28 /* UIView-OUIExtensions.swift in Sources */,
 				348A7ACA1B584C650082D55D /* OUILoupeOverlay.m in Sources */,
+				10455AC6230B21680046AD5E /* OUIAppController.swift in Sources */,
 				348A7A651B584B590082D55D /* OUIOptionListInspectorSlice.m in Sources */,
 				348A7A9E1B584BAE0082D55D /* OUITabBar.m in Sources */,
 				348A7B161B584CC30082D55D /* OUIEmptyOverlayView.m in Sources */,
@@ -2943,6 +2454,7 @@
 				348A7A111B584AE90082D55D /* OUIColorInspectorSlice.m in Sources */,
 				348A7A221B584AE90082D55D /* OUIComponentColorPicker.m in Sources */,
 				18FF12F41B684DFF00EC1466 /* OUIInspectorPresentationController.m in Sources */,
+				4AF14C5D2318850B00B8A58F /* OUINews.swift in Sources */,
 				23105FE31EAFD9AE008E0647 /* PaneDividerView.swift in Sources */,
 				348A7B5B1B584D130082D55D /* UINavigationController-OUIExtensions.m in Sources */,
 				23105FE41EAFD9AE008E0647 /* UIViewController-MultiPaneControllerExtensions.swift in Sources */,

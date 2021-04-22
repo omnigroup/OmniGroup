@@ -15,6 +15,8 @@
 
 - (instancetype)initWithDocument:(OUIDocument *)document;
 
+- (void)documentWillClose;
+
 @property(nonatomic,strong) UIColor *titleColor;
 @property(nonatomic,assign) BOOL hideTitle;
 /*!

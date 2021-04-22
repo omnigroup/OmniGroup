@@ -33,7 +33,6 @@
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 #import <UIKit/UIDevice.h>
-#import <OmniDocumentStore/ODSScope.h>
 #endif
 
 RCS_ID("$Id$")
@@ -1392,9 +1391,24 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, ODAVConn
             if (hasLocalEdit)
                 return NO;
             return [coordinator removeItemAtURL:newURL error:outWriteItemError byAccessor:^BOOL(NSURL *newURL2, NSError **outError) {
-                if (![[NSFileManager defaultManager] trashItemAtURL:newURL2 resultingItemURL:NULL error:outError]) {
-                    OBASSERT_NOT_REACHED("The item will likely be resurrected"); // TJW: This failed previously on iOS for me with a permission error.
+                NSFileManager *fileManager = NSFileManager.defaultManager;
+                NSError *trashError = nil;
+                if (![fileManager trashItemAtURL:newURL2 resultingItemURL:NULL error:&trashError]) {
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+                    // We'd like to save this file in the trash, but we get a permissions error on iOS 13. Delete the file instead.
+                    NSError *removeError = nil;
+                    if (![fileManager removeItemAtURL:newURL error:&removeError]) {
+                        if (outError != NULL)
+                            *outError = removeError;
+                        OBASSERT_NOT_REACHED("The item will likely be resurrected");
+                        return NO;
+                    }
+#else
+                    if (outError != NULL)
+                        *outError = trashError;
+                    OBASSERT_NOT_REACHED("The item will likely be resurrected");
                     return NO;
+#endif
                 }
                 TRACE_SIGNAL(OFXFileItem.incoming_delete.removed_local_document);
                 OFXNoteContentDeleted(self, newURL2);

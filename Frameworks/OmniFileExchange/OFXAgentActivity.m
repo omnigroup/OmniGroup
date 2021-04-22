@@ -77,8 +77,10 @@ static unsigned AccountContext;
         return;
     for (NSString *uuid in _accountUUIDsWithErrors) {
         OFXAccountActivity *accountActivity = _accountUUIDToActivity[uuid];
-        OBASSERT(accountActivity.lastError);
-        applier(accountActivity);
+        if (accountActivity != nil) {
+            OBASSERT(accountActivity.lastError);
+            applier(accountActivity);
+        }
     }
 }
 
