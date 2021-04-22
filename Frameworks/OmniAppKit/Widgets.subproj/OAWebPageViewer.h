@@ -8,7 +8,8 @@
 #import <AppKit/NSWindowController.h>
 
 #import <OmniAppKit/OAWebPageViewerDelegate.h>
-@class WebView;
+@class WebView, WebFrame;
+@protocol WebPolicyDecisionListener;
 
 typedef NS_OPTIONS(NSUInteger, OAWebPageViewerOptions) {
     OAWebPageViewerOptionsNone                          = 0,
@@ -43,5 +44,8 @@ typedef NS_OPTIONS(NSUInteger, OAWebPageViewerOptions) {
 - (void)loadRequest:(NSURLRequest *)request onCompletion:(void (^)(BOOL success, NSURL *url, NSError *error))completionBlock;
 
 @property(nonatomic,readonly) BOOL webViewShouldUseLayer;
+
+// NSObject (WebPolicyDelegate) for subclassing
+- (void)webView:(WebView *)aWebView decidePolicyForNavigationAction:(NSDictionary *)actionInformation request:(NSURLRequest *)request frame:(WebFrame *)frame decisionListener:(id<WebPolicyDecisionListener>)listener;
 
 @end

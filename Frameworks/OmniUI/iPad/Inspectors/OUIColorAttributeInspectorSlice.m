@@ -9,12 +9,9 @@
 
 #import <OmniUI/OUIColorAttributeInspectorWell.h>
 #import <OmniUI/OUIInspectorSelectionValue.h>
-#import <OmniUI/OUIInspectorAppearance.h>
 #import <OmniUI/OUIInspector.h>
 
 #import "OUIParameters.h"
-
-RCS_ID("$Id$")
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -104,17 +101,6 @@ NS_ASSUME_NONNULL_BEGIN
     
     OUIColorAttributeInspectorWell *textWell = (OUIColorAttributeInspectorWell *)self.textWell;
     textWell.color = selectionValue.firstValue;
-}
-
-#pragma mark - OUIThemedAppearanceClient
-
-- (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance
-{
-    [super themedAppearanceDidChange:changedAppearance];
-    
-    OUIInspectorAppearance *appearance = OB_CHECKED_CAST_OR_NIL(OUIInspectorAppearance, changedAppearance);
-    
-    self.view.backgroundColor = appearance.TableCellBackgroundColor;
 }
 
 @end

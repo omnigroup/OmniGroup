@@ -71,7 +71,7 @@
     /// called when the user taps one of the bar button items before presentation. This is called in addition to the willHidePane and willShowPane methods, but this will also be called in every displayMode. If the receiver only cares about this message in certain displayModes, it can check the display mode of the multiPaneController parameter.
     @objc optional func userWillExplicitlyToggleVisibility(_ paneWillBeShown: Bool, at location: MultiPaneLocation, multiPaneController: MultiPaneController)
     
-    @objc optional func shouldPreserveEditingPaneVisibilityOnDisplayModeTransition(_ multiPaneController: MultiPaneController) -> Bool
+    @objc optional func responderPreservationStyle(for responder: UIResponder & UITextInput, transitioningFrom oldTraitCollection: UITraitCollection, to newTraitCollection: UITraitCollection, multiPaneController: MultiPaneController) -> MultiPaneResponderPreservationStyle
 }
 
 @objc (OUIMultiPaneAppearanceDelegate) public protocol MultiPaneAppearanceDelegate {
@@ -91,6 +91,12 @@
     case left = 0
     case center
     case right
+}
+
+@objc(OUIMultiPaneResponderPreservationStyle) public enum MultiPaneResponderPreservationStyle: Int {
+    case none = 0
+    case showPane
+    case showPaneAndReactivateFirstResponder
 }
 
 public extension MultiPaneLocation {
@@ -263,8 +269,9 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
 
     private var panes: Set<Pane> = [] // the order of the panes is determined by the Pane.location value, so actual storage order isn't relevant
     private var deferChildControllerContainment = false
-    fileprivate var currentSize: CGSize {
-        return view.bounds.size
+    public var currentSize: CGSize {
+        // If we're in an animation that happens alongside for viewWillTransitionToSize, transitionDestinationSize will hold the size we'll be after the animation. See the comment by transitionDestinationSize's declaration for more info.
+        return transitionDestinationSize ?? view.bounds.size
     }
     
     private var widthOfSidebars: CGFloat {
@@ -327,15 +334,7 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
         self.pinningLayoutPass = false
         updateDisplayMode(forSize: currentSize, traitCollection: traitCollection)
         
-        if let paneAndResponder = paneAndResponderToReinstateUponTraitCollectionDidChange {
-            // It's still slightly too soon to invoke a presentation. One more turn of the run loop seems to do it, though.
-            DispatchQueue.main.async {
-                self.showPane(at: paneAndResponder.location, animated: false) {
-                    paneAndResponder.responder.becomeFirstResponder()
-                }
-            }
-            paneAndResponderToReinstateUponTraitCollectionDidChange = nil
-        }
+        asyncPaneAndResponderRestorationIfNeeded()
         
         // If we've changed display modes, we've already updated the decorations.
         // If not, and the color appearance has changed, they may need an appeareance/decoration update.
@@ -348,7 +347,11 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
     }
     
     override open func willTransition(to newCollection: UITraitCollection, with coordinator: UIViewControllerTransitionCoordinator) {
+        // Must happen before super. Super propagates this to child controllers, and they may end editing in response to a trait collection change. We want to cache the responder before they get that chance.
+        saveCurrentPaneAndFirstResponderForRestoration(for: newCollection)
+        
         super.willTransition(to: newCollection, with: coordinator)
+        
         coordinator.animate(alongsideTransition: { [weak self] (context) in
             guard let strongSelf = self else { return }
             strongSelf.pinningLayoutPass = false
@@ -356,13 +359,19 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
         }, completion: nil)
     }
     
+    // This storage is used as the return value for currentSize if it's non-nil. If we're transitioning to a given size, consumers need to be able to know what that size is in order to properly update if our display mode changes.
+    private var transitionDestinationSize: CGSize?
     override open func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
         super.viewWillTransition(to: size, with: coordinator)
+        
+        transitionDestinationSize = size
         coordinator.animate(alongsideTransition: { [weak self] (context) in
             guard let strongSelf = self else { return }
             strongSelf.pinningLayoutPass = false
             strongSelf.updateDisplayMode(forSize: size, traitCollection: strongSelf.traitCollection)
-        }, completion: nil)
+        }, completion: { _ in
+            self.transitionDestinationSize = nil
+        })
     }
     
     override open var preferredStatusBarStyle: UIStatusBarStyle {
@@ -472,6 +481,15 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
     /// Show a pane for a given location, supplying an animation option, in the style that MultiPaneController is acustomed.
     private func showPane(at location: MultiPaneLocation, animated: Bool, completion: @escaping ()->Void) {
         guard let pane = pane(withLocation: location) else { return }
+        
+        // If it's currently being dismissed, try to show it again once that's done
+        guard !pane.isBeingDismissed else {
+            DispatchQueue.main.async {
+                self.showPane(at: location, animated: animated, completion: completion)
+            }
+            return
+        }
+        
         guard pane.isVisible == false else { return }
         
         multiPanePresenter.present(pane: pane, fromViewController: self, usingDisplayMode: displayMode, animated: animated, completion: completion)
@@ -530,6 +548,54 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
     }
 
 //MARK: - Private api
+    
+    func asyncPaneAndResponderRestorationIfNeeded() {
+        if let paneAndResponder = paneAndResponderToReinstateUponTraitCollectionDidChange {
+            DispatchQueue.main.async {
+                self.showPane(at: paneAndResponder.location, animated: false) {
+                    paneAndResponder.responder?.becomeFirstResponder()
+                }
+            }
+            paneAndResponderToReinstateUponTraitCollectionDidChange = nil
+        }
+    }
+    
+    func saveCurrentPaneAndFirstResponderForRestoration(for destinationTraitCollection: UITraitCollection) {
+        // We currently only want to save this information on the non-compact -> compact transition
+        guard destinationTraitCollection.horizontalSizeClass == .compact && displayMode != .compact else { return }
+        
+        // We're already waiting to restore some cached value
+        guard paneAndResponderToReinstateUponTraitCollectionDidChange == nil else { return }
+        
+        // Only restore text editing
+        guard let responder = UIResponder.firstResponder as? UIResponder & UITextInput else { return }
+        
+        var paneContainingFirstResponder: MultiPaneLocation? = nil
+        let precedingResponder = self.view.window ?? self.furthestAncestor
+        if let leftController = pane(withLocation: .left)?.viewController, leftController.isInActiveResponderChain(preceding: precedingResponder) {
+            paneContainingFirstResponder = .left
+        } else if let rightController = pane(withLocation: .right)?.viewController, rightController.isInActiveResponderChain(preceding: precedingResponder) {
+            paneContainingFirstResponder = .right
+        } else if let centerController = pane(withLocation: .center)?.viewController, centerController.isInActiveResponderChain(preceding: precedingResponder) {
+            paneContainingFirstResponder = .center
+        }
+        
+        // There's only one responder per app, so perhaps the first responder is active in another scene?
+        guard let paneToRestore = paneContainingFirstResponder else { return }
+        
+        // This caching is opt-in. Make the delegate call at the last second, so we only ask the delegate for input if we are actually about to try to cache some data to try to restore later.
+        guard let preservationStyle = self.navigationDelegate?.responderPreservationStyle?(for: responder, transitioningFrom: traitCollection, to: destinationTraitCollection, multiPaneController: self) else { return }
+        
+        switch preservationStyle {
+        case .showPaneAndReactivateFirstResponder:
+            paneAndResponderToReinstateUponTraitCollectionDidChange = (paneToRestore, responder)
+        case .showPane:
+            paneAndResponderToReinstateUponTraitCollectionDidChange = (paneToRestore, nil)
+        case .none:
+            break
+        }
+    }
+    
 //MARK: - Pane containment and layout
     @objc /**REVIEW**/ internal func pane(forViewController controller: UIViewController) -> Pane? {
         return orderedPanes.first { pane in
@@ -580,7 +646,7 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
     }
     
     var isShowingTransitionShieldView: Bool = false
-    var paneAndResponderToReinstateUponTraitCollectionDidChange: (location: MultiPaneLocation, responder: UIResponder)? = nil
+    var paneAndResponderToReinstateUponTraitCollectionDidChange: (location: MultiPaneLocation, responder: UIResponder?)? = nil
     // setup the display mode for the given screen/windo size and trait collection
     // Called when a view controller size/trait transition occurs.
     fileprivate func updateDisplayMode(forSize size: CGSize, traitCollection: UITraitCollection) {
@@ -613,16 +679,12 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
             }
         }
         
-        let savedFirstResponder: UIResponder?
-        if let responder = UIResponder.firstResponder {
-            savedFirstResponder = responder
-        } else {
-            savedFirstResponder = nil
-        }
-        
         if let presentedController = presentedViewController, let pane = pane(forViewController: presentedController), displayMode == .compact && preferredMode != .compact {
             guard let view = view else { return }
             guard !isShowingTransitionShieldView else { return }
+            
+            
+            let savedFirstResponder = UIResponder.firstResponder
             
             var presentedControllerQueue: [UIViewController] = []
             var loopController = presentedController
@@ -675,23 +737,6 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
                 })
             })
         } else {
-            if self.navigationDelegate?.shouldPreserveEditingPaneVisibilityOnDisplayModeTransition?(self) ?? false {
-                // Our delegate wants to continue the current editing interaction after the transition is over
-                if let savedFirstResponder = savedFirstResponder, paneAndResponderToReinstateUponTraitCollectionDidChange == nil && savedFirstResponder is UITextInput {
-                    var paneContainingFirstResponder: MultiPaneLocation? = nil
-                    if let leftController = pane(withLocation: .left)?.viewController, leftController.isInActiveResponderChain(preceding: self) {
-                        paneContainingFirstResponder = .left
-                    } else if let rightController = pane(withLocation: .right)?.viewController, rightController.isInActiveResponderChain(preceding: self) {
-                        paneContainingFirstResponder = .right
-                    } else if let centerController = pane(withLocation: .center)?.viewController, centerController.isInActiveResponderChain(preceding: self) {
-                        paneContainingFirstResponder = .center
-                    }
-                    if let paneContainingFirstResponder = paneContainingFirstResponder, displayMode != .compact && preferredMode == .compact {
-                        paneAndResponderToReinstateUponTraitCollectionDidChange = (paneContainingFirstResponder, savedFirstResponder)
-                    }
-                }
-            }
-
             displayMode = preferredMode
             updatePinButtonItems()
         }
@@ -1282,8 +1327,16 @@ extension Pane {
         return configuration.location
     }
     
+    var isBeingDismissed: Bool {
+        return viewController.furthestAncestor.isBeingDismissed
+    }
+    
     @objc /**REVIEW**/ var isVisible: Bool {
-        return viewController.isVisible
+        if let wrapper = viewController.parent as? MultipanePresentationWrapperViewController {
+            return wrapper.isVisible
+        } else {
+            return viewController.isVisible
+        }
     }
     
     var presentationMode: MultiPanePresentationMode {

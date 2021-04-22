@@ -30,6 +30,7 @@
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 #import <UIKit/UIApplication.h>
 #import <MobileCoreServices/MobileCoreServices.h>
+@import BackgroundTasks;
 #else
 #import <OmniFoundation/OFController.h>
 #import <CoreServices/CoreServices.h>
@@ -53,6 +54,12 @@ OFDeclareDebugLogLevel(OFXMetadataDebug);
 OFDeclareDebugLogLevel(OFXContentDebug);
 OFDeclareDebugLogLevel(OFXActivityDebug);
 OFDeclareDebugLogLevel(OFXAccountRemovalDebug);
+
+static OFDeclareDebugLogLevel(OFXBackgroundFetchDebug);
+#define DEBUG_FETCH(level, format, ...) do { \
+    if (OFXBackgroundFetchDebug >= (level)) \
+        NSLog(@"FETCH: " format, ## __VA_ARGS__); \
+    } while (0)
 
 
 @interface OFXServerAccountsSnapshot ()
@@ -103,6 +110,11 @@ OFDeclareDebugLogLevel(OFXAccountRemovalDebug);
     
     OFNetReachability *_netReachability;
     NSTimer *_periodicSyncTimer;
+
+#if OMNI_BUILDING_FOR_IOS
+    BOOL _hasDataEverBeenAvailable;
+    BGAppRefreshTaskRequest *_syncRefreshTaskRequest;
+#endif
 }
 
 static NSString *UserAgent = nil;
@@ -316,10 +328,18 @@ BOOL OFXShouldSyncAllPathExtensions(NSSet *pathExtensions)
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
     // If we get launched into the background by iOS for a backgroun fetch, make sure we have the right state here.
     _foregrounded = ([[UIApplication sharedApplication] applicationState] != UIApplicationStateBackground);
+
+    // Our app and keychain entries should have the 'until first unlock' setting, but we might be launched into the background before the device has ever been unlocked.
+    _hasDataEverBeenAvailable = [[UIApplication sharedApplication] isProtectedDataAvailable];
+    DEBUG_FETCH(1, @"Protected data access initialized to %d.", _hasDataEverBeenAvailable);
 #else
     _foregrounded = YES;
 #endif
     _syncSchedule = OFXSyncScheduleAutomatic;
+
+#if OMNI_BUILDING_FOR_IOS
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_backgroundRefreshStatusDidChange:) name:UIApplicationBackgroundRefreshStatusDidChangeNotification object:nil];
+#endif
 
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_accountAgentDidStopForReplacement:) name:OFXAccountAgentDidStopForReplacementNotification object:nil];
     
@@ -399,7 +419,14 @@ static unsigned AccountAgentNetStateRegistrationGroupIdentifierContext;
 
     // Try to finish any pending uploads.
     OFBackgroundActivity *activity = [OFBackgroundActivity backgroundActivityWithIdentifier:@"com.omnigroup.OmniFileExchange.OFXAgent.applicationDidEnterBackground"];
-    
+
+#if OMNI_BUILDING_FOR_IOS
+    if (!_hasDataEverBeenAvailable) {
+        _hasDataEverBeenAvailable = [[UIApplication sharedApplication] isProtectedDataAvailable];
+        DEBUG_FETCH(1, @"Protected data available set to %d on backgrounding.", _hasDataEverBeenAvailable);
+    }
+#endif
+
     // We'll sync on foregrounding, and then we'll want to reset our timer relative to that.
     [_periodicSyncTimer invalidate];
     _periodicSyncTimer = nil;
@@ -538,10 +565,186 @@ static void _stopObservingAccountAgent(OFXAgent *self, OFXAccountAgent *accountA
         accountAgent.syncingEnabled = [self _syncingAllowed];
     }];
     
+#if OMNI_BUILDING_FOR_IOS
+    [self _updateBackgroundFetchRequest];
+#endif
+
     // If we now allow automatic sync (by schedule and foregrounded-ness), go ahead and do a sync
     if (_foregrounded && _syncSchedule >= OFXSyncScheduleAutomatic)
         [self sync:nil];
 }
+
+#if OMNI_BUILDING_FOR_IOS
+
+// -[BGTaskScheduler registerForTaskWithIdentifier:usingQueue:launchHandler:] will throw an exception if it is called after the initial launch of the application. But, if the main app is presenting crash reporting UI and only later setting up the full application stack, we could get into a crash loop. So, this API is split into two parts -- one to register the handler, and one to specify the OFXAgent instance to use for background sync. The former should be benign enough to use even when handling a crash report.
+
+// This must be in the main app's Info.plist BGTaskSchedulerPermittedIdentifiers entry.
+static NSString * const BackgroundSyncRefreshIdentifier = @"com.omnigroup.framework.OmniFileExchange.BackgroundRefreshSync";
+
++ (void)registerBackgroundFetchHandler;
+{
+    OBPRECONDITION(HasRegisteredBackgroundFetchHandler == NO);
+
+    DEBUG_FETCH(1, @"Registering background refresh task handler");
+    HasRegisteredBackgroundFetchHandler = YES;
+
+    [BGTaskScheduler.sharedScheduler registerForTaskWithIdentifier:BackgroundSyncRefreshIdentifier usingQueue:dispatch_get_main_queue() launchHandler:^(BGAppRefreshTask * _Nonnull task) {
+        OFXAgent *agent = BackgroundFetchSyncAgent;
+        if (agent == nil) {
+            DEBUG_FETCH(1, @"Fetch requested by system, but no agent is registered to handle it");
+            [task setTaskCompletedWithSuccess:YES];
+        } else {
+            [agent _handleBackgroundFetchTask:task];
+        }
+    }];
+}
+
+static BOOL HasRegisteredBackgroundFetchHandler;
+static __weak OFXAgent *BackgroundFetchSyncAgent;
+
++ (nullable OFXAgent *)backgroundFetchSyncAgent;
+{
+    return BackgroundFetchSyncAgent;
+}
+
++ (void)setBackgroundFetchSyncAgent:(nullable OFXAgent *)agent;
+{
+    BackgroundFetchSyncAgent = agent;
+    DEBUG_FETCH(1, @"BackgroundFetchSyncAgent set to %p", agent);
+
+    if (agent != nil && agent.syncSchedule == OFXSyncScheduleAutomatic) {
+        [agent _updateBackgroundFetchRequest];
+    }
+}
+
+- (void)_handleBackgroundFetchTask:(BGAppRefreshTask *)task;
+{
+    // We have to register this during application launch, but it might be possible that we aren't ready for the handler to be invoked by the time it is.
+    if (self.syncSchedule != OFXSyncScheduleAutomatic) {
+        [task setTaskCompletedWithSuccess:YES];
+        _syncRefreshTaskRequest = nil;
+        return;
+    }
+
+    [self _performBackgroundSyncRefreshWithTask:task];
+}
+
+- (void)_updateBackgroundFetchRequest;
+{
+    OFXServerAccountsSnapshot *accountsSnapshot = self.accountsSnapshot;
+    BOOL wantsBackgroundRefresh = HasRegisteredBackgroundFetchHandler && [accountsSnapshot.runningAccounts count] > 0 && _syncSchedule == OFXSyncScheduleAutomatic;
+
+    if ([[UIApplication sharedApplication] backgroundRefreshStatus] != UIBackgroundRefreshStatusAvailable) {
+        // The user may have disabled background refresh for this app; don't try in that case.
+        DEBUG_FETCH(1, @"Background refresh is not available.");
+        wantsBackgroundRefresh = NO;
+    }
+
+    if (_syncRefreshTaskRequest == nil && wantsBackgroundRefresh) {
+        DEBUG_FETCH(1, @"Creating sync refresh task request.");
+        _syncRefreshTaskRequest = [[BGAppRefreshTaskRequest alloc] initWithIdentifier:BackgroundSyncRefreshIdentifier];
+
+        // If we are backgrounded, syncing is less time critical than when foregrounded.
+        _syncRefreshTaskRequest.earliestBeginDate = [NSDate dateWithTimeIntervalSinceNow:3*OFXAgentSyncInterval];
+
+        __autoreleasing NSError *error;
+        if (![BGTaskScheduler.sharedScheduler submitTaskRequest:_syncRefreshTaskRequest error:&error]) {
+            [error log:@"Error requesting background sync refresh"];
+            _syncRefreshTaskRequest = nil;
+        }
+    } else if (_syncRefreshTaskRequest != nil && !wantsBackgroundRefresh) {
+        DEBUG_FETCH(1, @"Cancel sync refresh task request.");
+        [BGTaskScheduler.sharedScheduler cancelTaskRequestWithIdentifier: _syncRefreshTaskRequest.identifier];
+    }
+}
+
+- (void)_performBackgroundSyncRefreshWithTask:(BGAppRefreshTask *)task;
+{
+    // If the device is locked (even if it has been unlocked once), -isProtectedDataAvailable will return NO.
+    if (_hasDataEverBeenAvailable) {
+        DEBUG_FETCH(1, @"Protected data has been available at least once.");
+        // We'll go ahead and fetch, since we expect our apps to have their data protection set to first-unlock and their keychain entries likewise set to allow access after first launch. We don't want to do wasted work in theh background after a reboot.
+    } else if ([[UIApplication sharedApplication] isProtectedDataAvailable]) {
+        DEBUG_FETCH(1, @"Protected data is now available.");
+        _hasDataEverBeenAvailable = YES;
+    } else {
+        DEBUG_FETCH(1, @"Protected data is not available.");
+
+        // Even with our entitlements set to 'on first unlock', if the device is locked, we cannot access the keychain.
+        // Perhaps we should cache the credentials?
+        [task setTaskCompletedWithSuccess:NO];
+
+        _syncRefreshTaskRequest = nil;
+        [self _updateBackgroundFetchRequest];
+        return;
+    }
+
+    [self sync:^{
+        // This is ugly for our purposes here, but the -sync: completion handler can return before any transfers have started. Making the completion handler be after all this work is even uglier. In particular, automatic download of small docuemnts is controlled by OFXDocumentStoreScope. Wait for a bit longer for stuff to filter through the systems.
+        // Note also, that OFXAgentActivity will keep us alive while transfers are happening.
+
+        DEBUG_FETCH(1, @"Sync request completed -- waiting for a bit to determine status");
+        OFAfterDelayPerformBlock(5.0, ^{
+            [self _checkForTransfersFinishedWithTask:task];
+        });
+    }];
+}
+
+- (void)_checkForTransfersFinishedWithTask:(BGAppRefreshTask *)task;
+{
+    __block NSUInteger transferCount = 0;
+
+    NSOperation *finishedChecking = [NSBlockOperation blockOperationWithBlock:^{
+        if (transferCount != 0) {
+            // Still some going on.
+            DEBUG_FETCH(1, @"Transfers (%lu) still running", transferCount);
+            OFAfterDelayPerformBlock(5.0, ^{
+                [self _checkForTransfersFinishedWithTask:task];
+            });
+            return;
+        }
+
+        BOOL foundError = NO;
+        for (OFXServerAccount *account in self.accountRegistry.validCloudSyncAccounts) {
+            NSError *lastError = account.lastError;
+            if (lastError) {
+                DEBUG_FETCH(1, @"Fetch for account %@ encountered error %@", [account shortDescription], [lastError toPropertyList]);
+                foundError = YES;
+            }
+        }
+
+        if (foundError) {
+            DEBUG_FETCH(1, @"Sync resulted in error");
+            [task setTaskCompletedWithSuccess:NO];
+        } else {
+            DEBUG_FETCH(1, @"Sync finished without error");
+            [task setTaskCompletedWithSuccess:YES];
+        }
+
+        // Requests are one-time, not persistent.
+        _syncRefreshTaskRequest = nil;
+        [self _updateBackgroundFetchRequest];
+    }];
+
+    for (OFXServerAccount *account in self.accountRegistry.validCloudSyncAccounts) {
+        NSOperation *checkFinished = [NSBlockOperation blockOperationWithBlock:^{}];
+        [finishedChecking addDependency:checkFinished];
+
+        [self countPendingTransfersForAccount:account completionHandler:^(NSError * _Nullable errorOrNil, NSUInteger count) {
+            transferCount += count;
+            [[NSOperationQueue mainQueue] addOperation:checkFinished];
+        }];
+    }
+    [[NSOperationQueue mainQueue] addOperation:finishedChecking];
+
+}
+
+- (void)_backgroundRefreshStatusDidChange:(NSNotification *)note;
+{
+    [self _updateBackgroundFetchRequest];
+}
+
+#endif
 
 // Called as part of retrying sync on an account that automatically paused itself due to errors.
 - (void)restoreSyncEnabledForAccount:(OFXServerAccount *)account;
@@ -966,6 +1169,10 @@ static void _stopObservingAccountAgent(OFXAgent *self, OFXAccountAgent *accountA
         [self willChangeValueForKey:OFValidateKeyPath(self, accountsSnapshot)];
         _accountsSnapshot = [accountsSnapshot copy];
         [self didChangeValueForKey:OFValidateKeyPath(self, accountsSnapshot)];
+
+#if OMNI_BUILDING_FOR_IOS
+        [self _updateBackgroundFetchRequest];
+#endif
     }
 
     // Update our net state monitor for all the accounts we are using.

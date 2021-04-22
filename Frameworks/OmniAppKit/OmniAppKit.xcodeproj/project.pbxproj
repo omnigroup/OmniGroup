@@ -1419,7 +1419,7 @@
 		6CBB57EB0416D8B200E7FE1C /* NSImage-ColorSyncExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSImage-ColorSyncExtensions.m"; sourceTree = "<group>"; };
 		70BA5ED6FF72DDC0C697A146 /* OAHierarchicalPopUpController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAHierarchicalPopUpController.h; sourceTree = "<group>"; };
 		70BA5ED7FF72DDC0C697A146 /* OAHierarchicalPopUpController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAHierarchicalPopUpController.m; sourceTree = "<group>"; };
-		7F54986F041FDCAE0097A14E /* en */ = {isa = PBXFileReference; lastKnownFileType = file; name = en; path = "en.lproj/Classic Crayons.clr"; sourceTree = "<group>"; };
+		7F54986F041FDCAE0097A14E /* en */ = {isa = PBXFileReference; lastKnownFileType = file.bplist; name = en; path = "en.lproj/Classic Crayons.clr"; sourceTree = "<group>"; };
 		8438786F1AB20BD80069E467 /* OADefaultSettingIndicatorOff.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OADefaultSettingIndicatorOff.png; sourceTree = "<group>"; };
 		843878701AB20BD80069E467 /* OADefaultSettingIndicatorOff@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OADefaultSettingIndicatorOff@2x.png"; sourceTree = "<group>"; };
 		843878711AB20BD80069E467 /* OADefaultSettingIndicatorOn.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OADefaultSettingIndicatorOn.png; sourceTree = "<group>"; };
@@ -3392,7 +3392,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastTestingUpgradeCheck = 0510;
-				LastUpgradeCheck = 1100;
+				LastUpgradeCheck = 1120;
 				TargetAttributes = {
 					34C12AFB194FF90F005CB70B = {
 						CreatedOnToolsVersion = 6.0;

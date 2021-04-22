@@ -41,6 +41,11 @@ public class CopyAsImageActivity : DocumentConversionActivity<OUIDocument, [Stri
         UIPasteboard.general.items = results
         completionHandler(nil)
     }
+
+    // we don't need to present any UI and this creates a shadow that looks weird without any views, if it's non-nil
+    public override func makeProcessingViewController() -> UIViewController? {
+        return nil
+    }
 }
 
 extension OUIDocumentExporter {

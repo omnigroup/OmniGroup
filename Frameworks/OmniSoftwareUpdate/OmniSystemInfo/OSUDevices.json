@@ -140,6 +140,18 @@
       "platform": "iPhone11,6",
       "comment": "Global"
   },
+  "N104AP": {
+      "name": "iPhone 11",
+      "platform": "iPhone12,1"
+  },
+  "D421AP": {
+      "name": "iPhone 11 Pro",
+      "platform": "iPhone12,3"
+  },
+  "D431AP": {
+      "name": "iPhone 11 Pro Max",
+      "platform": "iPhone12,5"
+  },
   "N27aAP": {
     "name": "Apple Watch (1st generation)",
     "platform": "Watch1,1",
@@ -243,15 +255,15 @@
     "platform": "iPad4,3"
   },
   "J85AP": {
-    "name": "iPad miniR (Wi-Fi)",
+    "name": "iPad mini 2 (Wi-Fi)",
     "platform": "iPad4,4"
   },
   "J86AP": {
-    "name": "iPad miniR (GSM)",
+    "name": "iPad mini 2 (Wi-Fi + Cellular)",
     "platform": "iPad4,5"
   },
   "J87AP": {
-    "name": "iPad miniR (China)",
+    "name": "iPad mini 2 (China)",
     "platform": "iPad4,6"
   },
   "J85mAP": {
@@ -379,6 +391,16 @@
     "name": "iPad (6th generation)",
     "platform": "iPad7,6",
     "comment": "9.7 inch; 2018; LTE; education event"
+  },
+  "J171AP": {
+    "name": "iPad (7th generation)",
+    "platform": "iPad7,11",
+    "comment": "10.2 inch; 2019; WiFi"
+  },
+  "J172AP": {
+    "name": "iPad (7th generation)",
+    "platform": "iPad7,12",
+    "comment": "10.2 inch; 2019; LTE"
   },
   "J317AP": {
     "name": "iPad Pro (11-inch)",

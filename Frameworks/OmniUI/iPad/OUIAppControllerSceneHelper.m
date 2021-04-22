@@ -12,7 +12,7 @@
 #import <OmniUI/OUIMenuController.h>
 #import <OmniUI/OUIMenuOption.h>
 
-@interface OUIAppControllerSceneHelper () <OUIWebViewControllerDelegate>
+@interface OUIAppControllerSceneHelper () <OUIWebViewControllerDelegate, UIAdaptivePresentationControllerDelegate>
 @property (nonatomic, strong) NSMapTable *appMenuUnderlyingButtonsMappedToAssociatedBarButtonItems;
 @property (nonatomic, weak) OUIWebViewController *newsViewController;
 @property (nonatomic, strong, nullable) NSString *newsURLStringCurrentlyShowing;
@@ -254,7 +254,7 @@
         return nil;  // we don't want to interrupt the user to show the news message (or try to work around every issue that could arise with trying to present this news message when something else is already presented)
     }
 
-    OUIWebViewController *newsViewController = [self showWebViewWithURL:[NSURL URLWithString:urlString] title:NSLocalizedStringFromTableInBundle(@"News", @"OmniUI", OMNI_BUNDLE, @"News view title") modalPresentationStyle:UIModalPresentationFormSheet modalTransitionStyle:UIModalTransitionStyleCoverVertical animated:YES];
+    OUIWebViewController *newsViewController = [self showWebViewWithURL:[NSURL URLWithString:urlString] title:NSLocalizedStringFromTableInBundle(@"News", @"OmniUI", OMNI_BUNDLE, @"News view title")];
     _newsURLStringCurrentlyShowing = urlString;
     _newsViewController = newsViewController;
     return newsViewController;
@@ -269,7 +269,11 @@
 
 - (nullable OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(nullable NSString *)title;
 {
-    return [self showWebViewWithURL:url title:title modalPresentationStyle:UIModalPresentationFullScreen modalTransitionStyle:UIModalTransitionStyleCrossDissolve animated:YES navigationBarHidden:NO];
+    // If the user doesn't specify a modal presentation style, we become the adaptive presentation delegate and present as a page sheet in compact and full screen in regular.
+    BOOL isRegular = self.window.rootViewController.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassRegular;
+    UIModalPresentationStyle presentationStyle = isRegular ? UIModalPresentationFullScreen : UIModalPresentationAutomatic;
+    UIModalTransitionStyle transitionStyle = isRegular ? UIModalTransitionStyleCrossDissolve : UIModalTransitionStyleCoverVertical;
+    return [self _showWebViewWithURL:url title:title modalPresentationStyle:presentationStyle modalTransitionStyle:transitionStyle animated:YES navigationBarHidden:NO withDoneButton:YES wantsModalPresentationDelegate:YES];
 }
 
 - (nullable OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(nullable NSString *)title modalPresentationStyle:(UIModalPresentationStyle)presentationStyle modalTransitionStyle:(UIModalTransitionStyle)transitionStyle animated:(BOOL)animated;
@@ -284,14 +288,28 @@
 
 - (nullable OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(nullable NSString *)title modalPresentationStyle:(UIModalPresentationStyle)presentationStyle modalTransitionStyle:(UIModalTransitionStyle)transitionStyle animated:(BOOL)animated navigationBarHidden:(BOOL)navigationBarHidden withDoneButton:(BOOL)withDoneButton;
 {
+    return [self _showWebViewWithURL:url title:title modalPresentationStyle:presentationStyle modalTransitionStyle:transitionStyle animated:animated navigationBarHidden:navigationBarHidden withDoneButton:withDoneButton wantsModalPresentationDelegate:NO];
+}
+
+- (nullable OUIWebViewController *)_showWebViewWithURL:(NSURL *)url title:(nullable NSString *)title modalPresentationStyle:(UIModalPresentationStyle)presentationStyle modalTransitionStyle:(UIModalTransitionStyle)transitionStyle animated:(BOOL)animated navigationBarHidden:(BOOL)navigationBarHidden withDoneButton:(BOOL)withDoneButton wantsModalPresentationDelegate:(BOOL)wantsModalPresentationDelegate;
+{
     UINavigationController *webNavigationController = [[UINavigationController alloc] init];
     webNavigationController.navigationBar.barStyle = UIBarStyleDefault;
     webNavigationController.navigationBarHidden = navigationBarHidden;
     webNavigationController.modalPresentationStyle = presentationStyle;
     webNavigationController.modalTransitionStyle = transitionStyle;
+    if (wantsModalPresentationDelegate) {
+        webNavigationController.presentationController.delegate = self;
+    }
 
     OUIWebViewController *webController = [self showWebViewWithURL:url title:title animated:NO /* will animate the presentation of webNavigationController instead */ navigationController:webNavigationController];
     webController.wantsDoneButton = withDoneButton;
+    
+    // Ensure we live until the controller has closed.
+    webController.closeBlock = ^(OUIWebViewController *webViewController) {
+        (void)self;
+    };
+    
     [self.window.rootViewController presentViewController:webNavigationController animated:animated completion:nil];
     return webController;
 }
@@ -323,7 +341,7 @@
 
 - (IBAction)sendFeedback:(id)sender NS_EXTENSION_UNAVAILABLE_IOS("");
 {
-    [OUIAppController.sharedController sendFeedbackWithSubject:nil body:nil inScene:nil];
+    [OUIAppController.sharedController sendFeedbackWithSubject:nil body:nil inScene:self.window.windowScene completion:^{}];
 }
 
 - (IBAction)signUpForOmniNewsletter:(nullable id)sender NS_EXTENSION_UNAVAILABLE_IOS("");
@@ -342,6 +360,16 @@
 
     NSURL *signUpURL = urlComponents.URL;
     [[UIApplication sharedApplication] openURL:signUpURL options:@{} completionHandler:nil];
+}
+
+#pragma mark - UIAdaptivePresentationControllerDelegate
+- (UIModalPresentationStyle)adaptivePresentationStyleForPresentationController:(UIPresentationController *)controller traitCollection:(UITraitCollection *)traitCollection
+{
+    if (traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassRegular) {
+        return UIModalPresentationFullScreen;
+    } else {
+        return UIModalPresentationAutomatic;
+    }
 }
 
 #pragma mark - OUIWebViewControllerDelegate

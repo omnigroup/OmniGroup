@@ -1,4 +1,4 @@
-// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -87,19 +87,13 @@ static id _commonInit(OUIInspectorTextExampleView *self)
     // TODO: Non component-based background colors (patterns, named colors).
     CGFloat backgroundAlpha = [_styleBackgroundColor alphaComponent];
     
-    if (backgroundAlpha == 0) {
-        // Clear -- text atop a fully checkerboarded background looks horrible.
-        [[UIColor whiteColor] set];
-        UIRectFill(rect);
-    } else {
-        if (backgroundAlpha < 1.0) {
-            OUIDrawPatternBackground(ctx, [UIImage imageNamed:@"OUITransparencyCheckerboardBackground-24" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil], bounds, CGSizeZero);
-        }
-        
-        [[_styleBackgroundColor toColor] set];
-        UIRectFillUsingBlendMode(bounds, kCGBlendModeNormal);
+    if (backgroundAlpha < 1.0) {
+        OUIDrawPatternBackground(ctx, [UIImage imageNamed:@"OUITransparencyCheckerboardBackground-24" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil], bounds, CGSizeZero);
     }
     
+    [[_styleBackgroundColor toColor] set];
+    UIRectFillUsingBlendMode(bounds, kCGBlendModeNormal);
+
     CGSize usedSize = _textLayout.usedSize;
     CGRect textRect = OQCenteredIntegralRectInRect(self.bounds, usedSize);
     

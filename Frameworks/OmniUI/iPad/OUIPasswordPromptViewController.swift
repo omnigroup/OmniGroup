@@ -71,7 +71,6 @@ open class OUIPasswordPromptViewController: UIViewController, UIViewControllerTr
 
         self.showHintButton?.alpha = 1.0
         self.hintLabelButton?.alpha = 0.0
-        self.themedAppearanceDidChange(OUIThemedAppearance.shared())
     }
 
     override open func viewDidAppear(_ animated: Bool) {
@@ -113,30 +112,6 @@ open class OUIPasswordPromptViewController: UIViewController, UIViewControllerTr
         self.hintLabelButton?.setTitle(hintText, for: .normal)
         hintView.isHidden = hintText == nil
         stackView?.layoutIfNeeded()
-    }
-
-    // MARK: OUIThemedAppearanceClient
-    open override func themedAppearanceDidChange(_ appearance: OUIThemedAppearance!) {
-        super.themedAppearanceDidChange(appearance);
-
-        guard let changedAppearance = appearance as? OUIInspectorAppearance else { return }
-
-        backgroundView?.backgroundColor = changedAppearance.inspectorBackgroundColor
-        titleLabel?.textColor = changedAppearance.inspectorTextColor
-        passwordField?.textColor = changedAppearance.tableCellTextColor
-        passwordField?.backgroundColor = changedAppearance.tableCellBackgroundColor
-        if let placeholder = passwordField?.placeholder {
-            passwordField!.attributedPlaceholder = NSAttributedString(string: placeholder, attributes: [.foregroundColor: changedAppearance.placeholderTextColor])
-        }
-        hintLabelButton?.setTitleColor(changedAppearance.inspectorTextColor, for: .normal)
-
-        hButtonSeparator?.backgroundColor = changedAppearance.interfaceActionItemSeparatorColor
-        vButtonSeparator?.backgroundColor = changedAppearance.interfaceActionItemSeparatorColor
-        cancelButton?.backgroundColor = changedAppearance.tableCellBackgroundColor
-        okButton?.backgroundColor = changedAppearance.tableCellBackgroundColor
-
-        let keyboardAppearance = changedAppearance.inspectorBackgroundColor.isLightColor ? UIKeyboardAppearance.light : UIKeyboardAppearance.dark
-        passwordField?.keyboardAppearance = keyboardAppearance
     }
 
     // MARK: - Notifications (Keyboard)

@@ -7,8 +7,10 @@
 
 #import <CoreImage/CIColor.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface CIColor (OQExtensions)
 
-+ (CIColor *)clearColor;
-
 @end
+
+NS_ASSUME_NONNULL_END

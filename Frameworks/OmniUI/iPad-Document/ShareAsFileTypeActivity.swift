@@ -30,19 +30,24 @@ private class ShareAsFileTypeActivity : DocumentProcessingActivity<OUIDocument> 
     public override var activityImage: UIImage? {
         return UIImage.init(systemName: "square.and.arrow.up")
     }
-    
+
+    private var exportOptionsController: OUIExportOptionsController?
+
     public override func canPerform(withActivityItems activityItems: [Any]) -> Bool {
-        // TODO: Check with our exporter if there are convertible output types for the inputs
-        return true
+        if exportOptionsController == nil {
+            self.prepare(withActivityItems: activityItems) // call to determine our fileURLs
+            exportOptionsController = OUIExportOptionsController(fileURLs: self.fileURLs, exporter: exporter, activity: self)
+        }
+        return exportOptionsController!.hasExportOptions()
     }
-    
-    private var exportOptionsController: OUIExportOptionsController!
 
     // MARK:- DocumentProcessingActivity subclass
 
     override public func makeProcessingViewController() -> UIViewController {
-        exportOptionsController = OUIExportOptionsController(fileURLs: self.fileURLs, exporter: exporter, activity: self)
-        return exportOptionsController.viewController
+        if exportOptionsController == nil {
+            exportOptionsController = OUIExportOptionsController(fileURLs: self.fileURLs, exporter: exporter, activity: self)
+        }
+        return exportOptionsController!.viewController
     }
 
     // MARK:- URLProcessingActivity subclass

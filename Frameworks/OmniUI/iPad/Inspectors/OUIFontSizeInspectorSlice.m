@@ -14,15 +14,12 @@
 #import <OmniUI/OUIInspectorStepperButton.h>
 #import <OmniUI/OUIFontInspectorPane.h>
 #import <OmniUI/OUIFontUtilities.h>
-#import <OmniUI/OUIInspectorAppearance.h>
 #import <OmniUI/OUIInspectorSliceView.h>
 
 #import <OmniUI/UIView-OUIExtensions.h>
 
 #import <OmniAppKit/OAFontDescriptor.h>
 #import <OmniBase/OmniBase.h>
-
-RCS_ID("$Id$");
 
 @implementation OUIFontSizeInspectorSlice
 {
@@ -334,18 +331,6 @@ static const CGFloat fontSizeControlWidth = 100.0f;
         formatter = _wholeNumberFormatter;
     
     return [formatter stringFromNumber:[NSNumber numberWithDouble:displaySize]];
-}
-
-#pragma mark OUIInspectorAppearanceClient
-
-- (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance;
-{
-    [super themedAppearanceDidChange:changedAppearance];
-    
-    OUIInspectorAppearance *appearance = OB_CHECKED_CAST_OR_NIL(OUIInspectorAppearance, changedAppearance);
-    
-    self.view.backgroundColor = appearance.TableCellBackgroundColor;
-    _fontSizeLabel.textColor = appearance.TableCellTextColor;
 }
 
 @end

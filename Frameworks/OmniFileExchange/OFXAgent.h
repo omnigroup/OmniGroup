@@ -59,6 +59,13 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)applicationDidEnterBackground; // Disables Bonjour and timer based sync events.
 
 @property(nonatomic) OFXSyncSchedule syncSchedule; // Defaults to OFXSyncScheduleAutomatic, but can be adjusted before -applicationLaunched to prevent automatic syncing.
+
+#if OMNI_BUILDING_FOR_IOS
+// To enable background fetching on iOS, this must be called during application initialization and then the agent to sync must be set at some point.
++ (void)registerBackgroundFetchHandler;
+@property(class,nonatomic,weak) OFXAgent *backgroundFetchSyncAgent;
+#endif
+
 - (void)restoreSyncEnabledForAccount:(OFXServerAccount *)account;
 
 @property(nonatomic,readonly) OFXServerAccountsSnapshot *accountsSnapshot; // KVO observable.

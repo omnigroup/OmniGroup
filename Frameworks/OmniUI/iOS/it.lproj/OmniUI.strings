@@ -41,7 +41,7 @@
 "Continue" = "Continua";
 
 /* increment button accessibility label */
-"Decrement" = "Riduci";
+"Decrement" = "Decremento";
 
 /* Accessibility label for dismissing a sliding overlay pane */
 "Dismiss overlay" = "Ignora overlay";
@@ -70,7 +70,7 @@
 "Help and Settings" = "Aiuto e impostazioni";
 
 /* increment button accessibility label */
-"Increment" = "Aumenta";
+"Increment" = "Incremento";
 
 /* default special URL confirm button title */
 "Invoke" = "Richiama";
@@ -171,7 +171,7 @@
 "You have tapped on a link which will run the following debugging command:\n\n\"%@\"\n\nIf you weren’t instructed to do this by Omni Support Humans, please don’t.\nDo you wish to run this command?" = "Hai toccato un link che eseguirà il seguente comando di debug:\n\n“%@”\n\nSe non è stato il gruppo di supporto di Omni a consigliarti questa operazione, non proseguire.\nEseguire il comando?";
 
 /* default special URL alert message */
-"You have tapped on an Omni special URL:\n\n\"%@\"\n\nRun this command?" = "Hai toccato un URL speciale di Omni:\n\n“%@”\n\nEseguire questo comando?";
+"You have tapped on an Omni special URL:\n\n\"%@\"\n\nRun this command?" = "Hai toccato un URL di Omni speciale:\n\n\"%@\"\n\nEseguire questo comando?";
 
 /* zoom label */
 "Zoom" = "Ridimensiona";

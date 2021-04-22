@@ -24,7 +24,7 @@
 #import "OUIDocumentSyncActivityObserver.h"
 #import "OUINewDocumentCreationRequest.h"
 
-@interface OUIDocumentSceneDelegate () <UIDocumentBrowserViewControllerDelegate, OJSEnvironmentProviderType>
+@interface OUIDocumentSceneDelegate ()
 @property (nonatomic, strong) OUIAppControllerSceneHelper *sceneHelper;
 @end
 
@@ -341,11 +341,8 @@ static OFPreference *showFileExtensionsPreference;
     if (window.rootViewController != _documentBrowser) {
         animateDocument = NO;
         window.rootViewController = _documentBrowser;
-        [window makeKeyAndVisible];
-
-        OBFinishPortingLater("Figure out who's handling special URLs");
-        // [self handleCachedSpecialURLIfNeeded];
     }
+    [window makeKeyAndVisible]; // Whenever we leave the document browser, make our window key (which doesn't always happen otherwise due to the interaction with the document browser's remote window)
 
     OUIDocumentOpenAnimator *animator = [[OUIDocumentOpenAnimator alloc] initWithTransitionController:transitionController];
 
@@ -361,6 +358,7 @@ static OFPreference *showFileExtensionsPreference;
     completionHandler = [completionHandler copy];
 
     [presentFromViewController presentViewController:toPresent animated:animateDocument completion:^{
+        [documentViewController becomeFirstResponder];
         if ([documentViewController respondsToSelector:@selector(documentFinishedOpening)])
             [documentViewController documentFinishedOpening];
         [document.applicationLock unlock];
@@ -1298,6 +1296,43 @@ static OFPreference *showFileExtensionsPreference;
         return;
     }
 
+#if 1 && defined(DEBUG_bungi)
+    BOOL crashBasedOnFilename = YES;
+#else
+    BOOL crashBasedOnFilename = [[NSUserDefaults standardUserDefaults] boolForKey:@"OUIDocumentSceneShouldCrashBasedOnFileName"];
+#endif
+    if (crashBasedOnFilename) {
+        OBRecordBacktrace("crashing intentionally", OBBacktraceBuffer_Generic);
+        OBRecordBacktraceWithContext("crashing intentionally w/context", OBBacktraceBuffer_Generic, (__bridge void *)self);
+
+        NSString *crashType = [[documentURL lastPathComponent] stringByDeletingPathExtension];
+        if ([crashType isEqual:@"crash-abort"])
+            abort();
+        if ([crashType isEqual:@"crash-null"])
+            NSLog(@"%d", *(int *)(intptr_t)[@"0" intValue]);
+        if ([crashType isEqual:@"crash-exception"])
+            [NSException raise:NSGenericException reason:@"testing unhandled exception"];
+        if ([crashType isEqual:@"crash-signal"])
+            raise(SIGTRAP); // really the same as abort since it raises SIGABRT
+#if 0
+        if ([crashType isEqual:@"crash-report"]) {
+            NSData *reportData = [[PLCrashReporter sharedReporter] generateLiveReport];
+            PLCrashReport *report = [[PLCrashReport alloc] initWithData:reportData error:NULL];
+
+            NSString *reportText = [PLCrashReportTextFormatter stringValueForCrashReport:report withTextFormat:PLCrashReportTextFormatiOS];
+            NSURL *reportURL = [[NSURL fileURLWithPath:NSTemporaryDirectory()] URLByAppendingPathComponent:@"crash-report.txt"];
+
+            __autoreleasing NSError *error = nil;
+            if (![reportText writeToURL:reportURL atomically:NO encoding:NSUTF8StringEncoding error:&error]) {
+                [error log:@"Error writing report to %@", reportURL];
+
+            }
+
+            return;
+        }
+#endif
+    }
+
     [self openDocumentInPlace:documentURL];
 }
 
@@ -1333,13 +1368,6 @@ static OFPreference *showFileExtensionsPreference;
 - (NSArray<__kindof UIActivity *> *)documentBrowser:(UIDocumentBrowserViewController *)controller applicationActivitiesForDocumentURLs:(NSArray <NSURL *> *)documentURLs;
 {
     return _exporter.supportedActivities;
-}
-
-#pragma mark - OJSEnvironmentProviderType
-
-- (OJSEnvironment * _Nullable)scriptingEnvironment;
-{
-    return [_document scriptingEnvironment];
 }
 
 #pragma mark - OUIUndoBarButtonItemTarget

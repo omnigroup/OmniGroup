@@ -100,6 +100,47 @@ class SldingOverlayPresentationController: UIPresentationController {
             transition.animate(alongsideTransition: { (context) in
                 self.shieldingView.alpha = 0.3
             }, completion: nil)
+            
+            if let paneView = presentedViewController.view {
+                container.addSubview(paneView)
+                
+                // Constrain the top/bottom and width
+                paneView.translatesAutoresizingMaskIntoConstraints = false
+                let paneWidth = pane.width > 0 ? pane.width : 320
+                NSLayoutConstraint.activate([
+                    paneView.topAnchor.constraint(equalTo: container.topAnchor),
+                    paneView.bottomAnchor.constraint(equalTo: container.bottomAnchor),
+                    paneView.widthAnchor.constraint(equalToConstant: paneWidth)
+                ])
+                
+                // Constrain the pane's x-position, and animate it onscreen
+                switch pane.location {
+                case .left:
+                    // Position the pane offscreen to the left
+                    paneView.frame = CGRect(x: -paneWidth, y: 0, width: paneWidth, height: container.bounds.size.height)
+                    
+                    transition.animate(alongsideTransition: { (context) in
+                        // Constrain the pane to the correct location, and ensure the layout pass happens so that the pane is in the correct spot after the transition
+                        let leadingConstraint = paneView.leadingAnchor.constraint(equalTo: container.safeAreaLayoutGuide.leadingAnchor)
+                        NSLayoutConstraint.activate([leadingConstraint])
+                        container.setNeedsLayout()
+                        container.layoutIfNeeded()
+                    }, completion: nil)
+                case .right:
+                    // Position the pane offscreen to the right
+                    paneView.frame = CGRect(x: container.bounds.size.width, y: 0, width: paneWidth, height: container.bounds.size.height)
+                    
+                    transition.animate(alongsideTransition: { (context) in
+                        // Constrain the pane to the correct location, and ensure the layout pass happens so that the pane is in the correct spot after the transition
+                        let trailingConstraint = paneView.trailingAnchor.constraint(equalTo: container.safeAreaLayoutGuide.trailingAnchor)
+                        NSLayoutConstraint.activate([trailingConstraint])
+                        container.setNeedsLayout()
+                        container.layoutIfNeeded()
+                    }, completion: nil)
+                default:
+                    assertionFailure("Should not present center pane as an overlay")
+                }
+            }
         }
     }
     

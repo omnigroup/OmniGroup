@@ -23,7 +23,7 @@
 "Add WebDAV Server" = "Добавить сервер WebDAV";
 
 /* error description */
-"Another account is syncing to this folder already." = "С этой папкой уже синхронизируется другая учетная запись.";
+"Another account is syncing to this folder already." = "С этой папкой уже синхронизируется другая уч. запись.";
 
 /* error reason */
 "Cannot locate synchronized documents folder." = "Не удается найти папку синхронизированных документов.";
@@ -47,10 +47,10 @@
 "Could not resolve archived bookmark for synchronized documents folder." = "Не удалось получить архивированную закладку для папки синхронизированных документов.";
 
 /* Add server account description */
-"Easily sync Omni documents. Signup is free!" = "Cинхронизация документов Omni. Бесплатная регистрация!";
+"Easily sync Omni documents. Signup is free!" = "Простая беспл. синхрониз. док-в Omni.";
 
 /* Server account export title format */
-"Export to \"%@\"" = "Экспортировать в «%@»";
+"Export to \"%@\"" = "Экспортировать в %@";
 
 /* Error reason */
 "Local account documents folder is missing." = "Отсутствует папка документов локальной учетной записи.";
@@ -91,7 +91,7 @@
 "Sync failed: unable to update device registration." = "Сбой синхронизации: не удается обновить регистрацию устройства.";
 
 /* Account validation step description */
-"Testing Server for Compatibility" = "Тест-сервер для проверки совместимости";
+"Testing Server for Compatibility" = "Тестовый сервер для проверки совместимости";
 
 /* error reason */
 "The cloud account requires OmniPresence format %@, but this device is using format %@. Please upgrade this copy of OmniPresence." = "Для облачной учетной записи требуется формат OmniPresence %1$@, а на этом устройстве используется формат %2$@. Обновите эту копию OmniPresence.";
@@ -121,7 +121,7 @@
 "The selected local folder is on your Desktop, which can be synchronized by iCloud Drive on Sierra. Using two file synchronization systems on the same folder can result in data loss." = "Выбранная локальная папка находится на вашем рабочем столе, который можно синхронизировать с помощью iCloud Drive в ОС Sierra. Использование для одной папки двух служб синхронизации может привести к потере данных.";
 
 /* error reason */
-"This app requires OmniPresence format %@, but the cloud account is using format %@. Please upgrade the cloud account." = "Для этого приложения требуется формат OmniPresence %1$@, а в облачной учетной записи используется формат %2$@. Обновите облачную учетную запись.";
+"This app requires OmniPresence format %@, but the cloud account is using format %@. Please upgrade the cloud account." = "Для этой программы требуется формат OmniPresence %1$@, а в облачной учетной записи используется формат %2$@. Обновите облачную учетную запись.";
 
 /* Error reason */
 "This OmniPresence folder contains another OmniPresence synced folder." = "Эта папка OmniPresence содержит другую папку синхронизации OmniPresence.";
@@ -148,7 +148,7 @@
 "Unable to verify login credentials at this time." = "Не удалось проверить учетные данные входа.";
 
 /* Add server account description */
-"Use your own WebDAV space." = "Используйте собственное пространство на сервере WebDAV.";
+"Use your own WebDAV space." = "Синхронизация через собственный сервер WebDAV.";
 
 /* Account validation step description */
 "Validating Account..." = "Проверка учетной записи…";

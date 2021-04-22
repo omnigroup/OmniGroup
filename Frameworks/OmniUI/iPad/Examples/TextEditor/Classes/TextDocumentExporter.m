@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -23,6 +23,8 @@ RCS_ID("$Id$")
 
 - (NSData *)PDFDataForFileItem:(ODSFileItem *)fileItem error:(NSError **)outError;
 {
+    OBFinishPorting;
+#if 0
     TextDocument *doc = [[TextDocument alloc] initWithExistingFileItem:fileItem error:outError];
     if (!doc)
         return nil;
@@ -59,6 +61,7 @@ RCS_ID("$Id$")
     [doc release];
 
     return data;
+#endif
 }
 
 @end

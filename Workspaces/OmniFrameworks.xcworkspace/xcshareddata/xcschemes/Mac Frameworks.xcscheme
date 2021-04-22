@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "1100"
+   LastUpgradeVersion = "1120"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -158,20 +158,6 @@
                BuildableName = "OmniQuartz.framework"
                BlueprintName = "OmniQuartz"
                ReferencedContainer = "container:../Frameworks/OmniQuartz/OmniQuartz.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "4AB9E6DB08BBA136002A253E"
-               BuildableName = "OmniSQLite.framework"
-               BlueprintName = "OmniSQLite"
-               ReferencedContainer = "container:../Frameworks/OmniSQLite/OmniSQLite.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
          <BuildActionEntry

@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,14 +11,11 @@
 #import <OmniUI/OUIColorPicker.h>
 #import <OmniUI/OUIColorValue.h>
 #import <OmniUI/OUIInspector.h>
-#import <OmniUI/OUIInspectorAppearance.h>
 #import <OmniUI/OUIInspectorSlice.h>
 #import <OmniUI/OUINavigationController.h>
 #import <OmniUI/OUISegmentedControl.h>
 #import <OmniUI/OUISegmentedControlButton.h>
 #import <OmniUI/UIViewController-OUIExtensions.h>
-
-RCS_ID("$Id$");
 
 @implementation OUIColorInspectorPane
 
@@ -242,9 +239,6 @@ RCS_ID("$Id$");
         [self _setSelectedColorTypeIndex:bestPickerIndex];
     }
     
-    if (OUIInspectorAppearance.inspectorAppearanceEnabled)
-        [self notifyChildrenThatAppearanceDidChange:OUIInspectorAppearance.appearance];
-
     // Do this after possibly swapping child view controllers. This allows us to remove the old before it gets send -viewWillAppear:, which would hit an assertion (rightly).
     [super viewWillAppear:animated];
 }
@@ -262,15 +256,6 @@ RCS_ID("$Id$");
     id supersParentSlice = [super parentSlice];
     OBASSERT_IF(supersParentSlice != nil, [supersParentSlice conformsToProtocol:@protocol(OUIColorPickerTarget)]);
     return supersParentSlice;
-}
-
-#pragma mark - OUIThemedAppearanceClient
-
-- (NSArray <id<OUIThemedAppearanceClient>> *)themedAppearanceChildClients;
-{
-    NSArray *clients = [super themedAppearanceChildClients];
-
-    return [clients arrayByAddingObject:self.view];
 }
 
 #pragma mark -

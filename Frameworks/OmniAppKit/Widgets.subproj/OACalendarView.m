@@ -92,32 +92,29 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
 // Init / dealloc
 //
 
-- (id)initWithFrame:(NSRect)frameRect;
+// The calendar will only resize on certain boundaries. "Ideal" sizes are:
+//     - width = (multiple of 7) + 1, where multiple >= 22; "minimum" width is 162
+//     - height = (multiple of 6) + 39, where multiple >= 15; "minimum" height is 129
+
+// In reality you can shrink it smaller than the minimums given here, and it tends to look ok for a bit, but this is the "optimum" minimum. But you will want to set your size based on the guidelines above, or the calendar will not actually fill the view exactly.
+
+// The "minimum" view size comes out to be 162w x 129h. (Where minimum.width = 23 [minimum column width] * 7 [num days per week] + 1.0 [for the side border], and minimum.height = 22 [month/year control area height; includes the space between control area and grid] + 17 [the  grid header height] + (15 [minimum row height] * 6 [max num weeks in month]). [Don't need to allow 1 for the bottom border due to the fact that there's no top border per se.]) (We used to say that the minimum height was 155w x 123h, but that was wrong - we weren't including the grid lines in the row/column sizes.)
+// These sizes will need to be adjusted if the font changes, grid or border widths change, etc. We use the controlContentFontOfSize:11.0 for the  - if the control content font is changed our calculations will change and the above sizes will be incorrect. Similarly, we use the default NSTextFieldCell font/size for the month/year header, and the default NSTableHeaderCell font/size for the day of week headers; if either of those change, the aove sizes will be incorrect.
+- (void)_OACalendarView_sharedInit;
 {
-    // The calendar will only resize on certain boundaries. "Ideal" sizes are: 
-    //     - width = (multiple of 7) + 1, where multiple >= 22; "minimum" width is 162
-    //     - height = (multiple of 6) + 39, where multiple >= 15; "minimum" height is 129
-    
-    // In reality you can shrink it smaller than the minimums given here, and it tends to look ok for a bit, but this is the "optimum" minimum. But you will want to set your size based on the guidelines above, or the calendar will not actually fill the view exactly.
-
-    // The "minimum" view size comes out to be 162w x 129h. (Where minimum.width = 23 [minimum column width] * 7 [num days per week] + 1.0 [for the side border], and minimum.height = 22 [month/year control area height; includes the space between control area and grid] + 17 [the  grid header height] + (15 [minimum row height] * 6 [max num weeks in month]). [Don't need to allow 1 for the bottom border due to the fact that there's no top border per se.]) (We used to say that the minimum height was 155w x 123h, but that was wrong - we weren't including the grid lines in the row/column sizes.)
-    // These sizes will need to be adjusted if the font changes, grid or border widths change, etc. We use the controlContentFontOfSize:11.0 for the  - if the control content font is changed our calculations will change and the above sizes will be incorrect. Similarly, we use the default NSTextFieldCell font/size for the month/year header, and the default NSTableHeaderCell font/size for the day of week headers; if either of those change, the aove sizes will be incorrect.
-
+    NSRect boundsRect = [self bounds];
     NSDateFormatter *monthAndYearFormatter;
     int index;
     NSRect buttonFrame;
     NSButton *button;
     NSBundle *thisBundle;
 
-    if (!(self = [super initWithFrame:frameRect]))
-        return nil;
-    
     selectedDays = [[NSMutableArray alloc] init];
-    
+
     thisBundle = [OACalendarView bundle];
     monthAndYearTextFieldCell = [[NSTextFieldCell alloc] init];
     [monthAndYearTextFieldCell setFont:[NSFont boldSystemFontOfSize:12.0f]];
-    
+
     NSString *dateFormat = [NSDateFormatter dateFormatFromTemplate:@"MMMM yyyy" options:0 locale:[NSLocale currentLocale]];
     monthAndYearFormatter = [[NSDateFormatter alloc] init];
     [monthAndYearFormatter setDateFormat:dateFormat];
@@ -128,9 +125,9 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
     NSArray *shortWeekDays = [monthAndYearFormatter veryShortWeekdaySymbols];
     if (!shortWeekDays)
         shortWeekDays = [NSArray arrayWithObjects:@"S", @"M", @"T", @"W", @"T", @"F", @"S", nil];
-    
+
     for (index = 0; index < OACalendarViewNumDaysPerWeek; index++) {
-	dayOfWeekCell[index] = [[NSTextFieldCell alloc] init];
+        dayOfWeekCell[index] = [[NSTextFieldCell alloc] init];
         [dayOfWeekCell[index] setAlignment:NSTextAlignmentCenter];
         [dayOfWeekCell[index] setStringValue:[shortWeekDays objectAtIndex:index]];
     }
@@ -143,9 +140,9 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
     NSImage *leftImage = OAImageNamed(@"OALeftArrow", thisBundle);
     NSSize imageSize = [leftImage size];
 
-    NSRect _monthAndYearViewRect = NSMakeRect(frameRect.origin.x, frameRect.origin.y + 1.0f, frameRect.size.width, imageSize.height);
+    NSRect _monthAndYearViewRect = NSMakeRect(boundsRect.origin.x, boundsRect.origin.y + 1.0f, boundsRect.size.width, imageSize.height);
     monthAndYearView = [[NSView alloc] initWithFrame:_monthAndYearViewRect];
-    [monthAndYearView setAutoresizingMask:NSViewWidthSizable];
+    [monthAndYearView setAutoresizingMask:NSViewWidthSizable | NSViewMaxYMargin];
 
     // Add left/right buttons
 
@@ -168,8 +165,8 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
     [self addSubview:monthAndYearView];
     [monthAndYearView release];
 
-//[self sizeToFit];
-//NSLog(@"frame: %@", NSStringFromRect([self frame]));
+    //[self sizeToFit];
+    //NSLog(@"frame: %@", NSStringFromRect([self frame]));
 
     NSDate *aDate = [NSDate date];
     NSDateComponents *dateComponents =  [calendar components:NSCalendarUnitEra | NSCalendarUnitYear | NSCalendarUnitMonth | NSCalendarUnitDay fromDate:aDate];
@@ -177,7 +174,29 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
     aDate = [calendar dateFromComponents:dateComponents];
     [self setVisibleMonth:aDate];
     [self setSelectedDay:aDate];
-    
+}
+
+- (id)initWithFrame:(NSRect)frameRect;
+{
+    self = [super initWithFrame:frameRect];
+    if (self == nil) {
+        return nil;
+    }
+
+    [self _OACalendarView_sharedInit];
+
+    return self;
+}
+
+- (id)initWithCoder:(NSCoder *)coder;
+{
+    self = [super initWithCoder:coder];
+    if (self == nil) {
+        return nil;
+    }
+
+    [self _OACalendarView_sharedInit];
+
     return self;
 }
 

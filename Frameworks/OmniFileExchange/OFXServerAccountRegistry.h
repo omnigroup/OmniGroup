@@ -17,8 +17,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface OFXServerAccountRegistry : NSObject
 
-// The default persistent registry
-@property(nonatomic,readonly,class) OFXServerAccountRegistry *defaultAccountRegistry;
+// The default persistent registry. Nil is only returned in error conditions.
+@property(nullable,nonatomic,readonly,class) OFXServerAccountRegistry *defaultAccountRegistry;
 
 - (nullable instancetype)initWithAccountsDirectoryURL:(NSURL *)accountsDirectoryURL
 #if OMNI_BUILDING_FOR_IOS
@@ -31,8 +31,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic,readonly,copy) NSArray <OFXServerAccount *> *validImportExportAccounts; // KVO observable.
 
 - (NSArray <OFXServerAccount *> *)accountsWithType:(OFXServerAccountType *)type;
-- (OFXServerAccount *)accountWithUUID:(NSString *)uuid;
-- (OFXServerAccount *)accountWithDisplayName:(NSString *)name;
+- (nullable OFXServerAccount *)accountWithUUID:(NSString *)uuid;
+- (nullable OFXServerAccount *)accountWithDisplayName:(NSString *)name;
 
 // To remove accounts, call -prepareForRemoval on them.
 - (BOOL)addAccount:(OFXServerAccount *)account error:(NSError **)outError;

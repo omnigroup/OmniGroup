@@ -7,6 +7,8 @@
 
 #import <OmniFoundation/OFPointerStack.h>
 
+#import <Foundation/NSPointerArray.h>
+
 OB_REQUIRE_ARC
 
 NS_ASSUME_NONNULL_BEGIN

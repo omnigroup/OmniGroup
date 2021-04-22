@@ -21,17 +21,22 @@ NS_ASSUME_NONNULL_BEGIN
 
 // Helper applications for URLs
 
-- (nullable NSString *)helperApplicationForScheme:(nullable NSString *)scheme;
+- (nullable NSURL *)helperApplicationURLForScheme:(NSString *)scheme;
+- (nullable NSString *)helperApplicationBundleIdentifierForScheme:(NSString *)scheme;
 - (BOOL)launchURL:(nullable NSString *)urlString error:(NSError **)outError;
 
 // API for sending email
 
-- (BOOL)launchMailTo:(nullable NSString *)receiver carbonCopy:(nullable NSString *)carbonCopy blindCarbonCopy:(nullable NSString *)blindCarbonCopy subject:(nullable NSString *)subject body:(nullable NSString *)body attachments:(nullable NSArray <NSString *> *)attachmentFilenames error:(NSError **)outError;
+- (BOOL)launchMailApplicationWithBundleIdentifier:(NSString *)mailAppIdentifier to:(nullable NSString *)receiver carbonCopy:(nullable NSString *)carbonCopy blindCarbonCopy:(nullable NSString *)blindCarbonCopy subject:(nullable NSString *)subject body:(nullable NSString *)body attachments:(nullable NSArray <NSString *> *)attachmentFilenames error:(NSError **)outError;
 
 // Convenience methods which call the above method
 
+- (BOOL)launchMailTo:(nullable NSString *)receiver carbonCopy:(nullable NSString *)carbonCopy blindCarbonCopy:(nullable NSString *)blindCarbonCopy subject:(nullable NSString *)subject body:(nullable NSString *)body attachments:(nullable NSArray <NSString *> *)attachmentFilenames error:(NSError **)outError;
 - (BOOL)launchMailTo:(nullable NSString *)receiver carbonCopy:(nullable NSString *)carbonCopy subject:(nullable NSString *)subject body:(nullable NSString *)body error:(NSError **)outError;
 - (BOOL)launchMailTo:(nullable NSString *)receiver carbonCopy:(nullable NSString *)carbonCopy blindCarbonCopy:(nullable NSString *)blindCarbonCopy subject:(nullable NSString *)subject body:(nullable NSString *)body error:(NSError **)outError;
+
+extern NSString *OAAppleMailBundleIdentifier;
+extern NSString *OAMailSmithBundleIdentifier;
 
 @end
 

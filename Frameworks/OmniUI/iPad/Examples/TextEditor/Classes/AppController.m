@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -56,9 +56,12 @@ RCS_ID("$Id$")
 
 - (void)showInspectorFromBarButtonItem:(UIBarButtonItem *)item;
 {
+    OBFinishPorting;
+#if 0
     TextViewController *viewController = (TextViewController *)self.document.documentViewController;
     OUITextView *textView = viewController.textView;
     [textView inspectSelectedTextWithViewController:viewController fromBarButtonItem:item withSetupBlock:NULL]; // TODO: Use the setup block to scroll the selection to be visible while the inspector is up
+#endif
 }
 
 #pragma mark - OUIAppController

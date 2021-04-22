@@ -72,7 +72,7 @@
 "Recommended Fonts" = "Empfohlene Schriften";
 
 /* Name for the variant of a font with out any special attributes */
-"Regular" = "Standard";
+"Regular" = "Normal";
 
 /* show more rows button title */
 "Show More Rows" = "Mehr Zeilen anzeigen";

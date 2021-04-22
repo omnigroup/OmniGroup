@@ -110,7 +110,8 @@ OBDEPRECATED_METHOD(-_releaseFromWeakRetainHelper);
 }
 
 /// Calls the given block once for each still-valid object in the reference array. Any invalid references will be removed.
-+ (void)forEachReference:(NSMutableArray <OFWeakReference *> *)references perform:(void (^)(id))action;
+/// Returns YES if the the action was invoked at least once.
++ (BOOL)forEachReference:(NSMutableArray <OFWeakReference *> *)references perform:(void (^)(id))action;
 {
     // Copying in case the action makes further modifications. Any newly added references will not be considered, and any removed references will still be acted on this time around.
     NSArray <OFWeakReference *> *copy = [references select:^BOOL(OFWeakReference *reference) {
@@ -130,6 +131,8 @@ OBDEPRECATED_METHOD(-_releaseFromWeakRetainHelper);
             action(object);
         }
     }
+
+    return [copy count] > 0;
 }
 
 + (void)_pruneReferences:(NSMutableArray <OFWeakReference *> *)references;

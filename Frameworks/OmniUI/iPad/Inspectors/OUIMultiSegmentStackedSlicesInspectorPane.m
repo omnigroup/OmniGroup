@@ -8,11 +8,8 @@
 #import <OmniUI/OUIMultiSegmentStackedSlicesInspectorPane.h>
 
 #import <OmniUI/OUIInspector.h>
-#import <OmniUI/OUIInspectorAppearance.h>
 #import <OmniUI/OUIInspectorBackgroundView.h>
 #import <OmniUI/OUITabBar.h>
-
-RCS_ID("$Id$");
 
 @interface OUIMultiSegmentStackedSlicesInspectorPane (/*Private*/)
 @property (nonatomic, strong) UINavigationItem *segmentsNavigationItem;
@@ -272,22 +269,5 @@ static NSArray *_toolbarItemsForSegment(OUIInspectorSegment *segment)
 
     return NSNotFound;
 }
-
-#pragma mark - OUIThemedAppearanceClient
-
-- (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance;
-{
-    [super themedAppearanceDidChange:changedAppearance];
-    
-    OUIInspectorAppearance *appearance = OB_CHECKED_CAST_OR_NIL(OUIInspectorAppearance, changedAppearance);
-    self.view.backgroundColor = appearance.InspectorBackgroundColor;
-    self.selectedTabTintColor = appearance.InspectorTextColor;
-    self.horizontalTabBottomStrokeColor = appearance.HorizontalTabBottomStrokeColor;
-    self.horizontalTabSeparatorTopColor = appearance.HorizontalTabSeparatorTopColor;
-
-    [_titleTabBar appearanceDidChange];
-}
-
-
 
 @end

@@ -84,7 +84,9 @@ extern NSString *const OUIHelpBookNameKey; // @"OUIHelpBookName" is the Info.pli
 + (void)presentError:(NSError *)error inScene:(nullable UIScene *)scene file:(const char * _Nullable)file line:(int)line NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based approach.");
 + (void)presentError:(NSError *)error fromViewController:(nullable UIViewController *)viewController file:(const char * _Nullable)file line:(int)line;
 + (void)presentError:(NSError *)error fromViewController:(nullable UIViewController *)viewController file:(const char * _Nullable)file line:(int)line optionalActionTitle:(nullable NSString *)optionalActionTitle optionalAction:(void (^ __nullable)(OUIExtendedAlertAction *action))optionalAction;
-+ (void)presentError:(NSError *)error fromViewController:(nullable UIViewController *)viewController cancelButtonTitle:(NSString *)cancelButtonTitle optionalActionTitle:(nullable NSString *)optionalActionTitle optionalAction:(void (^ __nullable)(OUIExtendedAlertAction *action))optionalAction;
++ (void)presentError:(NSError *)error fromViewController:(nullable UIViewController *)viewController cancelButtonTitle:(nullable NSString *)cancelButtonTitle optionalActionTitle:(nullable NSString *)optionalActionTitle optionalAction:(void (^ __nullable)(OUIExtendedAlertAction *action))optionalAction;
++ (void)presentError:(NSError *)error fromViewController:(nullable UIViewController *)viewController cancelButtonTitle:(nullable NSString *)cancelButtonTitle optionalActionTitle:(nullable NSString *)optionalActionTitle optionalAction:(void (^ __nullable)(OUIExtendedAlertAction *action))optionalAction completionHandler:(void (^ _Nullable)(void))handler;
++ (void)presentError:(NSError *)error fromViewController:(nullable UIViewController *)viewController file:(const char * _Nullable)file line:(int)line cancelButtonTitle:(nullable NSString *)cancelButtonTitle optionalActions:(nullable NSArray <OUIExtendedAlertAction *> *)optionalActions completionHandler:(void (^ _Nullable)(void))handler;
 
 + (void)presentAlert:(NSError *)error inScene:(nullable UIScene *)scene file:(const char * _Nullable)file line:(int)line NS_EXTENSION_UNAVAILABLE_IOS("Use +presentAlert:fromViewController:file:line: instead.");  // 'OK' instead of 'Cancel' for the button title
 + (void)presentAlert:(NSError *)error file:(const char * _Nullable)file line:(int)line NS_EXTENSION_UNAVAILABLE_IOS("Use +presentAlert:fromViewController:file:line: instead.") NS_DEPRECATED_IOS(13_0, 13_0, "The singleton app controller cannot know the correct presentation source in a multi-scene context. Use +presentAlert:fromViewController:file:line: instead.");  // 'OK' instead of 'Cancel' for the button title
@@ -196,7 +198,7 @@ extern NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey; // @"
 
 - (NSArray *)additionalAppMenuOptionsAtPosition:(OUIAppMenuOptionPosition)position; // override to supplement super's return value with additional OUIMenuOptions
 - (nullable OUIMenuOption *)specialFirstAppMenuOption; // Override to place an option at the top of the list, separate from the rest
-- (void)sendFeedbackWithSubject:(NSString * _Nullable)subject body:(NSString * _Nullable)body inScene:(nullable UIScene *)scene NS_EXTENSION_UNAVAILABLE_IOS("Feedback cannot be sent from extensions.");
+- (void)sendFeedbackWithSubject:(NSString * _Nullable)subject body:(NSString * _Nullable)body inScene:(nullable UIScene *)scene completion:(void (^ _Nullable)(void))mailInteractionCompletionHandler NS_EXTENSION_UNAVAILABLE_IOS("Feedback cannot be sent from extensions.");
 - (void)signUpForOmniNewsletterFromViewController:(UIViewController *)viewController NS_EXTENSION_UNAVAILABLE_IOS("Extensions cannot sign up for the Omni newsletter");
 - (MFMailComposeViewController * _Nullable)newMailComposeController;
 - (void)sendMailTo:(NSArray<NSString *> *)recipients withComposeController:(MFMailComposeViewController *)mailComposeController inScene:(nullable UIScene *)scene;
@@ -233,6 +235,9 @@ extern NSNotificationName const OUISystemIsSnapshottingNotification;
 - (void)unlockCreateNewDocumentWithCompletion:(void (^ __nonnull)(BOOL isUnlocked))completionBlock;
 
 - (void)checkTemporaryLicensingStateInViewController:(UIViewController *)viewController withCompletionHandler:(void (^ __nullable)(void))completionHandler;
+
+// Defaults to YES, can be overridden by apps to allow only one crash report, and subsequent scenes will show an alert pointing the user to the lone crash report scene.
+@property (nonatomic, readonly) BOOL canHaveMultipleCrashReportScenes;
 
 @end
 

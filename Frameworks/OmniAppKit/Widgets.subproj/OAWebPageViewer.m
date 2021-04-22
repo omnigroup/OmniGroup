@@ -240,7 +240,7 @@ static NSMutableDictionary *sharedViewerCache = nil;
 
 - (BOOL)_urlIsFromAllowedBundle:(NSURL *)url;
 {
-    if (OFISEQUAL(url.scheme, @"about") || OFISEQUAL(url.scheme, @"applewebdata"))
+    if (OFISEQUAL(url.scheme, @"about") || OFISEQUAL(url.scheme, @"applewebdata") || OFISEQUAL(url.scheme, @"x-omnijs-documentation"))
         return YES;
 
     if ([url isFileURL]) {

@@ -31,29 +31,19 @@ struct HideDivider: PaneDecoration {
 struct AddShadow: PaneDecoration {
     func apply(toView view: UIView) {
         let shadowOpacity: Float
+        let shadowColor: UIColor
         
         switch view.traitCollection.userInterfaceStyle {
         case .dark:
             shadowOpacity = 0
+            shadowColor = UIColor.clear
             
         case .light, .unspecified:
             fallthrough
             
         @unknown default:
             shadowOpacity = 0.4
-        }
-
-        let shadowColor = UIColor { (traitCollection) -> UIColor in
-            switch traitCollection.userInterfaceStyle {
-            case .dark:
-                return UIColor.clear
-                
-            case .light, .unspecified:
-                fallthrough
-                
-            @unknown default:
-                return UIColor.black
-            }
+            shadowColor = UIColor.black
         }
 
         let layer = view.layer

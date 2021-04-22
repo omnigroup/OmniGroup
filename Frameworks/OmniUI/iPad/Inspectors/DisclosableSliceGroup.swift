@@ -1,4 +1,4 @@
-// Copyright 2017 Omni Development, Inc. All rights reserved.
+// Copyright 2017-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -206,17 +206,6 @@ class DiscloseButtonSlice: OUIInspectorSlice {
             delegate.updateInterface(of: self, fromInspectedObjects: reason)
         }
     }
-
-    // MARK: - OUIThemedAppearanceClient
-    
-    open override func themedAppearanceDidChange(_ appearance: OUIThemedAppearance!) {
-        super.themedAppearanceDidChange(appearance);
-        
-        let changedAppearance = appearance as! OUIInspectorAppearance
-        
-        view.backgroundColor = changedAppearance.inspectorBackgroundColor
-        button.setTitleColor(changedAppearance.tableCellTextColor, for:.normal)
-    }
 }
 
 @objc protocol DiscloseButtonSliceDelegate {
@@ -275,17 +264,6 @@ class DiscloseGroupHeaderSlice: OUIInspectorSlice {
         guard let delegate = delegate else { return true }
 
         return delegate.isAppropriate(self, inspectedObjects: objects)
-    }
-
-    // MARK: - OUIThemedAppearanceClient
-    
-    open override func themedAppearanceDidChange(_ appearance: OUIThemedAppearance!) {
-        super.themedAppearanceDidChange(appearance);
-        
-        let changedAppearance = appearance as! OUIInspectorAppearance
-        
-        wrapperView.backgroundColor = changedAppearance.inspectorBackgroundColor
-        titleLabel.textColor = changedAppearance.tableCellTextColor
     }
 }
 

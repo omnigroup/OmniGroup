@@ -9,10 +9,7 @@
 
 #import <OmniUI/OUINoteTextView.h>
 #import <OmniUI/OUIKeyboardNotifier.h>
-#import <OmniUI/OUIInspectorAppearance.h>
 #import <OmniUI/UIView-OUIExtensions.h>
-
-RCS_ID("$Id$")
 
 @implementation OUIFullScreenNoteTextViewController
 
@@ -68,17 +65,6 @@ RCS_ID("$Id$")
         if (self.dismissedCompletionHandler)
             self.dismissedCompletionHandler(self);
     }];
-}
-
-- (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance;
-{
-    [super themedAppearanceDidChange:changedAppearance];
-    
-    OUIInspectorAppearance *appearance = OB_CHECKED_CAST_OR_NIL(OUIInspectorAppearance, changedAppearance);
-    
-    self.view.backgroundColor = appearance.InspectorBackgroundColor;
-    self.textView.backgroundColor = appearance.InspectorBackgroundColor;
-    self.textView.textColor = appearance.InspectorTextColor;
 }
 
 @end

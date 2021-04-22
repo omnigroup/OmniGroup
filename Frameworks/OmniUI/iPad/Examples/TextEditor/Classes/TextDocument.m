@@ -1,4 +1,4 @@
-// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,7 +9,6 @@
 
 #import <OmniDocumentStore/ODSFileItem.h> // For -fileURL
 #import <OmniQuartz/OQDrawing.h> // For OQCreateImageWithSize()
-#import <OmniUIDocument/OUIDocumentPreview.h>
 #import <OmniUI/OmniUI.h>
 #import <OmniAppKit/NSAttributedString-OAExtensions.h>
 #import <MobileCoreServices/MobileCoreServices.h>
@@ -24,11 +23,11 @@ RCS_ID("$Id$");
     UINavigationController *_viewControllerToPresent;
 }
 
-- initWithContentsOfTemplateAtURL:(NSURL *)templateURLOrNil toBeSavedToURL:(NSURL *)saveURL error:(NSError **)outError;
+- initWithContentsOfTemplateAtURL:(NSURL *)templateURLOrNil toBeSavedToURL:(NSURL *)saveURL activityViewController:(UIViewController *)activityViewController error:(NSError **)outError;
 {
     OBPRECONDITION(templateURLOrNil == nil, "We don't have template support");
 
-    if (!(self = [super initWithContentsOfTemplateAtURL:templateURLOrNil toBeSavedToURL:saveURL error:outError]))
+    if (!(self = [super initWithContentsOfTemplateAtURL:templateURLOrNil toBeSavedToURL:saveURL activityViewController:activityViewController error:outError]))
         return nil;
     
     _text = [[NSAttributedString alloc] init];
@@ -109,58 +108,6 @@ RCS_ID("$Id$");
     return [[[OUIImageLocation alloc] initWithName:@"DocumentPreviewPlaceholder.png" bundle:[NSBundle mainBundle]] autorelease];
 }
 
-static void _writePreview(Class self, OFFileEdit *fileEdit, UIViewController *viewController, void (^completionHandler)(void))
-{
-    // We ping pong back and forth between the main queue and the OUIDocumentPreview background queue here a bit. We want to do as much work as possible on the background queue so that the main queue is available to process user events (like scrolling in the document picker) while previews are being generated. Some code, however, must be done on the main thread. In particular our drawing code is UIView-based and so the preview image must be done on the main queue.
-    // One might thing that it would be better to determine the final preview image size and call -snapshotImageWithSize: with that size, but this is (very) wrong. The issue is that the CALayer -renderInContext: method is very slow if it has to scale the layer backing stores, but it is very fast if it can blit them w/o interpolation. So, it is faster to capture a 100% scale image and then do one final scaling operation (which we can also do on the background queue).
-    
-    completionHandler = [[completionHandler copy] autorelease];
-
-    CGRect viewFrame = CGRectMake(0.0f, 0.0f, 768.0f, 1024.0f);
-    UIView *view = viewController.view;
-    view.frame = viewFrame;
-    [view layoutIfNeeded];
-    
-    UIImage *image = [view snapshotImageWithSize:viewFrame.size];
-    
-    [OUIDocumentPreview cachePreviewImages:^(OUIDocumentPreviewCacheImage cacheImage){
-        cacheImage(fileEdit, [image CGImage]);
-    }];
-
-    // Don't invoke the handler directly -- we want control to return to the runloop to process any pending events/scrolling
-    if (completionHandler)
-        [[NSOperationQueue mainQueue] addOperationWithBlock:completionHandler];
-}
-
-+ (void)writePreviewsForDocument:(OUIDocument *)document withCompletionHandler:(void (^)(void))completionHandler;
-{
-    // A useful pattern is to make a new view controller that is preconfigured to know that it will only ever be used to generate a preview (by propagating the UIDocument.forPreviewGeneration flag). In this case, the view controller can only load the data necessary to show a preview (data that might not be present in the current view controller if it is scrolled out of view). For example, in OmniOutliner for iPad, we make a new view controller that only loads N rows (based on the minimum row height and orientation).
-    
-    TextViewController *viewController;
-
-    if (document.forPreviewGeneration) {
-        // Just use the default view controller -- no one else is
-        viewController = (TextViewController *)document.documentViewController;
-    } else {
-        // Make a new view controller so we can assume it is not scrolled down or has a different viewport.
-        viewController = (TextViewController *)[document makeViewController];
-        viewController.document = document;
-    }
-    viewController.forPreviewGeneration = YES;
-    
-    viewController.textView.contentOffset = CGPointZero;
-    
-    ODSFileItem *fileItem = document.fileItem;
-    OFFileEdit *fileEdit = fileItem.fileEdit;
-
-    completionHandler = [[completionHandler copy] autorelease];
-    
-    _writePreview(self, fileEdit, viewController, ^{
-        if (completionHandler)
-            completionHandler();
-    });
-}
-
 #pragma mark -
 #pragma mark UIDocument subclass
 
@@ -224,15 +171,6 @@ static void _writePreview(Class self, OFFileEdit *fileEdit, UIViewController *vi
     CGFloat scale = _scale * 100;
     
     return [_text fileWrapperFromRange:NSMakeRange(0, [_text length]) documentAttributes:@{NSDocumentTypeDocumentAttribute:documentType, NSViewZoomDocumentAttribute:@(scale)} error:outError];
-}
-
-- (BOOL)writeContents:(id)contents toURL:(NSURL *)url forSaveOperation:(UIDocumentSaveOperation)saveOperation originalContentsURL:(NSURL *)originalContentsURL error:(NSError **)outError;
-{
-    if (![super writeContents:contents toURL:url forSaveOperation:saveOperation originalContentsURL:originalContentsURL error:outError])
-        return NO;
-    
-    [self didWriteToURL:url];
-    return YES;
 }
 
 @end

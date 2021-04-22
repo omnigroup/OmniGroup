@@ -137,7 +137,7 @@
 
 /* New Document toolbar item accessibility label.
    New Template button title */
-"New Document" = "새로운 도큐멘트";
+"New Document" = "새 도큐멘트";
 
 /* Update news: title */
 "New in iOS 13:\nFull Adoption of Apple's Document Browser" = "iOS 13의 새로운 기능:\nApple의 도큐멘트 브라우저 완전 채택";

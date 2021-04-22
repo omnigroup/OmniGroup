@@ -104,7 +104,13 @@ typedef NS_ENUM(NSUInteger, OAAppearanceLookupPolicy) {
 - (BOOL)isLightLuma:(CGFloat)luma;
 
 - (OA_SYSTEM_COLOR_CLASS *)colorForKeyPath:(NSString *)keyPath;
-    // value must be a dictionary suitable for +[NSColor(OAExtensions colorFromPropertyListRepresentation:]
+    // plist value must be a dictionary suitable for +[NSColor(OAExtensions colorFromPropertyListRepresentation:]
+
+/// -colorForKeyPath: will call this method, when appropriate, based on the color lookup policy.
+/// Subclasses may override this to lookup alternate colors as needed. (This might be reasonble in the case that alternate colors are needed for a well named color, but the since the namespace is flat, the color has a different name in the subclass.
+///
+/// Message super for the default behavior.
+- (nullable OA_SYSTEM_COLOR_CLASS *)colorFromAssetCatalogForKeyPath:(NSString *)keyPath;
 
 - (float)floatForKeyPath:(NSString *)keyPath;
 - (double)doubleForKeyPath:(NSString *)keyPath;
@@ -114,10 +120,10 @@ typedef NS_ENUM(NSUInteger, OAAppearanceLookupPolicy) {
 - (BOOL)boolForKeyPath:(NSString *)keyPath;
 
 - (OA_SYSTEM_EDGE_INSETS_STRUCT)edgeInsetsForKeyPath:(NSString *)keyPath;
-    // value must be a dictionary of the form {left: <number>, right: <number>, top: <number>, bottom: <number>} (missing keys are assumed to be 0)
+    // plist value must be a dictionary of the form {left: <number>, right: <number>, top: <number>, bottom: <number>} (missing keys are assumed to be 0)
 
 - (CGSize)sizeForKeyPath:(NSString *)keyPath;
-    // value must be a dictionary of the form {width: <number>, height: <number>} (missing keys are assumed to be 0)
+    // plist value must be a dictionary of the form {width: <number>, height: <number>} (missing keys are assumed to be 0)
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 /*!

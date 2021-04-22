@@ -11,6 +11,7 @@ enum {
     OUINoError = 0, // Zero often means no error.
     
     OUIDocumentHasNoURLError,
+    OUISendFeedbackError,
 };
 
 extern NSString * const OUIErrorDomain;

@@ -46,9 +46,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSString *)localizedNameForSampleDocumentNamed:(NSString *)documentName;
 - (NSURL *)URLForSampleDocumentNamed:(NSString *)name ofType:(NSString *)fileType;
 
-// Background fetch helper for OmniPresence-enabled apps
-- (void)performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))completionHandler;
-
 // UIApplicationDelegate methods we implement (see OUIAppController too)
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(nullable NSDictionary<UIApplicationLaunchOptionsKey, id> *)launchOptions;
 - (UISceneConfiguration *)application:(UIApplication *)application configurationForConnectingSceneSession:(UISceneSession *)connectingSceneSession options:(UISceneConnectionOptions *)options; // If you just want to substitute the default scene delegate class, use the .defaultSceneDelegateClass property rather than subclassing this. (Subclass this method when doing more advanced customizations, such as setting up a custom scene for an external display.)

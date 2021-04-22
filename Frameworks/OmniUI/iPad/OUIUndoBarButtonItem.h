@@ -20,8 +20,6 @@ extern NSString * const OUIUndoPopoverWillShowNotification;
 - (void)willPresentMenuForUndoRedo;
 @end
 
-@protocol OUIUndoBarButtonMenuAppearanceDelegate;
-
 @interface OUIUndoBarButtonItem : UIBarButtonItem
 
 // Normally, OUIUndoBarButtonItem listens for any undo manager notifications and updates its state from its target in response.
@@ -37,11 +35,6 @@ extern NSString * const OUIUndoPopoverWillShowNotification;
 + (BOOL)dismissUndoMenu;
 
 - (void)updateButtonForCompact:(BOOL)isCompact;
-
-// Initializer for use should you need to control the appearance of the undo menu
-- initWithUndoMenuAppearanceDelegate:(id <OUIUndoBarButtonMenuAppearanceDelegate>)appearanceDelegate;
-- (void)appearanceDidChange;
-@property (nonatomic, weak) id <OUIUndoBarButtonMenuAppearanceDelegate> appearanceDelegate;
 
 @end
 

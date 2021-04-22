@@ -1,4 +1,4 @@
-// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,11 +7,8 @@
 
 #import "OUIMenuOptionsController.h"
 
-RCS_ID("$Id$");
-
 #import <OmniAppKit/OAAppearance.h>
 #import <OmniUI/OUIInspector.h>
-#import <OmniUI/OUIInspectorAppearance.h>
 #import <OmniUI/OUIInspectorWell.h>
 #import <OmniUI/OUIAppController.h>
 #import <OmniUI/OUIMenuController.h>
@@ -407,13 +404,8 @@ NS_ASSUME_NONNULL_BEGIN
         cell.selectionStyle = UITableViewCellSelectionStyleDefault;
     } else {
         // Placeholder; one such case is in the 'move to folder' where some folders aren't valid destinations but are listed to show hierarchy
-        if (OUIInspectorAppearance.inspectorAppearanceEnabled) {
-            label.textColor = OUIInspectorAppearance.appearance.InspectorDisabledTextColor;
-            cell.imageView.tintColor = OUIInspectorAppearance.appearance.InspectorDisabledTextColor;
-        } else {
-            label.textColor = [OUIInspector disabledLabelTextColor];
-            cell.imageView.tintColor = [OUIInspector disabledLabelTextColor];
-        }
+        label.textColor = [OUIInspector disabledLabelTextColor];
+        cell.imageView.tintColor = [OUIInspector disabledLabelTextColor];
         cell.selectionStyle = UITableViewCellEditingStyleNone;
     }
     

@@ -32,6 +32,7 @@ static inline void OUIGraphicsEndImageContext(void)
 typedef enum {
     OUIShadowTypeLightContentOnDarkBackground,
     OUIShadowTypeDarkContentOnLightBackground,
+    OUIShadowTypeDynamic,
 } OUIShadowType;
 
 extern CGSize OUIShadowOffset(OUIShadowType type);

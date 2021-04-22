@@ -1,4 +1,4 @@
-// Copyright 2017-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2017-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -73,18 +73,5 @@ open class ToggleInspectorSlice : OUIInspectorSlice {
         }
 
         self.view = view
-
-        if OUIInspectorAppearance.inspectorAppearanceEnabled {
-            self.themedAppearanceDidChange(OUIInspectorAppearance.shared())
-        }
     }
-
-    open override func themedAppearanceDidChange(_ appearance: OUIThemedAppearance!) {
-        super.themedAppearanceDidChange(appearance);
-
-        let changedAppearance = appearance as! OUIInspectorAppearance
-        view.backgroundColor = changedAppearance.tableCellBackgroundColor
-        self.toggleLabel?.textColor = changedAppearance.tableCellTextColor
-    }
-
 }

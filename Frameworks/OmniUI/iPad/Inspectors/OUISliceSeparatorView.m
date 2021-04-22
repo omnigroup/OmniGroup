@@ -6,7 +6,6 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import "OUISliceSeparatorView.h"
-#import <OmniUI/OUIInspectorAppearance.h>
 #import <OmniUI/OUIInspectorSlice.h>
 
 RCS_ID("$Id$")
@@ -54,26 +53,6 @@ static id _commonInit(OUISliceSeparatorView *self)
     [path moveToPoint:(CGPoint){ .x = CGRectGetMinX(bounds), .y = CGRectGetMaxY(rect) - (path.lineWidth/2.0)}];
     [path addLineToPoint:(CGPoint){ .x = CGRectGetMinX(rect) + CGRectGetWidth(rect), .y = CGRectGetMaxY(rect) - (path.lineWidth/2.0)}];
     [path stroke];
-}
-
-- (void)willMoveToSuperview:(UIView *)superview;
-{
-    if ([OUIInspectorAppearance inspectorAppearanceEnabled]) {
-        OUIInspectorAppearance *appearance = OUIInspectorAppearance.appearance;
-        [self themedAppearanceDidChange:appearance];
-    }
-}
-
-- (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance;
-{
-    [super themedAppearanceDidChange:changedAppearance];
-    
-    OUIInspectorAppearance *appearance = OB_CHECKED_CAST_OR_NIL(OUIInspectorAppearance, changedAppearance);
-    self.backgroundColor = appearance.TableCellBackgroundColor;
-    self.strokeColor = appearance.InspectorSeparatorColor;
-    
-    [self setNeedsDisplay];
-    
 }
 
 @end

@@ -1,4 +1,4 @@
-// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -218,15 +218,6 @@ RCS_ID("$Id$")
 #else
     [coder encodeDataObject:[NSData dataWithBytes:portAddress length:(portAddress->sa_len)]];
 #endif
-}
-
-// Make sure we go bycopy or byref as appropriate
-- (id)replacementObjectForPortCoder:(NSPortCoder *)encoder;
-{
-    if ([encoder isByref])
-        return [super replacementObjectForPortCoder:encoder]; // NSObject returns an NSDistantObject by default
-    else
-        return self; // But if we're bycopy, we want to encode/decode our object directly rather than a proxy
 }
 
 //

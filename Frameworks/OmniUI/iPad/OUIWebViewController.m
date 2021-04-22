@@ -16,6 +16,7 @@
 #import <OmniUI/OUIAppController.h>
 #import <OmniUI/OUIBarButtonItem.h>
 #import <OmniUI/UIPopoverPresentationController-OUIExtensions.h>
+#import <OmniUI/UIViewController-OUIExtensions.h>
 #import <OmniUI/OUIKeyCommands.h>
 
 RCS_ID("$Id$")
@@ -236,9 +237,16 @@ static NSString * const InvalidScheme = @"x-invalid";
     }
 
     // Special URL
-    if ([OUIAppController canHandleURLScheme:scheme] && [[[UIApplication sharedApplication] delegate] application:[UIApplication sharedApplication] openURL:requestURL options:@{UIApplicationOpenURLOptionsOpenInPlaceKey : @(NO), UIApplicationOpenURLOptionsSourceApplicationKey : [[NSBundle mainBundle] bundleIdentifier]}]) {
-        decisionHandler(WKNavigationActionPolicyCancel);
-        return; // Don't load this in the WebView
+    if ([OUIAppController canHandleURLScheme:scheme]) {
+        UIScene *scene = self.containingScene;
+        [scene openURL:requestURL options:nil completionHandler:^(BOOL success) {
+            if (success) {
+                decisionHandler(WKNavigationActionPolicyCancel);
+            } else {
+                decisionHandler(WKNavigationActionPolicyAllow);
+            }
+        }];
+        return;
     }
 
     // Mailto link

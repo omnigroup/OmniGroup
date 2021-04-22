@@ -11,7 +11,6 @@
 
 #import <OmniUI/OUIEmptyPaddingInspectorSlice.h>
 #import <OmniUI/OUIInspector.h>
-#import <OmniUI/OUIInspectorAppearance.h>
 #import <OmniUI/OUIInspectorSlice.h>
 #import <OmniUI/OUIInspectorSliceView.h>
 #import <OmniUI/OUIKeyboardNotifier.h>
@@ -23,8 +22,6 @@
 
 #import "OUIInspectorBackgroundView.h"
 #import "OUIInspectorSlice-Internal.h"
-
-RCS_ID("$Id$");
 
 #if 0 && defined(DEBUG_curt) && defined(DEBUG)
     #define DEBUG_ANIM(format, ...) NSLog(@"ANIM: " format, ## __VA_ARGS__)
@@ -312,9 +309,6 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
         slice.containingPane = self;
         slice.view.backgroundColor = [slice sliceBackgroundColor];
         
-        if ([OUIInspectorAppearance inspectorAppearanceEnabled])
-            [slice notifyChildrenThatAppearanceDidChange:OUIInspectorAppearance.appearance];
-        
         [self addChildViewController:slice];
         [self.sliceStackView addArrangedSubview:slice.view];
         
@@ -511,9 +505,6 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
     }
     scrollview.contentInset = defaultInsets;
 
-    if ([OUIInspectorAppearance inspectorAppearanceEnabled])
-        [self notifyChildrenThatAppearanceDidChange:OUIInspectorAppearance.appearance];
-    
     [super viewWillAppear:animated];
 }
 
@@ -564,27 +555,6 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
     [UIView animateWithDuration:0.2 delay:0 options:OUIAnimationOptionFromCurve(notifier.lastAnimationCurve) animations:^{
         view.contentInset = insets;
     } completion:nil];
-}
-
-#pragma mark - OUIInspectorAppearance
-
-- (NSArray <id<OUIThemedAppearanceClient>> *)themedAppearanceChildClients
-{
-    NSArray <id<OUIThemedAppearanceClient>> *clients = self.availableSlices;
-    if ([self inInspector])
-        clients = [clients arrayByAddingObject:self.view];
-    
-    return clients;
-}
-
-- (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance;
-{
-    [super themedAppearanceDidChange:changedAppearance];
-    
-    OUIInspectorAppearance *appearance = OB_CHECKED_CAST_OR_NIL(OUIInspectorAppearance, changedAppearance);
-    OUIStackedSlicesInspectorPaneContentView *view = (OUIStackedSlicesInspectorPaneContentView *)self.contentView;
-    view.inspectorBackgroundViewColor = appearance.InspectorBackgroundColor;
-    self.navigationController.toolbar.backgroundColor = appearance.InspectorBackgroundColor;
 }
 
 @end

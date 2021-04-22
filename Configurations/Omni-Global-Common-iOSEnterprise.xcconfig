@@ -1,0 +1,10 @@
+// Copyright 2019 Omni Development, Inc. All rights reserved.
+// This software may only be used and reproduced according to the terms in the file OmniSourceLicense.html, which should be distributed with this project and can also be found at <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+
+// Common settings for building for iOS Enterprise builds
+
+#include "Omni-Global-Common-AppStore.xcconfig"
+
+OMNI_STORE_PREPROCESSOR_DEFINITIONS = APP_STORE=1 APP_STORE_ENTERPRISE=1
+OMNI_STORE_SWIFT_FLAGS = -DAPP_STORE -DAPP_STORE_ENTERPRISE
+OMNI_STORE_BUNDLE_IDENTIFIER_SUFFIX = .enterprise

@@ -26,7 +26,9 @@ open class URLProcessingActivity : UIActivity {
     
     // Called once all the inputs are processed. The default implementation finishes the activity. Subclasses can continue doing work and call this later.
     open func finishedProcessing(_ completed: Bool) {
-        activityDidFinish(completed)
+        OperationQueue.main.addOperation {
+            self.activityDidFinish(completed)
+        }
     }
     
     // MARK:- UIActivity subclass
@@ -80,7 +82,7 @@ open class URLProcessingActivity : UIActivity {
 open class DocumentProcessingActivity<DocumentType: OUIDocument> : URLProcessingActivity {
 
     // This will be invoked from prepare(withActivityItems:) and the result will be returned as the activityViewController.
-    open func makeProcessingViewController() -> UIViewController {
+    open func makeProcessingViewController() -> UIViewController? {
         // Default to a vanilla view controller that other view controllers can be presented atop.
         return OUIWrappingViewController()
     }
@@ -141,8 +143,10 @@ open class DocumentProcessingActivity<DocumentType: OUIDocument> : URLProcessing
 
                 document.close { success in
                     assert(success)
-                    completionHandler()
                 }
+                
+                completionHandler() // if you try to close a document that has been closed already, it won't call the completion handler, which is why this happens afterwards. the completion here isn't dependent on the document's closing being done, so this shouldn't be a problem.
+
             }
         }
     }
@@ -151,7 +155,7 @@ open class DocumentProcessingActivity<DocumentType: OUIDocument> : URLProcessing
 
     // Some subclasses may need a view controller to provide details on opening documents (for example, a passphrase for decryption)
 
-    public var processingViewController: UIViewController!
+    public var processingViewController: UIViewController?
 
     public override func prepare(withActivityItems activityItems: [Any]) {
         super.prepare(withActivityItems: activityItems)
@@ -160,8 +164,10 @@ open class DocumentProcessingActivity<DocumentType: OUIDocument> : URLProcessing
             processingViewController = makeProcessingViewController()
         }
 
-        // The regular `perform()` function won't be called since we provide a view controller.
-        startProcessing()
+        if processingViewController != nil {
+            // The regular `perform()` function won't be called since we provide a view controller.
+            startProcessing()
+        }
     }
 
     public override var activityViewController: UIViewController? {
@@ -191,7 +197,37 @@ open class DocumentConversionActivity<DocumentType: OUIDocument, OutputType> : D
     public override func finishedProcessing(_ completed: Bool) {
         if completed && !results.isEmpty {
             finalize(results: results) { error in
-                super.finishedProcessing(completed)
+                if let error: NSError = error as NSError? {
+                    OperationQueue.main.addOperation {
+                        if let activityVC = self.activityViewController, let window = OUIAppController.window(for: activityVC.containingScene, options: [])  {
+                            let rootViewController = window.rootViewController;
+
+                            let isPermissionError = error.hasUnderlyingErrorDomain(OUIDocumentErrorDomain, code: 3) //OUIDocumentErrorPhotoLibraryAccessRestrictedOrDenied
+
+                            var actionTitle: String? = nil
+                            var action: ((OUIExtendedAlertAction) -> Void)? = nil
+
+                            if (isPermissionError) {
+                                actionTitle = "Show Settings"
+                                action = { (action: OUIExtendedAlertAction) in
+                                    if let openURL = URL(string: UIApplication.openSettingsURLString) {
+                                        UIApplication.shared.open(openURL)
+                                    }
+                                    action.extendedActionComplete() // this is important, don't delete.
+                                }
+                            }
+
+                            OUIAppController.presentError(error, from: rootViewController, cancelButtonTitle: "OK", optionalActionTitle: actionTitle, optionalAction: action) {
+                                super.finishedProcessing(completed)
+                            }
+
+                        } else {
+                            super.finishedProcessing(completed)
+                        }
+                    }
+                } else {
+                    super.finishedProcessing(completed)
+                }
             }
         } else {
             super.finishedProcessing(completed)
@@ -204,8 +240,9 @@ open class DocumentConversionActivity<DocumentType: OUIDocument, OutputType> : D
             case .success(let output):
                 self.results.append(output)
             case .failure(let error):
-                // TODO: Capture errors and report them somewhere?
-                print("Error processing document for \(document.fileURL): \(error)")
+                OperationQueue.main.addOperation { // this case may need to look like above, but since i'm not sure how to invoke an error at this point, i'm not sure how to test.
+                    OUIAppController.presentError(error)
+                }
             }
             completionHandler()
         }

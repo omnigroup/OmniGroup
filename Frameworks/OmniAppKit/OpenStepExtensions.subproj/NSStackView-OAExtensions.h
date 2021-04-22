@@ -51,7 +51,7 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 
-@interface NSStackView (OAExtentions)
+@interface NSStackView (OAExtensions)
 
 - (void)removeAllArrangedSubviews;
 

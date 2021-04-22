@@ -52,9 +52,6 @@ extern NSString * const OUITextViewInsertionPointDidChangeNotification;
 
 @property (nonatomic, copy) NSString *placeholder;
 
-@property(nonatomic,readonly) CGFloat textHeight;
-@property(nonatomic,readonly) CGSize textUsedSize;
-
 @property (nonatomic) IBInspectable BOOL shouldAutomaticallyUpdateColorsForCurrentTheme;
 @property(nonatomic) BOOL keepContextualMenuHidden;
 
@@ -87,7 +84,7 @@ extern NSString * const OUITextViewInsertionPointDidChangeNotification;
 - (void)setValue:(id)value forAttribute:(NSString *)attr inRange:(UITextRange *)range;
 
 - (void)insertAfterSelection:(NSAttributedString *)attributedString;
-- (void)extendSelectionToSurroundingWhitespace;
+@property(nonatomic,readonly) NSRange selectedRangeIncludingSurroundingWhitespace;
 
 - (BOOL)hasTouch:(UITouch *)touch;
 - (BOOL)hasTouchByGestureRecognizer:(UIGestureRecognizer *)recognizer;

@@ -16,7 +16,6 @@
 #import <OmniUI/OUIFontAttributesInspectorSlice.h>
 #import <OmniUI/OUIFontFamilyInspectorSlice.h>
 #import <OmniUI/OUIFontSizeInspectorSlice.h>
-#import <OmniUI/OUIInspectorAppearance.h>
 #import <OmniUI/OUIParagraphStyleInspectorSlice.h>
 #import <OmniUI/OUIScalingTextStorage.h>
 #import <OmniUI/OUISingleViewInspectorPane.h>
@@ -26,9 +25,6 @@
 #import <MobileCoreServices/MobileCoreServices.h>
 #import <OmniUI/UIView-OUIExtensions.h>
 #import <OmniFoundation/NSMutableArray-OFExtensions.h>
-
-
-RCS_ID("$Id$");
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -355,26 +351,6 @@ static NSString *_positionDescription(OUITextView *self, OUEFTextPosition *posit
     }
 }
 
-- (CGFloat)textHeight;
-{
-    NSLayoutManager *layoutManager = self.layoutManager;
-    
-    [layoutManager ensureLayoutForTextContainer:self.textContainer];
-    if (layoutManager.numberOfGlyphs == 0) {
-        // The layout manager will return zero height in this case. But, if we are a field editor, we want to take up space equal to our typing attributes.
-        return [NSLayoutManager heightForAttributes:self.typingAttributes];
-    }
-    
-    return [layoutManager totalHeightUsed];
-}
-
-// This does not account for any contentInset or lineFragmentPadding.
-- (CGSize)textUsedSize;
-{
-    NSLayoutManager *layoutManager = self.layoutManager;
-    return CGSizeMake(layoutManager.widthOfLongestLine, layoutManager.totalHeightUsed);
-}
-
 - (NSDictionary *)typingAttributesWithAllAttributes;
 {
     return self.typingAttributes;
@@ -399,26 +375,6 @@ static NSString *_positionDescription(OUITextView *self, OUEFTextPosition *posit
     }
     
     return [self textRangeFromPosition:hitPosition toPosition:hitPosition];
-}
-
-- (nullable UITextPosition *)closestPositionToPoint:(CGPoint)point;
-{
-    NSUInteger characterIndex = [self.layoutManager characterIndexForPoint:point inTextContainer:self.textContainer fractionOfDistanceBetweenInsertionPoints:NULL];
-    UITextPosition *beginningOfDocument = self.beginningOfDocument;
-    UITextPosition *pointPosition = [self positionFromPosition:beginningOfDocument offset:characterIndex];
-    return pointPosition;
-}
-
-- (nullable UITextPosition *)closestPositionToPoint:(CGPoint)point withinRange:(UITextRange *)range;
-{
-    UITextPosition *pointPosition = [self closestPositionToPoint:point];
-    UITextPosition *start = range.start;
-    if ([self offsetFromPosition:pointPosition toPosition:start] < 0)
-        return start;
-    UITextPosition *end = range.end;
-    if ([self offsetFromPosition:pointPosition toPosition:start] > 0)
-        return end;
-    return pointPosition;
 }
 
 // For use when a field editor is coming on screen and we want to act like UITextView would if it were already on screen when tapped (select the beginning/ending of a word).
@@ -736,7 +692,7 @@ static BOOL _rangeIsInsertionPoint(OUITextView  *self, UITextRange *r)
     self.selectedRange = NSMakeRange(insertionRange.location + [attributedString length], 0);
 }
 
-- (void)extendSelectionToSurroundingWhitespace;
+- (NSRange)selectedRangeIncludingSurroundingWhitespace;
 {
     NSRange selectionRange = self.selectedRange;
     NSUInteger startLocation = selectionRange.location;
@@ -757,7 +713,7 @@ static BOOL _rangeIsInsertionPoint(OUITextView  *self, UITextRange *r)
         endLocation++;
     }
     
-    self.selectedRange = NSMakeRange(startLocation, endLocation - startLocation);
+    return NSMakeRange(startLocation, endLocation - startLocation);
 }
 
 
@@ -800,7 +756,7 @@ static BOOL _rangeIsInsertionPoint(OUITextView  *self, UITextRange *r)
 
 - (void)performUndoableEditOnRange:(NSRange)range action:(void (^)(NSMutableAttributedString *))action;
 {
-    [self performUndoableEditOnRange:self.selectedRange selectInsertionPointOnUndoRedo:NO action:action];
+    [self performUndoableEditOnRange:range selectInsertionPointOnUndoRedo:NO action:action];
 }
 
 // Usually on undo we'll select the replaced text. But in the OmniJS completion suggestion, we want to restore the insertion pointer rather than selecting the replacement prefix.
@@ -1076,17 +1032,6 @@ static BOOL _rangeContainsPosition(id <UITextInput> input, UITextRange *range, U
 }
 
 #pragma mark - Custom accessors
-
-- (void)setShouldAutomaticallyUpdateColorsForCurrentTheme:(BOOL)shouldAutomaticallyUpdateColorsForCurrentTheme
-{
-    if (_shouldAutomaticallyUpdateColorsForCurrentTheme == shouldAutomaticallyUpdateColorsForCurrentTheme)
-        return;
-
-    _shouldAutomaticallyUpdateColorsForCurrentTheme = shouldAutomaticallyUpdateColorsForCurrentTheme;
-    if (shouldAutomaticallyUpdateColorsForCurrentTheme) {
-        [self themedAppearanceDidChange:[OUIInspectorAppearance appearance]];
-    }
-}
 
 - (void)setPlaceholder:(NSString *)string
 {
@@ -1715,31 +1660,6 @@ static void _copyAttribute(NSMutableDictionary *dest, NSDictionary *src, NSStrin
     // We might be able to save some time by keeping this around, but we also want to reset the inspector to its base state if it comes up again. ALSO, this is the easiest hack to get rid of lingering OSTextSelectionStyle objects which have problematic reference behavior. ARC will fix it all, of course.
     _textInspector.delegate = nil;
     _textInspector = nil;
-}
-
-#pragma mark - OUIThemedAppearanceClient
-
-- (void)willMoveToWindow:(nullable UIWindow *)newWindow;
-{
-    [super willMoveToWindow:newWindow];
-    
-    if (newWindow != nil && OUIInspectorAppearance.inspectorAppearanceEnabled) {
-        [self themedAppearanceDidChange:[OUIInspectorAppearance appearance]];
-    }
-}
-
-- (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance
-{
-    [super themedAppearanceDidChange:changedAppearance];
-
-    if (!_shouldAutomaticallyUpdateColorsForCurrentTheme)
-        return;
-
-    OUIInspectorAppearance *appearance = OB_CHECKED_CAST_OR_NIL(OUIInspectorAppearance, changedAppearance);
-
-    _placeholderLabel.textColor = appearance.PlaceholderTextColor;
-    self.backgroundColor = appearance.TableCellBackgroundColor;
-    self.textColor = appearance.TableCellTextColor;
 }
 
 #pragma mark - Private

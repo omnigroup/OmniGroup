@@ -1,4 +1,4 @@
-// Copyright 2014-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,9 +10,10 @@
 @import OmniBase;
 @import UIKit;
 
-RCS_ID("$Id$");
+NS_ASSUME_NONNULL_BEGIN
 
 @interface OUIChangeAppIconURLCommand ()
+
 // Radar 37952455: Regression: Spurious "implementing unavailable method" warning when subclassing
 - (id)initWithURL:(NSURL *)url NS_DESIGNATED_INITIALIZER NS_EXTENSION_UNAVAILABLE_IOS("Special URL handling is not available in extensions");
 - (BOOL)skipsConfirmation NS_EXTENSION_UNAVAILABLE_IOS("Special URL handling is not available in extensions");
@@ -21,7 +22,7 @@ RCS_ID("$Id$");
 
 @implementation OUIChangeAppIconURLCommand
 {
-    NSString *_iconName;
+    NSString * _Nullable _iconName;
 }
 
 - (id)initWithURL:(NSURL *)url;
@@ -31,7 +32,9 @@ RCS_ID("$Id$");
     }
 
     NSString *queryString = [url query];
-    _iconName = queryString;
+    if (![NSString isEmptyString:queryString]) {
+        _iconName = queryString;
+    }
 
     return self;
 }
@@ -55,3 +58,5 @@ RCS_ID("$Id$");
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

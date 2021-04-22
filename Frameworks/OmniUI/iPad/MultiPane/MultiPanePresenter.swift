@@ -470,6 +470,7 @@ extension MultiPaneAnimator {
 // MARK: -
 
 // In order to present a pane as an overlay in one context and as a page sheet in another, we need to create a new wrapping view controller every time a presentation occurs. Once a view controller has received a modalPresentationStyle, it's stuck with that style forever once it's been presented. So, call this class' presentation method each time a pane needs to be presented modally or as an overlay, and we'll wrap the pane's controller in this wrapper
+@objc(OUIMultipanePresentationWrapperViewController)
 internal class MultipanePresentationWrapperViewController: UIViewController {
     static func presentWrapperController(from presentingController: UIViewController, animated: Bool, rootViewController: UIViewController, presentationStyle: UIModalPresentationStyle?, adaptivePresentationDelegate: UIAdaptivePresentationControllerDelegate?, configurationBlock: (MultipanePresentationWrapperViewController)->Void = {_ in }, completion: @escaping ()->Void = {}) {
         let wrapper = MultipanePresentationWrapperViewController()
@@ -510,9 +511,38 @@ internal class MultipanePresentationWrapperViewController: UIViewController {
         self.view = view
     }
     
+    @available(iOSApplicationExtension, unavailable)
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        // <bug:///179342> (iOS-OmniFocus Bug: Compact: Inspector bottom bar is scrolled out of view after backgrounding, then returning to app)
+        guard let scene = containingScene else { assertionFailure("Unable to find containing scene"); return }
+        NotificationCenter.default.addObserver(self, selector: #selector(forceViewLayout), name: UIScene.willEnterForegroundNotification, object: scene)
+    }
+    
+    
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
+            // Need a turn of the run loop or else we hit an infinite loop
+            // <bug:///179688> (iOS-OmniFocus Bug: Compact: Inspector bottom bar is scrolled out of view after toggling between light / dark mode)
+            DispatchQueue.main.async { [weak self] in
+                self?.forceViewLayout()
+            }
+        }
+    }
+
+    @objc private dynamic func forceViewLayout() {
+        view.setNeedsLayout()
+        view.layoutIfNeeded()
+    }
+    
     // Once the presentation is over, we want to throw this wrapper away, since it's served its purpose of supplying a presentation.
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
+        
+        // Only remove the wrapped controller if we're being dismissed. If something is being presented over top of us, we need to stick around.
+        guard isBeingDismissed else { return }
         
         // We remove the controller manually below, and that prevents this lifecycle message from percolating down. Call it manually, instead.
         rootViewController?.viewDidDisappear(animated)

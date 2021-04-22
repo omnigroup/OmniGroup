@@ -8,14 +8,11 @@
 #import <OmniUI/OUIDetailInspectorSlice.h>
 
 #import <OmniUI/OUIInspector.h>
-#import <OmniUI/OUIInspectorAppearance.h>
 #import <OmniUI/OUIThemedTableViewCell.h>
 #import <OmniUI/OUIInspectorPane.h>
 #import <OmniUI/OUIInspectorSlice.h>
 #import <OmniUI/OUIInspectorTextWell.h>
 #import <OmniUI/UITableView-OUIExtensions.h>
-
-RCS_ID("$Id$");
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -95,15 +92,6 @@ NS_ASSUME_NONNULL_BEGIN
         textFrame.size.width = detailFrame.origin.x - textFrame.origin.x;
         self.textLabel.frame = textFrame;
     }
-}
-
-#pragma mark OUIInspectorAppearance
-- (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance;
-{
-    [super themedAppearanceDidChange:changedAppearance];
-
-    OUIInspectorAppearance *appearance = OB_CHECKED_CAST_OR_NIL(OUIInspectorAppearance, changedAppearance);
-    self.valueImageView.backgroundColor = appearance.TableCellBackgroundColor;
 }
 
 @end
@@ -259,7 +247,7 @@ NS_ASSUME_NONNULL_BEGIN
     if (placeholder) {
         cell.textLabel.textColor = [OUIInspector placeholderTextColor];
     } else {
-        cell.textLabel.textColor = [OUIInspector labelTextColor];
+        // Use the default dynamic color assigned by the table view.
     }
     cell.textLabel.font = [OUIInspectorTextWell defaultLabelFont];
     cell.textLabel.lineBreakMode = NSLineBreakByTruncatingTail;

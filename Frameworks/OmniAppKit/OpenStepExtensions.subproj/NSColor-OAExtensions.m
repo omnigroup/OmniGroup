@@ -24,15 +24,7 @@ static NSColorList *classicCrayonsColorList(void)
     
     if (classicCrayonsColorList == nil) {
 	NSString *colorListName = NSLocalizedStringFromTableInBundle(@"Classic Crayons", @"OmniAppKit", OMNI_BUNDLE, "color list name");
-	NSColorList *originalColorList = [[NSColorList alloc] initWithName:colorListName fromFile:[OMNI_BUNDLE pathForResource:@"Classic Crayons" ofType:@"clr"]];
-        classicCrayonsColorList = [[NSColorList alloc] initWithName:colorListName];
-        NSColorSpace *sRGBColorSpace = [NSColorSpace extendedSRGBColorSpace];
-        for (NSString *colorName in originalColorList.allKeys) {
-            NSColor *originalColor = [originalColorList colorWithKey:colorName];
-            NSColor *sRGBColor = [originalColor colorUsingColorSpace:sRGBColorSpace];
-            [classicCrayonsColorList setColor:sRGBColor forKey:colorName];
-        }
-        [originalColorList release];
+	classicCrayonsColorList = [[NSColorList alloc] initWithName:colorListName fromFile:[OMNI_BUNDLE pathForResource:@"Classic Crayons" ofType:@"clr"]];
     }
     return classicCrayonsColorList;
 }
@@ -40,7 +32,7 @@ static NSColorList *classicCrayonsColorList(void)
 @interface NSColorPicker (Private)
 - (void)_switchToPicker:(NSColorPicker *)picker;
 - (void)attachColorList:(id)list makeSelected:(BOOL)flag;
-- (void)refreashUI; // sic
+- (void)refreshUI;
 @end
 
 // Adding a color list to the color panel when it is NOT in list mode, will not to anything.  Radar #4341924.
@@ -75,9 +67,11 @@ OBPerformPosing(^{
 	    BOOL select = OFISEQUAL(defaultColorList, [colorList name]);
 
 	    [picker attachColorList:colorList makeSelected:select];
-	    if (select && [picker respondsToSelector:@selector(refreashUI)])
-		// The picker is in a bad state from trying to select a color list that wasn't there when -restoreDefaults was called.  Passing makeSelected:YES will apparently bail since the picker things that color list is already selected and we'll be left with an empty list of colors displayed.  First, select some other color list if possible.
-		[picker refreashUI];
+	    if (select) {
+                // The picker is in a bad state from trying to select a color list that wasn't there when -restoreDefaults was called.  Passing makeSelected:YES will apparently bail since the picker things that color list is already selected and we'll be left with an empty list of colors displayed.  First, select some other color list if possible.
+                if ([picker respondsToSelector:@selector(refreshUI)])
+                    [picker refreshUI];
+            }
 	} else
 	    [picker attachColorList:colorList];
     }

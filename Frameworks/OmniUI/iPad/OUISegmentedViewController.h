@@ -48,6 +48,10 @@
 @property (nonatomic, readonly, nullable) OUISegmentedViewController *segmentedViewController;
 @property (nonatomic, readonly) BOOL wantsHiddenNavigationBar;
 
+// If this returns YES, the top of the view will be pinned to the bottom of the segmented control.
+// Returns NO by default, but YES in UINavigationController.
+@property (nonatomic, readonly) BOOL shouldAvoidSegmentedNavigationBar;
+
 @property (nonatomic, readonly, nullable) OUISegmentItem *segmentItem;
 
 @end

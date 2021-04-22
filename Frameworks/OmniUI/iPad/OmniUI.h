@@ -67,7 +67,6 @@
 #import <OmniUI/OUIHoldOnesHorsesIndicator.h>
 #import <OmniUI/OUIImages.h>
 #import <OmniUI/OUIInspector.h>
-#import <OmniUI/OUIInspectorAppearance.h>
 #import <OmniUI/OUIInspectorButton.h>
 #import <OmniUI/OUIInspectorDelegate.h>
 #import <OmniUI/OUIInspectorDividerLine.h>
@@ -134,7 +133,6 @@
 #import <OmniUI/OUITextExampleInspectorSlice.h>
 #import <OmniUI/OUITextLayout.h>
 #import <OmniUI/OUITextSelectionSpan.h>
-#import <OmniUI/OUIThemedAppearance.h>
 #import <OmniUI/OUIThemedTableViewCell.h>
 #import <OmniUI/OUITextView.h>
 #import <OmniUI/OUITileDebug.h>
@@ -142,7 +140,6 @@
 #import <OmniUI/OUIToolbarButton.h>
 #import <OmniUI/OUITransition.h>
 #import <OmniUI/OUIUndoBarButtonItem.h>
-#import <OmniUI/OUIUndoBarButtonMenuAppearanceDelegate.h>
 #import <OmniUI/OUIUndoButton.h>
 #import <OmniUI/OUIUndoIndicator.h>
 #import <OmniUI/OUIVerticalSplitTransition.h>

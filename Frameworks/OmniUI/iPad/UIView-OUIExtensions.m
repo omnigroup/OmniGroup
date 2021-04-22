@@ -587,23 +587,9 @@ void OUILogViewTree(UIView *root)
 #endif
 
 UIViewAnimationOptions OUIAnimationOptionFromCurve(UIViewAnimationCurve curve) {
-    switch (curve) {
-        case UIViewAnimationCurveEaseIn:
-            return UIViewAnimationOptionCurveEaseIn;
-            break;
-        case UIViewAnimationCurveLinear:
-            return UIViewAnimationOptionCurveLinear;
-            break;
-        case UIViewAnimationCurveEaseOut:
-            return UIViewAnimationOptionCurveEaseOut;
-            break;
-        case UIViewAnimationCurveEaseInOut:
-            return UIViewAnimationOptionCurveEaseInOut;
-            break;
-        default:
-            return kNilOptions;
-    }
-    return curve;
+    // UIViewAnimationOptions shifts the UIViewAnimationCurve up 16 bits.
+    // This approach handles non-public animation curves we need to follow as well (for example, when the keyboard is being displayed)
+    return curve << 16;
 }
 
 // Allows the caller to conditionally leave animations as they were or disable them. Won't ever force animations on.

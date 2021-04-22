@@ -16,6 +16,9 @@ RCS_ID("$Id$")
 
 static NSString *OAFragmentedAppleScriptStringForString(NSString *string);
 
+NSString *OAAppleMailBundleIdentifier = @"com.apple.mail";
+NSString *OAMailSmithBundleIdentifier = @"com.barebones.mailsmith";
+
 @implementation OAInternetConfig
 
 #ifdef OMNI_ASSERTIONS_ON
@@ -34,14 +37,13 @@ static void _checkProcessEntitlements(void)
         OBASSERT([entitlements boolForKey:@"com.apple.security.automation.apple-events"], "Sending email requires the com.apple.security.automation.apple-events entitlement under Mojave's hardened runtime.");
 
         NSDictionary *scriptingTargets = entitlements[@"com.apple.security.scripting-targets"];
-        NSArray *mailAccessGroups = scriptingTargets[@"com.apple.mail"];
+        NSArray *mailAccessGroups = scriptingTargets[OAAppleMailBundleIdentifier];
         OBASSERT([mailAccessGroups containsObject:@"com.apple.mail.compose"], "Missing scripting target entitlement needed in order to compose feedback message in Mail on Mountain Lion.");
         
         NSArray *appleEventExceptions = entitlements[@"com.apple.security.temporary-exception.apple-events"];
         
         // We can only send apple-events to Entourage and Mailsmith via temporary exceptions
-        OBASSERT([appleEventExceptions containsObject:@"com.barebones.mailsmith"], "Missing temporary exception entitlement needed in order to compose feedback message in Mailsmith.");
-        OBASSERT([appleEventExceptions containsObject:@"com.microsoft.entourage"], "Missing temporary exception entitlement needed in order to compose feedback message in Entourage.");
+        OBASSERT([appleEventExceptions containsObject:OAMailSmithBundleIdentifier], "Missing temporary exception entitlement needed in order to compose feedback message in Mailsmith.");
     }
 }
 
@@ -69,7 +71,7 @@ OBDidLoad(^{
     return *(const OSType *)[signatureBytes bytes];
 }
 
-- (nullable NSString *)helperApplicationForScheme:(NSString *)scheme;
+- (nullable NSURL *)helperApplicationURLForScheme:(NSString *)scheme;
 {
     OBPRECONDITION(![NSString isEmptyString:scheme]);
     if (![scheme hasSuffix:@":"]) {
@@ -78,14 +80,17 @@ OBDidLoad(^{
     
     NSURL *schemeURL = [NSURL URLWithString:scheme];
     CFURLRef helperApplicationURL = LSCopyDefaultApplicationURLForURL((__bridge CFURLRef)schemeURL, kLSRolesAll, NULL);
-    if (helperApplicationURL != NULL) {
-        // Check to make sure the registered helper application isn't us
-        NSString *helperApplicationPath = [(__bridge NSURL *)helperApplicationURL path];
-        NSString *helperApplicationName = [[NSFileManager defaultManager] displayNameAtPath:helperApplicationPath];
+    return CFBridgingRelease(helperApplicationURL);
+}
 
-        CFRelease(helperApplicationURL);
+- (nullable NSString *)helperApplicationBundleIdentifierForScheme:(NSString *)scheme;
+{
+    NSURL *helperApplicationURL = [self helperApplicationURLForScheme:scheme];
+    if (helperApplicationURL != nil) {
+        NSBundle *mailApplicationBundle = [NSBundle bundleWithURL:helperApplicationURL];
+        NSString *bundleId = [mailApplicationBundle bundleIdentifier];
 
-        return helperApplicationName;
+        return bundleId;
     }
 
     return nil;
@@ -174,48 +179,6 @@ static BOOL _executeScript(NSString *source, NSError **outError)
     return script;
 }
 
-- (NSString *)_entourageScriptForMailApp:(NSString *)mailApp receiver:(nullable NSString *)receiver carbonCopy:(nullable NSString *)carbonCopy blindCarbonCopy:(nullable NSString *)blindCarbonCopy subject:(nullable NSString *)subject body:(nullable NSString *)body attachments:(nullable NSArray <NSString *> *)attachmentFilenames;
-{
-    NSMutableString *script = [NSMutableString stringWithFormat:@"tell application \"%@\"\n set m to make new draft window with properties {%%@}\nactivate\nend tell\n", mailApp];
-    NSMutableArray *properties = [NSMutableArray array];
-
-    if (receiver != nil) {
-        [properties addObject:[NSString stringWithFormat:@"to recipients: %@", OAFragmentedAppleScriptStringForString(receiver)]];
-    }
-    if (carbonCopy != nil)
-        [properties addObject:[NSString stringWithFormat:@"CC recipients: %@", OAFragmentedAppleScriptStringForString(carbonCopy)]];
-    if (blindCarbonCopy != nil)
-        [properties addObject:[NSString stringWithFormat:@"BCC recipients: %@", OAFragmentedAppleScriptStringForString(blindCarbonCopy)]];
-    if (subject != nil)
-        [properties addObject:[NSString stringWithFormat:@"subject: %@", OAFragmentedAppleScriptStringForString(subject)]];
-    if (body != nil)
-        [properties addObject:[NSString stringWithFormat:@"content: %@", OAFragmentedAppleScriptStringForString(body)]];
-
-    NSUInteger attachmentCount = [attachmentFilenames count];
-    if (attachmentCount != 0) {
-        NSFileManager *defaultManager = [NSFileManager defaultManager];
-        NSMutableArray *attachmentPaths = [NSMutableArray array];
-
-        for (NSString *filename in attachmentFilenames) {
-            BOOL isDirectory = NO;
-
-            if ([defaultManager fileExistsAtPath:filename isDirectory:&isDirectory]) {
-                if (isDirectory) {
-                    // Entourage will crash when handed a directory to attach.  We used to zip up the directory via /usr/bin/zip, but that's no longer possible in our sandbox.  Perhaps in the future we can switch to OUZipArchive, but OmniAppKit doesn't link against that at the moment.  For now, we'll just fall back to using Mail instead.
-                    return nil;
-                } else
-                    [attachmentPaths addObject:[NSString stringWithFormat:@"posix file (%@)", OAFragmentedAppleScriptStringForString(filename)]];
-            } else
-                NSLog(@"[%@ %@] - File %@ does not exist and will not be attached", [self class], NSStringFromSelector(_cmd), filename);
-        }
-
-        if ([attachmentPaths count])
-            [properties addObject:[NSString stringWithFormat:@"attachment: {%@}", [attachmentPaths componentsJoinedByString:@", "]]];
-    }
-
-    return [NSString stringWithFormat:script, [properties componentsJoinedByString:@", "]];
-}
-
 - (NSString *)_mailSmithScriptForMailApp:(NSString *)mailApp receiver:(nullable NSString *)receiver carbonCopy:(nullable NSString *)carbonCopy blindCarbonCopy:(nullable NSString *)blindCarbonCopy subject:(nullable NSString *)subject body:(nullable NSString *)body attachments:(nullable NSArray <NSString *> *)attachmentFilenames;
 {
     // <sgehrman@cocoatech.com>
@@ -246,18 +209,18 @@ static BOOL _executeScript(NSString *source, NSError **outError)
     return script;
 }
 
-- (BOOL)launchMailTo:(nullable NSString *)receiver carbonCopy:(nullable NSString *)carbonCopy blindCarbonCopy:(nullable NSString *)blindCarbonCopy subject:(nullable NSString *)subject body:(nullable NSString *)body attachments:(nullable NSArray <NSString *> *)attachmentFilenames error:(NSError **)outError;
+- (BOOL)launchMailApplicationWithBundleIdentifier:(NSString *)mailAppIdentifier to:(nullable NSString *)receiver carbonCopy:(nullable NSString *)carbonCopy blindCarbonCopy:(nullable NSString *)blindCarbonCopy subject:(nullable NSString *)subject body:(nullable NSString *)body attachments:(nullable NSArray <NSString *> *)attachmentFilenames error:(NSError **)outError;
 {
     NSString *script = nil;
-    NSString *mailApp = [self helperApplicationForScheme:@"mailto"];
 
-    if (!mailApp || [mailApp isEqualToString:@"Mail"]) {
+    if (mailAppIdentifier == nil) {
+        mailAppIdentifier = OAAppleMailBundleIdentifier;
+    }
+        
+    if ([mailAppIdentifier isEqualToString:OAAppleMailBundleIdentifier]) {
         script = [self _appleMailScriptForMailApp:@"Mail" receiver:receiver carbonCopy:carbonCopy blindCarbonCopy:blindCarbonCopy subject:subject body:body attachments:attachmentFilenames];
-        mailApp = @"Mail";
-    } else if ([mailApp isEqualToString:@"Mailsmith"]) {
-        script = [self _mailSmithScriptForMailApp:mailApp receiver:receiver carbonCopy:carbonCopy blindCarbonCopy:blindCarbonCopy subject:subject body:body attachments:attachmentFilenames];
-    } else if ([mailApp containsString:@"entourage" options:NSCaseInsensitiveSearch]) {
-        script = [self _entourageScriptForMailApp:mailApp receiver:receiver carbonCopy:carbonCopy blindCarbonCopy:blindCarbonCopy subject:subject body:body attachments:attachmentFilenames];
+    } else if ([mailAppIdentifier isEqualToString:OAMailSmithBundleIdentifier]) {
+        script = [self _mailSmithScriptForMailApp:@"MailSmith" receiver:receiver carbonCopy:carbonCopy blindCarbonCopy:blindCarbonCopy subject:subject body:body attachments:attachmentFilenames];
     }
 
     if (script == nil) {
@@ -274,7 +237,7 @@ static BOOL _executeScript(NSString *source, NSError **outError)
         } else {
             // Fall back on using Mail if we need to attach a file
             script = [self _appleMailScriptForMailApp:@"Mail" receiver:receiver carbonCopy:carbonCopy blindCarbonCopy:blindCarbonCopy subject:subject body:body attachments:attachmentFilenames];
-            mailApp = @"Mail";
+            mailAppIdentifier = OAAppleMailBundleIdentifier;
         }
     }
 
@@ -283,9 +246,39 @@ static BOOL _executeScript(NSString *source, NSError **outError)
     if (!_executeScript(script, outError))
         return NO;
 
-    [[NSWorkspace sharedWorkspace] launchApplication:mailApp]; // Our sandbox doesn't let us activate Mail via AppleScript anymore, so we do this via NSWorkspace instead (otherwise the compose window won't come forward).
+    CFErrorRef error = NULL;
+    CFArrayRef mailURLs = LSCopyApplicationURLsForBundleIdentifier((__bridge CFStringRef _Nonnull)(mailAppIdentifier), &error);
+    if (mailURLs == NULL) {
+        if (outError != NULL)
+            *outError = (__bridge NSError *)(error);
+        CFRelease(error);
+        return NO;
+    }
+    
+    OBASSERT(CFArrayGetCount(mailURLs) > 0);
+    NSURL *mailURL = CFArrayGetValueAtIndex(mailURLs, 0);
+    CFRelease(mailURLs);
 
+    // Our sandbox doesn't let us activate Mail via AppleScript anymore, so we do this via NSWorkspace instead (otherwise the compose window won't come forward).
+#if defined(MAC_OS_X_VERSION_10_15)
+    if (@available(macOS 10.15, *)) {
+        [[NSWorkspace sharedWorkspace] openApplicationAtURL:mailURL configuration:[NSWorkspaceOpenConfiguration configuration] completionHandler:NULL];
+    } else {
+        NSString *mailApp = [mailURL path];
+        [[NSWorkspace sharedWorkspace] launchApplication:mailApp];
+    }
+#else
+    NSString *mailApp = [mailURL path];
+    [[NSWorkspace sharedWorkspace] launchApplication:mailApp];
+#endif
+    
     return YES;
+}
+
+- (BOOL)launchMailTo:(nullable NSString *)receiver carbonCopy:(nullable NSString *)carbonCopy blindCarbonCopy:(nullable NSString *)blindCarbonCopy subject:(nullable NSString *)subject body:(nullable NSString *)body attachments:(nullable NSArray <NSString *> *)attachmentFilenames error:(NSError **)outError;
+{
+    NSString *mailAppIdentifier = [self helperApplicationBundleIdentifierForScheme:@"mailto"];
+    return [self launchMailApplicationWithBundleIdentifier:mailAppIdentifier to:receiver carbonCopy:carbonCopy blindCarbonCopy:blindCarbonCopy subject:subject body:body attachments:attachmentFilenames error:outError];
 }
 
 - (BOOL)launchMailTo:(nullable NSString *)receiver carbonCopy:(nullable NSString *)carbonCopy subject:(nullable NSString *)subject body:(nullable NSString *)body error:(NSError **)outError

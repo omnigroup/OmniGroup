@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,7 +12,6 @@
 #import <OmniAppKit/OAParagraphStyle.h>
 
 #import <UIKit/UIView.h>
-#import <OmniUI/OUIInspectorAppearance.h>
 #import <OmniUI/OUISegmentedControl.h>
 #import <OmniUI/OUISegmentedControlButton.h>
 #import <OmniBase/OmniBase.h>
@@ -164,18 +163,6 @@ RCS_ID("$Id$");
     [self.view setNeedsLayout];
     [self.view layoutIfNeeded];
 }
-
-#pragma mark - OUIThemedAppearanceClient
-
-- (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance
-{
-    [super themedAppearanceDidChange:changedAppearance];
-    
-    OUIInspectorAppearance *appearance = OB_CHECKED_CAST_OR_NIL(OUIInspectorAppearance, changedAppearance);
-    
-    self.view.backgroundColor = appearance.TableCellBackgroundColor;
-}
-
 
 @end
 

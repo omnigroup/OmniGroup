@@ -33,9 +33,18 @@ public class PrintActivity : DocumentProcessingActivity<OUIDocument> {
         guard super.isSuitableDocumentType(type) else { return false }
         return OBClassImplementingMethod(type, #selector(OUIDocument.print(withParentViewController:completionHandler:))) != OUIDocument.self
     }
-    
+
+    public override func makeProcessingViewController() -> UIViewController? {
+        return nil
+    }
+
     public override func process(document: OUIDocument, completionHandler: @escaping () -> Void) {
-        document.print(withParentViewController: processingViewController) { errorOrNil in
+
+        let viewController: UIViewController
+        viewController = OUIWrappingViewController()
+        viewController.view = UIView(frame: CGRect(x: 0, y: 0, width: 0, height: 0))
+
+        document.print(withParentViewController: viewController) { errorOrNil in
             if let error = errorOrNil {
                 // TODO: Allow cancelling when printing multiple documents
                 print("Error printing: \(error)")

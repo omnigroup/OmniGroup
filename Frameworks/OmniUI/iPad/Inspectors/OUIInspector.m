@@ -164,11 +164,6 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_multiPaneControllerWillShowPane:) name:OUIMultiPaneControllerWillShowPaneNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_multiPaneControllerWillPresentPane:) name:OUIMultiPaneControllerWillPresentPaneNotification object:nil];
 
-    if ([OUIInspectorAppearance inspectorAppearanceEnabled]) {
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(themedAppearanceDidChangeWithNotification:) name:OAAppearanceValuesDidChangeNotification object:[OUIInspectorAppearance class]];
-        [self notifyChildrenThatAppearanceDidChange:[OUIInspectorAppearance appearance]];
-    }
-    
     return self;
 }
 
@@ -504,14 +499,6 @@ static CGFloat _currentDefaultInspectorContentWidth = 320;
 - (void)_keyboardDidHide:(NSNotification *)note;
 {
     _keyboardShownWhilePopoverVisible = NO;
-}
-
-#pragma mark - OUIThemedAppearanceClient
-
-- (NSArray <id<OUIThemedAppearanceClient>> *)themedAppearanceChildClients;
-{
-    NSArray <id<OUIThemedAppearanceClient>> *clients = @[self.navigationController];
-    return clients;
 }
 
 @end

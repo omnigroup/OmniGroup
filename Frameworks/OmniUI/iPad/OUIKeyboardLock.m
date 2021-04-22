@@ -1,4 +1,4 @@
-// Copyright 2010-2018 The Omni Group. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,6 +14,12 @@
 #import <UIKit/UIView.h>
 
 RCS_ID("$Id$");
+
+#if 0 && defined(DEBUG)
+#define DEBUG_KEYBOARD(format, ...) NSLog(@"KEYBOARD LOCK: " format, ## __VA_ARGS__)
+#else
+#define DEBUG_KEYBOARD(format, ...)
+#endif
 
 @interface OUIKeyboardLock () <UITextFieldDelegate> {
     UITextField *hackTextField;
@@ -34,6 +40,8 @@ RCS_ID("$Id$");
 {
     self = [super init];
     if (self) {
+        DEBUG_KEYBOARD(@"Created for superview %@, type %ld", OBShortObjectDescription(parentView), keyboardType);
+
         hackTextField = [[UITextField alloc] initWithFrame:CGRectZero];
         hackTextField.delegate = self;
         hackTextField.keyboardType = keyboardType;
@@ -60,9 +68,7 @@ RCS_ID("$Id$");
 
 - (BOOL)textFieldShouldEndEditing:(UITextField *)textField;
 {
-#if 0 && defined(DEBUG_correia)
-    NSLog(@"OUIKeyboardLock text field will end editing.");
-#endif
+    DEBUG_KEYBOARD(@"Will end");
     return YES;
 }
 

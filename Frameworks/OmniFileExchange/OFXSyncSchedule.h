@@ -9,5 +9,5 @@
 typedef NS_ENUM(NSUInteger, OFXSyncSchedule) {
     OFXSyncScheduleNone, // Syncing is completely disabled. -sync: will just call its completion handler.
     OFXSyncScheduleManual, // Calls to -sync: will result in sync operations happending.
-    OFXSyncScheduleAutomatic, // Bonjour and timers will be used to detect when to call -sync:.
+    OFXSyncScheduleAutomatic, // Bonjour and timers will be used to detect when to call -sync:. On iOS, background fetching will be requested.
 };

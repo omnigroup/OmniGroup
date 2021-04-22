@@ -32,7 +32,7 @@ static NSString * const ValidImportExportAccounts = @"validImportExportAccounts"
 
 @implementation OFXServerAccountRegistry
 
-+ (OFXServerAccountRegistry *)defaultAccountRegistry;
++ (nullable OFXServerAccountRegistry *)defaultAccountRegistry;
 {
     static OFXServerAccountRegistry *defaultRegistry;
     static dispatch_once_t onceToken;
@@ -225,7 +225,7 @@ static NSString * const ValidImportExportAccounts = @"validImportExportAccounts"
     }];
 }
 
-- (OFXServerAccount *)accountWithUUID:(NSString *)uuid;
+- (nullable OFXServerAccount *)accountWithUUID:(NSString *)uuid;
 {
     for (OFXServerAccount *account in self.allAccounts) {
         if ([account.uuid isEqual:uuid])
@@ -234,7 +234,7 @@ static NSString * const ValidImportExportAccounts = @"validImportExportAccounts"
     return nil;
 }
 
-- (OFXServerAccount *)accountWithDisplayName:(NSString *)name;
+- (nullable OFXServerAccount *)accountWithDisplayName:(NSString *)name;
 {
     for (OFXServerAccount *account in self.allAccounts) {
         if ([account.displayName isEqual:name])

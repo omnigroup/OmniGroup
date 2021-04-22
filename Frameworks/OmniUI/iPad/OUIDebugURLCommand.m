@@ -201,12 +201,12 @@ RCS_ID("$Id$");
     return NO; // Don't quit the app if the crash doesn't actually crash
 }
 
-- (BOOL)command_TestBackgroundAlertPresentationInFiveSeconds
+- (BOOL)command_TestBackgroundAlertPresentationInFiveSeconds NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based solutions where available instead.");
 {
     return [self _createAndPostDebugQueueAlertsInScene:self.viewControllerForPresentation.containingScene requiringPresentationInScene:NO];
 }
 
-- (BOOL)command_TestBackgroundAlertPresentationInFiveSecondsRequiringThisScene
+- (BOOL)command_TestBackgroundAlertPresentationInFiveSecondsRequiringThisScene NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based solutions where available instead.");
 {
     return [self _createAndPostDebugQueueAlertsInScene:self.viewControllerForPresentation.containingScene requiringPresentationInScene:YES];
 }

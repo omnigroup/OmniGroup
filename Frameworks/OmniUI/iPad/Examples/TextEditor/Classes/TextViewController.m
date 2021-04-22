@@ -1,4 +1,4 @@
-// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,11 +7,8 @@
 
 #import "TextViewController.h"
 
-#import <OmniUI/OUIScalingTextStorage.h>
-#import <OmniUI/OUITextView.h>
-#import <OmniUI/NSTextStorage-OUIExtensions.h>
-#import <OmniUI/UIView-OUIExtensions.h>
-#import <OmniUIDocument/OUIDocumentNavigationItem.h>
+@import OmniUI;
+@import OmniUIDocument;
 
 #import <AssetsLibrary/AssetsLibrary.h>
 #import <OmniFoundation/OFExtent.h>
@@ -113,6 +110,11 @@ RCS_ID("$Id$");
 
 @synthesize document = _weak_document;
 
+- (UIView *)documentOpenCloseTransitionView;
+{
+    return self.textView;
+}
+
 #pragma mark - UIViewController subclass
 
 - (UINavigationItem *)navigationItem;
@@ -162,12 +164,13 @@ RCS_ID("$Id$");
     OUIWithoutAnimating(^{
         // Don't steal the toolbar items from any possibly open document
         if (!self.forPreviewGeneration) {
-            AppController *controller = [AppController controller];
+            OUIDocumentSceneDelegate *sceneDelegate = self.sceneDelegate;
             OUIUndoBarButtonItem *undoItem = [[[OUIUndoBarButtonItem alloc] init] autorelease];
-            undoItem.undoBarButtonItemTarget = controller;
+            undoItem.undoBarButtonItemTarget = sceneDelegate;
+
             // Listed left to right.
             self.navigationItem.leftBarButtonItems = @[
-                                                       controller.closeDocumentBarButtonItem,
+                                                       sceneDelegate.closeDocumentBarButtonItem,
                                                        undoItem
                                                        ];
             
@@ -176,7 +179,7 @@ RCS_ID("$Id$");
             // Listed right to left
             self.navigationItem.rightBarButtonItems = @[
                                                         [[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCamera target:self action:@selector(attachImage:)] autorelease],
-                                                        controller.infoBarButtonItem
+                                                        sceneDelegate.infoBarButtonItem
                                                         ];
             
         }

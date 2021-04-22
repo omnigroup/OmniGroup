@@ -119,6 +119,24 @@ NSURLCredential *OFReadCredentialsForServiceIdentifier(NSString *serviceIdentifi
             
             NSString *password = [[[NSString alloc] initWithData:[item objectForKey:(id)kSecValueData] encoding:NSUTF8StringEncoding] autorelease];
             
+            if (![NSString isEmptyString:user] && ![NSString isEmptyString:password]) {
+                // Update the kSecAttrAccessible value if appropriate to the same
+                // value we use on creation - see comment in WriteCredentialsForProtectionSpace
+                id accessibleValue = [item objectForKey:(id)kSecAttrAccessible];
+                if (!CFEqual((CFTypeRef)accessibleValue, kSecAttrAccessibleAfterFirstUnlock)) {
+
+                    NSMutableDictionary *updateQuery = BasicQuery();
+                    updateQuery[(id)kSecAttrService] = serviceIdentifier;
+                    
+                    NSDictionary *attributes = @{(id)kSecAttrAccessible: (id)kSecAttrAccessibleAfterFirstUnlock};
+    
+                    err = SecItemUpdate((__bridge CFDictionaryRef)updateQuery, (__bridge CFDictionaryRef)attributes);
+                    if (err != errSecSuccess) {
+                        OFSecError("SecItemUpdate(", err, outError);
+                    }
+                }
+            }
+            
             NSURLCredential *result = _OFCredentialFromUserAndPassword(user, password);
             DEBUG_CREDENTIALS(@"trying %@",  result);
             return result;
@@ -226,7 +244,10 @@ BOOL OFWriteCredentialsForServiceIdentifier(NSString *serviceIdentifier, NSStrin
     [entry setObject:[password dataUsingEncoding:NSUTF8StringEncoding] forKey:(id)kSecValueData];
     [entry setObject:serviceIdentifier forKey:(id)kSecAttrService];
     
-    // TODO: Possibly apply kSecAttrAccessibleAfterFirstUnlock, or let the caller specify whether it should be applied. Need this if we are going to be able to access the item for background operations in iOS.
+    // Set kSecAttrAccessible to kSecAttrAccessibleAfterFirstUnlock.
+    // We sometimes want to read out keychain item in the background when the device is locked.
+    // kSecAttrAccessibleAlways would allow use to read it unconditionally, but this is less secure. Require that the user has unlocked the device at least once.
+    [entry setObject:(id)kSecAttrAccessibleAfterFirstUnlock forKey:(id)kSecAttrAccessible];
     
     DEBUG_CREDENTIALS(@"adding item: %@", entry);
     OSStatus err = SecItemAdd((__bridge CFDictionaryRef)entry, NULL);

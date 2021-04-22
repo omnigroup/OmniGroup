@@ -289,14 +289,20 @@ class MultiPanePushPopTransitionAnimator: NSObject, UIViewControllerAnimatedTran
         
         let toView = toVC.view!
         let fromView = fromVC.view!
+
         toView.frame = containerView.bounds
         fromView.frame = containerView.bounds
         
-        var shadowContainerView = fromView
-        var fromViewAlpha: CGFloat = 1.0
         let baseTransform = self.operation.pushPopTransform(width: containerView.bounds.width)
-        var fromViewTransform = baseTransform
         
+        let shieldingContainerView: UIView
+
+        let fromViewAlpha: CGFloat
+        let fromViewTransform: CGAffineTransform
+        
+        let shieldingViewFromAlpha: CGFloat
+        let shieldingViewToAlpha: CGFloat
+
         // workout style and transfrom offsets based on the operation type.
         if self.operation == .pop {
              containerView.insertSubview(toView, belowSubview: fromView)
@@ -304,22 +310,35 @@ class MultiPanePushPopTransitionAnimator: NSObject, UIViewControllerAnimatedTran
             toView.transform = toTransform.inverted()
             toView.alpha = 0.92
             
+            fromViewAlpha = 1.0
+            fromViewTransform = baseTransform
+
+            shieldingContainerView = toView
+            
+            shieldingViewFromAlpha = 1.0
+            shieldingViewToAlpha = 0.0
         } else {
             containerView.insertSubview(toView, aboveSubview: fromView)
             toView.transform = baseTransform.inverted()
+
             fromViewTransform = CGAffineTransform(translationX: baseTransform.tx * 0.25, y: 0.0)
             fromViewAlpha = 0.92
-            shadowContainerView = toView
+            
+            shieldingContainerView = fromView
+
+            shieldingViewFromAlpha = 0.0
+            shieldingViewToAlpha = 1.0
         }
-        
-        let shadowView = self.applyShadow(toView: shadowContainerView)
+
+        let shieldingView = self.addShieldingView(to: shieldingContainerView)
+        shieldingView.alpha = shieldingViewFromAlpha
+
         let transitionBlock = {
             fromView.transform = fromViewTransform
             fromView.alpha = fromViewAlpha
             toView.transform = CGAffineTransform.identity
             toView.alpha = 1.0
-            
-            shadowView.alpha = 0.0
+            shieldingView.alpha = shieldingViewToAlpha
         }
         
         let completionBlock: (UIViewAnimatingPosition) -> Void = { (position) in
@@ -329,7 +348,9 @@ class MultiPanePushPopTransitionAnimator: NSObject, UIViewControllerAnimatedTran
             fromView.alpha = 1.0
             toView.alpha = 1.0
             fromView.transform = CGAffineTransform.identity
-            self.removeShadow(fromView: shadowContainerView)
+
+            shieldingView.removeFromSuperview()
+
             transitionContext.completeTransition(didComplete)
         }
         
@@ -354,38 +375,28 @@ class MultiPanePushPopTransitionAnimator: NSObject, UIViewControllerAnimatedTran
         return self.animator
     }
     
-    func applyShadow(toView view: UIView) -> UIView {
-        let frame = CGRect(origin: CGPoint.zero, size: CGSize(width: 1, height: view.bounds.height - 64))
-        let shadowView = UIView(frame: frame)
-        shadowView.alpha = 1.0
-        shadowView.backgroundColor = UIColor.white
-        shadowView.tag = 5000
-        view.insertSubview(shadowView, at: 0)
-        shadowView.translatesAutoresizingMaskIntoConstraints = false
+    private func addShieldingView(to view: UIView) -> UIView {
+        let shieldingColor: UIColor
         
-        shadowView.widthAnchor.constraint(equalToConstant: 5).isActive = true
-        shadowView.heightAnchor.constraint(equalTo: view.heightAnchor, constant: 0.0).isActive = true
-        shadowView.trailingAnchor.constraint(equalTo: view.leadingAnchor, constant: 5).isActive = true
-        shadowView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
-        
-        let layer = shadowView.layer
-        layer.shadowColor = UIColor.black.cgColor
-        layer.shadowOffset = CGSize(width: 0.0, height: 0.5)
-        
-        layer.shadowRadius = 5.0
-        layer.shadowOpacity = 0.8
-        view.clipsToBounds = false
-        return shadowView
-    }
-    
-    func removeShadow(fromView view: UIView) {
-        if let shadow = view.viewWithTag(5000) {
-            shadow.removeFromSuperview()
+        switch view.traitCollection.userInterfaceStyle {
+        case .dark:
+            shieldingColor = UIColor.clear
+            
+        case .light, .unspecified:
+            fallthrough
+            
+        @unknown default:
+            shieldingColor = UIColor.black.withAlphaComponent(0.10)
         }
-        view.clipsToBounds = true
-        //view.layer.shouldRasterize = false
-    }
 
+        let shieldingView = UIView(frame: view.bounds)
+        shieldingView.translatesAutoresizingMaskIntoConstraints = false
+        shieldingView.backgroundColor = shieldingColor
+        
+        view.addSubview(shieldingView)
+
+        return shieldingView
+    }
 }
 
 class MultiPaneInteractivePushPopAnimator: NSObject, UIViewControllerInteractiveTransitioning {

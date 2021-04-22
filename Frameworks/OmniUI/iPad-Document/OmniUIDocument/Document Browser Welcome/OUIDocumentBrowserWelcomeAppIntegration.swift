@@ -1,10 +1,9 @@
+// Copyright 2019 Omni Development, Inc. All rights reserved.
 //
-//  OUIDocumentBrowserWelcomeAppIntegration.swift
-//  OmniUIDocument-iOS
-//
-//  Created by Ken Case on 2019-09-02.
-//  Copyright © 2019 The Omni Group. All rights reserved.
-//
+// This software may only be used and reproduced according to the
+// terms in the file OmniSourceLicense.html, which should be
+// distributed with this project and can also be found at
+// <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 import Foundation
 import OmniUI

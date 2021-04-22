@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,12 +9,9 @@
 
 #import <OmniUI/OUIDrawing.h>
 #import <OmniUI/OUIInspector.h>
-#import <OmniUI/OUIInspectorAppearance.h>
 #import <OmniUI/OUIInspectorSlice.h>
 
 #import "OUIParameters.h"
-
-RCS_ID("$Id$");
 
 @implementation OUIInspectorButton
 
@@ -71,13 +68,5 @@ static id _commonInit(OUIInspectorButton *self)
     [super layoutSubviews];
 }
 #endif
-
-- (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance;
-{
-    [super themedAppearanceDidChange:changedAppearance];
-    
-    OUIInspectorAppearance *appearance = OB_CHECKED_CAST_OR_NIL(OUIInspectorAppearance, changedAppearance);
-    self.backgroundColor = appearance.TableCellBackgroundColor;
-}
 
 @end

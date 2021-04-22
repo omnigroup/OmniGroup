@@ -20,7 +20,7 @@ typedef NS_OPTIONS(NSUInteger, OUIDocumentPerformOpenURLOptions) {
     OUIDocumentPerformOpenURLOptionsRevealInBrowser = (1<<2),
 };
 
-@interface OUIDocumentSceneDelegate : UIResponder <UIWindowSceneDelegate, OUIUndoBarButtonItemTarget>
+@interface OUIDocumentSceneDelegate : UIResponder <UIWindowSceneDelegate, OUIUndoBarButtonItemTarget, UIDocumentBrowserViewControllerDelegate>
 
 + (nullable instancetype)documentSceneDelegateForView:(UIView *)view;
 + (NSArray <OUIDocumentSceneDelegate *> *)activeSceneDelegatesMatchingConditionBlock:(BOOL (^)(OUIDocumentSceneDelegate *sceneDelegate))conditionBlock;

@@ -1,4 +1,4 @@
-// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -40,12 +40,16 @@ const CGFloat OUINoteTextViewPlacholderTopMarginAutomatic = -1000;
     BOOL _drawsBorder;
     BOOL _observingEditingNotifications;
     __weak id <OUINoteTextViewAppearanceDelegate> _weak_appearanceDelegate;
+    BOOL _isAdjustingContentInsetForAccessibilityButtonVisibilityChange;
 }
 
 // Redeclare as readwrite
 @property (nonatomic, readwrite, getter=isConfiguringForEditing) BOOL configuringForEditing;
 @property (nonatomic, readwrite, getter=isChangingThemedAppearance) BOOL changingThemedAppearance;
 @property (nonatomic, readwrite, getter=isResigningFirstResponder) BOOL resigningFirstResponder;
+
+@property (nonatomic, strong) UIButton *accessibilityBeginEditingButton;
+@property (nonatomic, strong) NSArray<NSLayoutConstraint *> *accessibilityBeginEditingButtonConstraints;
 
 @end
 
@@ -88,6 +92,8 @@ const CGFloat OUINoteTextViewPlacholderTopMarginAutomatic = -1000;
     self.editable = NO;
     self.dataDetectorTypes = typesToDetectWithUITextView;
     self.alwaysBounceVertical = YES;
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_forceLayout) name:UIAccessibilityVoiceOverStatusDidChangeNotification object:nil];
     
     [self appearanceDidChange];
 }
@@ -284,8 +290,19 @@ static NSParagraphStyle *_placeholderParagraphStyle(void)
         self.dataDetectorTypes = typesToDetectWithUITextView;
     }
     
+    [self.accessibilityBeginEditingButton setTitle:NSLocalizedStringFromTableInBundle(@"Edit Note", @"OmniUI", OMNI_BUNDLE, @"Edit note on a task button title") forState:UIControlStateNormal];
+    
     self.resigningFirstResponder = NO;
     return result;
+}
+
+- (BOOL)becomeFirstResponder
+{
+    BOOL didBecomeFirstResponder = [super becomeFirstResponder];
+    if (didBecomeFirstResponder) {
+        [self.accessibilityBeginEditingButton setTitle:NSLocalizedStringFromTableInBundle(@"End Editing", @"OmniUI", OMNI_BUNDLE, @"End editing note on a task button title") forState:UIControlStateNormal];
+    }
+    return didBecomeFirstResponder;
 }
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event NS_EXTENSION_UNAVAILABLE_IOS("");
@@ -318,6 +335,9 @@ static NSParagraphStyle *_placeholderParagraphStyle(void)
 
 - (void)setContentInset:(UIEdgeInsets)contentInset;
 {
+    if (!_isAdjustingContentInsetForAccessibilityButtonVisibilityChange && self.accessibilityBeginEditingButton.superview != nil) {
+        contentInset.bottom += (CGRectGetMaxY(self.safeAreaLayoutGuide.layoutFrame) - CGRectGetMinY(self.accessibilityBeginEditingButton.frame));
+    }
     [super setContentInset:contentInset];
     
     if ([self _shouldDrawPlaceholder]) {
@@ -332,6 +352,63 @@ static NSParagraphStyle *_placeholderParagraphStyle(void)
     if ([self _shouldDrawPlaceholder]) {
         [self setNeedsDisplay];
     }
+}
+
+#pragma mark UIView subclass
+
+- (void)layoutSubviews
+{
+    BOOL addedButtonToView = NO;
+    BOOL removedButtonFromView = NO;
+    CGFloat bottomContentInsetToRemoveWithButton = 0;
+    if (UIAccessibilityIsVoiceOverRunning() || UIAccessibilityIsSwitchControlRunning()) {
+        if (self.accessibilityBeginEditingButton == nil) {
+            self.accessibilityBeginEditingButton = [UIButton buttonWithType:UIButtonTypeSystem];
+            [self.accessibilityBeginEditingButton addTarget:self action:@selector(_toggleTextEditing) forControlEvents:UIControlEventTouchUpInside];
+            [self.accessibilityBeginEditingButton setTitle:NSLocalizedStringFromTableInBundle(@"Edit Note", @"OmniUI", OMNI_BUNDLE, @"Edit note on a task button title") forState:UIControlStateNormal];
+            self.accessibilityBeginEditingButton.translatesAutoresizingMaskIntoConstraints = NO;
+            
+            self.accessibilityBeginEditingButtonConstraints = @[
+                [self.accessibilityBeginEditingButton.leadingAnchor constraintGreaterThanOrEqualToSystemSpacingAfterAnchor:self.safeAreaLayoutGuide.leadingAnchor multiplier:1],
+                [self.accessibilityBeginEditingButton.trailingAnchor constraintLessThanOrEqualToSystemSpacingAfterAnchor:self.safeAreaLayoutGuide.trailingAnchor multiplier:1],
+                [self.safeAreaLayoutGuide.bottomAnchor constraintEqualToSystemSpacingBelowAnchor:self.accessibilityBeginEditingButton.bottomAnchor multiplier:1],
+                [self.accessibilityBeginEditingButton.centerXAnchor constraintEqualToAnchor:self.safeAreaLayoutGuide.centerXAnchor constant:0],
+            ];
+        }
+        
+        if (self.accessibilityBeginEditingButton.superview == nil) {
+            [self addSubview:self.accessibilityBeginEditingButton];
+            [NSLayoutConstraint activateConstraints:self.accessibilityBeginEditingButtonConstraints];
+            addedButtonToView = YES;
+        }
+    } else {
+        if (self.accessibilityBeginEditingButton.superview != nil) {
+            bottomContentInsetToRemoveWithButton = (CGRectGetMaxY(self.safeAreaLayoutGuide.layoutFrame) - CGRectGetMinY(self.accessibilityBeginEditingButton.frame));
+            [NSLayoutConstraint deactivateConstraints:self.accessibilityBeginEditingButtonConstraints];
+            [self.accessibilityBeginEditingButton removeFromSuperview];
+            removedButtonFromView = YES;
+        }
+    }
+    
+    [super layoutSubviews];
+    
+    _isAdjustingContentInsetForAccessibilityButtonVisibilityChange = YES;
+    if (addedButtonToView) {
+        UIEdgeInsets currentInsets = self.contentInset;
+        currentInsets.bottom += (CGRectGetMaxY(self.safeAreaLayoutGuide.layoutFrame) - CGRectGetMinY(self.accessibilityBeginEditingButton.frame));
+        self.contentInset = currentInsets;
+        [self setNeedsLayout];
+        [self layoutIfNeeded];
+    }
+    
+    if (removedButtonFromView) {
+        UIEdgeInsets currentInsets = self.contentInset;
+        currentInsets.bottom -= bottomContentInsetToRemoveWithButton;
+        self.contentInset = currentInsets;
+        [self setNeedsLayout];
+        [self layoutIfNeeded];
+    }
+    _isAdjustingContentInsetForAccessibilityButtonVisibilityChange = NO;
 }
 
 #pragma mark Public
@@ -374,6 +451,23 @@ static NSParagraphStyle *_placeholderParagraphStyle(void)
 
 #pragma mark Private
 
+- (void)_forceLayout
+{
+    [self setNeedsLayout];
+    [self layoutIfNeeded];
+}
+
+- (void)_toggleTextEditing
+{
+    if (self.isFirstResponder) {
+        // Already handles disabling editability
+        [self resignFirstResponder];
+    } else {
+        [self _forceEnableTextEditing];
+        [self becomeFirstResponder];
+    }
+}
+
 - (BOOL)_shouldDrawPlaceholder;
 {
     return (![self isFirstResponder] && ![self hasText] && _drawsPlaceholder && ![NSString isEmptyString:_placeholder]);
@@ -406,21 +500,8 @@ static NSParagraphStyle *_placeholderParagraphStyle(void)
             return; // UIKit will handle opening this link after the touch ends, as long as we don't block it by making ourselves editable.
         }
     }
-
-    self.editable = YES;
-
-    // We don't want live links when editing. Leaving them live exposes underlying user interaction bugs in UITextView where the link range is extended inappropriately.
-    self.dataDetectorTypes = UIDataDetectorTypeNone;
-    NSDictionary *textAttributes = @{ NSFontAttributeName: self.font, NSForegroundColorAttributeName: self.textColor ?: [self _textColor] };
-    self.configuringForEditing = YES;
-    [textStorage beginEditing];
-    {
-        [textStorage removeAllLinks];
-        [textStorage addAttributes:textAttributes range:NSMakeRange(0, textStorage.length)];
-    }
-    [textStorage endEditing];
-    [layoutManager ensureLayoutForCharacterRange:NSMakeRange(0, textStorage.length)];
-    self.configuringForEditing = NO;
+    
+    [self _forceEnableTextEditing];
 
     // Replicate UITextView's behavior where it puts the insertion point before/after the word clicked in.
     // We choose the nearest end based on character distance, not pixel distance.
@@ -455,6 +536,27 @@ static NSParagraphStyle *_placeholderParagraphStyle(void)
     if (makeFirstResponder) {
         [self becomeFirstResponder];
     }
+}
+
+- (void)_forceEnableTextEditing
+{
+    self.editable = YES;
+
+    NSTextStorage *textStorage = self.textStorage;
+    NSLayoutManager *layoutManager = self.layoutManager;
+    
+    // We don't want live links when editing. Leaving them live exposes underlying user interaction bugs in UITextView where the link range is extended inappropriately.
+    self.dataDetectorTypes = UIDataDetectorTypeNone;
+    NSDictionary *textAttributes = @{ NSFontAttributeName: self.font, NSForegroundColorAttributeName: self.textColor ?: [self _textColor] };
+    self.configuringForEditing = YES;
+    [textStorage beginEditing];
+    {
+        [textStorage removeAllLinks];
+        [textStorage addAttributes:textAttributes range:NSMakeRange(0, textStorage.length)];
+    }
+    [textStorage endEditing];
+    [layoutManager ensureLayoutForCharacterRange:NSMakeRange(0, textStorage.length)];
+    self.configuringForEditing = NO;
 }
 
 - (void)_addEditingObserversIfNecessary;

@@ -9,9 +9,6 @@
 
 #import <OmniUI/OUISegmentedViewController.h>
 #import <OmniUI/OUIInspector.h>
-#import <OmniUI/OUIInspectorAppearance.h>
-
-RCS_ID("$Id$")
 
 @interface OUISegmentedViewController () <UINavigationBarDelegate, UINavigationControllerDelegate>{
     BOOL _tempHidingDismissButton;
@@ -60,14 +57,10 @@ RCS_ID("$Id$")
     [view addConstraint:[_navigationBar.topAnchor constraintEqualToAnchor:view.safeAreaLayoutGuide.topAnchor]];
 }
 
-- (void)viewDidDisappear:(BOOL)animated;
+- (void)dealloc;
 {
-    [super viewDidDisappear:animated];
-
-    if (_invalidated) {
-        // If we do this in -oui_invalidate, we can be in the middle of an appearance transition. This can cause <bug:///121483> (Crasher: Crash (sometimes) tapping 'Documents' to close document) by removing the selected view controller from its parent while in the middle of an appearance transition.
-        self.viewControllers = nil;
-    }
+    // If we do this in -oui_invalidate, we can be in the middle of an appearance transition. This can cause <bug:///121483> (Crasher: Crash (sometimes) tapping 'Documents' to close document) by removing the selected view controller from its parent while in the middle of an appearance transition.
+    self.viewControllers = nil;
 }
 
 - (void)setEditing:(BOOL)editing animated:(BOOL)animated {
@@ -92,6 +85,8 @@ RCS_ID("$Id$")
 
 - (CGFloat)topLayoutLength;
 {
+    OBPRECONDITION(_navigationBar);
+
     return CGRectGetMaxY(_navigationBar.frame);
 }
 
@@ -102,7 +97,11 @@ RCS_ID("$Id$")
     }
     
     _viewControllers = [viewControllers copy];
-    
+
+    if (_viewControllers == nil) { // clearing out the view controllers happens during dealloc, at that point, we don't want to attempt to set a selected view controller or set up the segmented control.
+        return;
+    }
+
     self.selectedViewController = [_viewControllers firstObject];
 
     if (_viewControllers)
@@ -168,24 +167,25 @@ RCS_ID("$Id$")
                                                                           metrics:nil
                                                                             views:views]];
 
-        if ([_selectedViewController isKindOfClass:[UINavigationController class]]) {
+        if (_selectedViewController.shouldAvoidSegmentedNavigationBar) {
             [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:[navigationBar][childView]|"
                                                                               options:0
                                                                               metrics:nil
                                                                                 views:views]];
-            UINavigationController *selectedNavigationController = (UINavigationController *)_selectedViewController;
-            [selectedNavigationController setNavigationBarHidden:selectedNavigationController.visibleViewController.wantsHiddenNavigationBar animated:NO];
-            self.originalNavDelegate = selectedNavigationController.delegate;
-            selectedNavigationController.delegate = self;
-        
-        }
-        else {
+        } else {
             [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[childView]|"
                                                                               options:0
                                                                               metrics:nil
                                                                                 views:views]];
         }
     
+        if ([_selectedViewController isKindOfClass:[UINavigationController class]]) {
+            UINavigationController *selectedNavigationController = (UINavigationController *)_selectedViewController;
+            [selectedNavigationController setNavigationBarHidden:selectedNavigationController.visibleViewController.wantsHiddenNavigationBar animated:NO];
+            self.originalNavDelegate = selectedNavigationController.delegate;
+            selectedNavigationController.delegate = self;
+        }
+
         [_selectedViewController didMoveToParentViewController:self];
         [_selectedViewController endAppearanceTransition];
     
@@ -417,6 +417,11 @@ RCS_ID("$Id$")
     return NO;
 }
 
+- (BOOL)shouldAvoidSegmentedNavigationBar;
+{
+    return NO;
+}
+
 - (OUISegmentedViewController *)segmentedViewController;
 {
     UIViewController *viewControllerToCheck = self;
@@ -444,6 +449,11 @@ RCS_ID("$Id$")
 - (OUISegmentItem *)segmentItem {
     // We probably don't want the image or title changing every time a new view controller is pushed on. Let's just grab the first view controller's segmentItem if it exists.
     return self.viewControllers.firstObject.segmentItem;
+}
+
+- (BOOL)shouldAvoidSegmentedNavigationBar;
+{
+    return YES;
 }
 
 @end

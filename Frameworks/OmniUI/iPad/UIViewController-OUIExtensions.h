@@ -37,7 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)isChildViewController:(nullable UIViewController *)child;
 
-@property (readonly, nonatomic, nullable) UIScene *containingScene;
+@property (readonly, nonatomic, nullable) UIScene *containingScene NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based solutions where available instead.");
 
 /**
  Walks the -[UIViewController parentViewController] chain to find the most distant ancestor view controller.

@@ -1,4 +1,4 @@
-// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -332,7 +332,7 @@ static BOOL displayIfNeededBlocksInProgress = NO;
 {
     NSView *view = [sender representedObject];
     if ([view respondsToSelector:@selector(_subtreeDescription)])
-        NSLog(@"%@", [[sender representedObject] _subtreeDescription]);
+        NSLog(@"Subtree description of %@:\n%@", [[sender representedObject] shortDescription], [[sender representedObject] _subtreeDescription]);
     else
         OBASSERT_NOT_REACHED("Object %@ does not respond to -_subtreeDescription; either the debugging method is gone or it is not an NSView", view);
 }

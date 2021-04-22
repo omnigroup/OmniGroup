@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,10 +7,10 @@
 
 #import <OmniUI/OUIDrawing.h>
 
+#import <OmniAppKit/OAAppearance.h>
 #import <OmniBase/OmniBase.h>
-#import "OUIParameters.h"
 
-RCS_ID("$Id$");
+#import "OUIParameters.h"
 
 UIImage *OUIImageByFlippingHorizontally(UIImage *image)
 {
@@ -48,26 +48,47 @@ void OUILogAncestorViews(UIView *view)
 
 static UIColor *OUILightContentOnDarkBackgroundShadowColor = nil;
 static UIColor *OUIDarkContentOnLightBackgroundShadowColor = nil;
+static UIColor *OUIDynamicShadowColor = nil;
 static void OUIDrawingInitialize(void)
 {
     if (OUILightContentOnDarkBackgroundShadowColor)
         return;
     OUILightContentOnDarkBackgroundShadowColor = OAMakeUIColor(kOUILightContentOnDarkBackgroundShadowColor);
     OUIDarkContentOnLightBackgroundShadowColor = OAMakeUIColor(kOUIDarkContentOnLightBackgroundShadowColor);
+    OUIDynamicShadowColor = [UIColor colorNamed:@"OUIDynamicShadowColor" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
 }
 
 CGSize OUIShadowOffset(OUIShadowType type)
 {
-    return (type == OUIShadowTypeLightContentOnDarkBackground) ? kOUILightContentOnDarkBackgroundShadowOffset : kOUIDarkContentOnLightBackgroundShadowOffset;
+    switch (type) {
+        case OUIShadowTypeLightContentOnDarkBackground:
+            return kOUILightContentOnDarkBackgroundShadowOffset;
+        case OUIShadowTypeDarkContentOnLightBackground:
+            return kOUIDarkContentOnLightBackgroundShadowOffset;
+        case OUIShadowTypeDynamic:
+            break;
+    }
+
+    BOOL isLightTheme = UITraitCollection.currentTraitCollection.userInterfaceStyle != UIUserInterfaceStyleDark;
+    if (isLightTheme) {
+        return kOUIDarkContentOnLightBackgroundShadowOffset;
+    } else {
+        return kOUILightContentOnDarkBackgroundShadowOffset;
+    }
 }
 
 UIColor *OUIShadowColor(OUIShadowType type)
 {
     OUIDrawingInitialize();
-    
-    UIColor *shadowColor = (type == OUIShadowTypeLightContentOnDarkBackground) ? OUILightContentOnDarkBackgroundShadowColor : OUIDarkContentOnLightBackgroundShadowColor;
-    OBASSERT(shadowColor);
-    return shadowColor;
+
+    switch (type) {
+        case OUIShadowTypeLightContentOnDarkBackground:
+            return OUILightContentOnDarkBackgroundShadowColor;
+        case OUIShadowTypeDarkContentOnLightBackground:
+            return OUIDarkContentOnLightBackgroundShadowColor;
+        case OUIShadowTypeDynamic:
+            return OUIDynamicShadowColor;
+    }
 }
 
 // Shifts the content within the rect so that it looks centered with the shadow applied. Assumes there is enough padding already so that we aren't going to shift the content far enough to get clipped.

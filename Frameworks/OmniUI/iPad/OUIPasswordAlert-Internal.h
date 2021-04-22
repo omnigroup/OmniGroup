@@ -6,12 +6,13 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniUI/OUIPasswordAlert.h>
+#import <OmniUI/OUIEnqueueableAlertController.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface OUIPasswordAlert ()
 
-@property (nonatomic, strong, readonly) UIAlertController *alertController;
+@property (nonatomic, strong, readonly) OUIEnqueueableAlertController *alertController;
 @property (nonatomic, readonly) OUIPasswordAlertOptions options;
 @property (nonatomic, readonly, getter = isDismissed) BOOL dismissed;
 

@@ -20,6 +20,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (id)initWithFileURLs:(NSArray <NSURL *> *)fileURLs exporter:(OUIDocumentExporter *)exporter activity:(UIActivity *)activity NS_DESIGNATED_INITIALIZER;
 - (id)init NS_UNAVAILABLE;
 
+- (BOOL)hasExportOptions;
+
 @property(nonatomic,readonly) UIViewController *viewController;
 
 @end

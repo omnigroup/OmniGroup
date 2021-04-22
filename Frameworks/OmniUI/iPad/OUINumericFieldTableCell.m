@@ -1,4 +1,4 @@
-// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,9 +7,6 @@
 
 #import <OmniUI/OUINumericFieldTableCell.h>
 #import <OmniFoundation/OmniFoundation.h>
-#import <OmniUI/OUIInspectorAppearance.h>
-
-RCS_ID("$Id$");
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -308,18 +305,6 @@ static id _commonInit(OUINumericFieldTableCell *self)
         }
     }
     return contentsRect.size;
-}
-
-#pragma mark OUIInspectorAppearanceClient
-
-- (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance;
-{
-    [super themedAppearanceDidChange:changedAppearance];
-    
-    OUIInspectorAppearance *appearance = OB_CHECKED_CAST_OR_NIL(OUIInspectorAppearance, changedAppearance);
-
-    _label.textColor = appearance.TableCellTextColor;
-    _valueTextField.textColor = appearance.TableCellTextColor;
 }
 
 @end

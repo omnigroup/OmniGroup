@@ -12,7 +12,7 @@ import UIKit
 ///       The PaneConfiguration and the PaneEnviroment could be properties and types to expose to clients since they provide all the configuration that gets applied to a Pane and its managed view controller by the MPC.
 ///       Properties and functions currently marked private probably don't make sense to change externally and should be left that way.
 @objc(OUIMultiPane) open class Pane: NSObject {
-    public let viewController: UIViewController
+    @objc public let viewController: UIViewController
 
     @objc public var preferredMinimumWidth: CGFloat {
         get {

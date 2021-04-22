@@ -130,11 +130,12 @@ static NSString * const OUIDocumentUndoManagerRunLoopPrivateMode = @"com.omnigro
     return [self initWithFileURL:fileURL error:outError];
 }
 
-- (instancetype)initWithContentsOfTemplateAtURL:(NSURL *)templateURLOrNil toBeSavedToURL:(NSURL *)saveURL error:(NSError **)outError;
+- (instancetype)initWithContentsOfTemplateAtURL:(NSURL *)templateURLOrNil toBeSavedToURL:(NSURL *)saveURL activityViewController:(UIViewController *)activityViewController error:(NSError **)outError;
 {
     OBPRECONDITION(![NSThread isMainThread], "Subclassers are supposed to read the template, so this should be on a background queue.");
     
     self = [self initWithFileURL:saveURL error:outError];
+    self.activityViewController = activityViewController;
 
     if (self != nil && [templateURLOrNil startAccessingSecurityScopedResource]) {
         [templateURLOrNil stopAccessingSecurityScopedResource];
@@ -220,6 +221,7 @@ static NSString * const OUIDocumentUndoManagerRunLoopPrivateMode = @"com.omnigro
     // UIView cannot get torn down on background threads. Capture these in locals to avoid the block doing a -retain on us while we are in -dealloc
     UIViewController *viewController = _documentViewController;
     OBStrongRetain(viewController);
+    _documentViewController = nil;
     
     OUIUndoIndicator *undoIndicator = _undoIndicator;
     OBStrongRetain(undoIndicator);
@@ -871,7 +873,12 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
                 errorViewController = sceneDelegates.firstObject.window.rootViewController;
             }
 
-            OUI_PRESENT_ALERT_FROM(error, errorViewController); // Note: If we don't have a view controller yet, this will present the error the next time a scene becomes active
+            //<bug:///178851> (iOS-OmniGraffle Bug: Can't create new document with many cloud storage providers [Dropbox, OneDrive, GoogleDrive, file package, error])
+            if (([error.domain isEqualToString:@"com.google.DriveKit"] && error.code == 11) || ([[[error.userInfo valueForKey:@"NSUnderlyingError"] domain] isEqualToString:@"com.google.DriveKit"] && [[error.userInfo valueForKey:@"NSUnderlyingError"] code] == 11)) {
+                [OUIAppController presentError:error fromViewController:errorViewController cancelButtonTitle:nil optionalActionTitle:nil optionalAction:nil];
+            } else {
+                OUI_PRESENT_ALERT_FROM(error, errorViewController); // Note: If we don't have a view controller yet, this will present the error the next time a scene becomes active
+            }
         }];
     } else {
         [error log:@"Error encountered by document"];
@@ -1436,13 +1443,6 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
 - (BOOL)isUserInteractionAllowed;
 {
     return !self.forPreviewGeneration;
-}
-
-#pragma mark - OJSEnvironmentProviderType
-
-- (OJSEnvironment * _Nullable)scriptingEnvironment;
-{
-    return nil; // Subclasses can override this to return an appropriate scripting environment
 }
 
 @end

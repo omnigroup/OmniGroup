@@ -8,10 +8,6 @@
 #import <OmniUI/OUINavigationController.h>
 
 #import <OmniUI/OUISegmentedViewController.h>
-#import <OmniUI/OUIThemedAppearance.h>
-#import <OmniUI/OUIInspectorAppearance.h>
-
-RCS_ID("$Id$")
 
 @interface OUINavigationController ()
 
@@ -183,25 +179,6 @@ RCS_ID("$Id$")
 {
     [super setViewControllers:viewControllers];
     [self _updateAccessory:[viewControllers lastObject]  animated:NO];
-}
-
-#pragma mark - OUIThemedAppearanceClient
-
-- (NSArray <id<OUIThemedAppearanceClient>> *)themedAppearanceChildClients;
-{
-    NSArray <id<OUIThemedAppearanceClient>> *clients = [super themedAppearanceChildClients];
-    clients = [clients arrayByAddingObject:_accessoryAndBackgroundBar];
-    clients = [clients arrayByAddingObjectsFromArray:self.viewControllers];
-    return clients;
-}
-
-- (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance;
-{
-    [super themedAppearanceDidChange:changedAppearance];
-    
-    OUIInspectorAppearance *appearance = OB_CHECKED_CAST_OR_NIL(OUIInspectorAppearance, changedAppearance);
-    UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:appearance.NavigationBarAccessoryBlurEffectStyle];
-    self.accessoryAndBackgroundBar.effect = blurEffect;
 }
 
 @end

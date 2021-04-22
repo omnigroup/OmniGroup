@@ -17,7 +17,7 @@
 "All versions" = "Tutte le versioni";
 
 /* Software update report entry name */
-"App ID" = "ID app";
+"App ID" = "ID Apple";
 
 /* Software update report entry name */
 "App version" = "Versione app";
@@ -34,7 +34,7 @@
 /* software update settings section title
    software update settings title */
 
-"Device Information" = "Informazioni dispositivo";
+"Device Information" = "Informazioni dispositivo…";
 
 /* error description */
 "Error fetching software update information." = "Errore durante il recupero delle informazioni di aggiornamento software.";
@@ -49,7 +49,7 @@
 "Help The Omni Group decide which devices and iOS versions to support" = "Aiuta The Omni Group a decidere quali dispositivi e versioni di iOS supportare";
 
 /* Settings preferences detail text */
-"If you choose to share this information, you’ll be helping keep us informed of which devices and iOS versions our software should support.\n\nThis information is kept entirely anonymous." = "Se scegli di condividere queste informazioni, ci aiuterai a sapere quali dispositivi e versioni di iOS debbano essere supportati dal nostro software.\n\nTali informazioni saranno in forma del tutto anonima.";
+"If you choose to share this information, you’ll be helping keep us informed of which devices and iOS versions our software should support.\n\nThis information is kept entirely anonymous." = "Se scegli di condividere queste informazioni, ci aiuterai a sapere quali dispositivi e versioni di iOS debbano essere supportati dal nostro software.\n\nTali informazioni saranno in forma del tutto anonima. ";
 
 /* Software update report entry name */
 "iOS version" = "Versione iOS";
@@ -76,10 +76,10 @@
 "Please try again later or contact us to let us know this is broken." = "Riprova più tardi o contattaci per comunicare l’errore.";
 
 /* Software update report entry name */
-"Report ID" = "ID segnalazione";
+"Report ID" = "ID resoconto";
 
 /* Software update report entry name */
-"Report version" = "Versione segnalazione";
+"Report version" = "Versione resoconto";
 
 /* Settings option title
    software update settings cell title */
@@ -93,7 +93,7 @@
 "Storage" = "Spazio di archiviazione";
 
 /* error reason */
-"The background software update service failed." = "Errore del servizio di aggiornamento software in background.";
+"The background software update service failed." = "Servizio di aggiornamento software in background non riuscito.";
 
 /* error description */
 "The data returned from <%@> was not a valid XML document." = "I dati restituiti da <%@> non costituivano un documento XML valido.";
@@ -111,7 +111,7 @@
 "This version" = "Questa versione";
 
 /* error reason */
-"Timed out waiting for the software update service." = "Tempo scaduto per l’attesa del servizio di aggiornamento software.";
+"Timed out waiting for the software update service." = "Tempo di attesa scaduto per il servizio di aggiornamento software.";
 
 /* error reason - we ran a helper tool to fetch software update information, but it didn't return any information */
 "Tool returned no data" = "Lo strumento non ha restituito dati";

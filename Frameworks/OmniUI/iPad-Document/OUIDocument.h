@@ -16,7 +16,7 @@
 
 @protocol OUIDocumentViewController;
 
-@interface OUIDocument : UIDocument <OFCMSKeySource, OJSEnvironmentProviderType>
+@interface OUIDocument : UIDocument <OFCMSKeySource>
 
 // Can be overridden to provide a file inside the app wrapper to read into a new document. Returns nil by default.
 + (NSURL *)builtInBlankTemplateURL;
@@ -30,7 +30,7 @@
 - (instancetype)initWithExistingFileURL:(NSURL *)fileURL error:(NSError **)outError;
 
 // Subclass this method if you need to set anything on the document after it's first been created from a template. (UUID's and the like). Callers of this method must perform file coordination on the template URL. The saveURL will be in a temporary location and doesn't need file coordination.
-- (instancetype)initWithContentsOfTemplateAtURL:(NSURL *)templateURLOrNil toBeSavedToURL:(NSURL *)saveURL error:(NSError **)outError;
+- (instancetype)initWithContentsOfTemplateAtURL:(NSURL *)templateURLOrNil toBeSavedToURL:(NSURL *)saveURL activityViewController:(UIViewController *)activityViewController error:(NSError **)outError;
 
 // Subclass this method to handle reading of any files where +shouldImportFileAtURL: returns YES. Callers of this method must perform file coordination on the template URL. The saveURL will be in a temporary location and doesn't need file coordination.
 - (instancetype)initWithContentsOfImportableFileAtURL:(NSURL *)importableURL toBeSavedToURL:(NSURL *)saveURL error:(NSError **)outError;

@@ -1,3 +1,10 @@
+// Copyright 2019 Omni Development, Inc. All rights reserved.
+//
+// This software may only be used and reproduced according to the
+// terms in the file OmniSourceLicense.html, which should be
+// distributed with this project and can also be found at
+// <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+
 import Combine
 import QuickLookThumbnailing
 import UIKit
@@ -9,6 +16,7 @@ internal protocol ServerAccount {
     var hasErrorStatus: Bool { get }
     var filesDidChangeBlock: (() -> Void)? { get set }
     func requestSync() -> Void
+    func requestHelp() -> Void
 }
 
 internal enum SortOrder {
@@ -324,6 +332,10 @@ internal class PreviewTestAccount: ServerAccount {
 
     func requestSync() {
         print("Sync requested")
+    }
+
+    func requestHelp() {
+        print("Help requested")
     }
 
     var baseURL: URL {

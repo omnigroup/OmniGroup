@@ -1,4 +1,4 @@
-// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,10 +11,7 @@
 #import <OmniUI/OUIColorSwatchPicker.h>
 #import <OmniUI/OUIInspectorSelectionValue.h>
 #import <OmniUI/OUIInspector.h>
-#import <OmniUI/OUIInspectorAppearance.h>
 #import <OmniBase/OmniBase.h>
-
-RCS_ID("$Id$");
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -241,9 +238,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (UIColor *)textColor
 {
-    if ([OUIInspectorAppearance inspectorAppearanceEnabled])
-        return OUIInspectorAppearance.appearance.InspectorTextColor;
-    
     return [OUIInspector labelTextColor];
 }
 
@@ -252,24 +246,6 @@ NS_ASSUME_NONNULL_BEGIN
 -(OAColor *)color
 {
     return  self.selectionValue.firstValue;
-}
-
-#pragma mark - OUIInspectorAppearance
-
-- (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance;
-{
-    [super themedAppearanceDidChange:changedAppearance];
-    
-    self.view.backgroundColor = OUIInspectorAppearance.appearance.InspectorBackgroundColor;
-    
-    for (UIView *view in _themeViews) {
-        if ([view isKindOfClass:[UILabel class]]) {
-            UILabel *label = OB_CHECKED_CAST(UILabel, view);
-            if (label) {
-                label.textColor = self.textColor;
-            }
-        }
-    }
 }
 
 @end

@@ -9,7 +9,6 @@
 
 #import <OmniUI/NSUndoManager-OUIExtensions.h>
 #import <OmniUI/OUIAppController.h>
-#import <OmniUI/OUIUndoBarButtonMenuAppearanceDelegate.h>
 #import <OmniUI/OUIUndoButton.h>
 #import <OmniUI/UIPopoverPresentationController-OUIExtensions.h>
 #import <OmniUI/UIView-OUIExtensions.h>
@@ -128,16 +127,6 @@ static id _commonInit(OUIUndoBarButtonItem *self)
     return _commonInit(self);
 }
 
-- initWithUndoMenuAppearanceDelegate:(id <OUIUndoBarButtonMenuAppearanceDelegate>)appearanceDelegate;
-{
-    if (!(self = [super init]))
-        return nil;
-    
-    _weak_appearanceDelegate = appearanceDelegate;
-    
-    return _commonInit(self);
-}
-
 - (void)dealloc;
 {
     NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
@@ -203,33 +192,6 @@ static id _commonInit(OUIUndoBarButtonItem *self)
     [_undoButton sizeToFit];
 }
 
-#pragma mark - Appearance
-
-- (void)appearanceDidChange;
-{
-    id <OUIUndoBarButtonMenuAppearanceDelegate> appearanceDelegate = self.appearanceDelegate;
-    if (appearanceDelegate != nil) {
-        
-        if (_menuController != nil) {
-            _menuController.popoverPresentationController.backgroundColor = [appearanceDelegate undoBarButtonMenuPopoverBackgroundColor];
-            _menuController.menuBackgroundColor = [appearanceDelegate undoBarButtonMenuBackgroundColor];
-            _menuController.menuOptionBackgroundColor = [appearanceDelegate undoBarButtonMenuOptionBackgroundColor];
-            _menuController.menuOptionSelectionColor = [appearanceDelegate undoBarButtonMenuOptionSelectionColor];
-        }
-    }
-}
-
-@synthesize appearanceDelegate = _weak_appearanceDelegate;
-- (void)setAppearanceDelegate:(id<OUIUndoBarButtonMenuAppearanceDelegate>)appearanceDelegate;
-{
-    if (appearanceDelegate == _weak_appearanceDelegate) {
-        return;
-    }
-    
-    _weak_appearanceDelegate = appearanceDelegate;
-    [self appearanceDidChange];
-}
-
 #pragma mark - Accessibility
 - (NSString *)accessibilityLabel
 {
@@ -293,6 +255,11 @@ static id _commonInit(OUIUndoBarButtonItem *self)
         
         // We will provide exactly the same number/title options but possibly w/o an action.
         _menuController.optionInvocationAction = OUIMenuControllerOptionInvocationActionReload;
+
+        _menuController.popoverPresentationController.backgroundColor = UIColor.secondarySystemBackgroundColor;
+        _menuController.menuBackgroundColor = UIColor.secondarySystemBackgroundColor;
+        _menuController.menuOptionBackgroundColor = nil;
+        _menuController.menuOptionSelectionColor = nil;
     }
     
     // retint each time, because Focus uses multiple tints
@@ -336,9 +303,6 @@ static id _commonInit(OUIUndoBarButtonItem *self)
         _menuController.popoverPresentationController.sourceView = nil;
         _menuController.popoverPresentationController.barButtonItem = self;
     }
-    
-    // give the appearanceDelegate, if present, an opportunity to alter the appearance each time
-    [self appearanceDidChange];
     
     return _menuController;
 }

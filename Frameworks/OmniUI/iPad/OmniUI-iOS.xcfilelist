@@ -32,7 +32,6 @@ Inspectors/OUIFontUtilities.m
 Inspectors/OUIGrayColorPicker.m
 Inspectors/OUIHSVColorPicker.m
 Inspectors/OUIInspector.m
-Inspectors/OUIInspectorAppearance.m
 Inspectors/OUIInspectorBackgroundView.m
 Inspectors/OUIInspectorButton.m
 Inspectors/OUIInspectorDividerLine.m
@@ -165,7 +164,6 @@ OUITapGestureRecognizer.m
 OUITextLayout.m
 OUITextSelectionSpan.m
 OUITextView.m
-OUIThemedAppearance.m
 OUIThemedTableViewCell.m
 OUITiledScalingView.m
 OUIToolbarButton.m

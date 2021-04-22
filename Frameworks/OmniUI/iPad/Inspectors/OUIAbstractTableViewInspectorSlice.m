@@ -8,10 +8,7 @@
 #import <OmniUI/OUIAbstractTableViewInspectorSlice.h>
 
 #import <OmniUI/OUIInspector.h>
-#import <OmniUI/OUIInspectorAppearance.h>
 #import <OmniUI/UITableView-OUIExtensions.h>
-
-RCS_ID("$Id$");
 
 #define UPPERCASE_LABELS    (1)
 
@@ -127,11 +124,7 @@ static NSString *_doneActionButtonTitle;
         [headerView.trailingAnchor constraintGreaterThanOrEqualToAnchor:label.trailingAnchor constant:edgeInsets.left].active = YES;
     }
 
-    if ([OUIInspectorAppearance inspectorAppearanceEnabled]) {
-        [headerView themedAppearanceDidChange:OUIInspectorAppearance.appearance];
-    } else {
-        headerView.backgroundColor = [OUIInspector backgroundColor];
-    }
+    headerView.backgroundColor = [OUIInspector backgroundColor];
     OBASSERT(headerView.backgroundColor != nil, "Clear backgrounds cause the header view's text to overlap the font names, and that looks bad.");
     
     return headerView;
@@ -167,9 +160,6 @@ static NSString *_doneActionButtonTitle;
 
 - (void)_resizeTable;
 {
-    if (_tableView.window != nil)
-        [_tableView layoutIfNeeded];
-
     OUITableViewAdjustHeightToFitContents(_tableView);
     CGFloat currentHeight = self.tableView.contentSize.height;
     if (currentHeight == 0.0)
@@ -187,8 +177,6 @@ static NSString *_doneActionButtonTitle;
 {
     _tableView.editing = NO;
     [_tableView reloadData];
-    if (_tableView.window != nil)
-        [_tableView layoutIfNeeded];
     [self _resizeTable];
 }
 
@@ -213,9 +201,6 @@ static NSString *_doneActionButtonTitle;
 {
     [super updateInterfaceFromInspectedObjects:reason];
     [self reloadTableAndResize];
-    
-    if ([OUIInspectorAppearance inspectorAppearanceEnabled])
-        [self _updateAppearance];
 }
 
 #pragma mark - UIViewController subclass
@@ -265,9 +250,6 @@ static NSString *_doneActionButtonTitle;
     [super viewWillAppear:animated];
     //If we are inspecting a new type of graphic for the first time (like tapping a graphic when we first open the document) the it is possible for the table view to have no content. We then try to resize an empty table view to fit its content size, but the table view has no contents and the resize function expects the table view to have contents. So, make sure we have contents first.
     [self updateInterfaceFromInspectedObjects:OUIInspectorUpdateReasonDefault];
-
-    if ([OUIInspectorAppearance inspectorAppearanceEnabled])
-        [self _updateAppearance];
 }
 
 - (void)viewDidAppear:(BOOL)animated
@@ -310,82 +292,11 @@ static NSString *_doneActionButtonTitle;
     return view;
 }
 
-#pragma mark OUIThemedApperanceClient
-
-- (void)_updateAppearance;
-{
-    if (!self.isViewLoaded)
-        return;
-    
-    OUIInspectorAppearance *appearance = [OUIInspectorAppearance appearance];
-    
-    switch (self.tableViewStyle) {
-        case UITableViewStyleGrouped:
-            self.tableView.backgroundColor = appearance.InspectorBackgroundColor;
-            self.tableView.separatorColor = appearance.TableViewSeparatorColor;
-            break;
-        case UITableViewStylePlain:
-            self.tableView.backgroundColor = appearance.InspectorBackgroundColor;
-            self.tableView.separatorColor = appearance.TableViewSeparatorColor;
-            break;
-        default:
-            ;
-    }
-}
-
-- (void)themedAppearanceDidChange:(OUIThemedAppearance *)appearance;
-{
-    [super themedAppearanceDidChange:appearance];
-    [self _updateAppearance];
-}
-
-- (NSArray <id<OUIThemedAppearanceClient>> *)themedAppearanceChildClients;
-{
-    NSArray *clients = [super themedAppearanceChildClients];
-    if (self.tableView)
-        clients = [clients arrayByAddingObject:self.tableView];
-
-    return clients;
-}
-
 @end
 
 @implementation OUIAbstractTableViewSectionHeaderView
-
-- (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance
-{
-    OUIInspectorAppearance *appearance = OB_CHECKED_CAST_OR_NIL(OUIInspectorAppearance, changedAppearance);
-
-    self.backgroundColor = appearance.InspectorBackgroundColor;
-    self.label.textColor = appearance.TableCellTextColor;
-}
-
 @end
 
 @implementation OUIInspectorTableViewHeaderFooterView
-
-- (void)didMoveToSuperview;
-{
-    [super didMoveToSuperview];
-    
-    if ([OUIInspectorAppearance inspectorAppearanceEnabled])
-        [self themedAppearanceDidChange:[OUIInspectorAppearance appearance]];
-}
-
-- (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance;
-{
-    [super themedAppearanceDidChange:changedAppearance];
-    
-    OUIInspectorAppearance *appearance = OB_CHECKED_CAST_OR_NIL(OUIInspectorAppearance, changedAppearance);
-    [self _updateColorsFromInspectorAppearance:appearance];
-}
-
-- (void)_updateColorsFromInspectorAppearance:(OUIInspectorAppearance *)appearance;
-{
-    self.contentView.backgroundColor = appearance.InspectorBackgroundColor;
-    self.textLabel.textColor = appearance.TableCellTextColor;
-    self.detailTextLabel.textColor = appearance.TableCellDetailTextLabelColor;
-}
-
 @end
 

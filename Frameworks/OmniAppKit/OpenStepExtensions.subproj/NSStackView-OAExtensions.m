@@ -41,7 +41,7 @@ typedef enum {
 @end
 
 
-@implementation NSStackView (OAExtentions)
+@implementation NSStackView (OAExtensions)
 
 - (void)removeAllArrangedSubviews;
 {

@@ -1,4 +1,4 @@
-// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -103,7 +103,7 @@ RCS_ID("$Id$");
     return YES;
 }
 
-- (UIScene *)containingScene
+- (UIScene *)containingScene NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based solutions where available instead.");
 {
     // If the view's in the view hierarchy, it'll have a scene
     if ([self isViewLoaded]) {
@@ -123,7 +123,50 @@ RCS_ID("$Id$");
     }
 
     // We may have a presenting view controller that can resolve a scene
-    return self.presentingViewController.containingScene;
+    UIScene *presentingContainingScene = self.presentingViewController.containingScene;
+    if (presentingContainingScene != nil) {
+        return presentingContainingScene;
+    }
+    
+    // If we're in a compact multipane controller and we're in an off-screen pane, we're not in a view hierarchy at all, but we're still contained within a specific scene.
+    UIViewController *mostDistantAncestor = self.mostDistantAncestorViewController;
+    OBASSERT(!mostDistantAncestor.isVisible || ![mostDistantAncestor isKindOfClass:[OUIMultipanePresentationWrapperViewController class]], "If we're within in a visible presentation wrapper, we should be presented and able to find our containing scene with an earlier check.");
+    
+    // Search the connected scenes for one where a compact multipane controller contains us within one of its panes.
+    return [[OUIAppController sharedController] mostRecentlyActiveSceneSatisfyingCondition:^BOOL(UIScene * scene) {
+        if ([scene isKindOfClass:[UIWindowScene class]]) {
+            UIWindow *window = [OUIAppController windowForScene:scene options:OUIWindowForSceneOptionsNone];
+            OUIMultiPaneController *controller = [[window rootViewController] _descendantMultiPaneController];
+            if (controller == nil) {
+                return NO;
+            }
+            
+            for (OUIMultiPane *pane in controller.orderedPanes) {
+                if (pane.viewController == mostDistantAncestor) {
+                    return YES;
+                }
+            }
+            return NO;
+        } else {
+            return NO;
+        }
+    }];
+}
+
+- (OUIMultiPaneController *)_descendantMultiPaneController
+{
+    if ([self isKindOfClass:[OUIMultiPaneController class]]) {
+        return (OUIMultiPaneController *)self;
+    }
+    
+    for (UIViewController *child in self.childViewControllers) {
+        OUIMultiPaneController *controller = [child _descendantMultiPaneController];
+        if (controller != nil) {
+            return controller;
+        }
+    }
+    
+    return nil;
 }
 
 @end

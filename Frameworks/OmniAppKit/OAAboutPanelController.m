@@ -69,6 +69,9 @@ static NSString * const OAAboutPanelMainBundleContentVariants = @"OAAboutPanelMa
     [creditsTextView setEditable:NO];
     [creditsTextView setSelectable:YES];
     [[creditsTextView enclosingScrollView] setDrawsBackground:NO];
+    creditsTextView.linkTextAttributes = @{
+        NSForegroundColorAttributeName: NSColor.linkColor,
+    };
     
     NSString *copyright = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"NSHumanReadableCopyright"];
     if (copyright == nil) {
@@ -161,18 +164,24 @@ static NSString * const OAAboutPanelMainBundleContentVariants = @"OAAboutPanelMa
             }
 
 	    // There is no NSFont class method for the 'mini' size.
-	    NSDictionary *attributes = [[NSDictionary alloc] initWithObjectsAndKeys:
-		[NSFont systemFontOfSize:9.0f], NSFontAttributeName,
-		[NSColor whiteColor], NSBackgroundColorAttributeName,
-		nil];
+	    NSDictionary *attributes = @{
+                NSFontAttributeName: [NSFont systemFontOfSize:9.0f],
+                NSBackgroundColorAttributeName: NSColor.textBackgroundColor,
+                NSForegroundColorAttributeName: NSColor.textColor,
+            };
 	    variant = [[NSAttributedString alloc] initWithString:string attributes:attributes];
 	} else {
             __autoreleasing NSError *error = nil;
-            variant = [[NSAttributedString alloc] initWithURL:contentURL options:@{} documentAttributes:NULL error:&error];
-            if (!variant) {
+            NSMutableAttributedString *mutableAttributedString = [[NSMutableAttributedString alloc] initWithURL:contentURL options:@{} documentAttributes:NULL error:&error];
+            if (mutableAttributedString == nil) {
                 [error log:@"Error reading %@", contentURL];
                 return;
             }
+            NSDictionary *dynamicColorAttributes = @{
+                NSForegroundColorAttributeName: NSColor.textColor,
+            };
+            [mutableAttributedString addAttributes:dynamicColorAttributes range:NSMakeRange(0, mutableAttributedString.length)];
+            variant = [mutableAttributedString copy];
 	}
     } @catch (NSException *exc) {
 	NSLog(@"Exception raised while trying to load about panel variant %@.%@ -- %@", name, type, exc);

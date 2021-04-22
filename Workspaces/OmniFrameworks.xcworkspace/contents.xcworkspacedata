@@ -44,9 +44,6 @@
       location = "group:../Frameworks/OmniSoftwareUpdate/OmniSoftwareUpdate.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:../Frameworks/OmniSQLite/OmniSQLite.xcodeproj">
-   </FileRef>
-   <FileRef
       location = "group:../Frameworks/OmniUI/iPad/OmniUI.xcodeproj">
    </FileRef>
    <FileRef
@@ -55,11 +52,4 @@
    <FileRef
       location = "group:../Frameworks/OmniUnzip/OmniUnzip.xcodeproj">
    </FileRef>
-   <Group
-      location = "container:"
-      name = "Deprecated">
-      <FileRef
-         location = "group:../Frameworks/OWF/OWF.xcodeproj">
-      </FileRef>
-   </Group>
 </Workspace>

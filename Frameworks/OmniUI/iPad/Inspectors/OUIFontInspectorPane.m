@@ -13,12 +13,9 @@
 #import <OmniUI/OUIFontFamilyInspectorSlice.h>
 #import <OmniUI/OUIFontUtilities.h>
 #import <OmniUI/OUIInspector.h>
-#import <OmniUI/OUIInspectorAppearance.h>
 #import <OmniUI/OUIInspectorSlice.h>
 #import <OmniUI/OUIThemedTableViewCell.h>
 #import <OmniUI/UITableView-OUIExtensions.h>
-
-RCS_ID("$Id$");
 
 @implementation OUIFontInspectorPane
 {
@@ -168,9 +165,6 @@ static NSComparisonResult _compareItem(id obj1, id obj2, void *context)
     [tableView reloadData];
     
     [self _scrollFirstSelectedItemToVisible:NO];
-    
-    if ([OUIInspectorAppearance inspectorAppearanceEnabled])
-        [self themedAppearanceDidChange:[OUIInspectorAppearance appearance]];
 }
 
 #pragma mark - UITableViewDataSource
@@ -350,19 +344,6 @@ static OAFontDescriptor *_fixFixedPitchTrait(OAFontDescriptor *fontDescriptor, N
     UIFont *font = [item objectForKey:ItemFont];
     
     [(OUIFontFamilyInspectorSlice *)self.parentSlice showFacesForFamilyBaseFont:font];
-}
-
-#pragma mark OUIInspectorAppearanceClient
-
-- (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance;
-{
-    [super themedAppearanceDidChange:changedAppearance];
-    
-    OUIInspectorAppearance *appearance = OB_CHECKED_CAST_OR_NIL(OUIInspectorAppearance, changedAppearance);
-    
-    UITableView *tableView = (UITableView *)self.view;
-    tableView.backgroundColor = appearance.TableCellBackgroundColor;
-    tableView.separatorColor = appearance.TableViewSeparatorColor;
 }
 
 #pragma mark - Private

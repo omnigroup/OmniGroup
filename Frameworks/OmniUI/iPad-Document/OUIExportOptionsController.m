@@ -48,6 +48,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface OUIExportOptionsController () <OUIExportOptionPickerViewControllerDelegate>
 
 @property (nonatomic, nullable, readonly) OUIExportOptionPickerViewController *optionPickerViewController;
+@property (nonatomic, strong) OUIExportOption *cachedPurchaseOption;
 
 @end
 
@@ -83,25 +84,20 @@ NS_ASSUME_NONNULL_BEGIN
     return self;
 }
 
-- (UIViewController *)viewController;
+- (BOOL)hasExportOptions;
 {
     NSArray <OUIExportOption *> *exportOptions = [self _exportOptions];
 
-    // If there is exactly one option, and no purchases available, then skip the option picker.
-    if (exportOptions.count == 1 && exportOptions.firstObject.requiresPurchase == NO) {
-        OBASSERT_NOT_REACHED("We don't currently have this case, so haven't ported this code (and maybe the caller shouldn't create us in this case");
-#if 0
-        NSArray *inAppPurchaseExportTypes = [_exporter availableInAppPurchaseExportTypesForFileURL:_fileURL];
-        if (inAppPurchaseExportTypes.count == 0) {
-            OUIExportOption *singleExportOption = exportOptions.firstObject;
-            OBASSERT(OFISNULL(singleExportOption.fileType), "Expecting the conversion to be 'fast' since it is a native type");
+    // If we can only export as the 'null' native format that isn't actually converting anything, then there is no purpose to this activity.
+    if (exportOptions.count == 1 && exportOptions.firstObject.requiresPurchase == NO && OFISNULL(exportOptions.firstObject.fileType))
+        return NO;
 
-            [self _performActionForExportOption:singleExportOption];
-            return;
-        }
-#endif
-    }
-    
+    return YES;
+}
+
+- (UIViewController *)viewController;
+{
+    NSArray <OUIExportOption *> *exportOptions = [self _exportOptions];
     UIViewController *rootViewController = [self _makeOptionPickerViewControllerWithExportOptions:exportOptions];
 
     // This will keep us alive as long as it is on screen.
@@ -373,7 +369,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (OUIExportOptionPickerViewController *)_makeOptionPickerViewControllerWithExportOptions:(NSArray <OUIExportOption *> *)exportOptions;
 {
-    OUIExportOptionPickerViewController *picker = [[OUIExportOptionPickerViewController alloc] initWithExportOptions:exportOptions];
+    NSArray <OUIExportOption *> *availableExportOptions = [exportOptions select:^BOOL(OUIExportOption *option) {
+        return !option.requiresPurchase;
+    }];
+
+    OUIExportOptionPickerViewController *picker = [[OUIExportOptionPickerViewController alloc] initWithExportOptions:availableExportOptions];
     picker.delegate = self;
 
     NSArray <OUIExportOption *> *inAppPurchaseOptions = [exportOptions select:^BOOL(OUIExportOption *option) {
@@ -388,6 +388,7 @@ NS_ASSUME_NONNULL_BEGIN
 
         picker.inAppPurchaseButtonTitle = [NSString stringWithFormat:@"%@ %@", label, purchaseNowLocalized];
         picker.showInAppPurchaseButton = YES;
+        self.cachedPurchaseOption = exportOption;
     } else {
         picker.showInAppPurchaseButton = NO;
     }
@@ -444,14 +445,7 @@ NS_ASSUME_NONNULL_BEGIN
 {
     _optionPickerView = nil;
     _optionPickerRect = CGRectNull;
-
-    NSArray <OUIExportOption *> *exportOptions = [optionPicker.exportOptions select:^(OUIExportOption *candidate) {
-        return candidate.requiresPurchase;
-    }];
-    
-    OBASSERT(exportOptions.count == 1);
-
-    [_exporter purchaseExportType:exportOptions.firstObject.fileType navigationController:_navigationController];
+    [_exporter purchaseExportType:_cachedPurchaseOption.fileType navigationController:_navigationController];
 }
 
 @end

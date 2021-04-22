@@ -197,14 +197,14 @@ static NSString *PathExtensionForFileType(NSString *fileType, BOOL *outIsPackage
                 NSURL *securedURL = nil;
                 if ([newURL startAccessingSecurityScopedResource])
                     securedURL = newURL;
-                document = [[cls alloc] initWithContentsOfTemplateAtURL:newURL toBeSavedToURL:temporaryURL error:outError];
+                document = [[cls alloc] initWithContentsOfTemplateAtURL:newURL toBeSavedToURL:temporaryURL activityViewController:context.activityViewController error:outError];
                 [securedURL stopAccessingSecurityScopedResource];
                 return (document != nil);
             }];
         } else {
             NSURL *blankURL = [cls builtInBlankTemplateURL]; // No coordination here since if this is non-nil it should be in the app wrapper.
             OBASSERT_IF(blankURL != nil, OFURLContainsURL([[NSBundle mainBundle] bundleURL], blankURL));
-            document = [[cls alloc] initWithContentsOfTemplateAtURL:blankURL toBeSavedToURL:temporaryURL error:&readError];
+            document = [[cls alloc] initWithContentsOfTemplateAtURL:blankURL toBeSavedToURL:temporaryURL activityViewController:context.activityViewController error:&readError];
         }
 
         if (!document) {
@@ -283,6 +283,7 @@ static NSString *PathExtensionForFileType(NSString *fileType, BOOL *outIsPackage
 - (void)templatePicker:(OUITemplatePicker *)templatePicker didSelectTemplateURL:(NSURL *)templateURL animateFrom:(UIView *)animateFrom;
 {
     OUINewDocumentCreationContext *context = [[OUINewDocumentCreationContext alloc] initWithTemplateURL:templateURL documentName:nil animateFromView:nil];
+    context.activityViewController = templatePicker;
     [self _newDocumentWithContext:context completion:nil];
 }
 

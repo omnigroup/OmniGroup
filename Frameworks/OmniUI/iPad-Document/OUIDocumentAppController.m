@@ -41,14 +41,6 @@ OFDeclareDebugLogLevel(OUIApplicationLaunchDebug);
         NSLog(@"APP: " format, ## __VA_ARGS__); \
     } while (0)
 
-static OFDeclareDebugLogLevel(OUIBackgroundFetchDebug);
-#define DEBUG_FETCH(level, format, ...) do { \
-    if (OUIBackgroundFetchDebug >= (level)) \
-        NSLog(@"FETCH: " format, ## __VA_ARGS__); \
-    } while (0)
-
-static OFDeclareTimeInterval(OUIBackgroundFetchTimeout, 15, 5, 600);
-
 @interface OUIDocumentAppController () <OUIWebViewControllerDelegate, OUIDocumentCreationRequestDelegate>
 
 @property (nonatomic, weak) OUIWebViewController *webViewController;
@@ -59,14 +51,12 @@ static OFDeclareTimeInterval(OUIBackgroundFetchTimeout, 15, 5, 600);
 
 @end
 
-static unsigned SyncAgentAccountsSnapshotContext;
-
 @implementation OUIDocumentAppController
 {
     OFXAgent *_syncAgent;
     BOOL _syncAgentForegrounded; // Keep track of whether we have told the sync agent to run. We might get backgrounded while starting up (when handling a crash alert, for example).
     OUIDocumentSyncActivityObserver *_syncActivityObserver;
-    
+
     OFBackgroundActivity *_backgroundFlushActivity;
 
     NSString *_agentStatusImageName;
@@ -83,8 +73,6 @@ static unsigned SyncAgentAccountsSnapshotContext;
 #if 0 && defined(DEBUG)
     sleep(3); // see the default image
 #endif
-
-    [OUIInspectorAppearance setCurrentTheme:OUIThemedAppearanceThemeLight];
 
     switch ([[UIDevice currentDevice] userInterfaceIdiom]) {
         case UIUserInterfaceIdiomPhone:
@@ -302,77 +290,6 @@ static NSString *_customLocalDocumentsDisplayName;
     NSString *fileName = [name stringByAppendingPathExtension:extension];
     
     return [[self sampleDocumentsDirectoryURL] URLByAppendingPathComponent:fileName];
-}
-
-#pragma mark - Background fetch
-
-// OmniPresence-enabled applications should implement -application:performFetchWithCompletionHandler: to call this. We cannot name this method -application:performFetchWithCompletionHandler: since UIKit will throw an exception if you declare 'fetch' in your UIBackgroundModes.
-- (void)performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))completionHandler_;
-{
-    OBPRECONDITION([[UIApplication sharedApplication] isProtectedDataAvailable], "Otherwise we'll need to delay this sync attempt, wait for data protection to become available, timeout if it doesn't soon enough, etc.");
-    
-    DEBUG_FETCH(1, @"Fetch requested by system");
-    if (_syncAgent == nil) {
-        OBASSERT_NOT_REACHED("Should always create the sync agent, or the app should not have requested background fetching?"); // Or maybe there are multiple subsystems that might need to fetch -- we need some coordination of when to call the completion handler in that case.
-        if (completionHandler_)
-            completionHandler_(UIBackgroundFetchResultNoData);
-        return;
-    }
-    
-    // We need to reply to the completion handler we were given promptly.
-    // We'll clear this once we've called it so that other calls can be avoided.
-    __block typeof(completionHandler_) handler = [completionHandler_ copy];
-
-    // Reply to the completion handler as soon as possible if a transfer starts rather than waiting for the whole sync to finish
-    // '__block' here is so that the -removeObserver: in the block will not capture the initial 'nil' value.
-    __block id transferObserver = [[NSNotificationCenter defaultCenter] addObserverForName:OFXAccountTransfersNeededNotification object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *note){
-        if (handler) {
-            DEBUG_FETCH(1, @"Found new data -- %@", [note userInfo][OFXAccountTransfersNeededDescriptionKey]);
-            handler(UIBackgroundFetchResultNewData);
-            handler = nil;
-        }
-        [[NSNotificationCenter defaultCenter] removeObserver:transferObserver];
-    }];
-
-    // If we don't hear anything back from the sync for a significant time, report that there is no data (though we let the sync keep running until it times out or we get put back to sleep/killed).
-    OFAfterDelayPerformBlock(OUIBackgroundFetchTimeout, ^{
-        if (handler) {
-            DEBUG_FETCH(1, @"Timed out");
-            handler(UIBackgroundFetchResultNoData);
-            handler = nil;
-        }
-     });
-    
-    [_syncAgent sync:^{
-        // This is ugly for our purposes here, but the -sync: completion handler can return before any transfers have started. Making the completion handler be after all this work is even uglier. In particular, automatic download of small docuemnts is controlled by OFXDocumentStoreScope. Wait for a bit longer for stuff to filter through the systems.
-        // Note also, that OFXAgentActivity will keep us alive while transfers are happening.
-        
-        if (!handler)
-            return; // Status already reported
-        
-        DEBUG_FETCH(1, @"Sync request completed -- waiting for a bit to determine status");
-        OFAfterDelayPerformBlock(5.0, ^{
-            // If we have two accounts and one is offline, we'll let the 'new data' win on the other account (if there is new data).
-            if (handler) {
-                BOOL foundError = NO;
-                for (OFXServerAccount *account in _syncAgent.accountRegistry.validCloudSyncAccounts) {
-                    if (account.lastError) {
-                        DEBUG_FETCH(1, @"Fetch for account %@ encountered error %@", [account shortDescription], [account.lastError toPropertyList]);
-                        foundError = YES;
-                    }
-                }
-                
-                if (foundError) {
-                    DEBUG_FETCH(1, @"Sync resulted in error");
-                    handler(UIBackgroundFetchResultFailed);
-                } else {
-                    DEBUG_FETCH(1, @"Sync finished without any changes");
-                    handler(UIBackgroundFetchResultNoData);
-                }
-                handler = nil;
-            }
-        });
-    }];
 }
 
 #pragma mark - OUIAppController subclass
@@ -627,7 +544,7 @@ static NSSet *ViewableFileTypes()
     if ([MFMailComposeViewController canSendMail] && ODAVShouldOfferToReportError(syncError)) {
         UIAlertAction *reportAction = [UIAlertAction actionWithTitle:NSLocalizedStringFromTableInBundle(@"Report Error", @"OmniUIDocument", OMNI_BUNDLE, @"When displaying a sync error, this is the option to report the error.") style:UIAlertActionStyleDefault handler:^(UIAlertAction * __nonnull action) {
             NSString *body = [NSString stringWithFormat:@"\n%@\n\n%@\n", [[OUIAppController controller] fullReleaseString], [syncError toPropertyList]];
-            [[OUIAppController controller] sendFeedbackWithSubject:@"Sync failure" body:body inScene:viewController.view.window.windowScene];
+            [[OUIAppController controller] sendFeedbackWithSubject:@"Sync failure" body:body inScene:viewController.view.window.windowScene completion:^{}];
         }];
         [alertController addAction:reportAction];
     }
@@ -771,15 +688,14 @@ static NSSet *ViewableFileTypes()
 {
     (void)self.localDocumentsURL; // Make sure we have a local documents folder (in case the system hasn't already done this on our behalf)
 
-    // UIKit throws an exception if UIBackgroundModes contains 'fetch' but the application delegate doesn't implement -application:performFetchWithCompletionHandler:. We want to be more flexible to allow apps to use our document picker w/o having to support background fetch.
-    OBASSERT_IF([[[NSBundle mainBundle] infoDictionary][@"UIBackgroundModes"] containsObject:@"fetch"],
-                [self respondsToSelector:@selector(application:performFetchWithCompletionHandler:)]);
-    
     // If we are getting launched into the background, try to stay alive until our document picker is ready to view (otherwise the snapshot in the app launcher will be bogus).
     OFBackgroundActivity *activity = nil;
     if ([application applicationState] == UIApplicationStateBackground)
         activity = [OFBackgroundActivity backgroundActivityWithIdentifier:@"com.omnigroup.OmniUI.OUIDocumentAppController.launching"];
-    
+
+    // This *must* be done before application launching is finished. See commentary in OFXAgent.m
+    [OFXAgent registerBackgroundFetchHandler];
+
     void (^launchAction)(void) = ^(void) {
         DEBUG_LAUNCH(1, @"Did launch with options %@", launchOptions);
         
@@ -787,10 +703,12 @@ static NSSet *ViewableFileTypes()
 
         // Start out w/o syncing so that our initial setup will just find local documents. This is crufty, but it avoids hangs in syncing when we aren't able to reach the server.
         _syncAgent = [[OFXAgent alloc] init];
-        _syncAgent.syncSchedule = (application.applicationState == UIApplicationStateBackground) ? OFXSyncScheduleManual : OFXSyncScheduleNone; // Allow the manual sync from -application:performFetchWithCompletionHandler: that we might be about to do. We just want to avoid automatic syncing.
+        _syncAgent.syncSchedule = (application.applicationState == UIApplicationStateBackground) ? OFXSyncScheduleManual : OFXSyncScheduleNone; // Allow the manual background sync that we might be about to do. We just want to avoid automatic syncing.
         [_syncAgent applicationLaunched];
         _syncAgentForegrounded = _syncAgent.foregrounded; // Might be launched into the background
-        
+
+        OFXAgent.backgroundFetchSyncAgent = _syncAgent;
+
         _agentActivity = [[OFXAgentActivity alloc] initWithAgent:_syncAgent];
         _syncActivityObserver = [[OUIDocumentSyncActivityObserver alloc] initWithAgentActivity:_agentActivity];
 
@@ -810,9 +728,6 @@ static NSSet *ViewableFileTypes()
         // Wait for scopes to get their document URL set up.
         [_syncAgent afterAsynchronousOperationsFinish:^{
             DEBUG_LAUNCH(1, @"Sync agent finished first pass");
-            
-            [_syncAgent addObserver:self forKeyPath:OFValidateKeyPath(_syncAgent, accountsSnapshot) options:0 context:&SyncAgentAccountsSnapshotContext];
-            [self _updateBackgroundFetchInterval];
             
             OUIDocumentAppController *strongSelf = weakSelf;
             OBASSERT(strongSelf);
@@ -1042,21 +957,6 @@ static NSMutableDictionary *spotlightToFileURL;
     return trashDirectoryURL;
 }
 
-#pragma mark - NSObject (NSKeyValueObserving)
-
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context;
-{
-    if (context == &SyncAgentAccountsSnapshotContext) {
-        if (object == _syncAgent && [keyPath isEqual:OFValidateKeyPath(_syncAgent, accountsSnapshot)]) {
-            [self _updateBackgroundFetchInterval];
-        } else
-            OBASSERT_NOT_REACHED("Unknown KVO keyPath");
-        return;
-    }
-    
-    [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
-}
-
 #pragma mark - Private
 
 - (void)_accountChanged:(OFXServerAccount *)account;
@@ -1145,25 +1045,6 @@ static NSMutableDictionary *spotlightToFileURL;
     [OUIDocumentSceneDelegate activeSceneDelegatesPerformBlock:^(OUIDocumentSceneDelegate *sceneDelegate) {
         [sceneDelegate updateBrowserToolbarItems];
     }];
-}
-
-- (void)_updateBackgroundFetchInterval;
-{
-    OBPRECONDITION(_syncAgent);
-    
-    NSTimeInterval backgroundFetchInterval;
-    OFXServerAccountsSnapshot *accountsSnapshot = _syncAgent.accountsSnapshot;
-
-    if ([accountsSnapshot.runningAccounts count] > 0) {
-        DEBUG_FETCH(1, @"Setting minimum fetch interval to \"minimum\".");
-        backgroundFetchInterval = UIApplicationBackgroundFetchIntervalMinimum;
-    } else {
-        DEBUG_FETCH(1, @"Setting minimum fetch interval to \"never\".");
-        backgroundFetchInterval = UIApplicationBackgroundFetchIntervalNever;
-    }
-
-    // <bug:///178582> (Frameworks-iOS Unassigned: Update background refresh code to us BGAppRefreshTask)
-    [[UIApplication sharedApplication] setMinimumBackgroundFetchInterval:backgroundFetchInterval];
 }
 
 #pragma mark -Snapshots

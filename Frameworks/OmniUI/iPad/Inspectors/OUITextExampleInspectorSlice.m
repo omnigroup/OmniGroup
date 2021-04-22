@@ -1,4 +1,4 @@
-// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,7 +9,6 @@
 
 #import <OmniUI/OUIParameters.h>
 #import <OmniUI/OUIInspector.h>
-#import <OmniUI/OUIInspectorAppearance.h>
 #import <OmniAppKit/OATextAttributes.h>
 #import <OmniAppKit/OAColor.h>
 #import <OmniUI/OUITextSelectionSpan.h>
@@ -97,17 +96,6 @@ NSString * const OUITextExampleInspectorSliceExampleString = @"Hwæt! We Gardena
         [noBackgroundAttributedString removeAttribute:NSBackgroundColorAttributeName range:NSMakeRange(0, stringLength)];
         
         attributedString = noBackgroundAttributedString;
-    } else if ([OUIInspectorAppearance inspectorAppearanceEnabled]) {
-        OUIInspectorAppearance *appearance = [OUIInspectorAppearance appearance];
-        backgroundColor = [OAColor colorWithPlatformColor:appearance.TableCellBackgroundColor];
-        UIColor *foregroundColorValue = [attributedString attribute:NSForegroundColorAttributeName atIndex:0 effectiveRange:NULL];
-
-        if (foregroundColorValue == nil) {
-            NSMutableAttributedString *foregroundAttributedString = [attributedString mutableCopy];
-            [foregroundAttributedString addAttribute:NSForegroundColorAttributeName value:appearance.TableCellTextColor range:NSMakeRange(0, stringLength)];
-            
-            attributedString = foregroundAttributedString;
-        }
     } else {
         backgroundColor = [OAColor clearColor];
     }
@@ -116,17 +104,6 @@ NSString * const OUITextExampleInspectorSliceExampleString = @"Hwæt! We Gardena
     
     OBASSERT(backgroundColor);
     view.styleBackgroundColor = backgroundColor;
-}
-
-#pragma mark OUIInspectorThemedApperance
-
-- (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance;
-{
-    [super themedAppearanceDidChange:changedAppearance];
-    
-    if (self.view.window != nil) {
-        [self updateInterfaceFromInspectedObjects:OUIInspectorUpdateReasonDefault];
-    }
 }
 
 @end

@@ -437,8 +437,12 @@ static OFCharacterSet *_valueDelimiterOFCharacterSet(void)
 {
     OFMultiValueDictionary *parameters = [[[OFMultiValueDictionary alloc] init] autorelease];
     [self parseQueryString:^(NSString *decodedName, NSString *decodedValue, BOOL *stop) {
-        if (decodedValue == nil)
+        if (decodedValue == nil) {
             decodedValue = (id)[NSNull null];
+        }
+        if (decodedName == nil) {
+            decodedName = @"";
+        }
         [parameters addObject:decodedValue forKey:decodedName];
     }];
     return parameters;

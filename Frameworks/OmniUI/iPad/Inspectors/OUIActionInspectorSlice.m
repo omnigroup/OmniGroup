@@ -8,12 +8,9 @@
 #import <OmniUI/OUIActionInspectorSlice.h>
 
 #import <OmniUI/OUIInspectorTextWell.h>
-#import <OmniUI/OUIInspectorAppearance.h>
 #import <OmniUI/OUIInspector.h>
 
 #import "OUIParameters.h"
-
-RCS_ID("$Id$");
 
 @implementation OUIActionInspectorSlice
 
@@ -139,20 +136,6 @@ RCS_ID("$Id$");
         if (self.shouldSelectAllOnLoad)
             [_textWell selectAll:self showingMenu:NO];
     }
-}
-
-#pragma mark OUIInspectorThemedApperance
-
-- (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance;
-{
-    [super themedAppearanceDidChange:changedAppearance];
-    
-    OUIInspectorAppearance *appearance = OB_CHECKED_CAST_OR_NIL(OUIInspectorAppearance, changedAppearance);
-    
-    self.view.backgroundColor = appearance.TableCellBackgroundColor;
-    self.textWell.textColor = appearance.TableCellTextColor;
-    self.textWell.labelColor = appearance.TableCellTextColor;
-    self.textWell.disabledTextColor = appearance.InspectorDisabledTextColor;
 }
 
 @end

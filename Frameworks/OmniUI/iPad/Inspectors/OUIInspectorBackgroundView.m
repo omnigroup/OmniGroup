@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,7 +13,6 @@
 
 #import "OUIParameters.h"
 #import <OmniUI/OUIInspector.h>
-#import <OmniUI/OUIInspectorAppearance.h>
 #import <OmniUI/UILabel-OUITheming.h>
 
 RCS_ID("$Id$");
@@ -54,14 +53,6 @@ static id _commonInit(OUIInspectorBackgroundView *self)
     return _commonInit(self);
 }
 
-- (void)willMoveToSuperview:(UIView *)superview;
-{
-    [super willMoveToSuperview:superview];
-    
-    if ([OUIInspectorAppearance inspectorAppearanceEnabled])
-        [self themedAppearanceDidChange:[OUIInspectorAppearance appearance]];
-}
-
 - (UIColor *)inspectorBackgroundViewColor;
 {
     return self.backgroundColor;
@@ -77,15 +68,6 @@ static id _commonInit(OUIInspectorBackgroundView *self)
 {
     super.backgroundColor = newValue;
     [self containingInspectorBackgroundViewColorChanged];
-}
-
-#pragma mark - OUIThemedAppearanceClient
-
-- (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance;
-{
-    OUIInspectorAppearance *appearance = OB_CHECKED_CAST_OR_NIL(OUIInspectorAppearance, changedAppearance);
-    [super themedAppearanceDidChange:appearance];
-    self.backgroundColor = appearance.InspectorBackgroundColor;
 }
 
 @end

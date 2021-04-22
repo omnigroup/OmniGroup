@@ -1,9 +1,9 @@
+// Copyright 2019 Omni Development, Inc. All rights reserved.
 //
-//  OUINewsItem.swift
-//  OmniUI-iOS
-//
-//  Created by Ken Case on 2019-08-29.
-//
+// This software may only be used and reproduced according to the
+// terms in the file OmniSourceLicense.html, which should be
+// distributed with this project and can also be found at
+// <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 import Foundation
 
@@ -74,7 +74,7 @@ import Foundation
 
 @available(iOSApplicationExtension, unavailable)
 extension OUIAppController {
-    @objc func showNewsInWindow(_ window: UIWindow) -> Bool {
+    @discardableResult @objc(showNewsInWindow:) public func showNews(in window: UIWindow) -> Bool {
         registerNewsProvidersIfNeeded()
         return OUINewsManager.shared.showNews(in: window)
     }

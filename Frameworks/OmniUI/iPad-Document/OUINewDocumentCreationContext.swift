@@ -17,6 +17,9 @@
     // This is the actual view of the template we will animate from when opening the newly created file
     @objc public var animateFromView: UIView?
 
+    // The initiating view controller
+    @objc public var activityViewController: UIViewController? = nil
+
     @objc public init(templateURL: URL? = nil, documentName: String? = nil, animateFromView: UIView? = nil) {
         self.templateURL = templateURL
         self.documentName = documentName

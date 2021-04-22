@@ -49,6 +49,7 @@ extern NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder;
 @property (nonatomic, copy, nullable) NSURL *helpURL NS_EXTENSION_UNAVAILABLE_IOS("Cannot open help in a browser from app extensions");
 
 - (void)showFromController:(UIViewController *)controller;
+- (void)enqueuePasswordAlertPresentationForAnyForegroundScene NS_SWIFT_NAME(enqueuePasswordAlertPresentationForForegroundScene());
 
 @end
 

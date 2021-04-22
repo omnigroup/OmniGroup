@@ -26,6 +26,7 @@
 #import <OmniUI/OUIBarButtonItem.h>
 #import <OmniUI/OUIChangePreferenceURLCommand.h>
 #import <OmniUI/OUIDebugURLCommand.h>
+#import <OmniUI/OUIErrors.h>
 #import <OmniUI/OUIHelpURLCommand.h>
 #import <OmniUI/OUIKeyboardNotifier.h>
 #import <OmniUI/OUIMenuController.h>
@@ -39,7 +40,11 @@
 #import "OUIChangeAppIconURLCommand.h"
 #import "OUIParameters.h"
 
-RCS_ID("$Id$");
+OFDeclareDebugLogLevel(OUIApplicationStateDebug);
+#define DEBUG_STATE(level, format, ...) do { \
+    if (OUIApplicationStateDebug >= (level)) \
+        NSLog(@"APP STATE: " format, ## __VA_ARGS__); \
+    } while (0)
 
 // Private storage class used to manage enqueued controllers
 @interface OUIEnqueueableInteractionControllerContext: NSObject
@@ -54,8 +59,8 @@ RCS_ID("$Id$");
 @end
 
 NSNotificationName const OUISystemIsSnapshottingNotification = @"OUISystemIsSnapshottingNotification";
-NSString * const NeedToShowURLKey = @"OSU_need_to_show_URL";
-NSString * const PreviouslyShownURLsKey = @"OSU_previously_shown_URLs";
+static OFPreference *NeedToShowURLPreference;
+static OFPreference *PreviouslyShownURLsPreference;
 
 NSNotificationName const OUIAttentionSeekingNotification = @"OUIAttentionSeekingNotification";
 NSString * const OUIAttentionSeekingForNewsKey = @"OUIAttentionSeekingForNewsKey";
@@ -168,12 +173,14 @@ static void __iOS7B5CleanConsoleOutput(void)
                                   nil
                                   ];
         [[NSUserDefaults standardUserDefaults] registerDefaults:defaults];
-        [OFPreference class];
-        
+
+        NeedToShowURLPreference = [OFPreference preferenceForKey:@"OSU_need_to_show_URL" defaultValue:@""];
+        PreviouslyShownURLsPreference = [OFPreference preferenceForKey:@"OSU_previously_shown_URLs" defaultValue:@[]];
+
         // Ensure that OUIKeyboardNotifier instantiates the shared notifier before the keyboard is shown for the first time, otherwise `lastKnownKeyboardHeight` and `keyboardVisible` may be incorrect.
         [OUIKeyboardNotifier sharedNotifier];
         
-        OUIShouldLogPerformanceMetrics = [[NSUserDefaults standardUserDefaults] boolForKey:@"LogPerformanceMetrics"];
+        OUIShouldLogPerformanceMetrics = [[OFPreference preferenceForKey:@"LogPerformanceMetrics" defaultValue:@(NO)] boolValue];
         
         if (OUIShouldLogPerformanceMetrics)
             NSLog(@"-[%@ %@]", OBShortObjectDescription(self), NSStringFromSelector(_cmd));
@@ -355,15 +362,37 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
 {
     UIWindow *window = [self windowForScene:scene options:OUIWindowForSceneOptionsNone];
     UIViewController *rootViewController = window.rootViewController;
-    [self presentAlert:error fromViewController:rootViewController file:file line:line];
+    [self presentError:error fromViewController:rootViewController file:file line:line];
 }
 
-+ (void)presentError:(NSError *)error fromViewController:(UIViewController *)viewController cancelButtonTitle:(NSString *)cancelButtonTitle optionalActionTitle:(nullable NSString *)optionalActionTitle optionalAction:(void (^ __nullable)(OUIExtendedAlertAction *action))optionalAction;
++ (void)presentError:(NSError *)error fromViewController:(UIViewController *)viewController cancelButtonTitle:(nullable NSString *)cancelButtonTitle optionalActionTitle:(nullable NSString *)optionalActionTitle optionalAction:(void (^ __nullable)(OUIExtendedAlertAction *action))optionalActionHandler;
 {
-    [self _presentError:error fromViewController:viewController file:nil line:0 cancelButtonTitle:cancelButtonTitle optionalActionTitle:optionalActionTitle optionalAction:optionalAction parentExtendedAction:nil];
+    NSArray <OUIExtendedAlertAction *> *optionalActions;
+    if (optionalActionTitle != nil && optionalActionHandler != nil) {
+        OUIExtendedAlertAction *optionalAction = [OUIExtendedAlertAction extendedActionWithTitle:optionalActionTitle style:UIAlertActionStyleDefault handler:optionalActionHandler];
+        optionalActions = @[optionalAction];
+    }
+
+    [self _presentError:error fromViewController:viewController file:nil line:0 cancelButtonTitle:cancelButtonTitle optionalActions:optionalActions parentExtendedAction:nil completionHandler:nil];
 }
 
-+ (void)_presentError:(NSError *)error fromViewController:(nullable UIViewController *)viewController file:(const char * _Nullable)file line:(int)line cancelButtonTitle:(NSString *)cancelButtonTitle optionalActionTitle:(nullable NSString *)optionalActionTitle optionalAction:(void (^ __nullable)(OUIExtendedAlertAction *action))optionalActionHandler parentExtendedAction:(nullable OUIExtendedAlertAction *)parentExtendedAction;
++ (void)presentError:(NSError *)error fromViewController:(nullable UIViewController *)viewController cancelButtonTitle:(nullable NSString *)cancelButtonTitle optionalActionTitle:(nullable NSString *)optionalActionTitle optionalAction:(void (^ __nullable)(OUIExtendedAlertAction *action))optionalActionHandler completionHandler:(void (^ _Nullable)(void))handler;
+{
+    NSArray <OUIExtendedAlertAction *> *optionalActions;
+    if (optionalActionTitle != nil && optionalActionHandler != nil) {
+        OUIExtendedAlertAction *optionalAction = [OUIExtendedAlertAction extendedActionWithTitle:optionalActionTitle style:UIAlertActionStyleDefault handler:optionalActionHandler];
+        optionalActions = @[optionalAction];
+    }
+
+    [self _presentError:error fromViewController:viewController file:nil line:0 cancelButtonTitle:cancelButtonTitle optionalActions:optionalActions parentExtendedAction:nil completionHandler:handler];
+}
+
++ (void)presentError:(NSError *)error fromViewController:(nullable UIViewController *)viewController file:(const char * _Nullable)file line:(int)line cancelButtonTitle:(nullable NSString *)cancelButtonTitle optionalActions:(nullable NSArray <OUIExtendedAlertAction *> *)optionalActions completionHandler:(void (^ _Nullable)(void))handler;
+{
+    [self _presentError:error fromViewController:viewController file:file line:line cancelButtonTitle:cancelButtonTitle optionalActions:optionalActions parentExtendedAction:nil completionHandler:handler];
+}
+
++ (void)_presentError:(NSError *)error fromViewController:(nullable UIViewController *)viewController file:(const char * _Nullable)file line:(int)line cancelButtonTitle:(nullable NSString *)cancelButtonTitle optionalActions:(nullable NSArray <OUIExtendedAlertAction *> *)optionalActions parentExtendedAction:(nullable OUIExtendedAlertAction *)parentExtendedAction completionHandler:(void (^ _Nullable)(void))handler NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based solutions where available instead.");
 {
     OBPRECONDITION([NSThread isMainThread]);
     if (error == nil || [error causedByUserCancelling])
@@ -372,6 +401,10 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
     if (file)
         NSLog(@"Error reported from %s:%d", file, line);
     NSLog(@"%@", [error toPropertyList]);
+
+    if (cancelButtonTitle == nil) {
+        cancelButtonTitle = NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniUI", OMNI_BUNDLE, @"button title");
+    }
 
     NSMutableArray *messages = [NSMutableArray array];
 
@@ -388,11 +421,17 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
     OUIEnqueueableAlertController *alertController = [OUIEnqueueableAlertController alertControllerWithTitle:[error localizedDescription] message:message preferredStyle:UIAlertControllerStyleAlert];
 
     [alertController addActionWithTitle:cancelButtonTitle style:UIAlertActionStyleDefault handler:nil];
-    if (optionalActionTitle != nil && optionalActionHandler != nil) {
-        OUIExtendedAlertAction *optionalAction = [OUIExtendedAlertAction extendedActionWithTitle:optionalActionTitle style:UIAlertActionStyleDefault handler:optionalActionHandler];
+    for (OUIExtendedAlertAction *optionalAction in optionalActions) {
         [alertController addExtendedAction:optionalAction];
     }
-    
+//    if (optionalActionTitle != nil && optionalActionHandler != nil) {
+//        OUIExtendedAlertAction *optionalAction = [OUIExtendedAlertAction extendedActionWithTitle:optionalActionTitle style:UIAlertActionStyleDefault handler:optionalActionHandler];
+//        [alertController addExtendedAction:optionalAction];
+//    }
+    if (handler != nil) {
+        [alertController addInteractionCompletion:handler];
+    }
+
     if (viewController != nil && viewController.containingScene.activationState == UISceneActivationStateForegroundActive) {
         // This delayed presentation avoids the "wait_fences: failed to receive reply: 10004003" lag/timeout which can happen depending on the context we start the reporting from.
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
@@ -405,7 +444,7 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
                 }
                 topViewController = vc;
             }
-            
+
             [topViewController presentViewController:alertController animated:YES completion:nil];
         }];
     } else {
@@ -414,26 +453,38 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
     }
 }
 
-+ (void)_presentError:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char * _Nullable)file line:(int)line cancelButtonTitle:(NSString *)cancelButtonTitle parentExtendedAction:(nullable OUIExtendedAlertAction *)parentAction;
++ (void)_presentError:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char * _Nullable)file line:(int)line cancelButtonTitle:(nullable NSString *)cancelButtonTitle parentExtendedAction:(nullable OUIExtendedAlertAction *)parentAction;
 {
-    void (^optionalAction)(OUIExtendedAlertAction *action);
+    void (^optionalActionHandler)(OUIExtendedAlertAction *action);
     if (_defaultReportErrorActionBlock != NULL && [self shouldOfferToReportError:error]) {
-        optionalAction = ^(OUIExtendedAlertAction * __nonnull action) {
+        optionalActionHandler = ^(OUIExtendedAlertAction * __nonnull action) {
             _defaultReportErrorActionBlock(viewController, error, ^{ [action extendedActionComplete]; });
         };
     }
 
-    [self _presentError:error fromViewController:viewController file:file line:line cancelButtonTitle:cancelButtonTitle optionalActionTitle:_defaultReportErrorActionTitle optionalAction:optionalAction parentExtendedAction:parentAction];
+    NSArray <OUIExtendedAlertAction *> *optionalActions;
+    if (_defaultReportErrorActionTitle != nil && optionalActionHandler != nil) {
+        OUIExtendedAlertAction *optionalAction = [OUIExtendedAlertAction extendedActionWithTitle:_defaultReportErrorActionTitle style:UIAlertActionStyleDefault handler:optionalActionHandler];
+        optionalActions = @[optionalAction];
+    }
+
+    [self _presentError:error fromViewController:viewController file:file line:line cancelButtonTitle:cancelButtonTitle optionalActions:optionalActions parentExtendedAction:parentAction completionHandler:nil];
 }
 
-+ (void)presentError:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char *)file line:(int)line optionalActionTitle:(NSString *)optionalActionTitle optionalAction:(void (^ __nullable)(OUIExtendedAlertAction *action))optionalAction;
++ (void)presentError:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char *)file line:(int)line optionalActionTitle:(NSString *)optionalActionTitle optionalAction:(void (^ __nullable)(OUIExtendedAlertAction *action))optionalActionHandler;
 {
-    [self _presentError:error fromViewController:viewController file:file line:line cancelButtonTitle:NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniUI", OMNI_BUNDLE, @"button title") optionalActionTitle:optionalActionTitle optionalAction:optionalAction parentExtendedAction:nil];
+    NSArray <OUIExtendedAlertAction *> *optionalActions;
+    if (optionalActionTitle != nil && optionalActionHandler != nil) {
+        OUIExtendedAlertAction *optionalAction = [OUIExtendedAlertAction extendedActionWithTitle:optionalActionTitle style:UIAlertActionStyleDefault handler:optionalActionHandler];
+        optionalActions = @[optionalAction];
+    }
+
+    [self _presentError:error fromViewController:viewController file:file line:line cancelButtonTitle:nil optionalActions:optionalActions parentExtendedAction:nil  completionHandler:nil];
 }
 
 + (void)presentError:(NSError *)error fromViewController:(nullable UIViewController *)viewController file:(const char *)file line:(int)line;
 {
-    [self _presentError:error fromViewController:viewController file:file line:line cancelButtonTitle:NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniUI", OMNI_BUNDLE, @"button title") parentExtendedAction:nil];
+    [self _presentError:error fromViewController:viewController file:file line:line cancelButtonTitle:nil parentExtendedAction:nil];
 }
 
 // Prefer passing a scene; will attempt to pick a sensible scene when nil
@@ -457,7 +508,7 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
 
 + (void)presentError:(NSError *)error fromViewController:(nonnull UIViewController *)viewController completingExtendedAction:(OUIExtendedAlertAction *)action;
 {
-    [self _presentError:error fromViewController:viewController file:nil line:0 cancelButtonTitle:NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniUI", OMNI_BUNDLE, @"button title") parentExtendedAction:action];
+    [self _presentError:error fromViewController:viewController file:nil line:0 cancelButtonTitle:nil parentExtendedAction:action];
 }
 
 - (id)init NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based solutions where available instead.");
@@ -579,7 +630,7 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
 + (void)_enqueueInteractionControllerPresentationForAnyForegroundScene:(UIViewController<ExtendedInteractionDefining> *)alert parentExtendedAction:(nullable OUIExtendedAlertAction *)parentAction;
 {
     OBPRECONDITION([NSThread isMainThread]);
-    
+
     // Check for an active scene, and present on it if there is one.
     UIScene *mostRecentlyActiveScene = [[self controller] mostRecentlyActiveScene];
     if (mostRecentlyActiveScene.activationState == UISceneActivationStateForegroundActive) {
@@ -588,7 +639,7 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
                 [parentAction extendedActionComplete];
             }];
         }
-        
+
         UIWindow *window = [self windowForScene:mostRecentlyActiveScene options:OUIWindowForSceneOptionsNone];
         UIViewController *controller = [self _viewControllerForPresentationInWindow:window];
         [controller presentViewController:alert animated:YES completion:nil];
@@ -757,18 +808,23 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
 
 - (void)applicationDidBecomeActive;
 {
+    DEBUG_STATE(1, "Did become active");
 }
 
 - (void)applicationWillResignActive;
 {
+    DEBUG_STATE(1, "Will resign active");
 }
 
 - (void)applicationWillEnterForeground;
 {
+    DEBUG_STATE(1, "Will enter foreground");
 }
 
 - (void)applicationDidEnterBackground;
 {
+    DEBUG_STATE(1, "Did enter background");
+
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
@@ -881,19 +937,29 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
     return [self _feedbackURLWithSubject:[self _defaultFeedbackSubject] body:nil];
 }
 
-- (void)sendFeedbackWithSubject:(NSString * _Nullable)subject body:(NSString * _Nullable)body inScene:(nullable UIScene *)scene completion:(void (^)(void))mailInteractionCompletionHandler;
+- (void)sendFeedbackWithSubject:(NSString * _Nullable)subject body:(NSString * _Nullable)body inScene:(nullable UIScene *)scene completion:(void (^ _Nullable)(void))mailInteractionCompletionHandler;
 {
     // May need to allow the app delegate to provide this conditionally later (OmniFocus has a retail build, for example)
     NSString *feedbackAddress = [self _feedbackAddress];
     OBASSERT(feedbackAddress != nil);
     if (feedbackAddress == nil) {
-        mailInteractionCompletionHandler();
+        NSError *error = nil;
+        OUIErrorWithInfo(&error, OUISendFeedbackError, NSLocalizedStringFromTableInBundle(@"Unable to send feedback", @"OmniUI", OMNI_BUNDLE, @"Feedback error description"), NSLocalizedStringFromTableInBundle(@"Internal error: this app has no feedback address configured.", @"OmniUI", OMNI_BUNDLE, @"Feedback error reason"), OUIShouldOfferToReportErrorUserInfoKey, @(NO), nil);
+        OUI_PRESENT_ALERT_IN_SCENE(error, scene);
+        if (mailInteractionCompletionHandler != nil) {
+            mailInteractionCompletionHandler();
+        }
         return;
     }
 
     MFMailComposeViewController *controller = [self newMailComposeController];
     if (controller == nil) {
-        mailInteractionCompletionHandler();
+        NSError *error = nil;
+        OUIErrorWithInfo(&error, OUISendFeedbackError, NSLocalizedStringFromTableInBundle(@"Unable to send feedback.", @"OmniUI", OMNI_BUNDLE, @"Feedback error description"), NSLocalizedStringFromTableInBundle(@"This device hasn't been configured to send email.", @"OmniUI", OMNI_BUNDLE, @"Feedback error reason"), OUIShouldOfferToReportErrorUserInfoKey, @(NO), nil);
+        OUI_PRESENT_ALERT_IN_SCENE(error, scene);
+        if (mailInteractionCompletionHandler != nil) {
+            mailInteractionCompletionHandler();
+        }
         return;
     }
     
@@ -931,7 +997,7 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
     [self sendMailTo:recipients withComposeController:mailComposeController inScene:scene completion:nil];
 }
 
-- (void)sendMailTo:(NSArray<NSString *> *)recipients withComposeController:(MFMailComposeViewController *)mailComposeController inScene:(nullable UIScene *)scene completion:(void (^)(void))mailInteractionCompletionHandler;
+- (void)sendMailTo:(NSArray<NSString *> *)recipients withComposeController:(MFMailComposeViewController *)mailComposeController inScene:(nullable UIScene *)scene completion:(void (^ _Nullable)(void))mailInteractionCompletionHandler;
 {
     UIWindow *window = [[self class] windowForScene:scene options:OUIWindowForSceneOptionsAllowFallbackLookup];
 
@@ -941,13 +1007,15 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
 
     [mailComposeController setToRecipients:recipients];
     
-    if (self.mailInteractionCompletionHandlersByScene == nil) {
-        // Weakly hold the scenes, strongly hold the blocks
-        self.mailInteractionCompletionHandlersByScene = [NSMapTable weakToStrongObjectsMapTable];
+    if (mailInteractionCompletionHandler != nil) {
+        if (self.mailInteractionCompletionHandlersByScene == nil) {
+            // Weakly hold the scenes, strongly hold the blocks
+            self.mailInteractionCompletionHandlersByScene = [NSMapTable weakToStrongObjectsMapTable];
+        }
+        
+        OBASSERT([self.mailInteractionCompletionHandlersByScene objectForKey:scene] == nil, "Did a completion handler not get run, or is there an existing mail interaction on this scene?");
+        [self.mailInteractionCompletionHandlersByScene setObject:[mailInteractionCompletionHandler copy] forKey:scene];
     }
-    
-    OBASSERT([self.mailInteractionCompletionHandlersByScene objectForKey:scene] == nil, "Did a completion handler not get run, or is there an existing mail interaction on this scene?");
-    [self.mailInteractionCompletionHandlersByScene setObject:[mailInteractionCompletionHandler copy] forKey:scene];
     
     [viewControllerToPresentFrom presentViewController:mailComposeController animated:YES completion:nil];
 }
@@ -1074,6 +1142,11 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
     }
 }
 
+- (BOOL)canHaveMultipleCrashReportScenes
+{
+    return YES;
+}
+
 #pragma mark - App menu support
 
 - (NSString *)feedbackMenuTitle;
@@ -1122,18 +1195,17 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
 
 - (void)setNewsURLStringToShowWhenReady:(NSString *)newsURLStringToShowWhenReady
 {
-    if (newsURLStringToShowWhenReady) {
-        [[NSUserDefaults standardUserDefaults] setObject:newsURLStringToShowWhenReady forKey:NeedToShowURLKey];
+    NeedToShowURLPreference.stringValue = newsURLStringToShowWhenReady != nil ? newsURLStringToShowWhenReady : @"";
+    if (newsURLStringToShowWhenReady != nil) {
         // Post notification after saving the URL, so observers of the notification get correct property values when they query us.
         [[NSNotificationCenter defaultCenter] postNotificationName:OUIAttentionSeekingNotification object:self userInfo:@{ OUIAttentionSeekingForNewsKey : @(YES) }];
-    } else {
-        [[NSUserDefaults standardUserDefaults] removeObjectForKey:NeedToShowURLKey];
     }
 }
 
 - (NSString *)newsURLStringToShowWhenReady
 {
-    return [[NSUserDefaults standardUserDefaults] objectForKey:NeedToShowURLKey];
+    NSString *stringValue = NeedToShowURLPreference.stringValue;
+    return stringValue.length != 0 ? stringValue : nil;
 }
 
 - (BOOL)hasUnreadNews
@@ -1151,8 +1223,8 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
 - (NSString *)mostRecentNewsURLString
 {
     NSString *newsURLToShow = self.newsURLStringToShowWhenReady;
-    if (!newsURLToShow) {
-        NSArray<NSString *> *previouslyShown = [[NSUserDefaults standardUserDefaults] arrayForKey:PreviouslyShownURLsKey];
+    if (newsURLToShow == nil) {
+        NSArray<NSString *> *previouslyShown = PreviouslyShownURLsPreference.stringArrayValue;
         newsURLToShow = [previouslyShown lastObject];
     }
     return newsURLToShow;
@@ -1160,7 +1232,7 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
 
 - (BOOL)haveShownReleaseNotes:(NSString *)urlString
 {
-    NSArray<NSString *> *previouslyShown = [[NSUserDefaults standardUserDefaults] arrayForKey:PreviouslyShownURLsKey];
+    NSArray<NSString *> *previouslyShown = PreviouslyShownURLsPreference.stringArrayValue;
     __block BOOL foundIt = NO;
     [previouslyShown enumerateObjectsUsingBlock:^(NSString * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         if ([obj isEqualToString:urlString]) {
@@ -1173,7 +1245,7 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
 
 - (void)didShowReleaseNotes:(NSString *)urlString
 {
-    NSArray<NSString *> *previouslyShown = [[NSUserDefaults standardUserDefaults] arrayForKey:PreviouslyShownURLsKey];
+    NSArray<NSString *> *previouslyShown = PreviouslyShownURLsPreference.stringArrayValue;
     if (!previouslyShown) {
         previouslyShown = @[];
     }
@@ -1181,7 +1253,7 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
         return;
 
     previouslyShown = [previouslyShown arrayByAddingObject:urlString];
-    [[NSUserDefaults standardUserDefaults] setObject:previouslyShown forKey:PreviouslyShownURLsKey];
+    PreviouslyShownURLsPreference.arrayValue = previouslyShown;
 }
 
 - (BOOL)newsWantsAttention
@@ -1252,7 +1324,7 @@ static UIImage *menuImage(NSString *name)
 #pragma mark -
 #pragma mark MFMailComposeViewControllerDelegate
 
-- (void)mailComposeController:(MFMailComposeViewController *)controller didFinishWithResult:(MFMailComposeResult)result error:(NSError *)error;
+- (void)mailComposeController:(MFMailComposeViewController *)controller didFinishWithResult:(MFMailComposeResult)result error:(NSError *)error NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based solutions where available instead.");
 {
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
         UIScene *scene = controller.containingScene;
@@ -1319,12 +1391,41 @@ static UIImage *menuImage(NSString *name)
 
 #pragma mark - Private
 
+- (nullable UIScene *)_findKeyWindowScene NS_EXTENSION_UNAVAILABLE_IOS("Calls into -[UIApplication sharedApplication]");
+{
+    for (UIWindow *window in UIApplication.sharedApplication.windows) {
+        if ([window isKeyWindow]) {
+            return window.windowScene;
+        }
+    }
+    
+    return nil;
+}
+
 - (void)_sceneDidBecomeActive:(NSNotification *)notification NS_EXTENSION_UNAVAILABLE_IOS("Calls into -[UIApplication sharedApplication]");
 {
-    UIScene *scene = OB_CHECKED_CAST(UIScene, notification.object);
-    [self.connectedSceneStack push:scene uniquing:YES];
-    
-    [self _presentNextEnqueuedInteractionControllerOnScene:scene];
+    UIScene *newlyActiveScene = OB_CHECKED_CAST(UIScene, notification.object);
+    UIScene *sceneForNextEnqueuedInteractionController = newlyActiveScene;
+
+    // Push the newly active scene onto the stack so that we have a record of it for the future.
+    // We could have also done this by listening for scene will connect, but there we wouldn't have wanted to push it on the stack.
+    [self.connectedSceneStack push:newlyActiveScene uniquing:YES];
+
+    // If the key scene is active, put that one back on the top of the stack because this is the one we want to interact with.
+    //
+    // We may decide, that absent any corrective behavior from Apple, we may wish to come up with some hueristic where newly added or activated scenes become key.
+    // This logic may have to change slightly if that ends up being the case.
+    UIScene *keyScene = [self _findKeyWindowScene];
+    if (keyScene != newlyActiveScene && keyScene.activationState == UISceneActivationStateForegroundActive) {
+         [self.connectedSceneStack push:keyScene uniquing:YES];
+
+        // Clear this; the "most recently active" scene didn't actually change, so we don't want to start a presentation.
+        sceneForNextEnqueuedInteractionController = nil;
+    }
+
+    if (sceneForNextEnqueuedInteractionController != nil) {
+        [self _presentNextEnqueuedInteractionControllerOnScene:sceneForNextEnqueuedInteractionController];
+    }
 }
 
 - (void)_presentNextEnqueuedInteractionControllerOnScene:(UIScene *)anActiveScene NS_EXTENSION_UNAVAILABLE_IOS("Calls into -[UIApplication sharedApplication]");

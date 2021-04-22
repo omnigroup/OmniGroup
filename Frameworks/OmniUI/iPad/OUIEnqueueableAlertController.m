@@ -8,8 +8,12 @@
 #import <OmniUI/OUIEnqueueableAlertController.h>
 
 @interface OUIExtendedAlertAction ()
+
 @property (nonatomic, strong) NSMutableArray *completionBlocks;
+
 @end
+
+#pragma mark -
 
 @implementation OUIExtendedAlertAction
 
@@ -41,11 +45,24 @@
 
 @end
 
+#pragma mark -
+
 @interface OUIEnqueueableAlertController ()
+
 @property (nonatomic, strong) NSMutableArray *completionBlocks;
+
 @end
 
+#pragma mark -
+
 @implementation OUIEnqueueableAlertController
+
++ (instancetype)alertControllerWithTitle:(NSString *)title message:(NSString *)message preferredStyle:(UIAlertControllerStyle)preferredStyle;
+{
+    OBASSERT(preferredStyle == UIAlertControllerStyleAlert, "The size class at presentation time cannot be known; OUIEnqueueableAlertController must use the UIAlertControllerStyleAlert presentation style.");
+    
+    return [super alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
+}
 
 - (void)addAction:(UIAlertAction *)action
 {

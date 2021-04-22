@@ -5,21 +5,22 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
+#import <OmniUI/OUIPasswordAlert.h>
 #import <OmniUI/OUIPasswordAlert-Internal.h>
 
-#import <OmniFoundation/OFVersionNumber.h>
+#import <OmniUI/OUIAppController.h>
+#import <OmniUI/OUIEnqueueableAlertController.h>
 
-#import <UIKit/UIKit.h>
+#import <OmniFoundation/OFVersionNumber.h>
 
 RCS_ID("$Id$");
 
 NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
 
-@interface OUIPasswordAlert () <UITextFieldDelegate>
-{
+@interface OUIPasswordAlert () <UITextFieldDelegate> {
   @private
     NSString *_username;
-    UIAlertAction *_helpAlertAction;
+    OUIExtendedAlertAction *_helpAlertAction;
     
     struct {
         NSUInteger dismissed:1;
@@ -83,7 +84,7 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
     BOOL showUsername = (_options & OUIPasswordAlertOptionShowUsername) != 0;
     BOOL allowEditingUsername = (_options & OUIPasswordAlertOptionAllowsEditingUsername) != 0;
     
-    _alertController = [UIAlertController alertControllerWithTitle:_title message:self.message preferredStyle:UIAlertControllerStyleAlert];
+    _alertController = [OUIEnqueueableAlertController alertControllerWithTitle:_title message:self.message preferredStyle:UIAlertControllerStyleAlert];
     __weak typeof(self) weakSelf = self;
     
     // Username field
@@ -109,14 +110,15 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
     }
     
     // See discussion around dismiss timing in -_didDismissWithAction:.
-    [_alertController addAction:[UIAlertAction actionWithTitle:[[self class] localizedTitleForAction:OUIPasswordAlertActionCancel] style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
+    [_alertController addExtendedAction:[OUIExtendedAlertAction extendedActionWithTitle:[[self class] localizedTitleForAction:OUIPasswordAlertActionCancel] style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
         [self _didDismissWithAction:OUIPasswordAlertActionCancel];
     }]];
     
-    UIAlertAction *loginAlertAction = [UIAlertAction actionWithTitle:[[self class] localizedTitleForAction:OUIPasswordAlertActionLogIn] style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+    OUIExtendedAlertAction *loginAlertAction = [OUIExtendedAlertAction extendedActionWithTitle:[[self class] localizedTitleForAction:OUIPasswordAlertActionLogIn] style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
         [self _didDismissWithAction:OUIPasswordAlertActionLogIn];
     }];
-    [_alertController addAction:loginAlertAction];
+    
+    [_alertController addExtendedAction:loginAlertAction];
     self.loginAction = loginAlertAction;
     
     return self;
@@ -217,6 +219,16 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
     [controller presentViewController:self.alertController animated:YES completion:nil];
 }
 
+- (void)enqueuePasswordAlertPresentationForAnyForegroundScene;
+{
+    OBPRECONDITION([NSThread isMainThread]);
+    OBPRECONDITION(self.delegate || _finished_callback); // Otherwise there's no point
+
+    [[OUIPasswordAlert _visibleAlerts] addObject:self]; // we hold a reference to ourselves until -_didDismissWithAction:
+
+    [OUIAppController enqueueInteractionControllerPresentationForAnyForegroundScene:self.alertController];
+}
+
 - (UIColor *)tintColor;
 {
     return [[self.alertController view] tintColor];
@@ -242,7 +254,7 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
     _helpURL = [helpURL copy];
     
     if (_helpAlertAction == nil) {
-        _helpAlertAction = [UIAlertAction actionWithTitle:[[self class] localizedTitleForAction:OUIPasswordAlertActionHelp] style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+        _helpAlertAction = [OUIExtendedAlertAction extendedActionWithTitle:[[self class] localizedTitleForAction:OUIPasswordAlertActionHelp] style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
             OBASSERT(self.helpURL != nil, @"Clearing the helpURL from an OUIPasswordAlert after setting it is not supported.");
             [self _didDismissWithAction:OUIPasswordAlertActionHelp];
             
@@ -250,7 +262,8 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
                 [[UIApplication sharedApplication] openURL:self.helpURL options:@{} completionHandler:nil];
             }
         }];
-        [self.alertController addAction:_helpAlertAction];
+
+        [self.alertController addExtendedAction:_helpAlertAction];
     }
 }
 

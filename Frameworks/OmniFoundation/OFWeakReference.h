@@ -30,7 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 // Conveniences that do the common work of removing references that have been nullified, and ensuring that any object is added only once.
 + (void)add:(ObjectType)object toReferences:(NSMutableArray <OFWeakReference <ObjectType> *> *)references;
 + (void)remove:(ObjectType)object fromReferences:(NSMutableArray <OFWeakReference <ObjectType> *> *)references;
-+ (void)forEachReference:(NSMutableArray <OFWeakReference <ObjectType> *> *)references perform:(void (^)(ObjectType))action;
++ (BOOL)forEachReference:(NSMutableArray <OFWeakReference <ObjectType> *> *)references perform:(void (^)(ObjectType))action;
 + (BOOL)referencesEmpty:(NSArray <OFWeakReference <ObjectType> *> *)references;
 + (NSUInteger)countReferences:(NSArray <OFWeakReference <ObjectType> *> *)references;
 

@@ -2,7 +2,7 @@
 <!DOCTYPE dictionary SYSTEM "file://localhost/System/Library/DTDs/sdef.dtd">
 
 <!--
-Extentions to the standard text suite that are implemented in OmniAppKit. This requires another sdef to define the basic "rich text" class (used to be "text"). Currently we only do this in the private OmniStyle framework since the Cocoa implementation of the text suite has a variety of problems.
+Extensions to the standard text suite that are implemented in OmniAppKit. This requires another sdef to define the basic "rich text" class (used to be "text"). Currently we only do this in the private OmniStyle framework since the Cocoa implementation of the text suite has a variety of problems.
 
 NOTE also that the .scriptSuite version of this file isn't the same has this sdef; the .scriptSuite version is used by OmniGraffle, which has yet to switch to sdef. The sdef version is used by OmniOutliner and OmniFocus, which have.
 -->

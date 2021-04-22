@@ -1,4 +1,4 @@
-// Copyright 2006-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,16 +7,10 @@
 
 #import <OmniQuartz/CIColor-OQExtensions.h>
 
-RCS_ID("$Id$");
+NS_ASSUME_NONNULL_BEGIN
 
 @implementation CIColor (OQExtensions)
 
-+ (CIColor *)clearColor;
-{
-    static CIColor *clear = nil;
-    if (!clear)
-	clear = [[CIColor colorWithRed:0 green:0 blue:0 alpha:0] retain];
-    return clear;
-}
-
 @end
+
+NS_ASSUME_NONNULL_END

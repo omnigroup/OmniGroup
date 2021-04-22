@@ -1,3 +1,10 @@
+// Copyright 2019 Omni Development, Inc. All rights reserved.
+//
+// This software may only be used and reproduced according to the
+// terms in the file OmniSourceLicense.html, which should be
+// distributed with this project and can also be found at
+// <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+
 import Foundation
 import SwiftUI
 
@@ -11,6 +18,24 @@ internal struct FileList: View {
             Divider()
             List(userData.files, id: \.self) { file in
                 OUIDocumentServerAccountFileInfoView(file: file)
+            }
+        }
+    }
+}
+
+fileprivate struct HelpButton: View {
+    @EnvironmentObject var userData: ServerAccountFileListEnvironment
+    var body: some View {
+        HStack {
+            Spacer()
+            Button(action: {
+                self.userData.serverAccount.requestHelp()
+            }) {
+                Image(uiImage: UIImage(systemName: "questionmark.circle")!)
+                    .renderingMode(.template)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(height: 24.0)
             }
         }
     }
@@ -36,8 +61,12 @@ fileprivate struct Header: View {
 
     var body: some View {
         VStack {
-            Image(uiImage: UIImage(named: "OmniPresenceAccountIcon", in: DownloadIcon.bundle, compatibleWith: nil)!)
-                .renderingMode(.template).foregroundColor(.blue)
+            ZStack {
+                Image(uiImage: UIImage(named: "OmniPresenceAccountIcon", in: DownloadIcon.bundle, compatibleWith: nil)!)
+                    .renderingMode(.template).foregroundColor(.blue)
+                HelpButton()
+            }
+
             Text(userData.accountName).font(.title)
             Text(subheaderText).font(.subheadline)
             if userData.hasErrorStatus {

@@ -21,6 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+#pragma mark -
+
 // If an OUIEnqueueableAlertController instance requires an action that presents some UI (such as a progress indicator, a subsequent alert, etc.) then that action's handler MUST be an OUIExtendedAlertAction, and the caller must call the -extendedActionComplete method when that extended interaction is complete.
 @interface OUIExtendedAlertAction: UIAlertAction <ExtendedInteractionDefining>
 
@@ -29,17 +31,25 @@ NS_ASSUME_NONNULL_BEGIN
 // This alert action forwards the interaction definition onto its creator. Usually, a block containing a call to this method is passed off to a view controller that gets presented in the body of this action's handler.
 // This must be called when the extended interaction triggered by this action is complete.
 - (void)extendedActionComplete;
+
 @end
+
+#pragma mark -
 
 // Alert controllers must be this subclass in order to be eligible for enqueing for presentation.
 // Additionally, callers cannot call -[OUIEnqueueableAlertControllereableAlertController addAction:]. Instead, depending on the type of action you'd like to add, call one of the two methods provided below.
 @interface OUIEnqueueableAlertController: UIAlertController <ExtendedInteractionDefining>
+
+- (void)addAction:(UIAlertAction *)action NS_UNAVAILABLE;
 
 // The handler for these actions spawns some sort of extended flow. When that flow is complete, it is the responsibility of the creator of this action to call its extendedActionComplete method. For example, an extended action could begin an asynchronous operation and put up a progress indicator while awaiting an answer. Once the operation is complete, the caller would remove the progress indicator from the view hierarchy and call the action's -extendedActionComplete method. If this alert controller is enqueued with OUIAppController, then it is possible the controller will immediately dequeue and present another alert as soon as -extendedActionComplete is called.
 - (void)addExtendedAction:(OUIExtendedAlertAction *)action;
 
 // The logic performed in the handler for actions added via this method must not exit its scope. These handlers are suitable for one-and-done operations like changing a preference, or triggering a UINavigationController navigation. Once the handler returns, it is possible  another alert or interaction will be immediately dequeued and presented. If callers require subsequent user interaction or attention after the handler has returned, they should instead use an OUIExtendedAlertAction.
 - (UIAlertAction *)addActionWithTitle:(nullable NSString *)title style:(UIAlertActionStyle)style handler:(void (^ __nullable)(UIAlertAction *action))handler;
+
+// Can be set by callers if they would like some kind of identifier to be associated with this alert.
+@property (nullable, strong, nonatomic) NSString *alertIdentifier;
 @end
 
 NS_ASSUME_NONNULL_END

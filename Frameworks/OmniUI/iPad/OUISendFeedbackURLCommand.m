@@ -26,7 +26,7 @@ RCS_ID("$Id$");
 - (void)invoke;
 {
     // TODO: Ultimately we do know which scene is handling the URL command, and we should pass it through.
-    [[OUIAppController sharedController] sendFeedbackWithSubject:nil body:nil inScene:nil];
+    [[OUIAppController sharedController] sendFeedbackWithSubject:nil body:nil inScene:nil completion:^{}];
 }
 
 @end

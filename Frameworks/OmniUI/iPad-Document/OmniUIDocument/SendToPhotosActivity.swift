@@ -39,19 +39,35 @@ public class SendToPhotosActivity : DocumentConversionActivity<OUIDocument, UIIm
     }
 
     public override func finalize(results: [UIImage], completionHandler: @escaping (Error?) -> Void) {
-        switch PHPhotoLibrary.authorizationStatus() {
-        case .restricted, .denied:
-            // TODO: Where to display this? UIActivity doesn't provide a way to return an error or a guaranteed view controller to display on...
-            let description = NSLocalizedString("Photo Library permission denied.", tableName: "OmniUIDocument", bundle: OmniUIDocumentBundle, comment: "Photo Library permisssions error description.")
-            let suggestion = NSLocalizedString("This app does not have access to your Photo Library.", tableName: "OmniUIDocument", bundle: OmniUIDocumentBundle, comment: "Photo Library permisssions error suggestion.")
-            let error = OUIDocumentError(.photoLibraryAccessRestrictedOrDenied, userInfo: [NSLocalizedDescriptionKey: description, NSLocalizedRecoverySuggestionErrorKey: suggestion])
-            completionHandler(error)
-            return
-        default:
-            for image in results {
-                UIImageWriteToSavedPhotosAlbum(image, self, #selector(SendToPhotosActivity.writeToPhotos(image:didFinishSavingWithError:contextInfo:)), nil)
+
+        let attemptToSaveImage: (_ status: PHAuthorizationStatus) -> Void = { status in
+
+            var error: Error? = nil
+            switch status {
+            case .restricted, .denied:
+                // TODO: Where to display this? UIActivity doesn't provide a way to return an error or a guaranteed view controller to display on...
+                let description = NSLocalizedString("Photo Library permission denied.", tableName: "OmniUIDocument", bundle: OmniUIDocumentBundle, comment: "Photo Library permisssions error description.")
+                let suggestion = NSLocalizedString("This app does not have access to your Photo Library.", tableName: "OmniUIDocument", bundle: OmniUIDocumentBundle, comment: "Photo Library permisssions error suggestion.")
+                error = OUIDocumentError(.photoLibraryAccessRestrictedOrDenied, userInfo: [NSLocalizedDescriptionKey: description, NSLocalizedRecoverySuggestionErrorKey: suggestion])
+            default:
+                for image in results {
+                    UIImageWriteToSavedPhotosAlbum(image, self, #selector(SendToPhotosActivity.writeToPhotos(image:didFinishSavingWithError:contextInfo:)), nil)
+                }
             }
+            completionHandler(error)
         }
+
+        let status = PHPhotoLibrary.authorizationStatus()
+        switch status {
+        case .notDetermined:
+            PHPhotoLibrary.requestAuthorization(attemptToSaveImage)
+        default:
+            attemptToSaveImage(status)
+        }
+    }
+
+    public override func makeProcessingViewController() -> UIViewController? {
+        return nil
     }
     
     // MARK:- Private

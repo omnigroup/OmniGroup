@@ -1,3 +1,10 @@
+// Copyright 2019 Omni Development, Inc. All rights reserved.
+//
+// This software may only be used and reproduced according to the
+// terms in the file OmniSourceLicense.html, which should be
+// distributed with this project and can also be found at
+// <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+
 import Foundation
 import OmniFileExchange
 import SwiftUI
@@ -103,6 +110,11 @@ fileprivate class OmniPresenceAccount: ServerAccount, SyncAccountStatus {
         self.observer.agentActivity.agent.sync({ [weak self] in
             self?.updateFiles()
         })
+    }
+
+    func requestHelp() {
+        let url = URL(string: "https://www.omnigroup.com/forward/manage-omnipresence-downloads")!
+        UIApplication.shared.open(url)
     }
 
     init(account: OFXServerAccount, observer: SyncActivityObserver) {

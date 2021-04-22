@@ -10,5 +10,15 @@
  // TODO: Would need to extend OUIKeyCommands implementation and keycommands files to include and extract an identifier if we need to use the same selector with a different discoverability title based on category.
  */
 
+
+
+
+
+
+
+
+
+
+
 "makeNewDocument" = "Nuovo documento";
 "closeDocument" = "Chiudi";

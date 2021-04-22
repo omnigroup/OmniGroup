@@ -10,11 +10,9 @@
 #import <OmniUI/OUIAppController.h>
 #import <OmniUI/OUIDrawing.h>
 #import <OmniUI/OUIInspector.h>
-#import <OmniUI/OUIInspectorAppearance.h>
 #import <OmniUI/OUIInspectorWell.h>
 #import <OmniUI/OUITextLayout.h>
 #import <OmniUI/OUITextView.h>
-#import <OmniUI/OUIThemedAppearance.h>
 
 #import <OmniQuartz/OQDrawing.h>
 #import <OmniBase/OmniBase.h>
@@ -25,8 +23,6 @@
 #import <OmniFoundation/OFExtent.h>
 
 #import "OUIParameters.h"
-
-RCS_ID("$Id$");
 
 @interface OUIInspectorTextWell () <UITextFieldDelegate>
 @property(nonatomic,readonly) NSTextAlignment effectiveTextAlignment;
@@ -449,27 +445,6 @@ static NSString *_getText(OUIInspectorTextWell *self, NSString *text, TextType *
             [(UIControl *)self.rightView setHighlighted:highlighted];
         }
     }
-}
-
-- (void)willMoveToWindow:(nullable UIWindow *)newWindow;
-{
-    [super willMoveToWindow:newWindow];
-    
-    if ([OUIInspectorAppearance inspectorAppearanceEnabled]) {
-        [self themedAppearanceDidChange:OUIInspectorAppearance.appearance];
-    }
-}
-
-#pragma mark - OUIThemedAppearanceClient
-- (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance
-{
-    [super themedAppearanceDidChange:changedAppearance];
-    
-    OUIInspectorAppearance *appearance = OB_CHECKED_CAST_OR_NIL(OUIInspectorAppearance, changedAppearance);
-    
-    self.textColor = appearance.TableCellTextColor;
-    self.labelColor = appearance.TableCellTextColor;
-    self.backgroundColor = appearance.TableCellBackgroundColor;
 }
 
 #pragma mark - UIView subclass

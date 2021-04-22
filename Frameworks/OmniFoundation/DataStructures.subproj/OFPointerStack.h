@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import <Foundation/Foundation.h>
+#import <Foundation/NSObject.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
