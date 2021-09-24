@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2018-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,17 +14,20 @@ NS_ASSUME_NONNULL_BEGIN
 NS_SWIFT_NAME(ColorCatalog)
 @interface OAColorCatalog : NSObject
 
-/// Subclasses can profive a prefix here such that:
+/// Subclasses can provide a prefix here such that:
 ///
 ///    @property (class, nonatomic, readonly) UIColor *fooColor;
 ///
 /// will be looked up as "PREFIX_fooColor" in the asset catalog.
 @property (class, nullable, readonly) NSString *colorNamePrefix;
 
-/// This is a convenience method forcalling +colorNamed:bundle: with a nil bundle,which will lookup the color in the default bundle for this class's asset catalog.
+/// This is a convenience method for calling +colorNamed:bundle: with a nil bundle.
+/// @param name The semantic name for the color.
 + (nullable OA_PLATFORM_COLOR_CLASS *)colorNamed:(NSString *)name;
 
 /// This is the primitive method which should be overriden by subclasses as needed.
+/// @param name The semantic name for the color.
+/// @param bundle Uses the provided bundle or, when nil, the bundle for the class causing color lookup to occur in the class' asset catalog.
 + (nullable OA_PLATFORM_COLOR_CLASS *)colorNamed:(NSString *)name bundle:(nullable NSBundle *)bundle;
 
 - (instancetype)init NS_UNAVAILABLE;

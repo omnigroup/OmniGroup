@@ -4,8 +4,7 @@
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@ из %2$@";
 
-/* Default title for the About menu item
-   title for in app purchase - placeholder is product title */
+/* Default title for the About menu item */
 "About %@" = "О программе %@";
 
 /* Bold button accessibility label */
@@ -32,16 +31,19 @@
 "Certificate Trust" = "Доверительные сертификаты";
 
 /* alert message */
-"Changed the '%@' preference from '%@' to '%@'" = "Значение параметра «%1$@» изменено с «%2$@» на «%3$@»";
+"Changed the '%@' preference from '%@' to '%@'" = "Значение параметра «%1$@»изменено с «%2$@» на «%3$@»";
 
 /* placeholder text - password/passphrase confirmation field in prompt */
 "confirm" = "подтвердить";
+
+/* When displaying a generic error, this is the option to report the error. */
+"Contact Omni" = "Связаться с Omni";
 
 /* Certificate trust alert button title */
 "Continue" = "Продолжить";
 
 /* increment button accessibility label */
-"Decrement" = "Убывание";
+"Decrement" = "Дециметр";
 
 /* Accessibility label for dismissing a sliding overlay pane */
 "Dismiss overlay" = "Отменить наложение";
@@ -53,6 +55,12 @@
 
 /* toolbar item title */
 "Edit" = "Изменить";
+
+/* Edit note on a task button title */
+"Edit Note" = "Изменить примечание";
+
+/* End editing note on a task button title */
+"End Editing" = "Завершить редактирование";
 
 /* password field placeholder text */
 "enter password" = "введите пароль";
@@ -102,23 +110,23 @@
 "News" = "Новости";
 
 /* empty value cell placeholder */
-"None" = "Нет";
+"None" = "Отсутствует";
 
 /* Full screen note editor title */
-"Note" = "Заметка";
+"Note" = "Примечание";
 
 /* Text letting the user know why nothing is showing in the inspector */
 "Nothing to Inspect" = "Нечего инспектировать";
 
 /* button title
    button title - password/passphrase prompt
-   Dismiss alert
-   Dismiss failed purchase alert
-   Dismiss failed restore alert
    Web view error opening URL cancel button. */
 
 
 "OK" = "ОК";
+
+/* Default title for the Omni Account menu item */
+"Omni Account" = "Учетная запись Omni";
 
 /* Menu item to subscribe to Omni's newsletter */
 "Omni Newsletter Signup" = "Подписка на рассылку Omni";
@@ -139,9 +147,6 @@
    release notes html screen title */
 
 "Release Notes" = "Сведения о выпуске";
-
-/* When displaying a generic error, this is the option to report the error. */
-"Report Error" = "Сообщить об ошибке";
 
 /* Right Text Align button accessibility label. */
 "Right text align" = "Выравнивание по правому краю";
@@ -176,6 +181,9 @@
 /* placeholder text - username field of login/password prompt */
 "username" = "имя пользователя";
 
+/* about page app store review link text */
+"Write a Review" = "Написать обзор";
+
 /* alert message */
 "You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?" = "Выбор ссылки изменит следующие настройки:\n\n«%@»\n\nПрименить эти изменения?";
 
@@ -183,7 +191,7 @@
 "You have tapped on a link which will run the following debugging command:\n\n\"%@\"\n\nIf you weren’t instructed to do this by Omni Support Humans, please don’t.\nDo you wish to run this command?" = "Вы нажали ссылку, вызывающую следующую команду отладки:\n\n«%@»\n\nЕсли вы не получали такие инструкции от службы поддержки Omni, не делайте этого.\nЗапустить эту команду?";
 
 /* default special URL alert message */
-"You have tapped on an Omni special URL:\n\n\"%@\"\n\nRun this command?" = "Вы нажали ссылку настройки Omni:\n\n«%@»\n\nВыполнить эту команду?";
+"You have tapped on an Omni special URL:\n\n\"%@\"\n\nRun this command?" = "Вы коснулись специальной URL-ссылки Omni:\n\n«%@»\n\nВыполнить эту команду?";
 
 /* zoom label */
 "Zoom" = "Масштаб";

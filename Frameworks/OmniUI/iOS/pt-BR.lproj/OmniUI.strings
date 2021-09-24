@@ -36,6 +36,9 @@
 /* placeholder text - password/passphrase confirmation field in prompt */
 "confirm" = "confirmar";
 
+/* When displaying a generic error, this is the option to report the error. */
+"Contact Omni" = "Contatar a Omni";
+
 /* Certificate trust alert button title */
 "Continue" = "Continuar";
 
@@ -52,6 +55,12 @@
 
 /* toolbar item title */
 "Edit" = "Editar";
+
+/* Edit note on a task button title */
+"Edit Note" = "Editar Nota";
+
+/* End editing note on a task button title */
+"End Editing" = "Encerrar Edição";
 
 /* password field placeholder text */
 "enter password" = "digitar a senha";
@@ -116,6 +125,9 @@
 
 "OK" = "OK";
 
+/* Default title for the Omni Account menu item */
+"Omni Account" = "Conta da Omni";
+
 /* Menu item to subscribe to Omni's newsletter */
 "Omni Newsletter Signup" = "Registro no Boletim da Omni";
 
@@ -135,9 +147,6 @@
    release notes html screen title */
 
 "Release Notes" = "Notas da Versão";
-
-/* When displaying a generic error, this is the option to report the error. */
-"Report Error" = "Relatar Erro";
 
 /* Right Text Align button accessibility label. */
 "Right text align" = "Alinhamento de texto à direita";
@@ -171,6 +180,9 @@
 
 /* placeholder text - username field of login/password prompt */
 "username" = "nome de usuário";
+
+/* about page app store review link text */
+"Write a Review" = "Escrever uma Resenha";
 
 /* alert message */
 "You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?" = "Você tocou em um link que alterará as seguintes preferências:\n\n\"%@\"\n\nDeseja aceitar essas alterações?";

@@ -386,6 +386,8 @@ static BOOL ODOVacuumOnDisconnect = NO;
         value = [NSNull null];
     if (!_pendingMetadataChanges)
         _pendingMetadataChanges = [[NSMutableDictionary alloc] init];
+
+    OBASSERT(OFNOTNULL(value)); // We'll hit a OBRequestConcreteImplementation in the background queue currently.
     [_pendingMetadataChanges setObject:value forKey:key];
 }
 

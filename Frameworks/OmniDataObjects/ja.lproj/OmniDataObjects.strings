@@ -92,6 +92,9 @@
 "Unable bind string to slot %d of statement with SQL '%@'." = "SQL '%2$@' を使ってステートメントのスロット %1$d に文字列をバインドできません。";
 
 /* error reason */
+"Unable bind XML date/time to slot %d of statement with SQL '%@'." = "SQL '%2$@' を使ってステートメントのスロット %1$d に XML 日付／時刻をバインドできません。";
+
+/* error reason */
 "Unable convert expression of type %lu (%@)." = "タイプ %1$lu（%2$@）の式を変換できません。";
 
 /* error reason */

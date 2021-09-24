@@ -92,6 +92,9 @@
 "Unable bind string to slot %d of statement with SQL '%@'." = "Kan tekenreeks niet binden aan slot %1$d van instructie met SQL '%2$@'.";
 
 /* error reason */
+"Unable bind XML date/time to slot %d of statement with SQL '%@'." = "Kan XML-datum/tijd niet binden aan slot %1$d van verklaring met SQL '%2$@'.";
+
+/* error reason */
 "Unable convert expression of type %lu (%@)." = "Kan uitdrukking van type %1$lu (%2$@) niet omzetten.";
 
 /* error reason */

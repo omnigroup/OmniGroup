@@ -4,8 +4,7 @@
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@ van %2$@";
 
-/* Default title for the About menu item
-   title for in app purchase - placeholder is product title */
+/* Default title for the About menu item */
 "About %@" = "Over %@";
 
 /* Bold button accessibility label */
@@ -37,6 +36,9 @@
 /* placeholder text - password/passphrase confirmation field in prompt */
 "confirm" = "bevestig";
 
+/* When displaying a generic error, this is the option to report the error. */
+"Contact Omni" = "Neem contact op met Omni";
+
 /* Certificate trust alert button title */
 "Continue" = "Ga door";
 
@@ -53,6 +55,12 @@
 
 /* toolbar item title */
 "Edit" = "Wijzig";
+
+/* Edit note on a task button title */
+"Edit Note" = "Wijzig notitie";
+
+/* End editing note on a task button title */
+"End Editing" = "Eindig wijzigen";
 
 /* password field placeholder text */
 "enter password" = "voer het wachtwoord in";
@@ -76,7 +84,7 @@
 "Internal error: this app has no feedback address configured." = "Interne fout: voor deze app is geen feedbackadres geconfigureerd.";
 
 /* default special URL confirm button title */
-"Invoke" = "Roep aan";
+"Invoke" = "Aanroepen";
 
 /* button title */
 "Invoke and Quit" = "Roep aan en stop";
@@ -112,16 +120,16 @@
 
 /* button title
    button title - password/passphrase prompt
-   Dismiss alert
-   Dismiss failed purchase alert
-   Dismiss failed restore alert
    Web view error opening URL cancel button. */
 
 
 "OK" = "OK";
 
+/* Default title for the Omni Account menu item */
+"Omni Account" = "Omni-account";
+
 /* Menu item to subscribe to Omni's newsletter */
-"Omni Newsletter Signup" = "Abonneren op nieuwsbrief";
+"Omni Newsletter Signup" = "Abonneren op Omni-nieuwsbrief";
 
 /* placeholder text - password/passphrase field of login/password prompt */
 "password" = "wachtwoord";
@@ -139,9 +147,6 @@
    release notes html screen title */
 
 "Release Notes" = "Versiegegevens";
-
-/* When displaying a generic error, this is the option to report the error. */
-"Report Error" = "Meld fout";
 
 /* Right Text Align button accessibility label. */
 "Right text align" = "Tekst rechts uitlijnen";
@@ -175,6 +180,9 @@
 
 /* placeholder text - username field of login/password prompt */
 "username" = "gebruikersnaam";
+
+/* about page app store review link text */
+"Write a Review" = "Schrijf een recensie";
 
 /* alert message */
 "You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?" = "U hebt op een koppeling getikt die de volgende voorkeuren zal wijzigen:\n\n“%@”\n\nWilt u deze wijzigingen accepteren?";

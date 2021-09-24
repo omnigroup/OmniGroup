@@ -104,7 +104,7 @@ RCS_ID("$Id$");
     [_operationQueue waitUntilAllOperationsAreFinished];
 
     if (rc != SQLITE_OK) {
-        NSString *reason = [NSString stringWithFormat:@"Unable to disconnect from database at '%@'.", [_URL absoluteString]];
+        NSString *reason = [NSString stringWithFormat:@"Unable to disconnect from database at <%@> (SQLite returned %d).", [_URL absoluteString], rc];
         NSMutableDictionary *userInfo = [[@{ NSUnderlyingErrorKey : [NSError errorWithDomain:ODOSQLiteErrorDomain code:rc userInfo:nil] } mutableCopy] autorelease];
 
         if (rc == SQLITE_BUSY) {

@@ -1,4 +1,4 @@
-// Copyright 2014-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,7 @@
 #import "OIAutolayoutInspectorHeaderView.h"
 
 #import <OmniAppKit/OATrackingLoop.h>
+#import <OmniAppKit/NSColor-OAExtensions.h>
 #import <OmniInspector/OIAppearance.h>
 
 RCS_ID("$Id$");
@@ -20,19 +21,48 @@ RCS_ID("$Id$");
 
 @implementation OIAutolayoutInspectorHeaderView
 
+static CGFloat separatorSideInset = 0;
+static NSColor *separatorColor = nil;
+static CGFloat separatorHeight;
+
++ (void)initialize
+{
+    if (self == [OIAutolayoutInspectorHeaderView class]) {
+        OFPreference *seperatorSideInsetPref = [[OFPreferenceWrapper sharedPreferenceWrapper] preferenceForKey:@"OIInspectorHeaderSeparatorSideInset" defaultValue:@(0)];
+        separatorSideInset = [seperatorSideInsetPref doubleValue];
+
+        if ([OFPreference hasPreferenceForKey:@"OIInspectorHeaderSeparatorColor"]) {
+            id colorObject = [[OFPreferenceWrapper sharedPreferenceWrapper] objectForKey:@"OIInspectorHeaderSeparatorColor"];
+            if ([colorObject isKindOfClass:[NSDictionary class]]) {
+                separatorColor = [NSColor colorFromPropertyListRepresentation:colorObject withColorSpaceManager:nil shouldDefaultToGenericSpace:NO];
+            } else {
+                OBASSERT_NOT_REACHED("Unexpected value for OIInspectorHeaderSeparatorColor of type: %@", NSStringFromClass([colorObject class]));
+            }
+        } else {
+            separatorColor = [NSColor gridColor];
+        }
+    }
+}
+
 + (CGFloat)contentHeight;
 {
     return [[OIAppearance appearance] CGFloatForKeyPath:@"InspectorHeaderContentHeight"];
 }
 
-+ (CGFloat)separatorHeight;
-{
-    return [[OIAppearance appearance] CGFloatForKeyPath:@"InspectorHeaderSeparatorHeight"];
-}
-
 + (CGFloat)separatorTopPadding;
 {
     return [[OIAppearance appearance] CGFloatForKeyPath:@"InspectorHeaderSeparatorTopPadding"];
+}
+
++ (CGFloat)separatorHeight
+{
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        OFPreference *heightPref = [OFPreference preferenceForKey:@"OIInspectorHeaderSeparatorHeight" defaultValue:@([[OIAppearance appearance] CGFloatForKeyPath:@"InspectorHeaderSeparatorHeight"])];
+        separatorHeight = [heightPref doubleValue];
+    });
+
+    return separatorHeight;
 }
 
 - (void)setDrawsSeparator:(BOOL)drawsSeparator;
@@ -133,19 +163,18 @@ RCS_ID("$Id$");
     
     CGFloat height = [[self class] separatorHeight];
     CGFloat topPadding = [[self class] separatorTopPadding];
-    
+
     NSRect separatorRect = (NSRect){
         .origin = (NSPoint){
-            .x = 0,
+            .x = separatorSideInset,
             .y = [self isFlipped] ? NSMinY(self.bounds) + topPadding : NSMaxY(self.bounds) - height - topPadding,
         },
         .size = (NSSize){
-            .width = NSWidth(self.bounds),
+            .width = NSWidth(self.bounds) - 2 * separatorSideInset,
             .height = height,
         },
     };
     
-    NSColor *separatorColor = [NSColor gridColor];
     [separatorColor set];
     NSRectFill(separatorRect);
 }

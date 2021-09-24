@@ -36,6 +36,9 @@
 /* placeholder text - password/passphrase confirmation field in prompt */
 "confirm" = "확인";
 
+/* When displaying a generic error, this is the option to report the error. */
+"Contact Omni" = "Omni에 연락";
+
 /* Certificate trust alert button title */
 "Continue" = "계속";
 
@@ -52,6 +55,12 @@
 
 /* toolbar item title */
 "Edit" = "편집";
+
+/* Edit note on a task button title */
+"Edit Note" = "메모 편집";
+
+/* End editing note on a task button title */
+"End Editing" = "편집 종료";
 
 /* password field placeholder text */
 "enter password" = "암호 입력";
@@ -114,7 +123,10 @@
    Web view error opening URL cancel button. */
 
 
-"OK" = "양호";
+"OK" = "승인";
+
+/* Default title for the Omni Account menu item */
+"Omni Account" = "Omni 계정";
 
 /* Menu item to subscribe to Omni's newsletter */
 "Omni Newsletter Signup" = "Omni 뉴스레터 등록";
@@ -135,9 +147,6 @@
    release notes html screen title */
 
 "Release Notes" = "릴리스 노트";
-
-/* When displaying a generic error, this is the option to report the error. */
-"Report Error" = "보고서 오류";
 
 /* Right Text Align button accessibility label. */
 "Right text align" = "텍스트 오른쪽 정렬";
@@ -171,6 +180,9 @@
 
 /* placeholder text - username field of login/password prompt */
 "username" = "사용자 이름";
+
+/* about page app store review link text */
+"Write a Review" = "리뷰 작성하기";
 
 /* alert message */
 "You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?" = "다음 환경설정을 변경하는 링크를 눌렀습니다.\n\n\"%@\"\n\n이러한 변경 사항을 수락하시겠습니까?";

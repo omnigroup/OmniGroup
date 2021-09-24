@@ -92,6 +92,9 @@
 "Unable bind string to slot %d of statement with SQL '%@'." = "Не удается привязать строку к слоту %1$d выражения с SQL «%2$@».";
 
 /* error reason */
+"Unable bind XML date/time to slot %d of statement with SQL '%@'." = "Не удается привязать дату/время XML к слоту %1$d выражения с SQL «%2$@».";
+
+/* error reason */
 "Unable convert expression of type %lu (%@)." = "Не удается преобразовать выражение типа %1$lu (%2$@).";
 
 /* error reason */

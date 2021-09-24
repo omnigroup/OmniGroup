@@ -107,10 +107,6 @@
 		34043BEB0DA3F16800761C40 /* CFData-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 34043BDC0DA3EFA500761C40 /* CFData-OFExtensions.m */; };
 		34066C771922C019008AC3DB /* OFNetStateMock.h in Headers */ = {isa = PBXBuildFile; fileRef = 34066C741922C019008AC3DB /* OFNetStateMock.h */; };
 		34066C791922C019008AC3DB /* OFNetStateMock.m in Sources */ = {isa = PBXBuildFile; fileRef = 34066C751922C019008AC3DB /* OFNetStateMock.m */; };
-		3406EC821D1C8F7A00D41DC9 /* OFFileTypeDescription.h in Headers */ = {isa = PBXBuildFile; fileRef = 3406EC801D1C8F7A00D41DC9 /* OFFileTypeDescription.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		3406EC831D1C8F7A00D41DC9 /* OFFileTypeDescription.h in Headers */ = {isa = PBXBuildFile; fileRef = 3406EC801D1C8F7A00D41DC9 /* OFFileTypeDescription.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		3406EC841D1C8F7A00D41DC9 /* OFFileTypeDescription.m in Sources */ = {isa = PBXBuildFile; fileRef = 3406EC811D1C8F7A00D41DC9 /* OFFileTypeDescription.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
-		3406EC851D1C8F7A00D41DC9 /* OFFileTypeDescription.m in Sources */ = {isa = PBXBuildFile; fileRef = 3406EC811D1C8F7A00D41DC9 /* OFFileTypeDescription.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		3409DFAD2243FAED006C6019 /* ResourceTypePredicate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3409DFAC2243FAED006C6019 /* ResourceTypePredicate.swift */; };
 		3409DFAE2243FAED006C6019 /* ResourceTypePredicate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3409DFAC2243FAED006C6019 /* ResourceTypePredicate.swift */; };
 		340CDBD6098A9E03006270CA /* ExceptionHandling.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 340CDBD5098A9E03006270CA /* ExceptionHandling.framework */; };
@@ -118,6 +114,9 @@
 		340E075D23849CBE00AB303D /* OFASCIIPropertyListSerializationTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 340E075723849CB900AB303D /* OFASCIIPropertyListSerializationTests.m */; };
 		340E075F23849D4B00AB303D /* OFASCIIPropertyListSerializationTests in Resources */ = {isa = PBXBuildFile; fileRef = 340E075E23849D4A00AB303D /* OFASCIIPropertyListSerializationTests */; };
 		340E076023849D4B00AB303D /* OFASCIIPropertyListSerializationTests in Resources */ = {isa = PBXBuildFile; fileRef = 340E075E23849D4A00AB303D /* OFASCIIPropertyListSerializationTests */; };
+		3410D5B82440C84E00702DFD /* ExactlyEquatable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3410D5B72440C84E00702DFD /* ExactlyEquatable.swift */; };
+		3410D5B92440C84E00702DFD /* ExactlyEquatable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3410D5B72440C84E00702DFD /* ExactlyEquatable.swift */; };
+		3410D5BA2440C84E00702DFD /* ExactlyEquatable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3410D5B72440C84E00702DFD /* ExactlyEquatable.swift */; };
 		341657550FEB31CD00F4CED4 /* CFData-OFCompression.h in Headers */ = {isa = PBXBuildFile; fileRef = 341657510FEB31CD00F4CED4 /* CFData-OFCompression.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		341657560FEB31CD00F4CED4 /* CFData-OFCompression.m in Sources */ = {isa = PBXBuildFile; fileRef = 341657520FEB31CD00F4CED4 /* CFData-OFCompression.m */; };
 		341657570FEB31CD00F4CED4 /* CFData-OFFileIO.h in Headers */ = {isa = PBXBuildFile; fileRef = 341657530FEB31CD00F4CED4 /* CFData-OFFileIO.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -232,6 +231,9 @@
 		3475FBD20D747F550050931A /* OFCrashOnExceptionTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 3475FBD10D747F550050931A /* OFCrashOnExceptionTest.m */; };
 		3475FBEE0D7481F50050931A /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A4E075308AA72B10098FF0F /* OmniFoundation.framework */; };
 		3475FBF00D7481FE0050931A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00E51D8DFE8AAEA611C9CC38 /* Foundation.framework */; };
+		347811A7245CBC6400BB0B7A /* TypeIdentifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 347811A6245CBC6400BB0B7A /* TypeIdentifier.swift */; };
+		347811A8245CBC6400BB0B7A /* TypeIdentifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 347811A6245CBC6400BB0B7A /* TypeIdentifier.swift */; };
+		347811A9245CBC6400BB0B7A /* TypeIdentifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 347811A6245CBC6400BB0B7A /* TypeIdentifier.swift */; };
 		347CA782192EB43000693624 /* OFXMLMakerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A2AC2EA70F784B72002D9BFB /* OFXMLMakerTests.m */; };
 		347CA785192FC7BA00693624 /* OFPerformanceMeasurement.h in Headers */ = {isa = PBXBuildFile; fileRef = 347CA783192FC7BA00693624 /* OFPerformanceMeasurement.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		347CA787192FC7BA00693624 /* OFPerformanceMeasurement.m in Sources */ = {isa = PBXBuildFile; fileRef = 347CA784192FC7BA00693624 /* OFPerformanceMeasurement.m */; };
@@ -387,7 +389,6 @@
 		34A061951EC110A60099028D /* OFIObjectSelectorObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51D6EFE8AAEA611C9CC38 /* OFIObjectSelectorObject.h */; };
 		34A061961EC110A60099028D /* OFIObjectSelectorObjectInt.h in Headers */ = {isa = PBXBuildFile; fileRef = A2BAA296055202790097A146 /* OFIObjectSelectorObjectInt.h */; };
 		34A061971EC110A60099028D /* OFIObjectSelectorObjectObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51D6FFE8AAEA611C9CC38 /* OFIObjectSelectorObjectObject.h */; };
-		34A061981EC110A60099028D /* OFFileTypeDescription.h in Headers */ = {isa = PBXBuildFile; fileRef = 3406EC801D1C8F7A00D41DC9 /* OFFileTypeDescription.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34A061991EC110A60099028D /* OFIObjectSelectorObjectObjectObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51D70FE8AAEA611C9CC38 /* OFIObjectSelectorObjectObjectObject.h */; };
 		34A0619A1EC110A60099028D /* OFInvocation.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51D68FE8AAEA611C9CC38 /* OFInvocation.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34A0619B1EC110A60099028D /* OFMessageQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51D71FE8AAEA611C9CC38 /* OFMessageQueue.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -556,7 +557,6 @@
 		34A062431EC110A60099028D /* OFMultiValueDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C91FE8AAEA611C9CC38 /* OFMultiValueDictionary.m */; settings = {ATTRIBUTES = (); }; };
 		34A062441EC110A60099028D /* OFMutableKnownKeyDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C92FE8AAEA611C9CC38 /* OFMutableKnownKeyDictionary.m */; settings = {ATTRIBUTES = (); }; };
 		34A062451EC110A60099028D /* OFNull.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C93FE8AAEA611C9CC38 /* OFNull.m */; settings = {ATTRIBUTES = (); }; };
-		34A062461EC110A60099028D /* OFFileTypeDescription.m in Sources */ = {isa = PBXBuildFile; fileRef = 3406EC811D1C8F7A00D41DC9 /* OFFileTypeDescription.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		34A062471EC110A60099028D /* OFPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = 348A50870571490C0097A113 /* OFPoint.m */; };
 		34A062481EC110A60099028D /* OFDocumentEncryption.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E3274CD1D500E2800F0827C /* OFDocumentEncryption.swift */; };
 		34A062491EC110A60099028D /* OFRandom.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51CBDFE8AAEA611C9CC38 /* OFRandom.m */; settings = {ATTRIBUTES = (); COMPILER_FLAGS = "-fno-strict-aliasing"; }; };
@@ -2036,8 +2036,6 @@
 		34043BDC0DA3EFA500761C40 /* CFData-OFExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "CFData-OFExtensions.m"; sourceTree = "<group>"; };
 		34066C741922C019008AC3DB /* OFNetStateMock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFNetStateMock.h; sourceTree = "<group>"; };
 		34066C751922C019008AC3DB /* OFNetStateMock.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFNetStateMock.m; sourceTree = "<group>"; };
-		3406EC801D1C8F7A00D41DC9 /* OFFileTypeDescription.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFFileTypeDescription.h; sourceTree = "<group>"; };
-		3406EC811D1C8F7A00D41DC9 /* OFFileTypeDescription.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFFileTypeDescription.m; sourceTree = "<group>"; };
 		3409DFAC2243FAED006C6019 /* ResourceTypePredicate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourceTypePredicate.swift; sourceTree = "<group>"; };
 		340B4E2B1C1259A6006C40D8 /* Target-Watch-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Target-Watch-Common.xcconfig"; sourceTree = "<group>"; };
 		340B4E2C1C1259A6006C40D8 /* Touch-XCTest-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-XCTest-Common.xcconfig"; sourceTree = "<group>"; };
@@ -2055,6 +2053,7 @@
 		340CDBD5098A9E03006270CA /* ExceptionHandling.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ExceptionHandling.framework; path = System/Library/Frameworks/ExceptionHandling.framework; sourceTree = SDKROOT; };
 		340E075723849CB900AB303D /* OFASCIIPropertyListSerializationTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = OFASCIIPropertyListSerializationTests.m; sourceTree = "<group>"; };
 		340E075E23849D4A00AB303D /* OFASCIIPropertyListSerializationTests */ = {isa = PBXFileReference; lastKnownFileType = folder; name = OFASCIIPropertyListSerializationTests; path = Inputs/OFASCIIPropertyListSerializationTests; sourceTree = "<group>"; };
+		3410D5B72440C84E00702DFD /* ExactlyEquatable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExactlyEquatable.swift; sourceTree = "<group>"; };
 		341657510FEB31CD00F4CED4 /* CFData-OFCompression.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CFData-OFCompression.h"; sourceTree = "<group>"; };
 		341657520FEB31CD00F4CED4 /* CFData-OFCompression.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "CFData-OFCompression.m"; sourceTree = "<group>"; };
 		341657530FEB31CD00F4CED4 /* CFData-OFFileIO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CFData-OFFileIO.h"; sourceTree = "<group>"; };
@@ -2264,6 +2263,7 @@
 		3475FBD10D747F550050931A /* OFCrashOnExceptionTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFCrashOnExceptionTest.m; sourceTree = "<group>"; };
 		3476E4EE07C3BDBA0097A113 /* OFXMLBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFXMLBuffer.h; sourceTree = "<group>"; };
 		3476E4EF07C3BDBA0097A113 /* OFXMLBuffer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXMLBuffer.m; sourceTree = "<group>"; };
+		347811A6245CBC6400BB0B7A /* TypeIdentifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypeIdentifier.swift; sourceTree = "<group>"; };
 		3478682C223728A2001914C2 /* OmniFoundation-iOS.xcfilelist */ = {isa = PBXFileReference; lastKnownFileType = text.xcfilelist; path = "OmniFoundation-iOS.xcfilelist"; sourceTree = "<group>"; };
 		347CA783192FC7BA00693624 /* OFPerformanceMeasurement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFPerformanceMeasurement.h; sourceTree = "<group>"; };
 		347CA784192FC7BA00693624 /* OFPerformanceMeasurement.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFPerformanceMeasurement.m; sourceTree = "<group>"; };
@@ -2889,8 +2889,6 @@
 				273257D51448B56000A26568 /* OFUTI.h */,
 				273257D81448B98B00A26568 /* OFUTI.m */,
 				34EE1AB11BFC04C80067E993 /* OFUTI.swift */,
-				3406EC801D1C8F7A00D41DC9 /* OFFileTypeDescription.h */,
-				3406EC811D1C8F7A00D41DC9 /* OFFileTypeDescription.m */,
 				34CB8BDA17382F48006BF9DA /* OFLockFile.h */,
 				34CB8BDB17382F48006BF9DA /* OFLockFile.m */,
 				3E5BEE8A18ECD8C4003C0626 /* OFFileUtilities.h */,
@@ -2907,6 +2905,7 @@
 				34249B692242A4F800C1A988 /* ResourceLocation.swift */,
 				34A4C3F0224AD4C4002E5942 /* ResourceBookmarks.swift */,
 				3409DFAC2243FAED006C6019 /* ResourceTypePredicate.swift */,
+				347811A6245CBC6400BB0B7A /* TypeIdentifier.swift */,
 			);
 			name = FileManagement;
 			path = FileManagement.subproj;
@@ -3905,6 +3904,7 @@
 				A28C00260E25A52700832A54 /* OmniFoundation_Prefix.h */,
 				3402C55615C3209000AA7DAF /* OFFeatures.h */,
 				1E7F99681D875BCD00CD4533 /* Bundle.swift */,
+				3410D5B72440C84E00702DFD /* ExactlyEquatable.swift */,
 				BF0E642806309CBE0097A147 /* Info.plist */,
 				3439601E214C41D6004E58A5 /* OmniFoundation.xcfilelist */,
 				3478682C223728A2001914C2 /* OmniFoundation-iOS.xcfilelist */,
@@ -4173,7 +4173,6 @@
 				34A061961EC110A60099028D /* OFIObjectSelectorObjectInt.h in Headers */,
 				34A061971EC110A60099028D /* OFIObjectSelectorObjectObject.h in Headers */,
 				4A8CA6FB2381D5CE0095A6A1 /* OFASCIIPropertyListSerialization.h in Headers */,
-				34A061981EC110A60099028D /* OFFileTypeDescription.h in Headers */,
 				34A061991EC110A60099028D /* OFIObjectSelectorObjectObjectObject.h in Headers */,
 				34A0619A1EC110A60099028D /* OFInvocation.h in Headers */,
 				34A0619B1EC110A60099028D /* OFMessageQueue.h in Headers */,
@@ -4317,7 +4316,6 @@
 				34F16BDD194F76BD00AD9C4D /* NSDictionary-OFExtensions.h in Headers */,
 				34F16BED194F76F200AD9C4D /* NSMutableDictionary-OFExtensions.h in Headers */,
 				34F16B7A194F6ED600AD9C4D /* OFUtilities.h in Headers */,
-				3406EC831D1C8F7A00D41DC9 /* OFFileTypeDescription.h in Headers */,
 				34F16BCD194F766D00AD9C4D /* OFTimeSpan.h in Headers */,
 				34F16B64194F6E7400AD9C4D /* OFBindingPoint.h in Headers */,
 				34F16BBF194F756400AD9C4D /* CFDictionary-OFExtensions.h in Headers */,
@@ -4590,7 +4588,6 @@
 				4A4E068D08AA72B10098FF0F /* OFIObjectSelectorObject.h in Headers */,
 				4A4E068E08AA72B10098FF0F /* OFIObjectSelectorObjectInt.h in Headers */,
 				4A4E068F08AA72B10098FF0F /* OFIObjectSelectorObjectObject.h in Headers */,
-				3406EC821D1C8F7A00D41DC9 /* OFFileTypeDescription.h in Headers */,
 				4A4E069008AA72B10098FF0F /* OFIObjectSelectorObjectObjectObject.h in Headers */,
 				4A4E069208AA72B10098FF0F /* OFInvocation.h in Headers */,
 				4A4E069308AA72B10098FF0F /* OFMessageQueue.h in Headers */,
@@ -5007,7 +5004,7 @@
 			attributes = {
 				LastSwiftUpdateCheck = 0730;
 				LastTestingUpgradeCheck = 0510;
-				LastUpgradeCheck = 1130;
+				LastUpgradeCheck = 1140;
 				TargetAttributes = {
 					34F16B19194F6C3200AD9C4D = {
 						CreatedOnToolsVersion = 6.0;
@@ -5439,7 +5436,6 @@
 				34A062431EC110A60099028D /* OFMultiValueDictionary.m in Sources */,
 				34A062441EC110A60099028D /* OFMutableKnownKeyDictionary.m in Sources */,
 				34A062451EC110A60099028D /* OFNull.m in Sources */,
-				34A062461EC110A60099028D /* OFFileTypeDescription.m in Sources */,
 				34A062471EC110A60099028D /* OFPoint.m in Sources */,
 				34A062481EC110A60099028D /* OFDocumentEncryption.swift in Sources */,
 				34A062491EC110A60099028D /* OFRandom.m in Sources */,
@@ -5468,6 +5464,7 @@
 				34A0625F1EC110A60099028D /* OFBundledClass.m in Sources */,
 				34A062601EC110A60099028D /* OF_CTR_CBCMAC_Util.c in Sources */,
 				34A062611EC110A60099028D /* OFCharacterScanner.m in Sources */,
+				3410D5BA2440C84E00702DFD /* ExactlyEquatable.swift in Sources */,
 				34A062621EC110A60099028D /* OFController.m in Sources */,
 				34A062631EC110A60099028D /* OFGeometry.m in Sources */,
 				34A062641EC110A60099028D /* OFObject.m in Sources */,
@@ -5541,6 +5538,7 @@
 				34A062A51EC110A60099028D /* OFRunLoopScheduler.m in Sources */,
 				34A062A61EC110A60099028D /* OFScheduledEvent.m in Sources */,
 				34A062A71EC110A60099028D /* OFBackgroundActivity.m in Sources */,
+				347811A9245CBC6400BB0B7A /* TypeIdentifier.swift in Sources */,
 				34A062A81EC110A60099028D /* NSBundle-OFExtensions.swift in Sources */,
 				34A062A91EC110A60099028D /* OFScheduler.m in Sources */,
 				34A062AA1EC110A60099028D /* OFXMLBuffer.m in Sources */,
@@ -5722,6 +5720,7 @@
 				34A4C3F2224AD4C4002E5942 /* ResourceBookmarks.swift in Sources */,
 				34F16BE2194F76D000AD9C4D /* NSFileManager-OFSimpleExtensions.m in Sources */,
 				1EA896771D651F1D0058942E /* SecItem-OFExtensions.swift in Sources */,
+				347811A8245CBC6400BB0B7A /* TypeIdentifier.swift in Sources */,
 				34F16BBE194F756200AD9C4D /* CFData-OFFileIO.m in Sources */,
 				34F16B98194F6F6C00AD9C4D /* OFMultiValueDictionary.m in Sources */,
 				34F16B73194F6EB700AD9C4D /* OFStringScanner.m in Sources */,
@@ -5732,6 +5731,7 @@
 				1E8D018F1D21EA4D008E75AE /* OFCMSUtilities.swift in Sources */,
 				34F16B86194F6F1600AD9C4D /* OFBijection.m in Sources */,
 				34F16BFA194F771D00AD9C4D /* NSRange-OFExtensions.m in Sources */,
+				3410D5B92440C84E00702DFD /* ExactlyEquatable.swift in Sources */,
 				34F16BE4194F76D500AD9C4D /* NSFileManager-OFTemporaryPath.m in Sources */,
 				34F16B5F194F6E6300AD9C4D /* OFRelativeDateParser.m in Sources */,
 				34F16BD0194F767700AD9C4D /* OFTimeSpanFormatter.m in Sources */,
@@ -5745,7 +5745,6 @@
 				4A8CA6FD2381D5CE0095A6A1 /* OFASCIIPropertyListSerialization.m in Sources */,
 				34F16C26194F77D200AD9C4D /* OFXMLCursor.m in Sources */,
 				34F16BEA194F76E800AD9C4D /* NSMutableArray-OFExtensions.m in Sources */,
-				3406EC851D1C8F7A00D41DC9 /* OFFileTypeDescription.m in Sources */,
 				1E498A9E1D6BC76E00996D7D /* OF_CTR_CBCMAC_Util.c in Sources */,
 				34F16B79194F6ED300AD9C4D /* OFStringDecoder.m in Sources */,
 				4A8D11E71F2FB4D600030070 /* OFHTTPHeaderDictionary.m in Sources */,
@@ -5916,7 +5915,6 @@
 				4A4E06CA08AA72B10098FF0F /* OFMultiValueDictionary.m in Sources */,
 				4A4E06CB08AA72B10098FF0F /* OFMutableKnownKeyDictionary.m in Sources */,
 				4A4E06CC08AA72B10098FF0F /* OFNull.m in Sources */,
-				3406EC841D1C8F7A00D41DC9 /* OFFileTypeDescription.m in Sources */,
 				4A4E06CE08AA72B10098FF0F /* OFPoint.m in Sources */,
 				1E3274CE1D500E2800F0827C /* OFDocumentEncryption.swift in Sources */,
 				4A4E06D008AA72B10098FF0F /* OFRandom.m in Sources */,
@@ -6034,6 +6032,8 @@
 				342A9EC908C89683006AA532 /* NSComparisonPredicate-OFExtensions.m in Sources */,
 				34D07D481C90B6FB009438F9 /* OFSelectionSet.swift in Sources */,
 				342877B408EC788400D89442 /* NSBundle-OFExtensions.m in Sources */,
+				347811A7245CBC6400BB0B7A /* TypeIdentifier.swift in Sources */,
+				3410D5B82440C84E00702DFD /* ExactlyEquatable.swift in Sources */,
 				A28D43B80916EAFC006D5336 /* NSSet-OFExtensions.m in Sources */,
 				A28161B209351CA10086A1EF /* OFRationalNumber.m in Sources */,
 				6C8D1733097D84D500DD3EAE /* OFTimeSpan.m in Sources */,

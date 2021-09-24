@@ -4,8 +4,7 @@
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@/%2$@";
 
-/* Default title for the About menu item
-   title for in app purchase - placeholder is product title */
+/* Default title for the About menu item */
 "About %@" = "关于 %@";
 
 /* Bold button accessibility label */
@@ -29,13 +28,16 @@
 "Center text align" = "文本居中对齐";
 
 /* Certificate trust alert title */
-"Certificate Trust" = "信任证书";
+"Certificate Trust" = "证书信任";
 
 /* alert message */
 "Changed the '%@' preference from '%@' to '%@'" = "将“%1$@”预置从“%2$@”更改为“%3$@”";
 
 /* placeholder text - password/passphrase confirmation field in prompt */
 "confirm" = "确认";
+
+/* When displaying a generic error, this is the option to report the error. */
+"Contact Omni" = "联系 Omni";
 
 /* Certificate trust alert button title */
 "Continue" = "继续";
@@ -54,11 +56,17 @@
 /* toolbar item title */
 "Edit" = "编辑";
 
+/* Edit note on a task button title */
+"Edit Note" = "编辑备注";
+
+/* End editing note on a task button title */
+"End Editing" = "结束编辑";
+
 /* password field placeholder text */
 "enter password" = "输入密码";
 
 /* disabled for demo */
-"Feature not enabled for this demo" = "对于此演示，功能未启用";
+"Feature not enabled for this demo" = "本试用版未启用此功能";
 
 /* Overlay text when zoomed to fit screen */
 "Fit" = "适合";
@@ -67,7 +75,7 @@
 "Help" = "帮助";
 
 /* Help and Settings toolbar item accessibility label. */
-"Help and Settings" = "帮助和设置";
+"Help and Settings" = "帮助与设置";
 
 /* increment button accessibility label */
 "Increment" = "增加";
@@ -76,7 +84,7 @@
 "Internal error: this app has no feedback address configured." = "内部错误：此应用程序未配置反馈地址。";
 
 /* default special URL confirm button title */
-"Invoke" = "调用";
+"Invoke" = "激活";
 
 /* button title */
 "Invoke and Quit" = "调用并退出";
@@ -112,13 +120,13 @@
 
 /* button title
    button title - password/passphrase prompt
-   Dismiss alert
-   Dismiss failed purchase alert
-   Dismiss failed restore alert
    Web view error opening URL cancel button. */
 
 
 "OK" = "好";
+
+/* Default title for the Omni Account menu item */
+"Omni Account" = "Omni 帐户";
 
 /* Menu item to subscribe to Omni's newsletter */
 "Omni Newsletter Signup" = "Omni 新闻稿注册";
@@ -139,9 +147,6 @@
    release notes html screen title */
 
 "Release Notes" = "发行说明";
-
-/* When displaying a generic error, this is the option to report the error. */
-"Report Error" = "报告错误";
 
 /* Right Text Align button accessibility label. */
 "Right text align" = "文本右对齐";
@@ -171,10 +176,13 @@
 "Underline" = "底线";
 
 /* Undo button title */
-"Undo" = "撤销";
+"Undo" = "取消";
 
 /* placeholder text - username field of login/password prompt */
 "username" = "用户名";
+
+/* about page app store review link text */
+"Write a Review" = "写评价";
 
 /* alert message */
 "You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?" = "已轻按一个将会更改以下偏好设置的链接：\n\n“%@”\n\n是否要接受这些变更？";

@@ -1338,7 +1338,7 @@
 			attributes = {
 				CLASSPREFIX = ODO;
 				LastTestingUpgradeCheck = 0600;
-				LastUpgradeCheck = 1130;
+				LastUpgradeCheck = 1140;
 				TargetAttributes = {
 					34019F641B62ECB4003A5BE4 = {
 						CreatedOnToolsVersion = 7.0;

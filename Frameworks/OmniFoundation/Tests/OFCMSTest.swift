@@ -72,9 +72,9 @@ class OFCMSTest : XCTestCase {
     // This is the corresponding certificate for Bob (issuer=carl, sn=46:34:...) certificate from RFC 4134.
     let rfc4134_carl_issued_to_bob = "MIICJzCCAZCgAwIBAgIQRjRrx4AAVrwR024uzV1x0DANBgkqhkiG9w0BAQUFADASMRAwDgYDVQQDEwdDYXJsUlNBMB4XDTk5MDkxOTAxMDkwMloXDTM5MTIzMTIzNTk1OVowETEPMA0GA1UEAxMGQm9iUlNBMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCp4WeYPznVX/Kgk0FepnmJhcg1XZqRW/sdAdoZcCYXD72lItA1hW16mGYUQVzPt7cIOwnJkbgZaTdt+WUee9mpMySjfzu7r0YBhjY0MssHA1lS/IWLMQS4zBgIFEjmTxz7XWDE4FwfU9N/U9hpAfEF+Hpw0b6Dxl84zxwsqmqn6wIDAQABo38wfTAMBgNVHRMBAf8EAjAAMA4GA1UdDwEB/wQEAwIFIDAfBgNVHSMEGDAWgBTp4JAnrHggeprTTPJCN04irp44uzAdBgNVHQ4EFgQU6PS4Z9izlqQq8xGqKdOVWoYWtCQwHQYDVR0RBBYwFIESQm9iUlNBQGV4YW1wbGUuY29tMA0GCSqGSIb3DQEBBQUAA4GBAHuOZsXxED8QIEyIcat7QGshM/pKld6dDltrlCEFwPLhfirNnJOIh/uLt359QWHh5NZt+eIEVWFFvGQnRMChvVl52R1kPCHWRbBdaDOS6qzxV+WBfZjmNZGjOd539OgcOyncf1EHl/M28FAK3Zvetl44ESv7V+qJba3JiNiPzyvT";
     // Values extracted using openssl
-    let bobcert_ski = Data(bytes: [0xE8, 0xF4, 0xB8, 0x67, 0xD8, 0xB3, 0x96, 0xA4, 0x2A, 0xF3, 0x11, 0xAA, 0x29, 0xD3, 0x95, 0x5A, 0x86, 0x16, 0xB4, 0x24]);
-    let bobcert_serial = Data(bytes: [0x46, 0x34, 0x6b, 0xc7, 0x80, 0x00, 0x56, 0xbc, 0x11, 0xd3, 0x6e, 0x2e, 0xcd, 0x5d, 0x71, 0xd0]);
-    let bobcert_issuer = Data(bytes: [0x30, 0x12, 0x31, 0x10, 0x30, 0x0e, 0x06, 0x03, 0x55, 0x04, 0x03, 0x13, 0x07, 0x43, 0x61, 0x72, 0x6c, 0x52, 0x53, 0x41])
+    let bobcert_ski = Data([0xE8, 0xF4, 0xB8, 0x67, 0xD8, 0xB3, 0x96, 0xA4, 0x2A, 0xF3, 0x11, 0xAA, 0x29, 0xD3, 0x95, 0x5A, 0x86, 0x16, 0xB4, 0x24]);
+    let bobcert_serial = Data([0x46, 0x34, 0x6b, 0xc7, 0x80, 0x00, 0x56, 0xbc, 0x11, 0xd3, 0x6e, 0x2e, 0xcd, 0x5d, 0x71, 0xd0]);
+    let bobcert_issuer = Data([0x30, 0x12, 0x31, 0x10, 0x30, 0x0e, 0x06, 0x03, 0x55, 0x04, 0x03, 0x13, 0x07, 0x43, 0x61, 0x72, 0x6c, 0x52, 0x53, 0x41])
 
     // And Bob's private key
     let rfc4134_bob_private = "MIICXAIBAAKBgQCp4WeYPznVX/Kgk0FepnmJhcg1XZqRW/sdAdoZcCYXD72lItA1hW16mGYUQVzPt7cIOwnJkbgZaTdt+WUee9mpMySjfzu7r0YBhjY0MssHA1lS/IWLMQS4zBgIFEjmTxz7XWDE4FwfU9N/U9hpAfEF+Hpw0b6Dxl84zxwsqmqn6wIDAQABAoGAZ81ITJoNj5jCG2X/IoOcbfCmBh287acDiJTyHGsPizXeDoJ4MMvnumpWrXfG61F5cHkKoPT+ReCpsvQZ2oeY1jCEdOT8WWzBxnfcqZHQfDCgosUIXiFxQ/wNBz3w+m0Unk5j8BdYeRxLmBw9PbAb3/olO6PALJgF9hAJ2IfbAxkCQQDQwyLG3qKZGHaPjbymddZmP9SNRVKMdvVyxOvwRprxPlyqVQub2t1rbfj8OzwIQ5O1W/7O6v1ohCNir/MxwrnlAkEA0FH8HiK3W+21jgHI16vyWNT3gpTzU6gZRctmyigZX+IQK/OP7GowdPhNEfSnxCC1RyHcSQH5CiAp8CQIhGB9jwJANLpkyUgoV3TXVVDeakjvGypaHEh7HiFZw2A7m5epwO8YZqlOYlI4hM7lCYhIlGnFIBSZWlf+I2zkpyN70IC3hQJBAJ4vszea+wsGXVfhCQakXdmQlgYFXyQGQHKcOoiFnIcPnWISiBZoqDUaG0PoOMCYaa8DCkgyBE7pD493fTQwJQcCQFcYZ9YK0rWrwrp651TanAVPgdTvAYkeMj1pyzHEUshUVSUAOxwqfCZQ1emm13fLzxX17gvVje6zr0yhfGNGQfY=";
@@ -137,7 +137,7 @@ class OFCMSTest : XCTestCase {
         
         let parsable = OFASN1EnumerateAVAsInName(issu, { (attr, val, rdnseq, _) -> ()
             in
-            XCTAssertEqual(attr, Data(bytes: [ 0x55, 0x04, 0x03 ]));
+            XCTAssertEqual(attr, Data([ 0x55, 0x04, 0x03 ]));
             XCTAssertEqual(OFASN1UnDERString(val), "CarlRSA");
             XCTAssertEqual(rdnseq, 0);
         });
@@ -151,7 +151,7 @@ class OFCMSTest : XCTestCase {
         
         let cek = try CMSPKRecipient(rid: rid).unwrap(identity: bobpair, data: what! as Data);
         // This is the 3DES key we expect
-        XCTAssertEqual(cek, Data(bytes: [ 0x08, 0x46, 0x76, 0x3b, 0x5d, 0xa1, 0x16, 0x6d, 0xef, 0x29, 0xfb, 0x1a, 0xd5, 0xd6, 0xfd, 0x85, 0x01, 0x07, 0x19, 0xe3, 0x04, 0x4c, 0xad, 0x19 ]));
+        XCTAssertEqual(cek, Data([ 0x08, 0x46, 0x76, 0x3b, 0x5d, 0xa1, 0x16, 0x6d, 0xef, 0x29, 0xfb, 0x1a, 0xd5, 0xd6, 0xfd, 0x85, 0x01, 0x07, 0x19, 0xe3, 0x04, 0x4c, 0xad, 0x19 ]));
     }
     
     func testPKRecipient_matching() throws {
@@ -166,9 +166,9 @@ class OFCMSTest : XCTestCase {
 
         XCTAssertTrue(pkrecip.rid.matches(certificate: bobcert));
         
-        XCTAssertFalse(CMSRecipientIdentifier.keyIdentifier(ski: Data(bytes: [0x01, 0x02, 0x03])).matches(certificate: bobcert));
+        XCTAssertFalse(CMSRecipientIdentifier.keyIdentifier(ski: Data([0x01, 0x02, 0x03])).matches(certificate: bobcert));
         XCTAssertTrue(CMSRecipientIdentifier.issuerSerial(issuer: bobcert_issuer, serial: bobcert_serial).matches(certificate: bobcert));
-        XCTAssertFalse(CMSRecipientIdentifier.issuerSerial(issuer: bobcert_issuer, serial: Data(bytes: [0x01, 0x02, 0x03])).matches(certificate: bobcert));
+        XCTAssertFalse(CMSRecipientIdentifier.issuerSerial(issuer: bobcert_issuer, serial: Data([0x01, 0x02, 0x03])).matches(certificate: bobcert));
     }
     
     func testKeyTransportRSA() throws {
@@ -271,7 +271,7 @@ class OFCMSTest : XCTestCase {
         var who : NSData? = nil;
         var what : NSData? = nil;
         var recipientType : OFCMSRecipientType = OFCMSRUnknown;
-        let err = _OFASN1ParseCMSRecipient(Data(bytes: example_page11), &recipientType, &who, &what);
+        let err = _OFASN1ParseCMSRecipient(Data(example_page11), &recipientType, &who, &what);
         if let err = err {
             throw err;
         }
@@ -280,7 +280,7 @@ class OFCMSTest : XCTestCase {
         let ri_out = CMSPasswordRecipient(info: who! as Data);
         let cek_out = try ri_out.unwrap(password: "All n-entities must communicate with other n-entities via n-1 entiteeheehees", data: what! as Data);
         
-        XCTAssertEqual(Data(bytes: cek_page11), cek_out);
+        XCTAssertEqual(Data(cek_page11), cek_out);
     }
     #endif
     

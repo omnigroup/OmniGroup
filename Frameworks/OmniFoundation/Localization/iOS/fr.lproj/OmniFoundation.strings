@@ -35,7 +35,7 @@
 "<Encryption: A password is set>" = "Mot de passe";
 
 /* summary text - document is not encrypted */
-"<Encryption: None>" = "Aucune";
+"<Encryption: None>" = "Aucun";
 
 /* summary text - document is encrypted using one or more public keys */
 "<Encryption: using %u key(s)>" = "%u clés";
@@ -95,13 +95,13 @@
 /* Provisioning profile parsing error general description */
 "Could not parse entitlements from embedded provisioning profile" = "Impossible d’analyser les droits du profil d’approvisionnement incorporé";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "d" = "j";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "day" = "jour";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "days" = "jours";
 
 /* invalid bundle reason */
@@ -155,13 +155,13 @@
 /* error reason */
 "Failed to write lock file.  %@" = "Échec de l’écriture du fichier de verrouillage.  %@";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "h" = "h";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "hour" = "heure";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "hours" = "heures";
 
 /* formatter input error */
@@ -170,22 +170,22 @@
 /* local bundle path readable string */
 "local configuration file" = "fichier de configuration locale";
 
-/* time span formatter span (minute) */
+/* time span formatter span - DO NOT add leading or trailing whitespace (minute) */
 "m" = "m";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "minute" = "minute";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "minutes" = "minutes";
 
-/* time span formatter span (month) */
+/* time span formatter span - DO NOT add leading or trailing whitespace (month) */
 "mo" = "mo";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "month" = "mois";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "months" = "mois";
 
 /* error reason */
@@ -206,13 +206,13 @@
 /* alert title when clicking on a configuration value URL */
 "Restore all internal configuration settings to defaults" = "Rétablir les valeurs par défaut de tous les réglages de configuration interne";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "s" = "s";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "second" = "seconde";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "seconds" = "secondes";
 
 /* alert message format when clicking on a configuration value URL */
@@ -225,7 +225,7 @@
 "The server certificate for \"%@\" does not seem to be valid. This site may not be trustworthy. Would you like to connect anyway?" = "Le certificat de serveur de “%@” ne semble pas valide. Ce site n’est peut-être pas fiable. Voulez-vous quand même vous y connecter ?";
 
 /* server certificate out of date */
-"The server certificate for \"%@\" has an invalid date. It may be expired, or not yet active. Would you like to connect anyway?" = "La date du certificat de serveur de “%@” n’est pas valide. Il se peut que ce certificat soit périmé ou pas encore actif. Voulez-vous quand même vous y connecter ?";
+"The server certificate for \"%@\" has an invalid date. It may be expired, or not yet active. Would you like to connect anyway?" = "La date du certificat de serveur de “%@” n’est pas valide. Il peut être expiré ou pas encore actif. Voulez-vous quand même vous y connecter ?";
 
 /* server certificate has unknown root */
 "The server certificate for \"%@\" is not signed by any root server. This site may not be trustworthy. Would you like to connect anyway?" = "Le certificat de serveur de “%@” n’est signé par aucun serveur racine. Ce site n’est peut-être pas fiable. Voulez-vous quand même vous y connecter ?";
@@ -286,25 +286,25 @@
 /* error message - CMS object has an unknown algorithm identifier for encryption of its content */
 "Unsupported encryption algorithm" = "Algorithme de cryptage non pris en charge";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "w" = "s";
 
 /* error description */
 "Warning encountered while loading XML." = "Avertissement lors du chargement du fichier XML.";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "week" = "semaine";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "weeks" = "semaines";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "y" = "a";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "year" = "année";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "years" = "années";
 
 /* zlib error reason */

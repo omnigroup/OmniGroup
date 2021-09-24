@@ -38,7 +38,6 @@
 #import <OmniFoundation/OFExtent.h>
 #import <OmniFoundation/OFFileEdit.h>
 #import <OmniFoundation/OFFileMotionResult.h>
-#import <OmniFoundation/OFFileTypeDescription.h>
 #import <OmniFoundation/OFGeometry.h>
 #import <OmniFoundation/OFHTTPHeaderDictionary.h>
 #import <OmniFoundation/OFIndexPath.h>

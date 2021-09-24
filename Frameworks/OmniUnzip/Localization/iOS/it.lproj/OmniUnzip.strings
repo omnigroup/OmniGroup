@@ -27,6 +27,7 @@
 
 /* error description
    error reason */
+
 "Unable to read zip data." = "Impossibile leggere i dati compressi.";
 
 /* error description */

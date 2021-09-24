@@ -326,6 +326,11 @@ NSString * _Nullable OFUTIPreferredTagWithClass(NSString *fileType, CFStringRef 
     return CFBridgingRelease(UTTypeCopyPreferredTagWithClass((__bridge CFStringRef)fileType, tag));
 }
 
+NSArray <NSString *> *_Nullable OFUTIPathExtensions(NSString *fileType)
+{
+    return CFBridgingRelease(UTTypeCopyAllTagsWithClass((__bridge CFStringRef)fileType, kUTTagClassFilenameExtension));
+}
+
 NSString * _Nullable OFUTIDescription(NSString *fileType)
 {
     return CFBridgingRelease(UTTypeCopyDescription((__bridge CFStringRef)fileType));

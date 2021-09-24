@@ -88,4 +88,18 @@ typedef id _Nullable (^OFObjectToObjectBlock)(id anObject);
 UIApplication * _Nullable OFSharedApplication(void);
 #endif
 
+// Helpers to make sure the right size is passed for the pointer type. The encoding variant added just for symmetry in the clients. Only adding cases actually used elsewhere for now.
+#define _OFDefineValueCoding(type) \
+static inline void __attribute__((overloadable)) OFEncodeValueFrom(NSCoder *coder, type * const value) \
+{ \
+    [coder encodeValueOfObjCType:@encode(type) at:value]; \
+} \
+static inline void __attribute__((overloadable)) OFDecodeValueInto(NSCoder *coder, type *value) \
+{ \
+    [coder decodeValueOfObjCType:@encode(type) at:value size:sizeof(type)]; \
+}
+_OFDefineValueCoding(BOOL)
+_OFDefineValueCoding(float)
+_OFDefineValueCoding(unsigned int)
+
 NS_ASSUME_NONNULL_END

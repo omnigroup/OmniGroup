@@ -92,6 +92,9 @@
 "Unable bind string to slot %d of statement with SQL '%@'." = "No se ha podido enlazar el valor string con la ranura %1$d de la sentencia con SQL '%2$@'.";
 
 /* error reason */
+"Unable bind XML date/time to slot %d of statement with SQL '%@'." = "No se ha podido enlazar el valor de fecha/hora XML con la ranura %1$d de la sentencia con SQL “%2$@”.";
+
+/* error reason */
 "Unable convert expression of type %lu (%@)." = "No se ha podido convertir la expresión de tipo %1$lu (%2$@).";
 
 /* error reason */

@@ -1,4 +1,4 @@
-// Copyright 2019 Omni Development, Inc. All rights reserved.
+// Copyright 2019-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -32,7 +32,7 @@ typedef NS_OPTIONS(NSUInteger, OUIDocumentPerformOpenURLOptions) {
 
 @property (nonatomic, nullable, readonly) UIWindowScene *windowScene;
 @property (nonatomic, nullable, strong) UIWindow *window;
-@property (nonatomic, nullable, strong) __kindof OUIDocument *document;
+@property (nonatomic, nullable, readonly, strong) __kindof OUIDocument *document;
 @property (nonatomic, readonly) UIDocumentBrowserViewController *documentBrowser;
 
 @property (nonatomic, readonly) UIResponder *defaultFirstResponder;

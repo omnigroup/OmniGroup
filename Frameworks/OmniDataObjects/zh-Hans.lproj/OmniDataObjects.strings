@@ -92,6 +92,9 @@
 "Unable bind string to slot %d of statement with SQL '%@'." = "无法绑定字符串至具有 SQL“%2$@”的语句的插槽 %1$d。";
 
 /* error reason */
+"Unable bind XML date/time to slot %d of statement with SQL '%@'." = "无法绑定 XML 日期/时间至具有 SQL“%2$@”语句的插槽 %1$d。";
+
+/* error reason */
 "Unable convert expression of type %lu (%@)." = "无法转换类型为 %1$lu (%2$@) 的表达式。";
 
 /* error reason */

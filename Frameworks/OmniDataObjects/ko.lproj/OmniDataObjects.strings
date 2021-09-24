@@ -92,6 +92,9 @@
 "Unable bind string to slot %d of statement with SQL '%@'." = "'%2$@'(으)로 명령문의 %1$d 슬롯에 문자열을 바인드할 수 없습니다.";
 
 /* error reason */
+"Unable bind XML date/time to slot %d of statement with SQL '%@'." = "'%2$@'(으)로 명령문의 %1$d 슬롯에 XML 날짜/시간을 바인드할 수 없습니다.";
+
+/* error reason */
 "Unable convert expression of type %lu (%@)." = "%1$lu(%2$@) 유형의 식을 변환할 수 없습니다.";
 
 /* error reason */

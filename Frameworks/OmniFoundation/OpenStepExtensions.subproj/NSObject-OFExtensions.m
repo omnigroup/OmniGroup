@@ -230,6 +230,7 @@ void OFRunLoopPerformBlockAndWait(CFRunLoopRef runLoop, CFTypeRef mode, void (^b
 
     [lock lockWhenCondition:YES];
     [lock unlock];
+    [lock release];
 }
 
 // Inspired by <https://github.com/n-b/CTT2>, but redone to use a timer to avoid spinning the runloop as fast as possible when polling.

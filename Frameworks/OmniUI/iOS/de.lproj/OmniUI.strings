@@ -4,8 +4,7 @@
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@ von %2$@";
 
-/* Default title for the About menu item
-   title for in app purchase - placeholder is product title */
+/* Default title for the About menu item */
 "About %@" = "Über %@";
 
 /* Bold button accessibility label */
@@ -37,6 +36,9 @@
 /* placeholder text - password/passphrase confirmation field in prompt */
 "confirm" = "Bestätigen";
 
+/* When displaying a generic error, this is the option to report the error. */
+"Contact Omni" = "Omni kontaktieren";
+
 /* Certificate trust alert button title */
 "Continue" = "Fortfahren";
 
@@ -53,6 +55,12 @@
 
 /* toolbar item title */
 "Edit" = "Bearbeiten";
+
+/* Edit note on a task button title */
+"Edit Note" = "Notiz bearbeiten";
+
+/* End editing note on a task button title */
+"End Editing" = "Bearbeiten beenden";
 
 /* password field placeholder text */
 "enter password" = "Kennwort eingeben";
@@ -94,7 +102,7 @@
 "Link could not be opened. Please check Safari restrictions in Settings." = "Der Link konnte nicht geöffnet werden. Überprüfen Sie in der App „Einstellungen“ die Safari-Einschränkungen.";
 
 /* message format */
-"Mail has not been set up on this %@." = "Mail wurde auf diesem %@ nicht konfiguriert.";
+"Mail has not been set up on this %@." = "Mail wurde auf diesem %@ nicht eingerichtet.";
 
 /* News menu item
    News view title */
@@ -112,13 +120,13 @@
 
 /* button title
    button title - password/passphrase prompt
-   Dismiss alert
-   Dismiss failed purchase alert
-   Dismiss failed restore alert
    Web view error opening URL cancel button. */
 
 
 "OK" = "OK";
+
+/* Default title for the Omni Account menu item */
+"Omni Account" = "Omni-Account";
 
 /* Menu item to subscribe to Omni's newsletter */
 "Omni Newsletter Signup" = "Omni-Newsletter – Registrierung";
@@ -139,9 +147,6 @@
    release notes html screen title */
 
 "Release Notes" = "Versionshinweise";
-
-/* When displaying a generic error, this is the option to report the error. */
-"Report Error" = "Fehler melden";
 
 /* Right Text Align button accessibility label. */
 "Right text align" = "Rechtsbündig ausrichten";
@@ -175,6 +180,9 @@
 
 /* placeholder text - username field of login/password prompt */
 "username" = "Benutzername";
+
+/* about page app store review link text */
+"Write a Review" = "Rezension schreiben";
 
 /* alert message */
 "You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?" = "Sie haben auf einen Link getippt, der die folgenden Einstellungen ändert:\n\n„%@“\n\nMöchten Sie diese Änderungen akzeptieren?";

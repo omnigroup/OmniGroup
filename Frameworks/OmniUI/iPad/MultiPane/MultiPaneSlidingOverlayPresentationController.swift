@@ -1,4 +1,4 @@
-// Copyright 2016-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -203,7 +203,7 @@ class SldingOverlayPresentationController: UIPresentationController {
     
     private func dismiss(animated: Bool) {
         // We don't want to do this if we're being dismissed by a transition caused by snapshotting
-        // <bug:///176333> (iOS-OmniFocus Bug: Backgrounding the app when editing an action in an overlay inspector causes the bottom toolbar to remain at an "above keyboard" position even though the keyboard was dismissed)
+        // <bug:///183629> (iOS-OmniFocus Bug: Non-pinned inspector shows up then collapses after switching away and back to OmniFocus [UX])
         presentedViewController.dismiss(animated: animated, completion:nil)
     }
 }

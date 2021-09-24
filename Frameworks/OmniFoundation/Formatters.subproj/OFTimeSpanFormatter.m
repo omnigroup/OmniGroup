@@ -270,22 +270,22 @@ static NSArray *TimeSpanUnits = nil;
     [super encodeWithCoder:coder];
     
     [numberFormatter encodeWithCoder:coder];
-    [coder encodeValueOfObjCType:@encode(BOOL) at:&shouldUseVerboseFormat];
-    [coder encodeValueOfObjCType:@encode(float) at:&hoursPerDay];
-    [coder encodeValueOfObjCType:@encode(float) at:&hoursPerWeek];
-    [coder encodeValueOfObjCType:@encode(float) at:&hoursPerMonth];
-    [coder encodeValueOfObjCType:@encode(float) at:&hoursPerYear];
-    [coder encodeValueOfObjCType:@encode(float) at:&roundingInterval];
+    OFEncodeValueFrom(coder, &shouldUseVerboseFormat);
+    OFEncodeValueFrom(coder, &hoursPerDay);
+    OFEncodeValueFrom(coder, &hoursPerWeek);
+    OFEncodeValueFrom(coder, &hoursPerMonth);
+    OFEncodeValueFrom(coder, &hoursPerYear);
+    OFEncodeValueFrom(coder, &roundingInterval);
     
     unsigned int returnNumber = _flags.returnNumber;
     unsigned int floatValuesInSeconds = _flags.floatValuesInSeconds;
     unsigned int displayUnits = _flags.displayUnits;
     unsigned int usesArchiveUnitStrings = _flags.usesArchiveUnitStrings;
     
-    [coder encodeValueOfObjCType:@encode(unsigned int) at:&returnNumber];
-    [coder encodeValueOfObjCType:@encode(unsigned int) at:&floatValuesInSeconds];
-    [coder encodeValueOfObjCType:@encode(unsigned int) at:&displayUnits];
-    [coder encodeValueOfObjCType:@encode(unsigned int) at:&usesArchiveUnitStrings];
+    OFEncodeValueFrom(coder, &returnNumber);
+    OFEncodeValueFrom(coder, &floatValuesInSeconds);
+    OFEncodeValueFrom(coder, &displayUnits);
+    OFEncodeValueFrom(coder, &usesArchiveUnitStrings);
 }
 
 - (id)initWithCoder:(NSCoder *)coder;
@@ -293,21 +293,21 @@ static NSArray *TimeSpanUnits = nil;
     self = [super initWithCoder:coder];
     
     numberFormatter = [[NSNumberFormatter alloc] initWithCoder:coder];
-    [coder decodeValueOfObjCType:@encode(BOOL) at:&shouldUseVerboseFormat];
-    [coder decodeValueOfObjCType:@encode(float) at:&hoursPerDay];
-    [coder decodeValueOfObjCType:@encode(float) at:&hoursPerWeek];
-    [coder decodeValueOfObjCType:@encode(float) at:&hoursPerMonth];
-    [coder decodeValueOfObjCType:@encode(float) at:&hoursPerYear];
-    [coder decodeValueOfObjCType:@encode(float) at:&roundingInterval];
+    OFDecodeValueInto(coder, &shouldUseVerboseFormat);
+    OFDecodeValueInto(coder, &hoursPerDay);
+    OFDecodeValueInto(coder, &hoursPerWeek);
+    OFDecodeValueInto(coder, &hoursPerMonth);
+    OFDecodeValueInto(coder, &hoursPerYear);
+    OFDecodeValueInto(coder, &roundingInterval);
     unsigned int returnNumber;
     unsigned int floatValuesInSeconds;
     unsigned int displayUnits;
     unsigned int usesArchiveUnitStrings;
 
-    [coder decodeValueOfObjCType:@encode(unsigned int) at:&returnNumber];
-    [coder decodeValueOfObjCType:@encode(unsigned int) at:&floatValuesInSeconds];
-    [coder decodeValueOfObjCType:@encode(unsigned int) at:&displayUnits];
-    [coder decodeValueOfObjCType:@encode(unsigned int) at:&usesArchiveUnitStrings];
+    OFDecodeValueInto(coder, &returnNumber);
+    OFDecodeValueInto(coder, &floatValuesInSeconds);
+    OFDecodeValueInto(coder, &displayUnits);
+    OFDecodeValueInto(coder, &usesArchiveUnitStrings);
     
     _flags.returnNumber = returnNumber;
     _flags.floatValuesInSeconds = floatValuesInSeconds;

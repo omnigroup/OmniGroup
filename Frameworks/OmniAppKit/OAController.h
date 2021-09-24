@@ -1,4 +1,4 @@
-// Copyright 2004-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -30,6 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSString *)appName NS_DEPRECATED_MAC(10_0, 10_13, "Use the applicationName property instead.");
 @property (nonatomic, readonly) NSString *applicationName;
 @property (nonatomic, readonly) NSString *fullReleaseString;
+@property (nullable, nonatomic, readonly) NSString *majorVersionNumberString;
 
 - (void)getFeedbackAddress:(NSString * _Nullable * _Nonnull)feedbackAddress andSubject:(NSString * _Nullable * _Nonnull)subjectLine;
 - (void)sendFeedbackEmailTo:(nullable NSString *)feedbackAddress subject:(nullable NSString *)subjectLine body:(nullable NSString *)body;

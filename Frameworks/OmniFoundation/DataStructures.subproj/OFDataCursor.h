@@ -1,4 +1,4 @@
-// Copyright 1997-2019 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -6,6 +6,7 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniFoundation/OFObject.h>
+#import <OmniFoundation/OFHTTPHeaderDictionary.h> // For OFHTTPHeaderDictionaryReadLineSource
 
 // OFDataCursor assumes an immutable data object.
 
@@ -21,16 +22,7 @@ typedef enum {
 #import <Foundation/NSString.h> // For NSStringEncoding
 #import <OmniFoundation/OFByte.h>
 
-@interface OFDataCursor : OFObject
-{
-    NSData *data;
-    CFByteOrder byteOrder;
-    NSStringEncoding stringEncoding;
-
-    size_t dataLength;
-    const OFByte *startPosition, *endPosition;
-    const OFByte *currentPosition;
-}
+@interface OFDataCursor : OFObject <OFHTTPHeaderDictionaryReadLineSource>
 
 - (instancetype)initWithData:(NSData *)someData;
 

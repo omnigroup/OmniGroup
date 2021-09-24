@@ -79,22 +79,22 @@ class MultiPanePresenter: NSObject {
         var locationBeingShownAndCompletionHandlers: (location: MultiPaneLocation, isShowing: Bool, handlers: [()->Void], expiration: Date)? = nil
         
         // Return value is true if no presentation operation is in progress, and false otherwise.
-        @discardableResult func append(completionHandler: @escaping ()->Void, forActivePresentationAt location: MultiPaneLocation, isShowing: Bool) -> Bool {
+        func hasActivePresentationPreventingNewPresentation(at location: MultiPaneLocation, isShowing: Bool, completionHandlerToAppendIfEligible: @escaping ()->Void) -> Bool {
             flushExistingCompletionsIfNecessary()
             if let locationBeingShownAndCompletionHandlers = locationBeingShownAndCompletionHandlers {
                 // We are already mid-presentation at another location, we cannot start a new one while it's in-progress. Drop this handler on the floor.
-                guard locationBeingShownAndCompletionHandlers.location == location else { return false }
+                guard locationBeingShownAndCompletionHandlers.location == location else { return true }
                 // We are in the middle of showing/hiding and being asked to do the opposite- we can't do that until the first transition is complete. Drop this handler on the floor.
-                guard locationBeingShownAndCompletionHandlers.isShowing == isShowing else { return false }
-                // We have another request to show/hide a pane that's already being shown. Append the completion handler. Return false since there is already an operation in progress.
+                guard locationBeingShownAndCompletionHandlers.isShowing == isShowing else { return true }
+                // We have a duplicate request to show/hide a pane that's already being shown. Append the completion handler so it is run when the presentation completes. Return true since there is already an operation in progress.
                 var newHandlers = locationBeingShownAndCompletionHandlers.handlers
-                newHandlers.append(completionHandler)
+                newHandlers.append(completionHandlerToAppendIfEligible)
                 self.locationBeingShownAndCompletionHandlers = (location, isShowing, newHandlers, locationBeingShownAndCompletionHandlers.expiration)
-                return false
-            } else {
-                // No existing operation in progress. Return true, indicating that the presentation must be manually started.
-                locationBeingShownAndCompletionHandlers = (location, isShowing, [completionHandler], expiration: Date(timeInterval: 1, since: Date()))
                 return true
+            } else {
+                // No existing operation in progress. Return false, indicating that the presentation must be started by the caller.
+                locationBeingShownAndCompletionHandlers = (location, isShowing, [completionHandlerToAppendIfEligible], expiration: Date(timeInterval: 1, since: Date()))
+                return false
             }
         }
         
@@ -117,35 +117,40 @@ class MultiPanePresenter: NSObject {
         }
     }
     
-    private func existingCompletionHelper(for multiPaneController: MultiPaneController) -> MultiPanePresentationCompletionHelper? {
-        return multiPanePresentationCompletionHelpers.first(where: { $0.multiPaneController == multiPaneController })
+    private func completionHelperForMultipaneControllerCreatingIfNecessary(_ multiPaneController: MultiPaneController) -> MultiPanePresentationCompletionHelper {
+        if let existing = multiPanePresentationCompletionHelpers.first(where: { $0.multiPaneController == multiPaneController }) {
+            return existing
+        } else {
+            let helper = MultiPanePresentationCompletionHelper(multiPaneController: multiPaneController)
+            multiPanePresentationCompletionHelpers.append(helper)
+            return helper
+        }
     }
     
     private func completionHandlers(for multiPaneController: MultiPaneController) -> [()->Void]? {
-        return existingCompletionHelper(for: multiPaneController)?.locationBeingShownAndCompletionHandlers?.handlers
+        return completionHelperForMultipaneControllerCreatingIfNecessary(multiPaneController).locationBeingShownAndCompletionHandlers?.handlers
     }
     
     private func clearCompletionHandlers(for multiPaneController: MultiPaneController) {
-        existingCompletionHelper(for: multiPaneController)?.locationBeingShownAndCompletionHandlers = nil
+        completionHelperForMultipaneControllerCreatingIfNecessary(multiPaneController).locationBeingShownAndCompletionHandlers = nil
     }
     
     private var multiPanePresentationCompletionHelpers: [MultiPanePresentationCompletionHelper] = []
     
     func present(pane: Pane, fromViewController presentingController: MultiPaneController, usingDisplayMode displayMode: MultiPaneDisplayMode, interactivelyWith gesture: UIScreenEdgePanGestureRecognizer? = nil, animated: Bool = true, completion: @escaping ()->Void = {}) {
         let location = pane.location
-
-        if let existingMultiPanePresentationCompletionHelper = existingCompletionHelper(for: presentingController) {
-            // Since this method takes a non-optional completion handler, the presence of any existing enqueued completion handler indicates that a presentation for this pane is currently in progress. If there is a presentation in progress, we early out and avoid requesting another presentation in order to avoid <bug:///180199> (iOS-OmniFocus Crasher: uncaught exception 'UIViewControllerHierarchyInconsistency')
-            // Also, we can only handle a presentation of one pane at a time, so if we fail to append our handler (which only occurs if we try to include a handler for a different pane than the one that is in-progress) we drop this presentation on the floor.
-            guard existingMultiPanePresentationCompletionHelper.append(completionHandler: completion, forActivePresentationAt: location, isShowing: !pane.isVisible) else { return }
-        } else {
-            // This MPC has not yet had a pane presentation. Create a completion helper for it, and enqueue the completion block for the presentation we are about to begin.
-            let newCompletionHelper = MultiPanePresentationCompletionHelper(multiPaneController: presentingController)
-            newCompletionHelper.append(completionHandler: completion, forActivePresentationAt: location, isShowing: !pane.isVisible)
-            multiPanePresentationCompletionHelpers.append(newCompletionHelper)
-        }
         
-        // Reassign to ensure we perform all enqueued completion handlers for this presentation.
+        // Logging for <bug:///178768> (iOS-OmniFocus Crasher: Check for 3.7 Reports: UIViewControllerHierarchyInconsistency', reason: 'child view controller:<FocusNavigationController: 0xdeaddead> should have parent view controller:<OmniUI.MultipanePresentationWrapperViewController: 0xdeaddead> but actual parent is:<OmniUI.MultipanePresentationWrapperViewController: 0xdeaddead>')
+        OBRecordBacktrace("Pane Presentation at \(location.name)", OBBacktraceBufferType.generic)
+        
+        // Attempted fix for <bug:///178768>. This cut down reports by 99%, but a couple still come in.
+        let multiPanePresentationCompletionHelper = completionHelperForMultipaneControllerCreatingIfNecessary(presentingController)
+        // Since this method takes a non-optional completion handler, the presence of any existing enqueued completion handler indicates that a presentation for this pane is currently in progress. If there is a presentation in progress, we early out and avoid requesting another presentation.
+        guard !multiPanePresentationCompletionHelper.hasActivePresentationPreventingNewPresentation(at: location, isShowing: !pane.isVisible, completionHandlerToAppendIfEligible: completion) else { return }
+        
+        // No presentation is currently in progress. Continue with requesting a presentation.
+        
+        // Reassign completion to ensure we perform all enqueued completion handlers for this presentation. They were stored by passing them as the completionHandlerToAppendIfEligible to hasActivePresentationPreventingNewPresentation above.
         let completion = {[weak self] in
             if let completionHandlers = self?.completionHandlers(for: presentingController) {
                 for completionHandler in completionHandlers {

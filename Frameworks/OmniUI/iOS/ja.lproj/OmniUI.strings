@@ -1,11 +1,10 @@
 /* Something open in another window alert title - the token is a short description of the activity open in the other window, for example: 'Account Setup' */
-"%@ is open in another window" = "%@ は別のウインドウ内に開いています";
+"%@ is open in another window" = "%@ は別のウインドウで開いています";
 
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@／%2$@";
 
-/* Default title for the About menu item
-   title for in app purchase - placeholder is product title */
+/* Default title for the About menu item */
 "About %@" = "%@ について";
 
 /* Bold button accessibility label */
@@ -37,6 +36,9 @@
 /* placeholder text - password/passphrase confirmation field in prompt */
 "confirm" = "確認";
 
+/* When displaying a generic error, this is the option to report the error. */
+"Contact Omni" = "Omni へのお問い合わせ";
+
 /* Certificate trust alert button title */
 "Continue" = "続ける";
 
@@ -53,6 +55,12 @@
 
 /* toolbar item title */
 "Edit" = "編集";
+
+/* Edit note on a task button title */
+"Edit Note" = "メモを編集";
+
+/* End editing note on a task button title */
+"End Editing" = "編集を終了";
 
 /* password field placeholder text */
 "enter password" = "パスワードを入力";
@@ -112,16 +120,16 @@
 
 /* button title
    button title - password/passphrase prompt
-   Dismiss alert
-   Dismiss failed purchase alert
-   Dismiss failed restore alert
    Web view error opening URL cancel button. */
 
 
 "OK" = "OK";
 
+/* Default title for the Omni Account menu item */
+"Omni Account" = "Omni アカウント";
+
 /* Menu item to subscribe to Omni's newsletter */
-"Omni Newsletter Signup" = "Omni ニュースレターの登録";
+"Omni Newsletter Signup" = "Omni ニュースレターのサインアップ";
 
 /* placeholder text - password/passphrase field of login/password prompt */
 "password" = "パスワード";
@@ -139,9 +147,6 @@
    release notes html screen title */
 
 "Release Notes" = "リリースノート";
-
-/* When displaying a generic error, this is the option to report the error. */
-"Report Error" = "エラーを報告";
 
 /* Right Text Align button accessibility label. */
 "Right text align" = "テキストの右揃え";
@@ -175,6 +180,9 @@
 
 /* placeholder text - username field of login/password prompt */
 "username" = "ユーザ名";
+
+/* about page app store review link text */
+"Write a Review" = "レビューを書く";
 
 /* alert message */
 "You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?" = "以下の環境設定を変更するリンクをタップしました：\n\n“%@”\n\n変更を承認しますか？";

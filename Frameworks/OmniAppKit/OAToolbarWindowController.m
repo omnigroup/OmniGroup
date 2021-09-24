@@ -1,4 +1,4 @@
-// Copyright 2002-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -85,10 +85,22 @@ static NSMutableDictionary *helpersByExtension = nil;
 {
     [super windowDidLoad]; // DOX: These are called immediately before and after the controller loads its nib file.  You can subclass these but should not call them directly.  Always call super from your override.
     [self createToolbar];
-    
+
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_OAToolbarWindowController_windowWillClose:) name:NSWindowWillCloseNotification object:self.window];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_OAToolbarWindowController_windowWillBeginSheet:) name:NSWindowWillBeginSheetNotification object:self.window];
 }
+
+- (void)showWindow:(id)sender;
+{
+    // Since we clear the toolbar below for <rdar://problem/28832571>, if the window is re-displayed, it will have no toolbar.
+
+    if (_toolbar == nil) {
+        [self createToolbar];
+    }
+    [super showWindow:sender];
+}
+
+#pragma mark - API
 
 - (OAToolbar *)toolbar;
 {

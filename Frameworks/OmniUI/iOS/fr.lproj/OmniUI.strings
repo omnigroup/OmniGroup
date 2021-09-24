@@ -4,9 +4,8 @@
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@ sur %2$@";
 
-/* Default title for the About menu item
-   title for in app purchase - placeholder is product title */
-"About %@" = "À propos d’%@";
+/* Default title for the About menu item */
+"About %@" = "À propos de %@";
 
 /* Bold button accessibility label */
 "Bold" = "Gras";
@@ -37,6 +36,9 @@
 /* placeholder text - password/passphrase confirmation field in prompt */
 "confirm" = "confirmer";
 
+/* When displaying a generic error, this is the option to report the error. */
+"Contact Omni" = "Contacter Omni";
+
 /* Certificate trust alert button title */
 "Continue" = "Continuer";
 
@@ -53,6 +55,12 @@
 
 /* toolbar item title */
 "Edit" = "Modifier";
+
+/* Edit note on a task button title */
+"Edit Note" = "Modifier la note";
+
+/* End editing note on a task button title */
+"End Editing" = "Terminer les modifications";
 
 /* password field placeholder text */
 "enter password" = "taper le mot de passe";
@@ -94,7 +102,7 @@
 "Link could not be opened. Please check Safari restrictions in Settings." = "Impossible d’ouvrir le lien. Vérifiez les restrictions de Safari dans Réglages.";
 
 /* message format */
-"Mail has not been set up on this %@." = "Mail n'a pas été configuré sur cet %@.";
+"Mail has not been set up on this %@." = "Mail n’a pas été configuré sur cet %@.";
 
 /* News menu item
    News view title */
@@ -112,16 +120,16 @@
 
 /* button title
    button title - password/passphrase prompt
-   Dismiss alert
-   Dismiss failed purchase alert
-   Dismiss failed restore alert
    Web view error opening URL cancel button. */
 
 
 "OK" = "OK";
 
+/* Default title for the Omni Account menu item */
+"Omni Account" = "Compte Omni";
+
 /* Menu item to subscribe to Omni's newsletter */
-"Omni Newsletter Signup" = "Abonnement au bulletin Omni";
+"Omni Newsletter Signup" = "Abonnement au bulletin d’information Omni";
 
 /* placeholder text - password/passphrase field of login/password prompt */
 "password" = "mot de passe";
@@ -139,9 +147,6 @@
    release notes html screen title */
 
 "Release Notes" = "Notes sur la version";
-
-/* When displaying a generic error, this is the option to report the error. */
-"Report Error" = "Signaler une erreur";
 
 /* Right Text Align button accessibility label. */
 "Right text align" = "Texte aligné à droite";
@@ -176,6 +181,9 @@
 /* placeholder text - username field of login/password prompt */
 "username" = "nom d’utilisateur";
 
+/* about page app store review link text */
+"Write a Review" = "Rédiger un avis";
+
 /* alert message */
 "You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?" = "Vous avez touché un lien qui modifiera les préférences suivantes :\n\n“%@”\n\nSouhaitez-vous accepter ces modifications ?";
 
@@ -183,7 +191,7 @@
 "You have tapped on a link which will run the following debugging command:\n\n\"%@\"\n\nIf you weren’t instructed to do this by Omni Support Humans, please don’t.\nDo you wish to run this command?" = "Vous avez touché un lien qui exécutera la commande de débogage suivante :\n\n“%@”\n\nSi cela ne vous a pas été recommandé par des techniciens d’assistance Omni, ne le faites pas.\nSouhaitez-vous exécuter cette commande ?";
 
 /* default special URL alert message */
-"You have tapped on an Omni special URL:\n\n\"%@\"\n\nRun this command?" = "Vous avez touché une URL spéciale Omni :\n\n“%@”\n\nVoulez-vous exécuter cette commande ?";
+"You have tapped on an Omni special URL:\n\n\"%@\"\n\nRun this command?" = "Vous avez touché une URL spéciale Omni :\n\n« %@ »\n\nVoulez-vous exécuter cette commande ?";
 
 /* zoom label */
 "Zoom" = "Réduire/agrandir";

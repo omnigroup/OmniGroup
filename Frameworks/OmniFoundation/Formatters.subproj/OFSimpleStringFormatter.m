@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -69,7 +69,7 @@ RCS_ID("$Id$")
 - (void)encodeWithCoder:(NSCoder *)coder;
 {
     [super encodeWithCoder:coder];
-    [coder encodeValueOfObjCType:@encode(unsigned int) at:&maxLength];
+    OFEncodeValueFrom(coder, &maxLength);
 }
 
 - initWithCoder:(NSCoder *)coder;
@@ -80,7 +80,7 @@ RCS_ID("$Id$")
     NSInteger version = [coder versionForClassName:NSStringFromClass([self class])];
     switch (version) {
         case 0:
-            [coder decodeValueOfObjCType:@encode(unsigned int) at:&maxLength];
+            OFDecodeValueInto(coder, &maxLength);
             break;
 
         default:

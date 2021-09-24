@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2018-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -36,11 +36,6 @@ static objc_property_t propertyForSelectorInClass(SEL selector, Class cls, BOOL 
     return nil;
 }
 
-+ (nullable NSBundle *)catalogBundle;
-{
-    return [NSBundle bundleForClass:self];
-}
-
 + (nullable NSString *)colorNamePrefix;
 {
     return nil;
@@ -48,15 +43,16 @@ static objc_property_t propertyForSelectorInClass(SEL selector, Class cls, BOOL 
 
 + (nullable OA_PLATFORM_COLOR_CLASS *)colorNamed:(NSString *)name;
 {
-    return [self colorNamed:name bundle:[self catalogBundle]];
+    return [self colorNamed:name bundle:nil];
 }
 
 + (nullable OA_PLATFORM_COLOR_CLASS *)colorNamed:(NSString *)name bundle:(nullable NSBundle *)bundle;
 {
+    NSBundle *providedBundleOrClassBundle = bundle ?: [NSBundle bundleForClass:self];
 #if TARGET_OS_IOS
-    return [UIColor colorNamed:name inBundle:bundle compatibleWithTraitCollection:nil];
+    return [UIColor colorNamed:name inBundle:providedBundleOrClassBundle compatibleWithTraitCollection:nil];
 #else
-    return [NSColor colorNamed:name bundle:bundle];
+    return [NSColor colorNamed:name bundle:providedBundleOrClassBundle];
 #endif
 }
 

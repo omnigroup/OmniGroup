@@ -1,4 +1,4 @@
-// Copyright 2004-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -134,6 +134,14 @@ RCS_ID("$Id$")
     
     NSString *fullVersionString = [NSString stringWithFormat:@"%@ %@ (v%@%@)", appName, appVersion, buildVersion, buildVersionSuffix];
     return fullVersionString;
+}
+
+- (nullable NSString *)majorVersionNumberString;
+{
+    NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
+    NSString *versionString = [infoDictionary objectForKey:@"CFBundleShortVersionString"];
+    NSArray *components = [versionString componentsSeparatedByString:@"."];
+    return components.firstObject;
 }
 
 - (void)getFeedbackAddress:(NSString **)feedbackAddress andSubject:(NSString **)subjectLine;
