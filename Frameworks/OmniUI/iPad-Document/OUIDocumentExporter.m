@@ -1,4 +1,4 @@
-// Copyright 2015-2020 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -123,7 +123,7 @@ static BOOL DocumentClassSubclasses(Class cls, SEL sel) {
         return @"PDF";
     if (OFTypeConformsTo(fileUTI, UTTypePNG))
         return @"PNG";
-    if (OFTypeConformsTo(fileUTI, UTTypeScalableVectorGraphics))
+    if (OFTypeConformsTo(fileUTI, UTTypeSVG))
         return @"SVG";
     return nil;
 }

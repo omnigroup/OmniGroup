@@ -385,7 +385,11 @@ NSDictionary *OFSyncClientRequiredState(OFSyncClientParameters *parameters, NSSt
     client[OFSyncClientLastSyncDateKey] = syncDate;
     
     client[OFSyncClientCurrentFrameworkVersion] = [parameters.currentFrameworkVersion cleanVersionString];
-    client[OFSyncClientApplicationMarketingVersion] = [[NSBundle mainBundle] infoDictionary][@"CFBundleShortVersionString"];
+
+    // Don't include the Xcode version
+    if (!OFIsRunningUnitTests()) {
+        client[OFSyncClientApplicationMarketingVersion] = [[NSBundle mainBundle] infoDictionary][@"CFBundleShortVersionString"];
+    }
     
     if (onlyRequiredKeys)
         return client;

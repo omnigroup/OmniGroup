@@ -362,7 +362,8 @@ static NSParagraphStyle *_placeholderParagraphStyle(void)
     BOOL addedButtonToView = NO;
     BOOL removedButtonFromView = NO;
     CGFloat bottomContentInsetToRemoveWithButton = 0;
-    if (UIAccessibilityIsVoiceOverRunning() || UIAccessibilityIsSwitchControlRunning()) {
+    BOOL mayNeedAccessibilityButton = UIAccessibilityIsVoiceOverRunning() || UIAccessibilityIsSwitchControlRunning();
+    if (mayNeedAccessibilityButton && self.wantsAccessibilityBeginEditingButton) {
         if (self.accessibilityBeginEditingButton == nil) {
             self.accessibilityBeginEditingButton = [UIButton buttonWithType:UIButtonTypeSystem];
             [self.accessibilityBeginEditingButton addTarget:self action:@selector(_toggleTextEditing) forControlEvents:UIControlEventTouchUpInside];
@@ -453,6 +454,11 @@ static NSParagraphStyle *_placeholderParagraphStyle(void)
 - (void)beginTextEditing;
 {
     [self _attemptToEnableTextEditingAndBecomeFirstResponder];
+}
+
+- (BOOL)wantsAccessibilityBeginEditingButton;
+{
+    return YES;
 }
 
 #pragma mark Private

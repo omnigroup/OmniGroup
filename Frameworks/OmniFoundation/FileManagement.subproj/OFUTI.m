@@ -53,7 +53,7 @@ static BOOL _TypeConformsToType(NSString * _Nonnull identifier, NSString * _Nonn
         UTType *conformanceType = [UTType typeWithIdentifier:conformanceCheckIdentifier];
         OBASSERT(type != nil);
         OBASSERT(conformanceType != nil);
-        return [type conformsToType:conformanceType];
+        return conformanceType != nil && [type conformsToType:conformanceType];
     } else {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"

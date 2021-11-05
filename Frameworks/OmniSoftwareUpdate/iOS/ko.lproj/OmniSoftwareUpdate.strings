@@ -5,7 +5,7 @@
 "%ld crashes" = "%ld 충돌";
 
 /* Software update report entry string for a multiple hours of use */
-"%ld hours" = "%ld 시간";
+"%ld hours" = "%ld시간";
 
 /* Software update report entry string for a single launch */
 "%ld launches" = "%ld 실행";

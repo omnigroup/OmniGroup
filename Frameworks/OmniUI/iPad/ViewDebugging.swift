@@ -131,6 +131,7 @@ extension View {
 
 #if DEBUG
     public static func printChanges(_ item: Self, _ description: @autoclosure () -> String = "") {
+        guard OUIViewDebugging.loggingEnabled else { return }
 #if true
         if #available(iOS 15, *) {
             let itemDescription: String
@@ -198,6 +199,7 @@ extension ViewModifier {
 
 #if DEBUG
     public static func printChanges(_ item: Self, _ description: @autoclosure () -> String = "") {
+        guard OUIViewDebugging.loggingEnabled else { return }
 #if true
         if #available(iOS 15, *) {
             let itemDescription: String

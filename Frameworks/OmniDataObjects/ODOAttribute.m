@@ -1,4 +1,4 @@
-// Copyright 2008-2020 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,8 +9,7 @@
 
 #import <OmniFoundation/OFEnumNameTable.h>
 
-RCS_ID("$Id$")
-
+#import <OmniDataObjects/ODOObject.h>
 #import <OmniDataObjects/ODOModel-Creation.h>
 #import "ODOProperty-Internal.h"
 
@@ -71,6 +70,10 @@ ODOAttribute *ODOAttributeCreate(NSString *name, BOOL optional, BOOL transient, 
 
     struct _ODOPropertyFlags baseFlags;
     memset(&baseFlags, 0, sizeof(baseFlags));
+
+    if (transient) {
+        baseFlags.transientIsODOObject = OBClassIsSubclassOfClass(valueClass, [ODOObject class]);
+    }
 
     ODOPropertyInit(attr, name, baseFlags, optional, transient, get, set);
 

@@ -144,8 +144,7 @@
 "ey" = "已用年";
 
 /* error reason */
-"Failed to convert '%@' to the same type as '%@' (%@)" = "未能将“%1$@”转换为与
-“%2$@”（%3$@）相同的类型";
+"Failed to convert '%@' to the same type as '%@' (%@)" = "未能将“%1$@”转换为与 “%2$@”（%3$@）相同的类型";
 
 /* error reason */
 "Failed to create directory for lock file at \"%@\"." = "针对位于“%@”的锁定文件创建目录失败。";

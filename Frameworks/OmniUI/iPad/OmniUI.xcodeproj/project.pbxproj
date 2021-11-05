@@ -37,10 +37,12 @@
 		2B1F275F25FA987700D64343 /* ManualObjectWillChangeManagingObservableObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B1F275E25FA987700D64343 /* ManualObjectWillChangeManagingObservableObject.swift */; };
 		2B98A6AD25F0433B007F9EE9 /* BaselineSizeCategoryModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B98A6AC25F0433B007F9EE9 /* BaselineSizeCategoryModifier.swift */; };
 		2BAF3C65250994EE003606FC /* ImageSwappingButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BAF3C64250994ED003606FC /* ImageSwappingButton.swift */; };
+		2BCD3D2826E007B2007DD7F6 /* ButtonShapesSettingRespectingButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BCD3D2726E007B2007DD7F6 /* ButtonShapesSettingRespectingButton.swift */; };
 		2BD092BE23E8F56E0087AECD /* OUILicensingAuthenticationCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BD092BD23E8F56E0087AECD /* OUILicensingAuthenticationCommand.swift */; };
 		2BEA0072252BD89500AA82FD /* ViewModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BEA0071252BD89500AA82FD /* ViewModifiers.swift */; };
 		342C5F7B1B5D935400B5A80D /* UIImage-OUIExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 342C5F791B5D935400B5A80D /* UIImage-OUIExtensions.h */; };
 		342C5F7C1B5D935400B5A80D /* UIImage-OUIExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 342C5F7A1B5D935400B5A80D /* UIImage-OUIExtensions.m */; };
+		34472FD926E2D4E500CF5924 /* Placeholder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34472FD826E2D4E400CF5924 /* Placeholder.swift */; };
 		348A79D91B584A830082D55D /* OUIFeatures.h in Headers */ = {isa = PBXBuildFile; fileRef = 34EA43E41267A32200BAC7FD /* OUIFeatures.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		348A79DA1B584A870082D55D /* OUIParameters.h in Headers */ = {isa = PBXBuildFile; fileRef = 3481D37712A8632400DAC58C /* OUIParameters.h */; };
 		348A79DB1B584A890082D55D /* OmniUI.defaults in Resources */ = {isa = PBXBuildFile; fileRef = 340B1E2C12B17C00004823B3 /* OmniUI.defaults */; };
@@ -364,7 +366,6 @@
 		34D4E1EE20AF708A0025E2AB /* OmniUIKeycommands.strings in Resources */ = {isa = PBXBuildFile; fileRef = 34D4E1EC20AF708A0025E2AB /* OmniUIKeycommands.strings */; };
 		34D4F4251B6AA8F00003556D /* OUIDocumentPreviewArea.h in Headers */ = {isa = PBXBuildFile; fileRef = 34D4F41B1B6AA8B70003556D /* OUIDocumentPreviewArea.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3E1F09D62034C0BD001EE416 /* OmniUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 348A79BB1B5849C70082D55D /* OmniUI.framework */; };
-		3E1F0A202034C4BB001EE416 /* DiffableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E1F09E62034C4BB001EE416 /* DiffableTests.swift */; };
 		3E7656D21F59D5BF008B76B7 /* NSURL-OUIExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 3E7656D01F59D5BF008B76B7 /* NSURL-OUIExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3E7656D31F59D5BF008B76B7 /* NSURL-OUIExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E7656D11F59D5BF008B76B7 /* NSURL-OUIExtensions.m */; };
 		3E7F667421B884EF00AB4961 /* OUISettingsButtonTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E7F666921B884EE00AB4961 /* OUISettingsButtonTableViewCell.m */; };
@@ -398,7 +399,6 @@
 		4AF368E62006E665004EED9D /* OUIPasswordPromptViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4AF368E42006E665004EED9D /* OUIPasswordPromptViewController.xib */; };
 		4AF93D7E1E9D328D00DA8E01 /* OUISendFeedbackURLCommand.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AF93D7C1E9D328D00DA8E01 /* OUISendFeedbackURLCommand.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AF93D7F1E9D328D00DA8E01 /* OUISendFeedbackURLCommand.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AF93D7D1E9D328D00DA8E01 /* OUISendFeedbackURLCommand.m */; };
-		4D8C86481FE33E080095D5B7 /* DifferenceEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D8C863D1FE33E080095D5B7 /* DifferenceEngine.swift */; };
 		4DBBFC671ECBA9BA0085FC24 /* UIFont-OUIExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DBBFC661ECBA9BA0085FC24 /* UIFont-OUIExtensions.swift */; };
 		4DD560C61ED39D5B00F9A088 /* OUIButtonGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DD560C51ED39D5B00F9A088 /* OUIButtonGridView.swift */; };
 		50F8ECBB1ED5184500416076 /* OmniUnzip.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34A733771B32090B008E2A38 /* OmniUnzip.framework */; };
@@ -654,6 +654,7 @@
 		2B1F275E25FA987700D64343 /* ManualObjectWillChangeManagingObservableObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManualObjectWillChangeManagingObservableObject.swift; sourceTree = "<group>"; };
 		2B98A6AC25F0433B007F9EE9 /* BaselineSizeCategoryModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaselineSizeCategoryModifier.swift; sourceTree = "<group>"; };
 		2BAF3C64250994ED003606FC /* ImageSwappingButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageSwappingButton.swift; sourceTree = "<group>"; };
+		2BCD3D2726E007B2007DD7F6 /* ButtonShapesSettingRespectingButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonShapesSettingRespectingButton.swift; sourceTree = "<group>"; };
 		2BD092BD23E8F56E0087AECD /* OUILicensingAuthenticationCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OUILicensingAuthenticationCommand.swift; sourceTree = "<group>"; };
 		2BEA0071252BD89500AA82FD /* ViewModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModifiers.swift; sourceTree = "<group>"; };
 		3407448B12A5E83F00EFDA68 /* OUIInspectorBackgroundView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIInspectorBackgroundView.h; sourceTree = "<group>"; };
@@ -683,6 +684,7 @@
 		343E90B5177CFFED000A6F0C /* NSTextStorage-OUIExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSTextStorage-OUIExtensions.m"; sourceTree = "<group>"; };
 		3441607C16B1A07000E917F5 /* OUIActionViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIActionViewController.h; sourceTree = "<group>"; };
 		3441607D16B1A07000E917F5 /* OUIActionViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIActionViewController.m; sourceTree = "<group>"; };
+		34472FD826E2D4E400CF5924 /* Placeholder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Placeholder.swift; sourceTree = "<group>"; };
 		344B6DA112A4C7B300D876CD /* OUIImages.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIImages.h; sourceTree = "<group>"; };
 		344B6DA212A4C7B300D876CD /* OUIImages.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIImages.m; sourceTree = "<group>"; };
 		344B6DCE12A4CC9E00D876CD /* UITableView-OUIExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UITableView-OUIExtensions.h"; sourceTree = "<group>"; };
@@ -901,7 +903,6 @@
 		34FF349B178B20EF005A4F1F /* OmniUI.keycommands */ = {isa = PBXFileReference; explicitFileType = text.plist; fileEncoding = 4; path = OmniUI.keycommands; sourceTree = "<group>"; };
 		3E1F09D12034C0BD001EE416 /* OUIUnitTests-iOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "OUIUnitTests-iOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		3E1F09D52034C0BD001EE416 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		3E1F09E62034C4BB001EE416 /* DiffableTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DiffableTests.swift; sourceTree = "<group>"; };
 		3E1F0A212034C56D001EE416 /* Touch-XCTest-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-XCTest-Debug.xcconfig"; sourceTree = "<group>"; };
 		3E1F0A222034C56D001EE416 /* Touch-XCTest-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-XCTest-Common.xcconfig"; sourceTree = "<group>"; };
 		3E1F0A232034C56E001EE416 /* Touch-XCTest-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-XCTest-Release.xcconfig"; sourceTree = "<group>"; };
@@ -970,7 +971,6 @@
 		4D5016C013C3D84500AD3367 /* OUIMinimalScrollNotifierImplementation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIMinimalScrollNotifierImplementation.m; sourceTree = "<group>"; };
 		4D6E60B715B61C6E001950DB /* OUITapGestureRecognizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUITapGestureRecognizer.h; sourceTree = "<group>"; };
 		4D6E60B815B61C6E001950DB /* OUITapGestureRecognizer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUITapGestureRecognizer.m; sourceTree = "<group>"; };
-		4D8C863D1FE33E080095D5B7 /* DifferenceEngine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DifferenceEngine.swift; path = ../iOS/DifferenceEngine.swift; sourceTree = "<group>"; };
 		4DBBFC661ECBA9BA0085FC24 /* UIFont-OUIExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIFont-OUIExtensions.swift"; sourceTree = "<group>"; };
 		4DCCB28B14100BD2007B31AD /* OUIKeyboardLock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIKeyboardLock.h; sourceTree = "<group>"; };
 		4DCCB28C14100BD2007B31AD /* OUIKeyboardLock.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIKeyboardLock.m; sourceTree = "<group>"; };
@@ -1325,6 +1325,7 @@
 				34A22D4D261299B1004881E4 /* ViewDebugging.swift */,
 				2B98A6AC25F0433B007F9EE9 /* BaselineSizeCategoryModifier.swift */,
 				2B1F275E25FA987700D64343 /* ManualObjectWillChangeManagingObservableObject.swift */,
+				2BCD3D2726E007B2007DD7F6 /* ButtonShapesSettingRespectingButton.swift */,
 			);
 			name = SwiftUI;
 			sourceTree = "<group>";
@@ -1509,7 +1510,6 @@
 		346C4BA9119327A100BE8C49 /* Extensions & Utilities */ = {
 			isa = PBXGroup;
 			children = (
-				4D8C863D1FE33E080095D5B7 /* DifferenceEngine.swift */,
 				008A8DE812F0AD93005C1402 /* Gesture Recognizers */,
 				34BEB2CB11F4DFBC00220368 /* Undo Toolbar Button */,
 				3441607C16B1A07000E917F5 /* OUIActionViewController.h */,
@@ -1803,7 +1803,7 @@
 		3E1F09D22034C0BD001EE416 /* OUIUnitTests-iOS */ = {
 			isa = PBXGroup;
 			children = (
-				3E1F09E62034C4BB001EE416 /* DiffableTests.swift */,
+				34472FD826E2D4E400CF5924 /* Placeholder.swift */,
 				3E1F09D52034C0BD001EE416 /* Info.plist */,
 			);
 			path = "OUIUnitTests-iOS";
@@ -2149,6 +2149,7 @@
 					3E1F09D02034C0BD001EE416 = {
 						CreatedOnToolsVersion = 9.2;
 						DevelopmentTeam = 34YW5XSRB7;
+						LastSwiftMigration = 1300;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -2477,6 +2478,7 @@
 				348A7A5F1B584B590082D55D /* OUIInstructionTextInspectorSlice.m in Sources */,
 				348A7A531B584B590082D55D /* OUIInspectorPane.m in Sources */,
 				348A7ADE1B584C810082D55D /* OUIScalingViewTile.m in Sources */,
+				2BCD3D2826E007B2007DD7F6 /* ButtonShapesSettingRespectingButton.swift in Sources */,
 				23105FDD1EAFD9AE008E0647 /* MultiPanePresenter.swift in Sources */,
 				348A7A811B584BAE0082D55D /* OUIInspectorButton.m in Sources */,
 				348A7B101B584CC30082D55D /* OUICompletionMatchCell.m in Sources */,
@@ -2500,7 +2502,6 @@
 				348A7A421B584B430082D55D /* OUIFontUtilities.m in Sources */,
 				23105FE01EAFD9AE008E0647 /* Pane.swift in Sources */,
 				5F31A2431F9678F700F409CE /* UIResponder-OUIExtensions.m in Sources */,
-				4D8C86481FE33E080095D5B7 /* DifferenceEngine.swift in Sources */,
 				4AF368E52006E665004EED9D /* OUIPasswordPromptViewController.swift in Sources */,
 				348A7A311B584AFC0082D55D /* OUITextColorAttributeInspectorSlice.m in Sources */,
 				348A7A691B584B590082D55D /* OUISingleViewInspectorPane.m in Sources */,
@@ -2593,7 +2594,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3E1F0A202034C4BB001EE416 /* DiffableTests.swift in Sources */,
+				34472FD926E2D4E500CF5924 /* Placeholder.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2764,6 +2765,8 @@
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.omnigroup.OUIUnitTests-iOS";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -2822,6 +2825,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.omnigroup.OUIUnitTests-iOS";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 			};

@@ -4,7 +4,8 @@
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@／%2$@";
 
-/* Default title for the About menu item */
+/* Default title for the About menu item
+   title for in app purchase - placeholder is product title */
 "About %@" = "%@ について";
 
 /* Bold button accessibility label */
@@ -15,7 +16,6 @@
    cancel button title
    Cancel button title
    toolbar item title */
-
 
 
 
@@ -66,7 +66,7 @@
 "enter password" = "パスワードを入力";
 
 /* disabled for demo */
-"Feature not enabled for this demo" = "このデモでは機能が無効になっています";
+"Feature not enabled for this demo" = "このデモでは機能が有効になっていません";
 
 /* Overlay text when zoomed to fit screen */
 "Fit" = "合わせる";
@@ -120,6 +120,9 @@
 
 /* button title
    button title - password/passphrase prompt
+   Dismiss alert
+   Dismiss failed purchase alert
+   Dismiss failed restore alert
    Web view error opening URL cancel button. */
 
 
@@ -129,7 +132,7 @@
 "Omni Account" = "Omni アカウント";
 
 /* Menu item to subscribe to Omni's newsletter */
-"Omni Newsletter Signup" = "Omni ニュースレターのサインアップ";
+"Omni Newsletter Signup" = "Omni ニュースレターの登録";
 
 /* placeholder text - password/passphrase field of login/password prompt */
 "password" = "パスワード";

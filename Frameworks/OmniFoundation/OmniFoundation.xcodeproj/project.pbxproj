@@ -174,6 +174,8 @@
 		343302110D85F33300C82A0B /* OFUnicodeUtilities.h in Headers */ = {isa = PBXBuildFile; fileRef = 343302100D85F33300C82A0B /* OFUnicodeUtilities.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3433031E0D86097E00C82A0B /* NSString-OFConversion.h in Headers */ = {isa = PBXBuildFile; fileRef = 3433031C0D86097E00C82A0B /* NSString-OFConversion.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3433031F0D86097E00C82A0B /* NSString-OFConversion.m in Sources */ = {isa = PBXBuildFile; fileRef = 3433031D0D86097E00C82A0B /* NSString-OFConversion.m */; };
+		343373D626C6D5F100098144 /* KeyPathBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 343373D526C6D5F100098144 /* KeyPathBox.swift */; };
+		343373D726C6D5F100098144 /* KeyPathBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 343373D526C6D5F100098144 /* KeyPathBox.swift */; };
 		343B363F1034F6C40006290A /* OFRandomRepeatTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 343B363E1034F6C40006290A /* OFRandomRepeatTest.m */; };
 		343B365F1034F84A0006290A /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A4E075308AA72B10098FF0F /* OmniFoundation.framework */; };
 		343B36621034F8510006290A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00E51D8DFE8AAEA611C9CC38 /* Foundation.framework */; };
@@ -2132,6 +2134,7 @@
 		3433031C0D86097E00C82A0B /* NSString-OFConversion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString-OFConversion.h"; sourceTree = "<group>"; };
 		3433031D0D86097E00C82A0B /* NSString-OFConversion.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString-OFConversion.m"; sourceTree = "<group>"; };
 		3433588F06415A4C00EEBA57 /* OFCompressionTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFCompressionTest.m; sourceTree = "<group>"; };
+		343373D526C6D5F100098144 /* KeyPathBox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyPathBox.swift; sourceTree = "<group>"; };
 		3439601E214C41D6004E58A5 /* OmniFoundation.xcfilelist */ = {isa = PBXFileReference; lastKnownFileType = text.xcfilelist; path = OmniFoundation.xcfilelist; sourceTree = "<group>"; };
 		343B36341034F68F0006290A /* OFRandomRepeatTest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = OFRandomRepeatTest; sourceTree = BUILT_PRODUCTS_DIR; };
 		343B363E1034F6C40006290A /* OFRandomRepeatTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFRandomRepeatTest.m; sourceTree = "<group>"; };
@@ -2875,6 +2878,7 @@
 				348A50860571490C0097A113 /* OFPoint.h */,
 				348A50870571490C0097A113 /* OFPoint.m */,
 				341119472614DF4E0072145B /* PropertyBox.swift */,
+				343373D526C6D5F100098144 /* KeyPathBox.swift */,
 				34F325B62694D34B00B5A3F8 /* Publisher-Extensions.swift */,
 				00E51CB1FE8AAEA611C9CC38 /* OFRandom.h */,
 				00E51CBDFE8AAEA611C9CC38 /* OFRandom.m */,
@@ -5795,6 +5799,7 @@
 				34F16BA4194F74EF00AD9C4D /* OFPoint.m in Sources */,
 				34F16C39194F799C00AD9C4D /* OFXMLError.m in Sources */,
 				3E378DE61DDCB78E007F6BC4 /* OFSymmetricKeywrap.m in Sources */,
+				343373D726C6D5F100098144 /* KeyPathBox.swift in Sources */,
 				1E21E6261D233E5100A04AE4 /* OFCMSContentTypes.m in Sources */,
 				34BDEA381DA45C70006389CF /* NSLocking-OFExtensions.swift in Sources */,
 				1E498AA31D6BC95A00996D7D /* OFXMLMaker.m in Sources */,
@@ -6015,6 +6020,7 @@
 				4A4E071808AA72B10098FF0F /* NSNotificationCenter-OFExtensions.m in Sources */,
 				4A4E071908AA72B10098FF0F /* NSNotificationQueue-OFExtensions.m in Sources */,
 				4A4E071A08AA72B10098FF0F /* NSNumber-OFExtensions.m in Sources */,
+				343373D626C6D5F100098144 /* KeyPathBox.swift in Sources */,
 				A25B32550E3519AC00072E39 /* NSNumber-OFExtensions-CGTypes.m in Sources */,
 				1EEA8E2B1D35C93D002EF965 /* GeneratedOIDs.m in Sources */,
 				4A8CA6FC2381D5CE0095A6A1 /* OFASCIIPropertyListSerialization.m in Sources */,

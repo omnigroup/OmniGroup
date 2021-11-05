@@ -1,4 +1,4 @@
-// Copyright 2008-2020 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,6 +14,7 @@
 struct _ODOPropertyFlags {
     unsigned int optional : 1;
     unsigned int transient : 1;
+    unsigned int transientIsODOObject : 1;
     unsigned int calculated : 1;
     unsigned int relationship : 1;
     unsigned int toMany : 1;

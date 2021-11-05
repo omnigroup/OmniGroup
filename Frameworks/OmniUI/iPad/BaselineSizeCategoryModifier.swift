@@ -20,7 +20,7 @@ public struct BaselineSizeCategoryModifier: OUIViewModifier {
 
     public func oui_body(content: Self.Content) -> some View {
         content
-            .environment(\EnvironmentValues.sizeCategory, usedSizeCategory)
+            .equatableEnvironment(\EnvironmentValues.sizeCategory, usedSizeCategory)
     }
     
     private var usedSizeCategory: ContentSizeCategory {

@@ -562,7 +562,7 @@ _Nullable CFArrayRef ODOObjectCreateDifferenceRecordFromSnapshot(ODOObject *self
         id oldValue = ODOStorageGetObjectValue(entity, snapshotStorageBase, storageKey);
         id newValue = ODOStorageGetObjectValue(entity, self->_valueStorage, storageKey);
 
-        if (flags.relationship) {
+        if (flags.relationship || (flags.transient && flags.transientIsODOObject)) {
             OBASSERT(flags.toMany == NO); // checked above
             
             // Map old/new values to their foreign keys.  This will avoid spurious diffs due to lazy to-one fault creation and we aim to store only the foreign key anyway.
@@ -622,16 +622,25 @@ void ODOObjectApplyDifferenceRecord(ODOObject *self, CFArrayRef diff)
         OBASSERT(!flags.relationship || !flags.toMany); // Only recording diffs for attributes and foreign keys for to-one relationships
         
         // We have to undo the mapping of object->primary key here so that we can use -setPrimitiveValue:forKey:.
-        if (flags.relationship && !flags.toMany) {
-            ODORelationship *rel = (ODORelationship *)prop;
-            OBASSERT(value == nil || [value isKindOfClass:[[[rel destinationEntity] primaryKeyAttribute] valueClass]]);
-            
-            if (value != nil) {
-                ODOObjectID *objectID = [[ODOObjectID alloc] initWithEntity:[rel destinationEntity] primaryKey:value];
-                ODOObject *object = ODOEditingContextLookupObjectOrRegisterFaultForObjectID(self->_editingContext, objectID);
-                [objectID release];
-                value = object;
+        if (value != nil && ((flags.relationship && !flags.toMany) || (flags.transient && flags.transientIsODOObject))) {
+            ODOObjectID *objectID;
+
+            if (flags.relationship) {
+                ODORelationship *rel = OB_CHECKED_CAST(ODORelationship, prop);
+                OBASSERT([value isKindOfClass:[[[rel destinationEntity] primaryKeyAttribute] valueClass]]);
+
+                objectID = [[ODOObjectID alloc] initWithEntity:[rel destinationEntity] primaryKey:value];
+            } else {
+                OBASSERT(flags.transient);
+                ODOAttribute *attr = OB_CHECKED_CAST(ODOAttribute, prop);
+                OBASSERT([value isKindOfClass:[[[attr.valueClass entity] primaryKeyAttribute] valueClass]]);
+
+                objectID = [[ODOObjectID alloc] initWithEntity:[attr.valueClass entity] primaryKey:value];
             }
+
+            ODOObject *object = ODOEditingContextLookupObjectOrRegisterFaultForObjectID(self->_editingContext, objectID);
+            [objectID release];
+            value = object;
         }
         
         // Set the value without going through the public KVC path.  That is, don't call -setFoo: since it was called to *do* this change in the first place.

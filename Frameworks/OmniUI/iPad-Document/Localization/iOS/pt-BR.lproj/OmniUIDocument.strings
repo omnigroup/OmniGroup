@@ -5,7 +5,7 @@
 "%@ items, %@" = "%1$@ itens, %2$@";
 
 /* OmniPresence file list: status: items and size with downloads format */
-"%@ items, %@ (%@ downloaded, %@)" = "%1$@ itens, %2$@ (%3$@ transferidos, %4$@)";
+"%@ items, %@ (%@ downloaded, %@)" = "%1$@ itens, %2$@ (%3$@ baixados, %4$@)";
 
 /* home screen detail label */
 "%d items" = "%d itens";
@@ -22,8 +22,12 @@
 /* home screen button label */
 "Add OmniPresence Account" = "Adicionar Conta do OmniPresence";
 
-/* cancel button title
-   Discard unsynced edits dialog: cancel button label */
+/* button title
+   cancel button title
+   delete confirmation cancel button
+   Discard unsynced edits dialog: cancel button label
+   Server account setup confirmation cancellation label
+   title for alert option cancel */
 
 "Cancel" = "Cancelar";
 
@@ -54,7 +58,7 @@
 /* Update news: button title */
 "Continue" = "Continuar";
 
-/* Share option title */
+/* Menu option in the document picker view */
 "Copy as Image" = "Copiar como Imagem";
 
 /* moved aside custom sample document name */
@@ -84,7 +88,9 @@
 /* webdav help */
 "Enter the location of your WebDAV space." = "Insira a localização de seu espaço do WebDAV.";
 
-/* Export toolbar item accessibility label. */
+/* export button title
+   export options title
+   Export toolbar item accessibility label. */
 "Export" = "Exportar";
 
 /* export to description */
@@ -114,13 +120,14 @@
 /* OmniPresence file list: sort order option */
 "modification date" = "data de modificação";
 
-/* Default base name for a new document */
+/* Base name for newly created documents. This will have an number appended to it to make it unique. */
 "My Document" = "Meu Documento";
 
 /* OmniPresence file list: sort order option */
 "name" = "nome";
 
-/* New Template button title */
+/* New Document toolbar item accessibility label.
+   New Template button title */
 "New Document" = "Novo Documento";
 
 /* Update news: title */
@@ -129,7 +136,8 @@
 /* Server Account Setup label: nickname */
 "Nickname" = "Apelido";
 
-/* When displaying a sync error, this is the option to ignore the error. */
+/* button title
+   When displaying a sync error, this is the option to ignore the error. */
 "OK" = "OK";
 
 /* demo disabled message */
@@ -141,13 +149,11 @@
 /* demo disabled title */
 "OmniPresence is disabled in this demo version." = "O OmniPresence está desativado nesta versão demo.";
 
-/* Local Documents device-specific display name (should match the name of the On My iPad location in the Files app on an iPad)
-   local stencils folder name */
+/* Local Documents device-specific display name (should match the name of the On My iPad location in the Files app on an iPad) */
 
 "On My iPad" = "No Meu iPad";
 
-/* Local Documents device-specific display name (should match the name of the On My iPhone location in the Files app on an iPhone)
-   local stencils folder name */
+/* Local Documents device-specific display name (should match the name of the On My iPhone location in the Files app on an iPhone) */
 
 "On My iPhone" = "No Meu iPhone";
 
@@ -166,7 +172,7 @@
 /* Photo Library permisssions error description. */
 "Photo Library permission denied." = "Permissão de Fototeca negada.";
 
-/* Share option title */
+/* Menu option in the document picker view */
 "Print" = "Impressão";
 
 /* purchase now button title */
@@ -196,10 +202,11 @@
 /* send to app description */
 "Send \"%@\" to app as:" = "\"Enviar “%@” para app como:";
 
-/* Share option title */
+/* Menu option in the document picker view */
 "Send to Photos" = "Enviar para Fotos";
 
-/* export options title */
+/* export options title
+   Menu option in the document picker view */
 "Send via Mail" = "Enviar por Mail";
 
 /* Label format when setting up an OmniPresence or WebDAV server account */
@@ -239,7 +246,7 @@
 "The operation couldn't be completed." = "A operação não pôde ser concluída.";
 
 /* linked folder preference view: header label */
-"The template picker will include any templates found in these locations." = "The template picker will include any templates found in these locations.";
+"The template picker will include any templates found in these locations." = "O seletor de modelos incluirá todos os modelos encontrados nesses locais.";
 
 /* Photo Library permisssions error suggestion. */
 "This app does not have access to your Photo Library." = "Este app não tem acesso à sua Fototeca.";

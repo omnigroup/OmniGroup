@@ -5,7 +5,7 @@
 "Expected value of type “%@”" = "Ожидаемое значение типа «%@»";
 
 /* button title */
-"Feature not enabled for this demo" = "В демо-версии эта функция не работает";
+"Feature not enabled for this demo" = "Функция недоступна в демоверсии.";
 
 /* button title */
 "Learn More" = "Дополнительные сведения";
@@ -14,7 +14,7 @@
 "More Info <error recovery>" = "Дополнительно";
 
 /* button title */
-"OK" = "ОК";
+"OK" = "OK";
 
 /* button title */
 "Retry" = "Повторить";

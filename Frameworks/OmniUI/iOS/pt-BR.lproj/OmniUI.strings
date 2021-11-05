@@ -4,7 +4,8 @@
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@ de %2$@";
 
-/* Default title for the About menu item */
+/* Default title for the About menu item
+   title for in app purchase - placeholder is product title */
 "About %@" = "Sobre o %@";
 
 /* Bold button accessibility label */
@@ -15,7 +16,6 @@
    cancel button title
    Cancel button title
    toolbar item title */
-
 
 
 
@@ -66,7 +66,7 @@
 "enter password" = "digitar a senha";
 
 /* disabled for demo */
-"Feature not enabled for this demo" = "Recurso não ativado nesta demo";
+"Feature not enabled for this demo" = "Recurso não habilitado para esta demonstração.";
 
 /* Overlay text when zoomed to fit screen */
 "Fit" = "Ajustar";
@@ -120,13 +120,16 @@
 
 /* button title
    button title - password/passphrase prompt
+   Dismiss alert
+   Dismiss failed purchase alert
+   Dismiss failed restore alert
    Web view error opening URL cancel button. */
 
 
 "OK" = "OK";
 
 /* Default title for the Omni Account menu item */
-"Omni Account" = "Conta da Omni";
+"Omni Account" = "Conta Omni";
 
 /* Menu item to subscribe to Omni's newsletter */
 "Omni Newsletter Signup" = "Registro no Boletim da Omni";

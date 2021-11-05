@@ -22,8 +22,12 @@
 /* home screen button label */
 "Add OmniPresence Account" = "OmniPresence アカウントを追加";
 
-/* cancel button title
-   Discard unsynced edits dialog: cancel button label */
+/* button title
+   cancel button title
+   delete confirmation cancel button
+   Discard unsynced edits dialog: cancel button label
+   Server account setup confirmation cancellation label
+   title for alert option cancel */
 
 "Cancel" = "キャンセル";
 
@@ -54,7 +58,7 @@
 /* Update news: button title */
 "Continue" = "続ける";
 
-/* Share option title */
+/* Menu option in the document picker view */
 "Copy as Image" = "イメージとしてコピー";
 
 /* moved aside custom sample document name */
@@ -84,7 +88,9 @@
 /* webdav help */
 "Enter the location of your WebDAV space." = "WebDAV の場所を入力してください。";
 
-/* Export toolbar item accessibility label. */
+/* export button title
+   export options title
+   Export toolbar item accessibility label. */
 "Export" = "書き出し";
 
 /* export to description */
@@ -114,22 +120,24 @@
 /* OmniPresence file list: sort order option */
 "modification date" = "変更日";
 
-/* Default base name for a new document */
+/* Base name for newly created documents. This will have an number appended to it to make it unique. */
 "My Document" = "書類";
 
 /* OmniPresence file list: sort order option */
 "name" = "名前";
 
-/* New Template button title */
+/* New Document toolbar item accessibility label.
+   New Template button title */
 "New Document" = "新規書類";
 
 /* Update news: title */
-"New in iOS 13:\nFull Adoption of Apple's Document Browser" = "iOS 13 の新機能：\nApple 書類ブラウザを完全採用";
+"New in iOS 13:\nFull Adoption of Apple's Document Browser" = "iOS 13 の新機能：\nApple の書類ブラウザを完全採用";
 
 /* Server Account Setup label: nickname */
 "Nickname" = "ニックネーム";
 
-/* When displaying a sync error, this is the option to ignore the error. */
+/* button title
+   When displaying a sync error, this is the option to ignore the error. */
 "OK" = "OK";
 
 /* demo disabled message */
@@ -141,13 +149,11 @@
 /* demo disabled title */
 "OmniPresence is disabled in this demo version." = "このデモバージョンでは OmniPresence が無効になっています。";
 
-/* Local Documents device-specific display name (should match the name of the On My iPad location in the Files app on an iPad)
-   local stencils folder name */
+/* Local Documents device-specific display name (should match the name of the On My iPad location in the Files app on an iPad) */
 
 "On My iPad" = "この iPad 内";
 
-/* Local Documents device-specific display name (should match the name of the On My iPhone location in the Files app on an iPhone)
-   local stencils folder name */
+/* Local Documents device-specific display name (should match the name of the On My iPhone location in the Files app on an iPhone) */
 
 "On My iPhone" = "この iPhone 内";
 
@@ -166,7 +172,7 @@
 /* Photo Library permisssions error description. */
 "Photo Library permission denied." = "フォトライブラリの権限が拒否されました。";
 
-/* Share option title */
+/* Menu option in the document picker view */
 "Print" = "プリント";
 
 /* purchase now button title */
@@ -196,10 +202,11 @@
 /* send to app description */
 "Send \"%@\" to app as:" = "“%@” を次の名前でアプリに送信：";
 
-/* Share option title */
+/* Menu option in the document picker view */
 "Send to Photos" = "写真に送信";
 
-/* export options title */
+/* export options title
+   Menu option in the document picker view */
 "Send via Mail" = "メールで送信";
 
 /* Label format when setting up an OmniPresence or WebDAV server account */
@@ -239,7 +246,7 @@
 "The operation couldn't be completed." = "操作を完了できませんでした。";
 
 /* linked folder preference view: header label */
-"The template picker will include any templates found in these locations." = "The template picker will include any templates found in these locations.";
+"The template picker will include any templates found in these locations." = "テンプレートピッカーは、これらの場所で見つかったすべてのテンプレートを含めます。";
 
 /* Photo Library permisssions error suggestion. */
 "This app does not have access to your Photo Library." = "このアプリにはフォトライブラリへのアクセス権がありません。";

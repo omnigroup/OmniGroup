@@ -4,7 +4,8 @@
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@ из %2$@";
 
-/* Default title for the About menu item */
+/* Default title for the About menu item
+   title for in app purchase - placeholder is product title */
 "About %@" = "О программе %@";
 
 /* Bold button accessibility label */
@@ -15,7 +16,6 @@
    cancel button title
    Cancel button title
    toolbar item title */
-
 
 
 
@@ -57,7 +57,7 @@
 "Edit" = "Изменить";
 
 /* Edit note on a task button title */
-"Edit Note" = "Изменить примечание";
+"Edit Note" = "Редактировать примечание";
 
 /* End editing note on a task button title */
 "End Editing" = "Завершить редактирование";
@@ -66,7 +66,7 @@
 "enter password" = "введите пароль";
 
 /* disabled for demo */
-"Feature not enabled for this demo" = "В демо-версии эта функция не работает";
+"Feature not enabled for this demo" = "Функция недоступна в демоверсии.";
 
 /* Overlay text when zoomed to fit screen */
 "Fit" = "Подогнать";
@@ -120,10 +120,13 @@
 
 /* button title
    button title - password/passphrase prompt
+   Dismiss alert
+   Dismiss failed purchase alert
+   Dismiss failed restore alert
    Web view error opening URL cancel button. */
 
 
-"OK" = "ОК";
+"OK" = "OK";
 
 /* Default title for the Omni Account menu item */
 "Omni Account" = "Учетная запись Omni";

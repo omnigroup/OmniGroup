@@ -24,10 +24,62 @@ RCS_ID("$Id$");
 
 @implementation UIScrollView (OUIExtensions)
 
-#if defined(OMNI_ASSERTIONS_ON)
-
-static void (*_original_setContentOffsetAnimated)(UIScrollView *self, SEL _cmd, CGPoint contentOffset, BOOL animated) = NULL;
 static void (*_original_setContentOffset)(UIScrollView *self, SEL _cmd, CGPoint contentOffset) = NULL;
+
+static void _replacement_setContentOffset(UIScrollView *self, SEL _cmd, CGPoint contentOffset)
+{
+    // Hack for SwiftUI hosting scroll views, see <bug:///193910> (iOS-OmniFocus Regression: Compact: Top of Outline does not smoothly scroll into view; blocks dragging of items from below [Drag & Drop, odd jump, top of list, jumpy, jittery, bottom])
+    if ([NSStringFromClass([self class]) containsString:@"Hosting"]) {
+        static NSMapTable *scrollViewToLastScrollWasUp;
+        static dispatch_once_t onceToken = 0;
+        dispatch_once(&onceToken, ^{
+            scrollViewToLastScrollWasUp = [NSMapTable weakToStrongObjectsMapTable];
+        });
+        
+        
+        CGFloat panYVelocity = [self.panGestureRecognizer velocityInView:self].y;
+        CGFloat difference = contentOffset.y - self.contentOffset.y;
+        
+        if (panYVelocity != 0) {
+            [scrollViewToLastScrollWasUp setObject:@(panYVelocity > 0) forKey:self];
+        }
+        
+        // Don't ignore the scroll if we're trying to rubber band back to neutral after scrolling above the top.
+        BOOL requestedJumpDownBelowTop = difference > 0 && self.contentOffset.y > 0;
+        BOOL isScrollingOrDeceleratingUp = panYVelocity > 0 || (self.isDecelerating && [[scrollViewToLastScrollWasUp objectForKey:self] boolValue]);
+        // If we're scrolling or decelerating up below the top of the scroll view and we're asked to jump *down*, then ignore that request and keep scrolling up instead.
+        if (requestedJumpDownBelowTop && isScrollingOrDeceleratingUp)  {
+            contentOffset.y = self.contentOffset.y - fmax((panYVelocity / [[UIScreen mainScreen] maximumFramesPerSecond]), 1.0);
+        }
+    }
+    
+    OBASSERT(checkValue(contentOffset.x));
+    OBASSERT(checkValue(contentOffset.y));
+#if 0 && defined(DEBUG_shannon)
+    if (contentOffset.x == 0) {
+        
+    }
+#endif
+    _original_setContentOffset(self, _cmd, contentOffset);
+}
+
+static void OUIScrollViewPerformPosing(void) __attribute__((constructor));
+static void OUIScrollViewPerformPosing(void)
+{
+    Class viewClass = NSClassFromString(@"UIScrollView");
+
+    _original_setContentOffset = (typeof(_original_setContentOffset))OBReplaceMethodImplementation(viewClass, @selector(setContentOffset:), (IMP)_replacement_setContentOffset);
+    
+#if defined(OMNI_ASSERTIONS_ON)
+    _original_setContentOffsetAnimated = (typeof(_original_setContentOffsetAnimated))OBReplaceMethodImplementation(viewClass, @selector(setContentOffset:animated:), (IMP)_replacement_setContentOffsetAnimated);
+    _original_setContentSize = (typeof(_original_setContentSize))OBReplaceMethodImplementation(viewClass, @selector(setContentSize:), (IMP)_replacement_setContentSize);
+    _original_setContentInset = (typeof(_original_setContentInset))OBReplaceMethodImplementation(viewClass, @selector(setContentInset:), (IMP)_replacement_setContentInset);
+#endif
+}
+
+#if defined(OMNI_ASSERTIONS_ON)
+static void (*_original_setContentOffsetAnimated)(UIScrollView *self, SEL _cmd, CGPoint contentOffset, BOOL animated) = NULL;
+
 static void (*_original_setContentSize)(UIScrollView *self, SEL _cmd, CGSize contentSize) = NULL;
 static void (*_original_setContentInset)(UIScrollView *self, SEL _cmd, UIEdgeInsets egeInset) = NULL;
 
@@ -50,18 +102,6 @@ static void _replacement_setContentOffsetAnimated(UIScrollView *self, SEL _cmd, 
     _original_setContentOffsetAnimated(self, _cmd, contentOffset, animated);
 }
 
-static void _replacement_setContentOffset(UIScrollView *self, SEL _cmd, CGPoint contentOffset)
-{
-    OBASSERT(checkValue(contentOffset.x));
-    OBASSERT(checkValue(contentOffset.y));
-#if 0 && defined(DEBUG_shannon)
-    if (contentOffset.x == 0) {
-        
-    }
-#endif
-    _original_setContentOffset(self, _cmd, contentOffset);
-}
-
 static void  _replacement_setContentSize(UIScrollView *self, SEL _cmd, CGSize contentSize)
 {
     OBASSERT(checkValue(contentSize.width));
@@ -78,17 +118,6 @@ static void  _replacement_setContentInset(UIScrollView *self, SEL _cmd, UIEdgeIn
     OBASSERT(checkValue(edgeInsets.top));
     
     _original_setContentInset(self, _cmd, edgeInsets);
-}
-
-static void OUIScrollViewPerformPosing(void) __attribute__((constructor));
-static void OUIScrollViewPerformPosing(void)
-{
-    Class viewClass = NSClassFromString(@"UIScrollView");
-
-    _original_setContentOffsetAnimated = (typeof(_original_setContentOffsetAnimated))OBReplaceMethodImplementation(viewClass, @selector(setContentOffset:animated:), (IMP)_replacement_setContentOffsetAnimated);
-    _original_setContentOffset = (typeof(_original_setContentOffset))OBReplaceMethodImplementation(viewClass, @selector(setContentOffset:), (IMP)_replacement_setContentOffset);
-    _original_setContentSize = (typeof(_original_setContentSize))OBReplaceMethodImplementation(viewClass, @selector(setContentSize:), (IMP)_replacement_setContentSize);
-    _original_setContentInset = (typeof(_original_setContentInset))OBReplaceMethodImplementation(viewClass, @selector(setContentInset:), (IMP)_replacement_setContentInset);
 }
 
 #endif

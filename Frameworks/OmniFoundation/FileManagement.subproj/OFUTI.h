@@ -55,7 +55,11 @@ extern NSString * _Nullable OFPreferredFilenameExtensionForTypePreferringNative(
 typedef void (^OFUTIEnumerator)(NSString *typeIdentifier, BOOL *stop);
 extern void OFUTIEnumerateKnownTypesForTagPreferringNative(NSString *tagClass, NSString *tagValue, NSString * _Nullable conformingToUTIOrNil, OFUTIEnumerator enumerator);
 
-#define OFTypeConformsTo(type, conformsToType_) ([_OFAsUTType(type) conformsToType: _OFAsUTType(conformsToType_)])
+#define OFTypeConformsTo(type, conformsToType_) ({ \
+    UTType *_originalType_ = _OFAsUTType(type); \
+    UTType *_checkType_ = _OFAsUTType(conformsToType_); \
+    (_checkType_ == nil) ? NO : [_originalType_ conformsToType: _checkType_]; \
+})
 #define OFTypeEqual(type, otherType) UTTypeEqual(_OFAsCFString(type), _OFAsCFString(otherType))
 
 extern BOOL _OFTypeConformsToOneOfTypes(NSString *type, ...) NS_REQUIRES_NIL_TERMINATION;

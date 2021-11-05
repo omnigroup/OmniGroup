@@ -4,7 +4,8 @@
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@/%2$@";
 
-/* Default title for the About menu item */
+/* Default title for the About menu item
+   title for in app purchase - placeholder is product title */
 "About %@" = "关于 %@";
 
 /* Bold button accessibility label */
@@ -15,7 +16,6 @@
    cancel button title
    Cancel button title
    toolbar item title */
-
 
 
 
@@ -66,7 +66,7 @@
 "enter password" = "输入密码";
 
 /* disabled for demo */
-"Feature not enabled for this demo" = "本试用版未启用此功能";
+"Feature not enabled for this demo" = "演示版本不启用此功能";
 
 /* Overlay text when zoomed to fit screen */
 "Fit" = "适合";
@@ -113,13 +113,16 @@
 "None" = "无";
 
 /* Full screen note editor title */
-"Note" = "备注";
+"Note" = "注释";
 
 /* Text letting the user know why nothing is showing in the inspector */
 "Nothing to Inspect" = "没有可检查的内容";
 
 /* button title
    button title - password/passphrase prompt
+   Dismiss alert
+   Dismiss failed purchase alert
+   Dismiss failed restore alert
    Web view error opening URL cancel button. */
 
 
@@ -170,7 +173,7 @@
 "Underline" = "底线";
 
 /* Undo button title */
-"Undo" = "取消";
+"Undo" = "还原";
 
 /* placeholder text - username field of login/password prompt */
 "username" = "用户名";

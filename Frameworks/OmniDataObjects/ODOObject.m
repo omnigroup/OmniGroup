@@ -258,7 +258,7 @@ static IMP OFObjectDidChangeValueForKey;
 
     [_propertyBeingCalculated.single release];
 #if !OMNI_BUILDING_FOR_SERVER
-    [_objectWillChangeStorage release];
+    [_objectDidChangeStorage release];
 #endif
 
     [super dealloc];
@@ -381,12 +381,6 @@ static void ODOObjectDidChangeValueForKey(ODOObject *object, NSString *key)
 // Analog for -{will,did}ChangeValueForKey: when you already have the property (since these can't be subclassed on ODOObject).
 void ODOObjectWillChangeValueForProperty(ODOObject *object, ODOProperty *property)
 {
-#if !OMNI_BUILDING_FOR_SERVER
-    // Don't poke SwiftUI Views when delete propagation is happening. We do go through this path to propagate nullification of dependent key paths through KVO.
-    if (!object->_flags.hasStartedDeletion) {
-        [object sendWillChange];
-    }
-#endif
     for (ODOObjectPropertyChangeAction action in ODOPropertyWillChangeActions(property)) {
         action(object, property);
     }
@@ -396,6 +390,12 @@ void ODOObjectDidChangeValueForProperty(ODOObject *object, ODOProperty *property
     for (ODOObjectPropertyChangeAction action in ODOPropertyDidChangeActions(property)) {
         action(object, property);
     }
+#if !OMNI_BUILDING_FOR_SERVER
+    // Don't poke SwiftUI Views when delete propagation is happening. We do go through this path to propagate nullification of dependent key paths through KVO.
+    if (!object->_flags.hasStartedDeletion) {
+        [object sendDidChange];
+    }
+#endif
 }
 
 - (void)willChangeValueForKey:(NSString *)key;
@@ -839,6 +839,11 @@ void ODOObjectSetValueForKey(ODOObject *self, id _Nullable value, ODOProperty *p
 
 // When an object is deleted with -[ODOEditingContext deleteObject:], it will receive this.  Other objects being deleted due to propagation will not.
 - (void)prepareForDeletion;
+{
+    // Nothing, for subclasses
+}
+
+- (void)prepareForReset;
 {
     // Nothing, for subclasses
 }

@@ -1,8 +1,8 @@
 $(SRCROOT)/OmniUI.xcodeproj/project.pbxproj
-../iOS/DifferenceEngine.swift
 ../iOS/UINavigationController-OUIExtensions.m
 BaselineSizeCategoryModifier.swift
 Bundle.swift
+ButtonShapesSettingRespectingButton.swift
 ImageSwappingButton.swift
 Inspectors/DisclosableInspectorPane.swift
 Inspectors/DisclosableMultiSegmentInspectorPane.swift

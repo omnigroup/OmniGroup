@@ -2,7 +2,7 @@
 "%@ cannot open this type of file." = "%@ kan dit type bestand niet openen.";
 
 /* OmniPresence file list: status: items and size format */
-"%@ items, %@" = "%1$@ onderdelen, %2$@";
+"%@ items, %@" = "%1$@ items, %2$@";
 
 /* OmniPresence file list: status: items and size with downloads format */
 "%@ items, %@ (%@ downloaded, %@)" = "%1$@ onderdelen, %2$@ (%3$@ gedownload, %4$@)";
@@ -22,8 +22,12 @@
 /* home screen button label */
 "Add OmniPresence Account" = "Voeg OmniPresence-account toe";
 
-/* cancel button title
-   Discard unsynced edits dialog: cancel button label */
+/* button title
+   cancel button title
+   delete confirmation cancel button
+   Discard unsynced edits dialog: cancel button label
+   Server account setup confirmation cancellation label
+   title for alert option cancel */
 
 "Cancel" = "Annuleer";
 
@@ -54,7 +58,7 @@
 /* Update news: button title */
 "Continue" = "Ga door";
 
-/* Share option title */
+/* Menu option in the document picker view */
 "Copy as Image" = "Kopieer als afbeelding";
 
 /* moved aside custom sample document name */
@@ -84,7 +88,9 @@
 /* webdav help */
 "Enter the location of your WebDAV space." = "Voer de locatie in van uw WebDAV-ruimte.";
 
-/* Export toolbar item accessibility label. */
+/* export button title
+   export options title
+   Export toolbar item accessibility label. */
 "Export" = "Exporteer";
 
 /* export to description */
@@ -114,13 +120,14 @@
 /* OmniPresence file list: sort order option */
 "modification date" = "bewerkingsdatum";
 
-/* Default base name for a new document */
+/* Base name for newly created documents. This will have an number appended to it to make it unique. */
 "My Document" = "Mijn document";
 
 /* OmniPresence file list: sort order option */
 "name" = "naam";
 
-/* New Template button title */
+/* New Document toolbar item accessibility label.
+   New Template button title */
 "New Document" = "Nieuw document";
 
 /* Update news: title */
@@ -129,7 +136,8 @@
 /* Server Account Setup label: nickname */
 "Nickname" = "Bijnaam";
 
-/* When displaying a sync error, this is the option to ignore the error. */
+/* button title
+   When displaying a sync error, this is the option to ignore the error. */
 "OK" = "OK";
 
 /* demo disabled message */
@@ -141,13 +149,11 @@
 /* demo disabled title */
 "OmniPresence is disabled in this demo version." = "OmniPresence is uitgeschakeld in deze demoversie.";
 
-/* Local Documents device-specific display name (should match the name of the On My iPad location in the Files app on an iPad)
-   local stencils folder name */
+/* Local Documents device-specific display name (should match the name of the On My iPad location in the Files app on an iPad) */
 
 "On My iPad" = "Op mijn iPad";
 
-/* Local Documents device-specific display name (should match the name of the On My iPhone location in the Files app on an iPhone)
-   local stencils folder name */
+/* Local Documents device-specific display name (should match the name of the On My iPhone location in the Files app on an iPhone) */
 
 "On My iPhone" = "Op mijn iPhone";
 
@@ -166,7 +172,7 @@
 /* Photo Library permisssions error description. */
 "Photo Library permission denied." = "Toestemming fotobibliotheek geweigerd.";
 
-/* Share option title */
+/* Menu option in the document picker view */
 "Print" = "Druk af";
 
 /* purchase now button title */
@@ -196,10 +202,11 @@
 /* send to app description */
 "Send \"%@\" to app as:" = "Verstuur “%@” naar app als:";
 
-/* Share option title */
+/* Menu option in the document picker view */
 "Send to Photos" = "Verstuur naar Foto's";
 
-/* export options title */
+/* export options title
+   Menu option in the document picker view */
 "Send via Mail" = "Verstuur via e-mail";
 
 /* Label format when setting up an OmniPresence or WebDAV server account */
@@ -239,7 +246,7 @@
 "The operation couldn't be completed." = "De bewerking kan niet worden voltooid.";
 
 /* linked folder preference view: header label */
-"The template picker will include any templates found in these locations." = "The template picker will include any templates found in these locations.";
+"The template picker will include any templates found in these locations." = "De sjabloonkiezer zal alle sjablonen die op deze locaties zijn gevonden, bevatten.";
 
 /* Photo Library permisssions error suggestion. */
 "This app does not have access to your Photo Library." = "Deze app heeft geen toegang tot uw fotobibliotheek.";

@@ -5,7 +5,7 @@
 "Expected value of type “%@”" = "“%@” タイプの予期された値";
 
 /* button title */
-"Feature not enabled for this demo" = "このデモでは機能が無効になっています";
+"Feature not enabled for this demo" = "このデモでは機能が有効になっていません";
 
 /* button title */
 "Learn More" = "詳しい情報";

@@ -73,6 +73,9 @@ ENABLE_STRICT_OBJC_MSGSEND = YES
 //GCC_WARN_PEDANTIC
 GCC_TREAT_WARNINGS_AS_ERRORS = YES
 
+// Mark these no-error to keep going despite intentdefinition compiler bug FB9335985
+WARNING_CFLAGS = $(value) -Wno-error=nullability-completeness -Wno-error=duplicate-method-match
+
 // Apple LLVM compiler 4.2 - Warnings - All languages
 CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES
 GCC_WARN_CHECK_SWITCH_STATEMENTS = YES

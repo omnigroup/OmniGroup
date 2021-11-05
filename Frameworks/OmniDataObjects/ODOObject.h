@@ -102,6 +102,9 @@ typedef NS_ENUM(NSUInteger, ODOWillDeleteEvent) {
 
 - (void)prepareForDeletion; // Nothing; for subclasses
 
+// Send when the editing context is being reset
+- (void)prepareForReset;
+
 - (void)didSave; // Currently no -didInsert or -didUpdate.
 
 - (BOOL)validateForSave:(NSError **)outError;
@@ -146,7 +149,7 @@ typedef NS_ENUM(NSUInteger, ODOWillDeleteEvent) {
 - (BOOL)shouldChangeDateModified;
 
 #if !OMNI_BUILDING_FOR_SERVER
-@property(nonatomic,nullable,strong) id objectWillChangeStorage;
+@property(nonatomic,nullable,strong) id objectDidChangeStorage;
 #endif
 
 @end

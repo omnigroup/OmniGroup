@@ -22,8 +22,12 @@
 /* home screen button label */
 "Add OmniPresence Account" = "Добавить уч. запись OmniPresence";
 
-/* cancel button title
-   Discard unsynced edits dialog: cancel button label */
+/* button title
+   cancel button title
+   delete confirmation cancel button
+   Discard unsynced edits dialog: cancel button label
+   Server account setup confirmation cancellation label
+   title for alert option cancel */
 
 "Cancel" = "Отмена";
 
@@ -54,7 +58,7 @@
 /* Update news: button title */
 "Continue" = "Продолжить";
 
-/* Share option title */
+/* Menu option in the document picker view */
 "Copy as Image" = "Копировать изображение";
 
 /* moved aside custom sample document name */
@@ -84,7 +88,9 @@
 /* webdav help */
 "Enter the location of your WebDAV space." = "Укажите размещение используемой области WebDAV.";
 
-/* Export toolbar item accessibility label. */
+/* export button title
+   export options title
+   Export toolbar item accessibility label. */
 "Export" = "Экспорт";
 
 /* export to description */
@@ -114,13 +120,14 @@
 /* OmniPresence file list: sort order option */
 "modification date" = "дата изменения";
 
-/* Default base name for a new document */
+/* Base name for newly created documents. This will have an number appended to it to make it unique. */
 "My Document" = "Мой документ";
 
 /* OmniPresence file list: sort order option */
 "name" = "имя";
 
-/* New Template button title */
+/* New Document toolbar item accessibility label.
+   New Template button title */
 "New Document" = "Создать документ";
 
 /* Update news: title */
@@ -129,7 +136,8 @@
 /* Server Account Setup label: nickname */
 "Nickname" = "Псевдоним";
 
-/* When displaying a sync error, this is the option to ignore the error. */
+/* button title
+   When displaying a sync error, this is the option to ignore the error. */
 "OK" = "OK";
 
 /* demo disabled message */
@@ -141,13 +149,11 @@
 /* demo disabled title */
 "OmniPresence is disabled in this demo version." = "Служба OmniPresence отключена в этой демо-версии.";
 
-/* Local Documents device-specific display name (should match the name of the On My iPad location in the Files app on an iPad)
-   local stencils folder name */
+/* Local Documents device-specific display name (should match the name of the On My iPad location in the Files app on an iPad) */
 
 "On My iPad" = "На iPad";
 
-/* Local Documents device-specific display name (should match the name of the On My iPhone location in the Files app on an iPhone)
-   local stencils folder name */
+/* Local Documents device-specific display name (should match the name of the On My iPhone location in the Files app on an iPhone) */
 
 "On My iPhone" = "На iPhone";
 
@@ -166,7 +172,7 @@
 /* Photo Library permisssions error description. */
 "Photo Library permission denied." = "Отказано в правах на доступ к медиатеке";
 
-/* Share option title */
+/* Menu option in the document picker view */
 "Print" = "Печать";
 
 /* purchase now button title */
@@ -196,10 +202,11 @@
 /* send to app description */
 "Send \"%@\" to app as:" = "Отправить «%@» в приложение в виде:";
 
-/* Share option title */
+/* Menu option in the document picker view */
 "Send to Photos" = "Отправить в «Фото»";
 
-/* export options title */
+/* export options title
+   Menu option in the document picker view */
 "Send via Mail" = "Отправить по эл. почте";
 
 /* Label format when setting up an OmniPresence or WebDAV server account */
@@ -239,7 +246,7 @@
 "The operation couldn't be completed." = "Не удалось выполнить операцию.";
 
 /* linked folder preference view: header label */
-"The template picker will include any templates found in these locations." = "The template picker will include any templates found in these locations.";
+"The template picker will include any templates found in these locations." = "Выбор шаблона включает все шаблоны, найденные в этих расположениях.";
 
 /* Photo Library permisssions error suggestion. */
 "This app does not have access to your Photo Library." = "Эта программа не имеет доступа к медиатеке.";

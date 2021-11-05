@@ -4,7 +4,8 @@
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@ van %2$@";
 
-/* Default title for the About menu item */
+/* Default title for the About menu item
+   title for in app purchase - placeholder is product title */
 "About %@" = "Over %@";
 
 /* Bold button accessibility label */
@@ -15,7 +16,6 @@
    cancel button title
    Cancel button title
    toolbar item title */
-
 
 
 
@@ -66,7 +66,7 @@
 "enter password" = "voer het wachtwoord in";
 
 /* disabled for demo */
-"Feature not enabled for this demo" = "Functie niet ingeschakeld voor deze demo";
+"Feature not enabled for this demo" = "Functie niet beschikbaar in deze demo";
 
 /* Overlay text when zoomed to fit screen */
 "Fit" = "Pas aan";
@@ -120,6 +120,9 @@
 
 /* button title
    button title - password/passphrase prompt
+   Dismiss alert
+   Dismiss failed purchase alert
+   Dismiss failed restore alert
    Web view error opening URL cancel button. */
 
 
@@ -129,7 +132,7 @@
 "Omni Account" = "Omni-account";
 
 /* Menu item to subscribe to Omni's newsletter */
-"Omni Newsletter Signup" = "Abonneren op Omni-nieuwsbrief";
+"Omni Newsletter Signup" = "Abonneren op nieuwsbrief";
 
 /* placeholder text - password/passphrase field of login/password prompt */
 "password" = "wachtwoord";

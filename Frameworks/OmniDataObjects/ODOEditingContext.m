@@ -237,6 +237,11 @@ BOOL ODOEditingContextExecuteWithOwnership(ODOEditingContext *self, dispatch_que
     @try {
         [[NSNotificationCenter defaultCenter] postNotificationName:ODOEditingContextWillResetNotification object:self];
         
+        // Let objects know that the entire context is going away
+        for (ODOObject *object in [_registeredObjectByID objectEnumerator]) {
+            [object prepareForReset];
+        }
+
         // Clear any undos we have logged
         [_undoManager removeAllActionsWithTarget:self];
         

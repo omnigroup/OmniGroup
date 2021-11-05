@@ -20,6 +20,7 @@ Crypto/OFRFC3211Wrap.m
 Crypto/OFSymmetricKeywrap.m
 Crypto/OF_CTR_CBCMAC_Util.c
 DataStructures.subproj/Heap.swift
+DataStructures.subproj/KeyPathBox.swift
 DataStructures.subproj/OFBijection.m
 DataStructures.subproj/OFByteSet.m
 DataStructures.subproj/OFCharacterSet.m

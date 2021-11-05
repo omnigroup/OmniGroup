@@ -4,8 +4,9 @@
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@ sur %2$@";
 
-/* Default title for the About menu item */
-"About %@" = "À propos d’%@";
+/* Default title for the About menu item
+   title for in app purchase - placeholder is product title */
+"About %@" = "À propos de %@";
 
 /* Bold button accessibility label */
 "Bold" = "Gras";
@@ -15,7 +16,6 @@
    cancel button title
    Cancel button title
    toolbar item title */
-
 
 
 
@@ -66,7 +66,7 @@
 "enter password" = "taper le mot de passe";
 
 /* disabled for demo */
-"Feature not enabled for this demo" = "Fonction inactive pour cette démo";
+"Feature not enabled for this demo" = "Fonctionnalité non disponible pour cette démo";
 
 /* Overlay text when zoomed to fit screen */
 "Fit" = "Ajuster";
@@ -102,7 +102,7 @@
 "Link could not be opened. Please check Safari restrictions in Settings." = "Impossible d’ouvrir le lien. Vérifiez les restrictions de Safari dans Réglages.";
 
 /* message format */
-"Mail has not been set up on this %@." = "Mail n’a pas été configuré sur cet %@.";
+"Mail has not been set up on this %@." = "Mail n'a pas été configuré sur cet %@.";
 
 /* News menu item
    News view title */
@@ -120,6 +120,9 @@
 
 /* button title
    button title - password/passphrase prompt
+   Dismiss alert
+   Dismiss failed purchase alert
+   Dismiss failed restore alert
    Web view error opening URL cancel button. */
 
 
@@ -129,7 +132,7 @@
 "Omni Account" = "Compte Omni";
 
 /* Menu item to subscribe to Omni's newsletter */
-"Omni Newsletter Signup" = "Abonnement au bulletin d’information Omni";
+"Omni Newsletter Signup" = "Abonnement au bulletin Omni";
 
 /* placeholder text - password/passphrase field of login/password prompt */
 "password" = "mot de passe";

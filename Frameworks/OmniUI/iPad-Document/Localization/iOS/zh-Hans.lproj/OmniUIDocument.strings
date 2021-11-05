@@ -22,8 +22,12 @@
 /* home screen button label */
 "Add OmniPresence Account" = "添加 OmniPresence 帐户";
 
-/* cancel button title
-   Discard unsynced edits dialog: cancel button label */
+/* button title
+   cancel button title
+   delete confirmation cancel button
+   Discard unsynced edits dialog: cancel button label
+   Server account setup confirmation cancellation label
+   title for alert option cancel */
 
 "Cancel" = "取消";
 
@@ -54,7 +58,7 @@
 /* Update news: button title */
 "Continue" = "继续";
 
-/* Share option title */
+/* Menu option in the document picker view */
 "Copy as Image" = "复制为图像";
 
 /* moved aside custom sample document name */
@@ -84,7 +88,9 @@
 /* webdav help */
 "Enter the location of your WebDAV space." = "输入 WebDAV 空间的位置。";
 
-/* Export toolbar item accessibility label. */
+/* export button title
+   export options title
+   Export toolbar item accessibility label. */
 "Export" = "输出";
 
 /* export to description */
@@ -114,13 +120,14 @@
 /* OmniPresence file list: sort order option */
 "modification date" = "修改日期";
 
-/* Default base name for a new document */
+/* Base name for newly created documents. This will have an number appended to it to make it unique. */
 "My Document" = "我的文稿";
 
 /* OmniPresence file list: sort order option */
 "name" = "名称";
 
-/* New Template button title */
+/* New Document toolbar item accessibility label.
+   New Template button title */
 "New Document" = "新建文稿";
 
 /* Update news: title */
@@ -129,7 +136,8 @@
 /* Server Account Setup label: nickname */
 "Nickname" = "昵称";
 
-/* When displaying a sync error, this is the option to ignore the error. */
+/* button title
+   When displaying a sync error, this is the option to ignore the error. */
 "OK" = "好";
 
 /* demo disabled message */
@@ -141,13 +149,11 @@
 /* demo disabled title */
 "OmniPresence is disabled in this demo version." = "OmniPresence 已在此演示版本中禁用。";
 
-/* Local Documents device-specific display name (should match the name of the On My iPad location in the Files app on an iPad)
-   local stencils folder name */
+/* Local Documents device-specific display name (should match the name of the On My iPad location in the Files app on an iPad) */
 
 "On My iPad" = "我的 iPad";
 
-/* Local Documents device-specific display name (should match the name of the On My iPhone location in the Files app on an iPhone)
-   local stencils folder name */
+/* Local Documents device-specific display name (should match the name of the On My iPhone location in the Files app on an iPhone) */
 
 "On My iPhone" = "我的 iPhone";
 
@@ -166,7 +172,7 @@
 /* Photo Library permisssions error description. */
 "Photo Library permission denied." = "图片库许可被拒绝。";
 
-/* Share option title */
+/* Menu option in the document picker view */
 "Print" = "打印";
 
 /* purchase now button title */
@@ -196,10 +202,11 @@
 /* send to app description */
 "Send \"%@\" to app as:" = "发送“%@”至应用程序作为：";
 
-/* Share option title */
+/* Menu option in the document picker view */
 "Send to Photos" = "发送至“照片”";
 
-/* export options title */
+/* export options title
+   Menu option in the document picker view */
 "Send via Mail" = "通过邮件发送";
 
 /* Label format when setting up an OmniPresence or WebDAV server account */
@@ -212,7 +219,7 @@
 "Sign Up For a New Account" = "注册新帐户";
 
 /* OmniPresence file list: sort order option */
-"size" = "大小";
+"size" = "尺寸";
 
 /* OmniPresence file list: sort order label */
 "Sort by:" = "排序方式：";
@@ -239,7 +246,7 @@
 "The operation couldn't be completed." = "此操作无法完成。";
 
 /* linked folder preference view: header label */
-"The template picker will include any templates found in these locations." = "The template picker will include any templates found in these locations.";
+"The template picker will include any templates found in these locations." = "模板选择器将包括在这些位置找到的任何模板。";
 
 /* Photo Library permisssions error suggestion. */
 "This app does not have access to your Photo Library." = "该应用程序不能访问您的图片库。";

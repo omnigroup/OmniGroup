@@ -5,7 +5,7 @@
 "Expected value of type “%@”" = "“%@” 유형의 예상 값";
 
 /* button title */
-"Feature not enabled for this demo" = "이 데모에 대해 활성회되지 않은 기능";
+"Feature not enabled for this demo" = "기능이 데모에서 활성화되지 않음";
 
 /* button title */
 "Learn More" = "자세히 알아보기";
@@ -14,7 +14,7 @@
 "More Info <error recovery>" = "추가 정보";
 
 /* button title */
-"OK" = "승인";
+"OK" = "양호";
 
 /* button title */
 "Retry" = "재시도";

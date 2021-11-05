@@ -5,7 +5,7 @@
 "Expected value of type “%@”" = "类型“%@”的期望值";
 
 /* button title */
-"Feature not enabled for this demo" = "对于此演示，功能未启用";
+"Feature not enabled for this demo" = "演示版本不启用此功能";
 
 /* button title */
 "Learn More" = "了解更多";
