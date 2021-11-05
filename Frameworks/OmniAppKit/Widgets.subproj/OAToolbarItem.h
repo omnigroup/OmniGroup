@@ -11,7 +11,7 @@
 
 @interface OAToolbarItem : NSToolbarItem
 
-@property(nonatomic,weak) id delegate;
+@property(nonatomic,weak) NSObject<NSToolbarItemValidation> *delegate;
     // Right now, the only thing we're doing with our delegate is using it as a validator; AppKit's auto-validation scheme can be useful for changing more attributes than just enabled/disabled, but it currently only works for items that have a target and action, which many custom toolbar items don't.
 
 @property(nonatomic,retain) NSImage *optionKeyImage;

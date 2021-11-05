@@ -22,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol OIConcreteInspector;
 
-@interface OIInspectorRegistry : NSObject <OAWindowCascadeDataSource>
+@interface OIInspectorRegistry : NSObject <OAWindowCascadeDataSource, NSMenuItemValidation>
 
 + (OIInspectorRegistry *)inspectorRegistryForMainWindow;
 + (BOOL)allowsEmptyInspectorList;

@@ -1,4 +1,4 @@
-// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,9 +22,9 @@
 #import <OmniUI/OUIStackedSlicesInspectorPane.h>
 #import <OmniUI/OUITextSelectionSpan.h>
 #import <OmniUI/OUIFontUtilities.h>
-#import <MobileCoreServices/MobileCoreServices.h>
 #import <OmniUI/UIView-OUIExtensions.h>
-#import <OmniFoundation/NSMutableArray-OFExtensions.h>
+
+@import UniformTypeIdentifiers;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -53,7 +53,7 @@ static NSString *_preferredTypeConformingToTypesInArray(NSString *type, NSArray<
     }
 
     for (NSString *checkType in types) {
-        if (UTTypeConformsTo((__bridge CFStringRef)type, (__bridge CFStringRef)checkType)) {
+        if (OFTypeConformsTo(type, checkType)) {
             return checkType;
         }
     }
@@ -1199,8 +1199,12 @@ static BOOL _rangeContainsPosition(id <UITextInput> input, UITextRange *range, U
 
 - (BOOL)resignFirstResponder;
 {
-    if (![super resignFirstResponder])
+    _isResigningFirstResponder = YES;
+    if (![super resignFirstResponder]) {
+        _isResigningFirstResponder = NO;
         return NO;
+    }
+    _isResigningFirstResponder = NO;
 
     OBASSERT(_activeFirstResponderTextView == self);
     _activeFirstResponderTextView = nil;
@@ -1451,15 +1455,15 @@ static BOOL _canReadFromTypes(UIPasteboard *pasteboard, NSArray *types)
     BOOL containsAttachments = [textStorage containsAttribute:NSAttachmentAttributeName inRange:range];
     
     // Add a rich text type if the delegate didn't already.
-    if (representations[(OB_BRIDGE id)kUTTypeRTF] == nil && representations[(OB_BRIDGE id)kUTTypeRTFD] == nil) {
+    if (representations[UTTypeRTF.identifier] == nil && representations[UTTypeRTFD.identifier] == nil) {
         // TODO: We might want to add RTF even if we also added RTFD if the system doesn't auto-convert for us.
         NSString *documentType, *dataType;
         if ([textStorage containsAttribute:NSAttachmentAttributeName inRange:range]) {
             documentType = NSRTFDTextDocumentType;
-            dataType = (OB_BRIDGE NSString *)kUTTypeRTFD;
+            dataType = UTTypeRTFD.identifier;
         } else {
             documentType = NSRTFTextDocumentType;
-            dataType = (OB_BRIDGE NSString *)kUTTypeRTF;
+            dataType = UTTypeRTF.identifier;
         }
         
         __autoreleasing NSError *error = nil;
@@ -1470,14 +1474,14 @@ static BOOL _canReadFromTypes(UIPasteboard *pasteboard, NSArray *types)
             representations[dataType] = data;
     }
     
-    if (representations[(OB_BRIDGE id)kUTTypeUTF8PlainText] == nil) {
+    if (representations[UTTypeUTF8PlainText.identifier] == nil) {
         NSString *string = [[textStorage string] substringWithRange:range];
         if (containsAttachments) {
             // Strip the attachment characters in this range. Could maybe get more fancy by collapsing spaces into a single space, but not going to mess with that for now.
             string = [string stringByReplacingOccurrencesOfString:[NSAttributedString attachmentString] withString:@""];
         }
         NSData *data = [string dataUsingEncoding:NSUTF8StringEncoding];
-        representations[(OB_BRIDGE NSString *)kUTTypeUTF8PlainText] = data;
+        representations[UTTypeUTF8PlainText.identifier] = data;
     }
     
     NSMutableArray *items = [NSMutableArray arrayWithObject:representations];

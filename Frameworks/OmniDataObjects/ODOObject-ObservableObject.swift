@@ -21,6 +21,6 @@ extension ODOObject : ObservableObject {
         guard let existing = objectWillChangeStorage else {
             return // No one is listening
         }
-        (existing as! ObjectWillChangePublisher).send()
+        (existing as! ObjectWillChangePublisher).loggingSend()
     }
 }

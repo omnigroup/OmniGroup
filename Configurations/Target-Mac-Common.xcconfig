@@ -7,7 +7,7 @@ BZ2_LDFLAGS = -lbz2
 
 // Use the latest SDK with a specific target OS as our default
 SDKROOT = macosx
-MACOSX_DEPLOYMENT_TARGET = 10.14
+MACOSX_DEPLOYMENT_TARGET = 11.0
 
 // Allow each project to override the deployment target
 #include "../Omni-Version-Info.xcconfig"

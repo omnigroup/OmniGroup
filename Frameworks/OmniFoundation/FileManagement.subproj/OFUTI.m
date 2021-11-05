@@ -1,4 +1,4 @@
-// Copyright 2011-2020 Omni Development, Inc. All rights reserved.
+// Copyright 2011-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,14 +7,11 @@
 
 #import <OmniFoundation/OFUTI.h>
 
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-#define SYSTEM_TYPE_BUNDLE_IDENTIFIER @"com.apple.MobileCoreServices"
-#else
-#import <OmniFoundation/OFController.h>
-#define SYSTEM_TYPE_BUNDLE_IDENTIFIER @"com.apple.LaunchServices"
-#endif
+@import UniformTypeIdentifiers;
 
-RCS_ID("$Id$");
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+#import <OmniFoundation/OFController.h>
+#endif
 
 NSString * const OFDirectoryPathExtension = @"folder";
 NSString * const OFExportOnlyDeclaration = @"OFExportOnlyDeclaration";
@@ -49,9 +46,20 @@ static NSDictionary <NSString *, NSDictionary *> *TypeDefinitionByIdentifier;
 
 static BOOL OFUTIDiagnosticsEmitted = NO;
 
-static BOOL _TypeConformsToType(NSString *type, NSString *conformsToType)
+static BOOL _TypeConformsToType(NSString * _Nonnull identifier, NSString * _Nonnull conformanceCheckIdentifier)
 {
-    return UTTypeConformsTo((__bridge CFStringRef)type, (__bridge CFStringRef)conformsToType);
+    if (@available(macOS 11, *)) {
+        UTType *type = [UTType typeWithIdentifier:identifier];
+        UTType *conformanceType = [UTType typeWithIdentifier:conformanceCheckIdentifier];
+        OBASSERT(type != nil);
+        OBASSERT(conformanceType != nil);
+        return [type conformsToType:conformanceType];
+    } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        return UTTypeConformsTo((__bridge CFStringRef)identifier, (__bridge CFStringRef)conformanceCheckIdentifier);
+#pragma clang diagnostic pop
+    }
 }
 
 #define OFUTI_DIAG(fmt, ...) \
@@ -140,15 +148,32 @@ static NSDictionary *CreateTagDictionaryFromTypeDeclarations(NSArray *typeDeclar
                     [classDict setObject:mappedIdentifiers forKey:value];
                     [mappedIdentifiers release];
                 } else {
-                    BOOL conformsToPublicData = _TypeConformsToType(identifier, (__bridge NSString *)kUTTypeData);
-                    BOOL conformsToPublicDirectory = _TypeConformsToType(identifier, (__bridge NSString *)kUTTypeDirectory);
-                    
-                    if (!conformsToPublicData && !conformsToPublicDirectory) {
-                        OFUTI_DIAG(@"Type declaration for type \"%@\" does not conform to either \"%@\" or \"%@\"; it should conform to exactly one. Declaration is %@", identifier, (NSString *)kUTTypeData, (NSString *)kUTTypeDirectory, declaration);
-                    } else if (conformsToPublicData && conformsToPublicDirectory) {
-                        OFUTI_DIAG(@"Type declaration for type \"%@\" conforms to both \"%@\" and \"%@\"; it should conform to exactly one. Declaration is %@", identifier, (NSString *)kUTTypeData, (NSString *)kUTTypeDirectory, declaration);
-                    }
+                    BOOL conformsToPublicData;
+                    BOOL conformsToPublicDirectory;
+                    if (@available(macOS 11, *)) {
+                        UTType *identifierType = [UTType typeWithIdentifier:identifier];
+                        conformsToPublicData = [identifierType conformsToType:UTTypeData];
+                        conformsToPublicDirectory = [identifierType conformsToType:UTTypeDirectory];
+                        
+                        if (!conformsToPublicData && !conformsToPublicDirectory) {
+                            OFUTI_DIAG(@"Type declaration for type \"%@\" does not conform to either \"%@\" or \"%@\"; it should conform to exactly one. Declaration is %@", identifier, UTTypeData.identifier, UTTypeDirectory.identifier, declaration);
+                        } else if (conformsToPublicData && conformsToPublicDirectory) {
+                            OFUTI_DIAG(@"Type declaration for type \"%@\" conforms to both \"%@\" and \"%@\"; it should conform to exactly one. Declaration is %@", identifier, UTTypeData.identifier, UTTypeDirectory.identifier, declaration);
+                        }
 
+                    } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+                        conformsToPublicData = _TypeConformsToType(identifier, (__bridge NSString *)kUTTypeData);
+                        conformsToPublicDirectory = _TypeConformsToType(identifier, (__bridge NSString *)kUTTypeDirectory);
+                        
+                        if (!conformsToPublicData && !conformsToPublicDirectory) {
+                            OFUTI_DIAG(@"Type declaration for type \"%@\" does not conform to either \"%@\" or \"%@\"; it should conform to exactly one. Declaration is %@", identifier, (NSString *)kUTTypeData, (NSString *)kUTTypeDirectory, declaration);
+                        } else if (conformsToPublicData && conformsToPublicDirectory) {
+                            OFUTI_DIAG(@"Type declaration for type \"%@\" conforms to both \"%@\" and \"%@\"; it should conform to exactly one. Declaration is %@", identifier, (NSString *)kUTTypeData, (NSString *)kUTTypeDirectory, declaration);
+                        }
+#pragma clang diagnostic pop
+                    }
                     // This allows an Application to define a specific UTI for export only which is not declared in UTExportedTypeDeclarations.  This allows an application to register multiple UTIs for say HTML, without generating an error.
                     NSString *declarationUsageType = [declaration objectForKey:OFTUTIDeclarationUsageType];
                     if ([declarationType isEqualToString:(NSString *)kUTImportedTypeDeclarationsKey] && ![NSString isEmptyString:declarationUsageType] && [declarationUsageType isEqualToString:OFExportOnlyDeclaration]) {
@@ -158,8 +183,21 @@ static NSDictionary *CreateTagDictionaryFromTypeDeclarations(NSArray *typeDeclar
 
                     // Enumerate the existing types declared for this tag and warn if they share the same conformance to the flat-file (public.data) or directory (public.directory) physical type trees.
                     for (NSString *existingIdentifier in mappedIdentifiers) {
-                        if ((conformsToPublicData && _TypeConformsToType(existingIdentifier, (__bridge NSString *)kUTTypeData))
-                            || (conformsToPublicDirectory && _TypeConformsToType(existingIdentifier, (__bridge NSString *)kUTTypeDirectory))) {
+                        BOOL existingIDConformsToData;
+                        BOOL existingIDConformsToDirectory;
+                        if (@available(macOS 11, *)) {
+                            UTType *existingIdentifierType = [UTType typeWithIdentifier:existingIdentifier];
+                            existingIDConformsToData = [existingIdentifierType conformsToType:UTTypeData];
+                            existingIDConformsToDirectory = [existingIdentifierType conformsToType:UTTypeDirectory];
+                        } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+                            existingIDConformsToData = _TypeConformsToType(existingIdentifier, (__bridge NSString *)kUTTypeData);
+                            existingIDConformsToDirectory = _TypeConformsToType(existingIdentifier, (__bridge NSString *)kUTTypeDirectory);
+#pragma clang diagnostic pop
+                        }
+                        if ((conformsToPublicData && existingIDConformsToData)
+                            || (conformsToPublicDirectory && existingIDConformsToDirectory)) {
                             OFUTI_DIAG(@"Conflict detected registering type \"%@\": type \"%@\" has already claimed tag \"%@\" for class \"%@\". Which one is used is undefined.", identifier, existingIdentifier, value, tagClass);
                             OFUTI_DIAG(@"If these types are for export only, consider using the %@ key with value %@ in the type definition in your Info.plist to silence this warning.", OFTUTIDeclarationUsageType, OFExportOnlyDeclaration);
                             break;
@@ -230,8 +268,17 @@ static void InitializeKnownTypeDictionaries()
                         return;
                     }
 
-                    NSDictionary *conformedDefinition = CFBridgingRelease(UTTypeCopyDeclaration((__bridge CFStringRef)conformsToType));
+                    NSDictionary *conformedDefinition;
+                    if (@available(macOS 11, *)) {
+                        UTType *conformsToUTType = [UTType typeWithIdentifier:conformsToType];
+                        OBASSERT(conformsToUTType != nil, "Type %@ is declared to conform to %@, which cannot be found.", identifier, conformsToType);
+                    } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+                    conformedDefinition = CFBridgingRelease(UTTypeCopyDeclaration((__bridge CFStringRef)conformsToType));
+#pragma clang diagnostic pop
                     OBASSERT(conformedDefinition != nil, "Type %@ is declared to conform to %@, which cannot be found.", identifier, conformsToType);
+                    }
                 }
             }];
 #endif
@@ -264,7 +311,16 @@ static void EnumerateIdentifiersForTagInDictionary(NSDictionary *dictionary, NSS
     
     NSDictionary *classDict = [dictionary objectForKey:tagClass];
     NSArray *mappedIdentifiers = [classDict objectForKey:tagValue];
-    if (mappedIdentifiers == nil && OFISEQUAL(tagClass, (NSString *)kUTTagClassFilenameExtension)) {
+    BOOL isFilenameExtension;
+    if (@available(macOS 11, *)) {
+        isFilenameExtension = OFISEQUAL(tagClass, UTTagClassFilenameExtension);
+    } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        isFilenameExtension = OFISEQUAL(tagClass, (NSString *)kUTTagClassFilenameExtension);
+#pragma clang diagnostic pop
+    }
+    if (mappedIdentifiers == nil && isFilenameExtension) {
         // File extensions should be case-insensitive
         mappedIdentifiers = [classDict objectForKey:[tagValue lowercaseString]];
     }
@@ -293,56 +349,108 @@ NSString * _Nullable OFUTIForFileURLPreferringNative(NSURL *fileURL, NSError **o
 
 NSString *OFUTIForFileExtensionPreferringNative(NSString *extension, NSNumber * _Nullable isDirectory)
 {
-    if (isDirectory && [extension isEqualToString:OFDirectoryPathExtension]) {
-        OBASSERT([isDirectory boolValue]); // BUG: The 'if' above should be checking this, but wasn't. The Swift version does and if this assertion doesn't fail in long enough, we should here too (or fix callers that fail it).
-        return (OB_BRIDGE NSString *)kUTTypeFolder;
+    NSString *folderTypeIdentifier;
+    CFStringRef directoryTypeIdentifier;
+    CFStringRef dataTypeIdentifier;
+    CFStringRef tagClassFilenameExtension;
+    if (@available(macOS 11, *)) {
+        folderTypeIdentifier = UTTypeFolder.identifier;
+        directoryTypeIdentifier = (__bridge CFStringRef)(UTTypeDirectory.identifier);
+        dataTypeIdentifier = (__bridge CFStringRef)(UTTypeData.identifier);
+        tagClassFilenameExtension = (__bridge CFStringRef)UTTagClassFilenameExtension;
+    } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        folderTypeIdentifier = (OB_BRIDGE NSString *)kUTTypeFolder;
+        directoryTypeIdentifier = kUTTypeDirectory;
+        dataTypeIdentifier = kUTTypeData;
+        tagClassFilenameExtension = kUTTagClassFilenameExtension;
+#pragma clang diagnostic pop
+    }
+    if (isDirectory && ([extension isEqualToString:OFDirectoryPathExtension] || extension.length == 0)) {
+        OBASSERT([isDirectory boolValue]); // if we have no extension, or it's a path extension, we should be a folder.
+        return folderTypeIdentifier;
     }
     
     CFStringRef conformingUTI = NULL;
-    if (isDirectory && [isDirectory boolValue])
-        conformingUTI = kUTTypeDirectory;
-    else if (isDirectory && !([isDirectory boolValue]))
-        conformingUTI = kUTTypeData;
+    if (isDirectory && [isDirectory boolValue]) {
+        if (OFIsEmptyString(extension)) {
+            return (__bridge NSString *)directoryTypeIdentifier; // Just some plain directory
+        }
+        conformingUTI = directoryTypeIdentifier;
+    } else if (isDirectory && !([isDirectory boolValue])) {
+        conformingUTI = dataTypeIdentifier;
+    }
     
-    return OFUTIForTagPreferringNative(kUTTagClassFilenameExtension, extension, conformingUTI);
+    return OFUTIForTagPreferringNative(tagClassFilenameExtension, extension, conformingUTI);
 }
 
 NSString *OFUTIForTagPreferringNative(CFStringRef tagClass, NSString *tagValue, CFStringRef _Nullable conformingToUTIOrNull)
 {
     __block NSString *resolvedType = nil;
     
-    OFUTIEnumerateKnownTypesForTagPreferringNative((__bridge NSString *)tagClass, tagValue, (__bridge NSString *)conformingToUTIOrNull, ^(NSString *typeIdentifier, BOOL *stop){
+    OFUTIEnumerateKnownTypesForTagPreferringNative((__bridge NSString *)tagClass, tagValue, (__bridge NSString *)conformingToUTIOrNull, ^(NSString *typeIdentifier, BOOL *stop) {
         resolvedType = typeIdentifier;
         *stop = YES;
     });
     
-    OBASSERT_NOTNULL(resolvedType); // should have at least gotten a dynamic type
+    OBASSERT_NOTNULL(resolvedType, "No resolved type for class %@, value %@, conforming to %@", tagClass, tagValue, conformingToUTIOrNull); // should have at least gotten a dynamic type
     return resolvedType;
 }
 
 // This cleans up some Swift bridging oddities with Unmanaged<CFString>? results.
 NSString * _Nullable OFUTIPreferredTagWithClass(NSString *fileType, CFStringRef tag)
 {
-    return CFBridgingRelease(UTTypeCopyPreferredTagWithClass((__bridge CFStringRef)fileType, tag));
+    if (@available(macOS 11, *)) {
+        return [[[[UTType typeWithIdentifier:fileType] tags] valueForKey:(NSString *)tag] firstObject];
+    } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        return CFBridgingRelease(UTTypeCopyPreferredTagWithClass((__bridge CFStringRef)fileType, tag));
+#pragma clang diagnostic pop
+    }
 }
 
 NSArray <NSString *> *_Nullable OFUTIPathExtensions(NSString *fileType)
 {
-    return CFBridgingRelease(UTTypeCopyAllTagsWithClass((__bridge CFStringRef)fileType, kUTTagClassFilenameExtension));
+    if (@available(macOS 11, *)) {
+        // there's a specific UTType preferred fileExtension api, which probably should be used...
+        return [[[UTType typeWithIdentifier:fileType] tags] valueForKey: UTTagClassFilenameExtension];
+    } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        return CFBridgingRelease(UTTypeCopyAllTagsWithClass((__bridge CFStringRef)fileType, kUTTagClassFilenameExtension));
+#pragma clang diagnostic pop
+    }
 }
 
 NSString * _Nullable OFUTIDescription(NSString *fileType)
 {
-    return CFBridgingRelease(UTTypeCopyDescription((__bridge CFStringRef)fileType));
+    if (@available(macOS 11, *)) {
+        return [[UTType typeWithIdentifier:fileType] description];
+    } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        return CFBridgingRelease(UTTypeCopyDescription((__bridge CFStringRef)fileType));
+#pragma clang diagnostic pop
+    }
 }
 
-static NSString * _Nullable _OFGetFileExtensionFromDeinitionsForType(NSDictionary *definitions, NSString *fileType)
+static NSString * _Nullable _OFGetFileExtensionFromDefinitionsForType(NSDictionary *definitions, NSString *fileType)
 {
     NSDictionary *definition = [definitions objectForKey:fileType];
 
     if (definition) {
         NSDictionary *tagSpecs = [definition objectForKey:(NSString *)kUTTypeTagSpecificationKey];
-        id values = [tagSpecs objectForKey:(NSString *)kUTTagClassFilenameExtension];
+        id values;
+        if (@available(macOS 11, *)) {
+            values = [[[UTType typeWithIdentifier:fileType] tags] valueForKey: UTTagClassFilenameExtension];
+        } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+            values = [tagSpecs objectForKey:(NSString *)kUTTagClassFilenameExtension];
+#pragma clang diagnostic pop
+        }
         if (values) {
             if ([values isKindOfClass:NSArray.class]) {
                 return [(NSArray *)values firstObject];
@@ -359,14 +467,21 @@ static NSString * _Nullable _OFGetFileExtensionFromDeinitionsForType(NSDictionar
 NSString * _Nullable OFPreferredFilenameExtensionForTypePreferringNative(NSString *fileType)
 {
     // Check or own database
-    NSString *fileExtension = _OFGetFileExtensionFromDeinitionsForType(ExportedTypeDefinitionByFileType, fileType);
+    NSString *fileExtension = _OFGetFileExtensionFromDefinitionsForType(ExportedTypeDefinitionByFileType, fileType);
 
     if (!fileExtension) {
-        fileExtension = _OFGetFileExtensionFromDeinitionsForType(ImportedTypeDefinitionByFileType, fileType);
+        fileExtension = _OFGetFileExtensionFromDefinitionsForType(ImportedTypeDefinitionByFileType, fileType);
     }
 
     if (!fileExtension) {
-        fileExtension = [((NSString *)UTTypeCopyPreferredTagWithClass((__bridge CFStringRef)fileType, kUTTagClassFilenameExtension)) autorelease];
+        if (@available(macOS 11, *)) {
+            fileExtension = [[UTType typeWithIdentifier:fileType] preferredFilenameExtension];
+        } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+            fileExtension = [((NSString *)UTTypeCopyPreferredTagWithClass((__bridge CFStringRef)fileType, kUTTagClassFilenameExtension)) autorelease];
+#pragma clang diagnostic pop
+        }
     }
 
     return fileExtension;
@@ -393,7 +508,21 @@ void OFUTIEnumerateKnownTypesForTagPreferringNative(NSString *tagClass, NSString
     }
     
     // No luck looking in our own Info.plist. Look through all the definitions Launch Services knows about, but prefer any declarations by CoreServices. We allow the caller to pass a conformingToUTI hint in order to limit the size of and time spent copying this array.
-    NSArray *allTypes = CFBridgingRelease(UTTypeCreateAllIdentifiersForTag((__bridge CFStringRef)tagClass, (__bridge CFStringRef)tagValue, (__bridge CFStringRef)conformingToUTIOrNil));
+    NSArray *allTypes;
+    
+    if (@available(macOS 11, *)) {
+        UTType *conformanceType = conformingToUTIOrNil ? [UTType typeWithIdentifier: conformingToUTIOrNil] : nil;
+        NSArray<UTType *> *allUTTypes = [UTType typesWithTag:tagValue tagClass:tagClass conformingToType:conformanceType];
+        allTypes = [allUTTypes arrayByPerformingBlock:^NSString * (UTType * _Nonnull uttype) {
+            return uttype.identifier;
+        }];
+    } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        allTypes = CFBridgingRelease(UTTypeCreateAllIdentifiersForTag((__bridge CFStringRef)tagClass, (__bridge CFStringRef)tagValue, (__bridge CFStringRef)conformingToUTIOrNil));
+#pragma clang diagnostic pop
+    }
+
     if (!allTypes)
         return;
     
@@ -404,10 +533,14 @@ void OFUTIEnumerateKnownTypesForTagPreferringNative(NSString *tagClass, NSString
     for (NSString *type in allTypes) {
         BOOL isSystemBundle = NO;
         
-        NSURL *bundleURL = CFBridgingRelease(UTTypeCopyDeclaringBundleURL((__bridge CFStringRef)type));
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        NSURL *bundleURL = CFBridgingRelease(UTTypeCopyDeclaringBundleURL((__bridge CFStringRef)type)); // there's not a new non-deprecated API that does this, as far as I can find.
+#pragma clang diagnostic pop
+
         if (bundleURL) {
             NSString *declaringBundleIdentifier = [[NSBundle bundleWithURL:bundleURL] bundleIdentifier];
-            isSystemBundle = [declaringBundleIdentifier isEqualToString:SYSTEM_TYPE_BUNDLE_IDENTIFIER];
+            isSystemBundle = [declaringBundleIdentifier hasPrefix:@"com.apple."];
         }
                 
         if (isSystemBundle)

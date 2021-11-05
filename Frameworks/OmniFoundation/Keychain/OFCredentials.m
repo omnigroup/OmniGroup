@@ -89,8 +89,16 @@ NSData *_OFDataForLeafCertificateInTrust(SecTrustRef trustRef)
     }
     
     // Leaf is always at index 0
-    SecCertificateRef leafCertificate = SecTrustGetCertificateAtIndex(trustRef, 0);
-    CFDataRef certificateData = SecCertificateCopyData(leafCertificate);
+    SecCertificateRef leafCertificate;
+    CFDataRef certificateData;
+
+    // <bug:///193648> (Frameworks-Mac Engineering: Evaluate deprecated Security APIs)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    leafCertificate = SecTrustGetCertificateAtIndex(trustRef, 0);
+    certificateData = SecCertificateCopyData(leafCertificate);
+#pragma clang diagnostic pop
+
     return CFBridgingRelease(certificateData);
 }
 

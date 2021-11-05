@@ -99,7 +99,14 @@ RCS_ID("$Id$");
     if (!_dividerView) {
 	NSRect frame = NSMakeRect(0, 0, 100, 1); // caller will resize & position it
 	_dividerView = [[NSBox alloc] initWithFrame:frame];
-	[_dividerView setBorderType:NSLineBorder];
+        if (@available(macOS 10.5, *)) {
+            // no longer need to do this, it doesn't aply to anything other than old-style boxes which are deprecated.
+        } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+            [_dividerView setBorderType:NSLineBorder];
+#pragma clang diagnostic pop
+        }
 	[_dividerView setBoxType:NSBoxSeparator];
     }
     return _dividerView;

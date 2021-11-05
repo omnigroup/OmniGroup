@@ -12,10 +12,10 @@
 #import <OmniFoundation/NSString-OFSimpleMatching.h>
 #import <OmniFoundation/OFNull.h>
 #import <OmniFoundation/OFUTI.h>
-#import <OmniBase/rcsid.h>
 #import <OmniBase/assertions.h>
 
-RCS_ID("$Id$");
+@import UniformTypeIdentifiers;
+
 
 @implementation NSFileWrapper (OAExtensions)
 
@@ -27,7 +27,25 @@ RCS_ID("$Id$");
     return [fileWrapper autorelease];
 }
 
-- (NSString *)fileTypeIdentifier:(BOOL *)isHFSType;
+- (UTType *)fileType;
+{
+    BOOL isDirectory = [self isDirectory];
+
+    NSString *path = [self filename];
+    if ([NSString isEmptyString:path])
+        path = [self preferredFilename];
+    OBASSERT(![NSString isEmptyString:path]);
+
+    NSString *identifier = OFUTIForFileExtensionPreferringNative([path pathExtension], @(isDirectory));
+
+    if (identifier == nil){
+        return isDirectory ? UTTypeDirectory : UTTypeData;
+    }
+
+    return [UTType typeWithIdentifier:identifier];
+}
+
+- (NSString *)fileTypeIdentifier:(BOOL *)isHFSType OB_DEPRECATED_ATTRIBUTE;
 {
     // We can only use some of the HFS type API on Mac. Default to looking up the extension; only avoid it if we're on Mac *and* find an HFS type code (see below).
     BOOL lookUpExtension = YES;

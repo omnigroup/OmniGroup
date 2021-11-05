@@ -527,7 +527,7 @@ RCS_ID("$Id$")
 }
 
 #pragma mark -
-#pragma mark NSObject (NSMenuValidation)
+#pragma mark NSObject (NSMenuItemValidation)
 
 - (BOOL)validateMenuItem:(NSMenuItem *)item;
 {

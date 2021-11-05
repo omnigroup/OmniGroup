@@ -15,7 +15,7 @@
 
 #import <OmniAppKit/OAFindControllerTargetProtocol.h>
 
-@interface OAFindController : NSWindowController
+@interface OAFindController : NSWindowController<NSControlTextEditingDelegate, NSMenuItemValidation>
 
 
 @property (nonatomic) BOOL supportsRegularExpressions;

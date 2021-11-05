@@ -7,6 +7,8 @@
 
 #import <Foundation/NSObjCRuntime.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class NSString;
 
 extern NSString *OFCopyNumericBacktraceString(int framesToSkip) NS_RETURNS_RETAINED;
@@ -14,3 +16,6 @@ extern NSString *OFCopySymbolicBacktrace(void) NS_RETURNS_RETAINED;
 extern NSString *OFCopySymbolicBacktraceForNumericBacktrace(NSString *numericTrace) NS_RETURNS_RETAINED;
 
 extern void OFLogBacktrace(void);
+
+NS_ASSUME_NONNULL_END
+

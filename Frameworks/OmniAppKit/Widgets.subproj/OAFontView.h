@@ -6,13 +6,14 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <AppKit/NSView.h>
+#import <AppKit/NSFontPanel.h>
 
 @class NSString;
 @class NSFont;
 
 #import <AppKit/NSNibDeclarations.h> // For IBOutlet and IBAction
 
-@interface OAFontView : NSView
+@interface OAFontView : NSView <NSFontChanging>
 
 @property(nonatomic,weak) id delegate;
 

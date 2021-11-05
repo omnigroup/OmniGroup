@@ -1,4 +1,4 @@
-// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -310,7 +310,11 @@
         (void)self;
     };
     
-    [self.window.rootViewController presentViewController:webNavigationController animated:animated completion:nil];
+    UIViewController *controllerToPresentFrom = self.window.rootViewController;
+    while (controllerToPresentFrom.presentedViewController != nil) {
+        controllerToPresentFrom = controllerToPresentFrom.presentedViewController;
+    }
+    [controllerToPresentFrom presentViewController:webNavigationController animated:animated completion:nil];
     return webController;
 }
 

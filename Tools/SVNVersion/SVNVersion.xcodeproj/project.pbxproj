@@ -231,7 +231,7 @@
 		34DBCD0E190709E100968086 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1250;
+				LastUpgradeCheck = 1300;
 				TargetAttributes = {
 					3440203D19072DAD0002120F = {
 						LastSwiftMigration = "";

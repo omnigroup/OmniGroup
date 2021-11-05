@@ -33,7 +33,7 @@
                 <rect key="frame" x="0.0" y="0.0" width="400" height="268"/>
                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                 <subviews>
-                    <box autoresizesSubviews="NO" horizontalHuggingPriority="200" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" boxType="secondary" borderType="bezel" title="Password Hint" titlePosition="noTitle" translatesAutoresizingMaskIntoConstraints="NO" id="41">
+                    <box autoresizesSubviews="NO" horizontalHuggingPriority="200" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" borderType="bezel" title="Password Hint" titlePosition="noTitle" translatesAutoresizingMaskIntoConstraints="NO" id="41">
                         <rect key="frame" x="99" y="134" width="278" height="44"/>
                         <view key="contentView" id="24">
                             <rect key="frame" x="11" y="3" width="256" height="38"/>

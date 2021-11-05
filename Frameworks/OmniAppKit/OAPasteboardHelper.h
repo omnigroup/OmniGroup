@@ -8,7 +8,7 @@
 #import <OmniFoundation/OFObject.h>
 #import <AppKit/NSPasteboard.h>
 
-@interface OAPasteboardHelper : OFObject
+@interface OAPasteboardHelper : OFObject<NSPasteboardTypeOwner>
 {
     NSMutableDictionary *typeToOwner;
     unsigned int responsible;

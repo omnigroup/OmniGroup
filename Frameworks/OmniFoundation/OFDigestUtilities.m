@@ -100,6 +100,10 @@ RCS_ID("$Id$")
 #define DO_CC_UPDATE(alg, ctxp) do { if (length > CC_LONG_MAX) { CC_ ## alg ## _Update(ctxp, buffer, CC_LONG_BLOCKSIZE); buffer += CC_LONG_BLOCKSIZE; length -= CC_LONG_BLOCKSIZE; } else { CC_ ## alg ## _Update(ctxp, buffer, (CC_LONG)length); break; } } while(length > 0)
 
 
+// <bug:///193679> (Tools-SoftwareVersionsUpdater Feature: Stop emitting MD5 checksums in SoftwareVersionsUpdator)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 @implementation OFMD5DigestContext
 {
     CC_MD5_CTX ctx;
@@ -112,11 +116,13 @@ RCS_ID("$Id$")
 
 - (BOOL)generateInit:(NSError **)outError;
 {
+    OBASSERT_NOT_REACHED("The only known use of this is in OmniSoftwareUpdate checks (where we are already ignoring the result of the hash and should probably just not perform it at all. This should probably be removed once we stop emitting the MD5 hash");
+
     if (result) {
         [result release];
         result = nil;
     }
-    
+
     CC_MD5_Init(&ctx);
     return YES;
 }
@@ -138,6 +144,8 @@ RCS_ID("$Id$")
 }
 
 @end
+
+#pragma clang diagnostic pop
 
 @implementation OFSHA1DigestContext
 {

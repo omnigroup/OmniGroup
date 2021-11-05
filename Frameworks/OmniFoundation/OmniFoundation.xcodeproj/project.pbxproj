@@ -1146,6 +1146,8 @@
 		34F16C3B194F79A200AD9C4D /* OFXMLInternedStringTable.m in Sources */ = {isa = PBXBuildFile; fileRef = 343BA7F80F74169D00329C2F /* OFXMLInternedStringTable.m */; };
 		34F16C3C194F79A500AD9C4D /* OFXMLQName.h in Headers */ = {isa = PBXBuildFile; fileRef = 343E5FB90F77E69500F9982D /* OFXMLQName.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34F16C3D194F79A800AD9C4D /* OFXMLQName.m in Sources */ = {isa = PBXBuildFile; fileRef = 343E5FBA0F77E69500F9982D /* OFXMLQName.m */; };
+		34F325B72694D34B00B5A3F8 /* Publisher-Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34F325B62694D34B00B5A3F8 /* Publisher-Extensions.swift */; };
+		34F325B82694D34B00B5A3F8 /* Publisher-Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34F325B62694D34B00B5A3F8 /* Publisher-Extensions.swift */; };
 		34F7C0B90D82354A007E383C /* libxml2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 34F7C0B80D82354A007E383C /* libxml2.dylib */; };
 		34F8271B107E904600458A71 /* OFExtent.h in Headers */ = {isa = PBXBuildFile; fileRef = 34F82719107E904600458A71 /* OFExtent.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34F8271C107E904600458A71 /* OFExtent.m in Sources */ = {isa = PBXBuildFile; fileRef = 34F8271A107E904600458A71 /* OFExtent.m */; };
@@ -2425,6 +2427,7 @@
 		34F16B45194F6C6100AD9C4D /* Touch-Framework-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Framework-Debug.xcconfig"; sourceTree = "<group>"; };
 		34F16B46194F6C6100AD9C4D /* Touch-Framework-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Framework-Release.xcconfig"; sourceTree = "<group>"; };
 		34F1CADB066244350097A113 /* OFXMLIdentifierRegistryObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFXMLIdentifierRegistryObject.h; sourceTree = "<group>"; };
+		34F325B62694D34B00B5A3F8 /* Publisher-Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Publisher-Extensions.swift"; sourceTree = "<group>"; };
 		34F4C0EB078F062000E8899E /* OFVersionNumber.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OFVersionNumber.h; sourceTree = "<group>"; };
 		34F4C0EC078F062000E8899E /* OFVersionNumber.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = OFVersionNumber.m; sourceTree = "<group>"; };
 		34F4C0F1078F065E00E8899E /* OFVersionNumberTests.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = OFVersionNumberTests.m; sourceTree = "<group>"; };
@@ -2872,6 +2875,7 @@
 				348A50860571490C0097A113 /* OFPoint.h */,
 				348A50870571490C0097A113 /* OFPoint.m */,
 				341119472614DF4E0072145B /* PropertyBox.swift */,
+				34F325B62694D34B00B5A3F8 /* Publisher-Extensions.swift */,
 				00E51CB1FE8AAEA611C9CC38 /* OFRandom.h */,
 				00E51CBDFE8AAEA611C9CC38 /* OFRandom.m */,
 				A20055D108F49ACC007E98E2 /* OFRationalNumber.h */,
@@ -5028,7 +5032,7 @@
 			attributes = {
 				LastSwiftUpdateCheck = 0730;
 				LastTestingUpgradeCheck = 0510;
-				LastUpgradeCheck = 1250;
+				LastUpgradeCheck = 1300;
 				TargetAttributes = {
 					34F16B19194F6C3200AD9C4D = {
 						CreatedOnToolsVersion = 6.0;
@@ -5817,6 +5821,7 @@
 				34F16BCC194F766700AD9C4D /* OFRelativeDateFormatter.m in Sources */,
 				1E8A54C31CC82DC200121A8D /* NSError-OFExtensions.m in Sources */,
 				34F16BE6194F76DE00AD9C4D /* NSIndexSet-OFExtensions.m in Sources */,
+				34F325B82694D34B00B5A3F8 /* Publisher-Extensions.swift in Sources */,
 				1E86570A1CB365BF00139490 /* OFAsynchronousOperation.m in Sources */,
 				34F16C20194F77C100AD9C4D /* OFXMLIdentifierRegistry.m in Sources */,
 				34F16BA6194F74F500AD9C4D /* OFRandom.m in Sources */,
@@ -6066,6 +6071,7 @@
 				342A9EC908C89683006AA532 /* NSComparisonPredicate-OFExtensions.m in Sources */,
 				34D07D481C90B6FB009438F9 /* OFSelectionSet.swift in Sources */,
 				341119412614DE650072145B /* WeakObjectTable.swift in Sources */,
+				34F325B72694D34B00B5A3F8 /* Publisher-Extensions.swift in Sources */,
 				342877B408EC788400D89442 /* NSBundle-OFExtensions.m in Sources */,
 				347811A7245CBC6400BB0B7A /* TypeIdentifier.swift in Sources */,
 				3410D5B82440C84E00702DFD /* ExactlyEquatable.swift in Sources */,

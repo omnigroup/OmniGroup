@@ -328,6 +328,9 @@ NSString *OFSummarizeTrustResult(SecTrustRef evaluationContext)
         }
     }
     
+    // <bug:///193648> (Frameworks-Mac Engineering: Evaluate deprecated Security APIs)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     CFArrayRef certProperties = SecTrustCopyProperties(evaluationContext);
     for(CFIndex i = 0; i < CFArrayGetCount(certProperties); i++) {
         NSDictionary *c = (NSDictionary *)CFArrayGetValueAtIndex(certProperties, i);
@@ -337,7 +340,8 @@ NSString *OFSummarizeTrustResult(SecTrustRef evaluationContext)
         }
     }
     CFRelease(certProperties);
-    
+#pragma clang diagnostic pop
+
     return buf;
 }
 

@@ -13,7 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class OAToolbarItem;
 
-@interface OAScriptToolbarHelper : NSObject <OAToolbarHelper>
+@interface OAScriptToolbarHelper : NSObject <OAToolbarHelper, NSToolbarItemValidation>
 
 + (void)setDisabled:(BOOL)disabled;
 

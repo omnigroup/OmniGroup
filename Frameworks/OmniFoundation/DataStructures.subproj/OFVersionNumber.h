@@ -1,4 +1,4 @@
-// Copyright 2004-2020 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -24,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (BOOL)isOperatingSystemMojaveOrLater; // 10.14
 + (BOOL)isOperatingSystemCatalinaOrLater; // 10.15
 + (BOOL)isOperatingSystemBigSurOrLater; // 10.16 or 11.0, depending on who you ask...
++ (BOOL)isOperatingSystemMontereyOrLater; // 12.0
 + (BOOL)isOperatingSystemLikelyToPanicWithCrayonColorPicker;  // 10.13.6, RADAR# 42359231 <bug:///163187> (Mac-OmniGraffle Crasher: [radar and tsi] System hangs when making changes in Pencil Color Picker [10.13.6] (crayon))
 #endif
 

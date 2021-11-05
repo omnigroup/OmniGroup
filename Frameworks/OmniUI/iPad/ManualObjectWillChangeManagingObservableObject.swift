@@ -25,7 +25,7 @@ extension Combine.Published.Publisher: PublishedProjectedValueLinking {
     public func linkProjectedValue<T: ManualObjectWillChangeManagingObservableObject>(to observableObject: T) {
         sink(receiveValue: { [weak observableObject] _ in
             dispatchPrecondition(condition: .onQueue(.main))
-            observableObject?.objectWillChange.send()
+            observableObject?.objectWillChange.loggingSend()
         }).store(in: &observableObject.cancellableSet)
     }
 }

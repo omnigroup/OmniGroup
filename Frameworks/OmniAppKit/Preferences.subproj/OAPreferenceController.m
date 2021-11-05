@@ -1232,13 +1232,10 @@ BOOL OAOpenSystemPreferencePane(NSString *paneIdentifier, NSString *tabIdentifie
     if (application) {
         [application activateWithOptions:0];
     } else {
-        BOOL ok = [[NSWorkspace sharedWorkspace] launchAppWithBundleIdentifier:systemPreferencesBundleID
-                                                                       options:0
-                                                additionalEventParamDescriptor:nil
-                                                              launchIdentifier:NULL];
-        if (!ok) {
-            return NO;
-        }
+        NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
+        [workspace openApplicationAtURL:[workspace URLForApplicationWithBundleIdentifier:systemPreferencesBundleID]
+                                              configuration:[NSWorkspaceOpenConfiguration configuration]
+                                          completionHandler:NULL];
     }
 
     // Send the event with a timeout of 5 seconds. That should be long enough to get a failure response, but not so long that it'll be really annoying if there's a holdup for some reason.

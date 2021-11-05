@@ -8,6 +8,9 @@
 #import <OmniAppKit/OASecCertificateProxy.h>
 #import <AppKit/AppKit.h>
 #import <OmniBase/OmniBase.h>
+#if defined(MAC_OS_VERSION_11_0) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_VERSION_11_0
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
+#endif
 
 RCS_ID("$Id$")
 OB_REQUIRE_ARC
@@ -89,16 +92,36 @@ OB_REQUIRE_ARC
 static dispatch_once_t utlookup_once;
 static NSString *utTypePKIXCert, *utTypePEMFile, *utTypeCERFile;
 static void utlookup(void *dummy) {
-    utTypePKIXCert = (__bridge_transfer NSString *)UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, CFSTR("application/pkix-cert"), kUTTypeData); // Registered with IANA [RFC2585]
-    utTypePEMFile = (__bridge_transfer NSString *)UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, CFSTR("pem"), kUTTypeText); // Typical file extension
-    utTypeCERFile = (__bridge_transfer NSString *)UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, CFSTR("cer"), kUTTypeItem); // This is what we can get from Keychain Access, sometimes
+    if (@available(macOS 11, *)) { // eventually when we are macOS 11 and up, we shoudl just static the UTTypes instead of their identifiers
+        utTypePKIXCert = [[UTType typeWithTag:@"application/pkix-cert" tagClass:UTTagClassMIMEType conformingToType:UTTypeData] identifier]; // Registered with IANA [RFC2585]
+        utTypePEMFile = [[UTType typeWithTag:@"pem" tagClass:UTTagClassFilenameExtension conformingToType:UTTypeText] identifier]; // Typical file extension
+        utTypeCERFile = [[UTType typeWithTag:@"cer" tagClass:UTTagClassFilenameExtension conformingToType:UTTypeItem] identifier]; // This is what we can get from Keychain Access, sometimes
+    } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        utTypePKIXCert = (__bridge_transfer NSString *)UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, CFSTR("application/pkix-cert"), kUTTypeData); // Registered with IANA [RFC2585]
+        utTypePEMFile = (__bridge_transfer NSString *)UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, CFSTR("pem"), kUTTypeText); // Typical file extension
+        utTypeCERFile = (__bridge_transfer NSString *)UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, CFSTR("cer"), kUTTypeItem); // This is what we can get from Keychain Access, sometimes
+#pragma clang diagnostic pop
+    }
 }
 
 + (NSArray<NSString *> *)readableTypesForPasteboard:(NSPasteboard *)pasteboard;
 {
     dispatch_once_f(&utlookup_once, NULL, utlookup);
+
+    NSString *x509certIdentifier;
     
-    return [NSArray arrayWithObjects:(__bridge NSString *)kUTTypeX509Certificate, utTypePKIXCert, utTypePEMFile, utTypeCERFile, nil];
+    if (@available(macOS 11, *)) {
+        x509certIdentifier = UTTypeX509Certificate.identifier;
+    } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        x509certIdentifier = (__bridge NSString *)kUTTypeX509Certificate;
+#pragma clang diagnostic pop
+    }
+        
+    return [NSArray arrayWithObjects:x509certIdentifier, utTypePKIXCert, utTypePEMFile, utTypeCERFile, nil];
 }
 
 - (NSArray<NSString *> *)writableTypesForPasteboard:(NSPasteboard *)pasteboard;
@@ -109,8 +132,18 @@ static void utlookup(void *dummy) {
 + (NSPasteboardReadingOptions)readingOptionsForType:(NSString *)type pasteboard:(NSPasteboard *)pasteboard;
 {
     dispatch_once_f(&utlookup_once, NULL, utlookup);
+    BOOL conformsToPEM;
     
-    if (UTTypeConformsTo((__bridge CFStringRef)type, (__bridge CFStringRef)utTypePEMFile)) {
+    if (@available(macOS 11, *)) {
+        conformsToPEM = [[UTType typeWithIdentifier:type] conformsToType:[UTType typeWithIdentifier:utTypePEMFile]];
+    } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        conformsToPEM = UTTypeConformsTo((__bridge CFStringRef)type, (__bridge CFStringRef)utTypePEMFile);
+#pragma clang diagnostic pop
+    }
+    
+    if (conformsToPEM) {
         return NSPasteboardReadingAsString;
     } else {
         return NSPasteboardReadingAsData;
@@ -124,8 +157,18 @@ static void utlookup(void *dummy) {
     NSData *der;
     
     dispatch_once_f(&utlookup_once, NULL, utlookup);
+
+    BOOL conformsToPEM;
+    if (@available(macOS 11, *)) {
+        conformsToPEM = [[UTType typeWithIdentifier:type] conformsToType:[UTType typeWithIdentifier:utTypePEMFile]];
+    } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        conformsToPEM = UTTypeConformsTo((__bridge CFStringRef)type, (__bridge CFStringRef)utTypePEMFile);
+#pragma clang diagnostic pop
+    }
     
-    if (UTTypeConformsTo((__bridge CFStringRef)type, (__bridge CFStringRef)utTypePEMFile)) {
+    if (conformsToPEM) {
         return nil; // TODO
     } else if ([propertyList isKindOfClass:[NSData class]]) {
         der = propertyList;
@@ -147,7 +190,17 @@ static void utlookup(void *dummy) {
 
 - (nullable id)pasteboardPropertyListForType:(NSString *)type;
 {
-    if (UTTypeConformsTo((__bridge CFStringRef)type, kUTTypeText)) {
+    BOOL conformsToText;
+    if (@available(macOS 11, *)) {
+        conformsToText = [[UTType typeWithIdentifier:type] conformsToType:UTTypeText];
+    } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        conformsToText = UTTypeConformsTo((__bridge CFStringRef)type, kUTTypeText);
+#pragma clang diagnostic pop
+    }
+
+    if (conformsToText) {
         return [NSString stringWithFormat:@"-----BEGIN CERTIFICATE-----\n%@\n-----END CERTIFICATE-----\n", [derData base64EncodedStringWithOptions:NSDataBase64Encoding76CharacterLineLength|NSDataBase64EncodingEndLineWithLineFeed]];
     } else {
         return derData;
@@ -158,8 +211,19 @@ static void utlookup(void *dummy) {
 
 - (NSString *)filePromiseProvider:(NSFilePromiseProvider*)filePromiseProvider fileNameForType:(NSString *)fileType;
 {
-    CFStringRef ext = UTTypeCopyPreferredTagWithClass((__bridge CFStringRef)fileType, kUTTagClassFilenameExtension);
-    NSString *fileExtension = ext? ((__bridge_transfer NSString *)ext) : @".der";
+    NSString *fileExtension;
+    if (@available(macOS 11, *)) {
+        fileExtension = [UTType typeWithIdentifier:fileType].preferredFilenameExtension;
+        if (fileExtension == nil) {
+            fileExtension = @".der";
+        }
+    } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        CFStringRef ext = UTTypeCopyPreferredTagWithClass((__bridge CFStringRef)fileType, kUTTagClassFilenameExtension);
+        fileExtension = ext? ((__bridge_transfer NSString *)ext) : @".der";
+#pragma clang diagnostic pop
+    }
     
     return [self.localizedDescription stringByAppendingPathExtension:fileExtension];
 }

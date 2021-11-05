@@ -1,4 +1,4 @@
-// Copyright 2008-2020 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -555,6 +555,13 @@ void ODOObjectSetPrimitiveValueForProperty(ODOObject *self, _Nullable id value, 
     id valueCopy = nil;
     if (!flags.relationship) {
         ODOAttribute *attribute = OB_CHECKED_CAST(ODOAttribute, prop);
+
+        // There are some cases where nils are stored in non-optional fields, and that's OK as long as the object isn't saved.
+        OBASSERT_IF(value != nil, [value isKindOfClass:[attribute valueClass]]);
+
+        // Plain date columns should never contain floating dates
+        OBASSERT_IF(attribute.type == ODOAttributeTypeDate, [value isKindOfClass:[ODOFloatingDate class]] == NO);
+
         switch (_ODOAttributeSetterBehavior(attribute)) {
             case ODOAttributeSetterBehaviorCopy: {
                 valueCopy = [value copy];

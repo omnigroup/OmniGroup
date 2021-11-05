@@ -374,7 +374,7 @@ const OFCompletionMatchComparator OFDefaultCompletionMatchComparator = ^(OFCompl
 - (NSString *)xmlStringWithMatchingSpanClass:(NSString *)className;
 {
     OFCompletionMatchTransformSubstring transform = ^(NSString *string) {
-        return [OFXMLCreateStringWithEntityReferencesInCFEncoding(string, OFXMLBasicEntityMask, nil/*newlineReplacement*/, NSUTF8StringEncoding) autorelease];
+        return [OFXMLCreateStringWithEntityReferencesInCFEncoding(string, OFXMLBasicEntityMask, nil/*newlineReplacement*/, kCFStringEncodingUTF8) autorelease];
     };
 
     return [self stringBySurroundingMatchRangesWithPrefix:[NSString stringWithFormat:@"<span class=\"%@\">", className] suffix:@"</span>" transformSubstrings:transform];

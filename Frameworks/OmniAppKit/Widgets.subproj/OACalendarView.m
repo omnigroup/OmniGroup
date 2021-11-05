@@ -699,7 +699,7 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
             if ([self isOrContainsFirstResponder])
                 [[NSColor selectedTextBackgroundColor] set];
             else
-                [[NSColor secondarySelectedControlColor] set];
+                [[NSColor unemphasizedSelectedContentBackgroundColor] set];
 
 	    [NSBezierPath fillRect:weekRect];
 	    break;

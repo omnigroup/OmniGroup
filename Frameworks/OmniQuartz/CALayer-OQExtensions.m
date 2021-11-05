@@ -11,6 +11,10 @@
 #import <OmniFoundation/NSFileManager-OFExtensions.h>
 #endif
 
+#if defined(MAC_OS_VERSION_11_0) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_VERSION_11_0
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
+#endif
+
 @import Foundation;
 @import OmniBase;
 @import QuartzCore;
@@ -915,9 +919,19 @@ static CGImageRef (*pCABackingStoreGetCGImage)(void *backingStore) = NULL;
         }
         
         if (image && CFGetTypeID(image) == CGImageGetTypeID()) {
+            CFStringRef pngTypeIdentifier;
+            if (@available(macOS 11, *)) {
+                pngTypeIdentifier = (CFStringRef)UTTypePNG.identifier;
+            } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+                pngTypeIdentifier = kUTTypePNG;
+#pragma clang diagnostic pop
+            }
+
             NSString *path = [dir stringByAppendingPathComponent:[NSString stringWithFormat:@"%03d-%p.png", layerIndex, layer]];
             NSURL *url = [NSURL fileURLWithPath:path];
-            CGImageDestinationRef imageDest = CGImageDestinationCreateWithURL((CFURLRef)url, kUTTypePNG, 1, NULL);
+            CGImageDestinationRef imageDest = CGImageDestinationCreateWithURL((CFURLRef)url, pngTypeIdentifier, 1, NULL);
             if (!imageDest) {
                 NSLog(@"Unable to create image destination for %@", path);
             } else {
@@ -939,7 +953,16 @@ static CGImageRef (*pCABackingStoreGetCGImage)(void *backingStore) = NULL;
     
     if ([imageURLs count] > 0) {
         NSLog(@"opening %@", imageURLs);
+
+#if defined(MAC_OS_VERSION_12_0) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_VERSION_12_0
+        NSURL *appURL = [[NSWorkspace sharedWorkspace] URLForApplicationToOpenContentType: UTTypePNG];
+        [[NSWorkspace sharedWorkspace] openURLs:imageURLs withApplicationAtURL:appURL configuration:NSWorkspaceOpenConfiguration.configuration completionHandler:nil];
+#else
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
         [[NSWorkspace sharedWorkspace] openURLs:imageURLs withAppBundleIdentifier:nil options:NSWorkspaceLaunchDefault additionalEventParamDescriptor:nil launchIdentifiers:nil];
+#pragma clang diagnostic pop
+#endif
     }
 }
 

@@ -393,9 +393,16 @@ static void copyProperty(NSToolbarItem *anItem,
         // We have to provide validation for items with custom views.
         [newItem setDelegate:self];
         
+        if (@available(macOS 11, *)) {
+            // These properties are soft-deprecated on Big Sur (and log a message when called).
+        } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
         // Default to having the min size be the current size of the view and the max size unbounded.
         if (customView)
             [newItem setMinSize:customView.frame.size];
+#pragma clang diagnostic pop
+        }
     } else if ([itemInfo boolForKey:@"hasButton"]) {
         Class buttonClass;
         if ([helper respondsToSelector:@selector(toolbarItemButtonClass)]) {
@@ -420,8 +427,11 @@ static void copyProperty(NSToolbarItem *anItem,
         if ([OFVersionNumber isOperatingSystemBigSurOrLater]) {
             // These properties are soft-deprecated on Big Sur (and log a message when called).
         } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
             newItem.minSize = buttonSize;
             newItem.maxSize = buttonSize;
+#pragma clang diagnostic pop
         }
     }
 

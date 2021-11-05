@@ -119,11 +119,11 @@ static BOOL DocumentClassSubclasses(Class cls, SEL sel) {
 
 - (nullable NSString *)exportLabelForUTI:(NSString *)fileUTI;
 {
-    if (OFTypeConformsTo(fileUTI, kUTTypePDF))
+    if (OFTypeConformsTo(fileUTI, UTTypePDF))
         return @"PDF";
-    if (OFTypeConformsTo(fileUTI, kUTTypePNG))
+    if (OFTypeConformsTo(fileUTI, UTTypePNG))
         return @"PNG";
-    if (OFTypeConformsTo(fileUTI, kUTTypeScalableVectorGraphics))
+    if (OFTypeConformsTo(fileUTI, UTTypeScalableVectorGraphics))
         return @"SVG";
     return nil;
 }
@@ -216,7 +216,7 @@ static BOOL DocumentClassSubclasses(Class cls, SEL sel) {
     __autoreleasing NSError *error = nil;
     NSData *fileData = nil;
     
-    if (OFTypeConformsTo(exportType, kUTTypePNG) && DocumentClassSubclasses([self class], @selector(PNGData:))) {
+    if (OFTypeConformsTo(exportType, UTTypePNG) && DocumentClassSubclasses([self class], @selector(PNGData:))) {
         fileData = [self PNGData:&error];
     } else {
         OBASSERT_NOT_REACHED("Should not have specified we can export a type w/o handling it");

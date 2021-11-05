@@ -19,7 +19,7 @@ public class PropertyBox<ValueType> : ObservableObject {
 
     @Published public var value: ValueType {
         willSet {
-            objectWillChange.send()
+            objectWillChange.loggingSend()
             willSet?(self, newValue)
         }
         didSet {
@@ -33,4 +33,12 @@ public class PropertyBox<ValueType> : ObservableObject {
         self.didSet = didSet
     }
 
+    @discardableResult
+    public func update(_ newValue: ValueType) -> Bool where ValueType : Equatable {
+        if value != newValue {
+            value = newValue
+            return true
+        }
+        return false
+    }
 }

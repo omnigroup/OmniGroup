@@ -12,7 +12,7 @@
 @class OIInspectorTabController;
 @class OITabMatrix;
 
-@interface OIScrollingTabbedInspector : OIInspector <OIConcreteInspector, OIInspectorTabContainer>
+@interface OIScrollingTabbedInspector : OIInspector <OIConcreteInspector, OIInspectorTabContainer, NSMenuItemValidation>
 
 @property (nonatomic, readonly) BOOL placesButtonsInTitlebar; // @"placesButtonInTitlebar" in plist
 @property (nonatomic, readonly) BOOL placesButtonsInHeaderView; // @"placesButtonsInHeaderView" in plist

@@ -46,7 +46,8 @@ static NSString * const OAPreferenceClientRecordIconNameAppPrefix = @"app:"; // 
 
     if ([self.iconName hasPrefix:OAPreferenceClientRecordIconNameAppPrefix]) {
         NSString *appIdentifier = [self.iconName stringByRemovingPrefix:OAPreferenceClientRecordIconNameAppPrefix];
-        NSString *appPath = [[NSWorkspace sharedWorkspace] absolutePathForAppBundleWithIdentifier:appIdentifier];
+        NSURL *appURL = [[NSWorkspace sharedWorkspace] URLForApplicationWithBundleIdentifier:appIdentifier];
+        NSString *appPath = [appURL path];
         if ([NSString isEmptyString:appPath]) {
             NSLog(@"%s: Cannot find '%@'", __PRETTY_FUNCTION__, appIdentifier);
         } else {

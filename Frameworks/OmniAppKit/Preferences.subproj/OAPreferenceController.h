@@ -16,6 +16,7 @@ extern const NSLayoutPriority OAPreferenceClientControlBoxFixedWidthPriority;
 
 #import <AppKit/NSNibDeclarations.h> // For IBOutlet
 #import <AppKit/NSToolbar.h>
+#import <AppKit/NSToolbarItem.h>
 
 typedef enum OAPreferencesViewStyle {
         OAPreferencesViewSingle = 0, // one client, so no navigation bar
@@ -25,7 +26,7 @@ typedef enum OAPreferencesViewStyle {
 
 typedef void (^OAPreferenceClientChangeCompletion)(__kindof OAPreferenceClient *client);
 
-@interface OAPreferenceController : OFObject <NSToolbarDelegate>
+@interface OAPreferenceController : OFObject <NSToolbarDelegate, NSToolbarItemValidation>
 
 + (instancetype)sharedPreferenceController;
 + (NSArray *)allClientRecords;

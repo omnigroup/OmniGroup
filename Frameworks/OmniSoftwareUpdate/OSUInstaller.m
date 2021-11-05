@@ -18,6 +18,9 @@
 #import "OSUChooseLocationErrorRecovery.h"
 #import "OSUInstallerServiceProtocol.h"
 #import "OSUSendFeedbackErrorRecovery.h"
+#if defined(MAC_OS_VERSION_11_0) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_VERSION_11_0
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
+#endif
 
 RCS_ID("$Id$");
 
@@ -423,6 +426,7 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
         chosenDirectory = [lastAttemptedPath stringByDeletingLastPathComponent];
     }
     
+    OBASSERT(chosenDirectory != nil); // fixes a clangSA warning about passing a nil chosen directory through to the eventual open panel.
     chosenDirectory = [[self class] chooseInstallationDirectory:chosenDirectory error:&error];
     
     if (chosenDirectory != nil) {
@@ -457,7 +461,14 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
     
     NSOpenPanel *panel = [NSOpenPanel openPanel];
     [panel setDelegate:delegate];
-    [panel setAllowedFileTypes:[NSArray arrayWithObject:(id)kUTTypeApplicationBundle]];
+    if (@available(macOS 11, *)) {
+        [panel setAllowedContentTypes:@[UTTypeApplicationBundle]];
+    } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        [panel setAllowedFileTypes:[NSArray arrayWithObject:(id)kUTTypeApplicationBundle]];
+#pragma clang diagnostic pop
+    }
     [panel setAllowsOtherFileTypes:NO];
     [panel setCanCreateDirectories:YES];
     [panel setCanChooseDirectories:YES];

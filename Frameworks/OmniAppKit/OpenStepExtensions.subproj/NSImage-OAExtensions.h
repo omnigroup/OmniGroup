@@ -92,4 +92,8 @@ extern NSImage *OAImageNamed(NSString *name, NSBundle *bundle);
 // For storing image tints
 + (OFEnumNameTable *)tintNameEnumeration;
 
+#if defined(MAC_OS_VERSION_11_0) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_VERSION_11_0
++ (NSArray <UTType*>*)imageUTTypes;
+#endif
+
 @end

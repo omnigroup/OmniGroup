@@ -17,7 +17,7 @@ SDKROOT = $(OMNI_SDKROOT)$(OMNI_SDK_VERSION)
 OMNI_SUPPORTED_PLATFORMS = iphonesimulator iphoneos
 SUPPORTED_PLATFORMS = $(OMNI_SUPPORTED_PLATFORMS)
 
-IPHONEOS_DEPLOYMENT_TARGET = 13.0
+IPHONEOS_DEPLOYMENT_TARGET = 14.0
 
 // Allow each project to override the deployment target
 #include "../Omni-Version-Info.xcconfig"

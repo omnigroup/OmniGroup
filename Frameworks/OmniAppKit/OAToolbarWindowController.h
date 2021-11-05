@@ -6,6 +6,7 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <AppKit/NSWindowController.h>
+#import <AppKit/NSToolbarItem.h>
 #import <OmniAppKit/OAToolbar.h>
 
 NS_ASSUME_NONNULL_BEGIN
@@ -49,7 +50,7 @@ typedef NS_ENUM(NSUInteger, OAToolbarDidChangeKind) {
 
 @end
 
-@interface OAToolbarWindowController : NSWindowController <OAToolbarDelegate>
+@interface OAToolbarWindowController : NSWindowController <OAToolbarDelegate, NSToolbarItemValidation>
 
 + (void)registerToolbarHelper:(NSObject <OAToolbarHelper> *)helperObject;
 

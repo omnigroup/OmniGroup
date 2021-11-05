@@ -245,7 +245,11 @@ public enum CardViewShadowStyle: Int {
             return makeShadow(for: .aqua)
 
         case .automatic:
-            return makeShadow(for: NSAppearance.current.name)
+            if #available(macOS 11, *) {
+                return makeShadow(for: NSAppearance.currentDrawing().name)
+            } else {
+                return makeShadow(for: NSAppearance.current.name)
+            }
 
         default:
             return nil

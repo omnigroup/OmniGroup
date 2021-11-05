@@ -1,4 +1,4 @@
-// Copyright 2020 Omni Development, Inc. All rights reserved.
+// Copyright 2020-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 
 // A simple button that shows one of two images, depending on whether or not the button is pressed.
-public struct ImageSwappingButton: View {
+public struct ImageSwappingButton: OUIView {
     
     public let normalImage: UIImage
     public let alternateImage: UIImage
@@ -21,7 +21,7 @@ public struct ImageSwappingButton: View {
         self.action = action
     }
     
-    public var body: some View {
+    public var oui_body: some View {
         Button(action: action) {
             EmptyView()
         }.buttonStyle(ImageSwappingButtonStyle(normalImage: normalImage, alternateImage: alternateImage))

@@ -11,7 +11,7 @@
 #import <OmniFoundation/NSString-OFConversion.h>
 #import <execinfo.h>
 
-RCS_ID("$Id$")
+NS_ASSUME_NONNULL_BEGIN
 
 
 NSString *OFCopyNumericBacktraceString(int framesToSkip)
@@ -103,3 +103,4 @@ void OFLogBacktrace(void)
     fwrite([data bytes], [data length], 1, stderr);
 }
 
+NS_ASSUME_NONNULL_END

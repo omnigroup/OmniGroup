@@ -6,6 +6,9 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <Foundation/NSFileWrapper.h>
+#import <OmniBase/OBUtilities.h>
+
+@class UTType;
 
 #if (!defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE)
     #import <AppKit/NSFileWrapperExtensions.h>
@@ -13,6 +16,7 @@
 
 @interface NSFileWrapper (OAExtensions)
 + (NSFileWrapper *)fileWrapperWithFilename:(NSString *)filename contents:(NSData *)data;
-- (NSString *)fileTypeIdentifier:(BOOL *)isHFSType;
+@property(nonatomic,readonly) UTType *fileType;
+- (NSString *)fileTypeIdentifier:(BOOL *)isHFSType OB_DEPRECATED_ATTRIBUTE;
 - (void)addFileWrapperMovingAsidePreviousWrapper:(NSFileWrapper *)wrapper;
 @end

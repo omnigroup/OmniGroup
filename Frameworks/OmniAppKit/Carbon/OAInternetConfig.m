@@ -265,7 +265,10 @@ static BOOL _executeScript(NSString *source, NSError **outError)
         [[NSWorkspace sharedWorkspace] openApplicationAtURL:mailURL configuration:[NSWorkspaceOpenConfiguration configuration] completionHandler:NULL];
     } else {
         NSString *mailApp = [mailURL path];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
         [[NSWorkspace sharedWorkspace] launchApplication:mailApp];
+#pragma clang diagnostic pop
     }
 #else
     NSString *mailApp = [mailURL path];

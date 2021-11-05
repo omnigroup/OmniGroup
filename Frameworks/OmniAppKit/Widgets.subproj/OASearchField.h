@@ -9,15 +9,16 @@
 
 @class NSTimer;	// Foundation
 @class NSMenu, NSMenuItem, NSTextField;	// AppKit
+@protocol OASearchFieldDelegate;
 
 #import <AppKit/NSNibDeclarations.h> // For IBAction, IBOutlet
 #import <AppKit/NSSearchField.h>
 
 #define DoNotModifyMenuItemTag -1000
 
-@interface OASearchField : NSSearchField
+@interface OASearchField : NSSearchField</*NSToolbarDelegate,*/ NSControlTextEditingDelegate, NSMenuItemValidation>
 {
-    IBOutlet id delegate;
+    IBOutlet NSObject<OASearchFieldDelegate, NSControlTextEditingDelegate> *delegate;
     id searchMode;
     
     struct {
@@ -30,8 +31,8 @@
 
 // API
 
-- (id)delegate;
-- (void)setDelegate:(id)newValue;
+- (NSObject<OASearchFieldDelegate, NSControlTextEditingDelegate> *)delegate;
+- (void)setDelegate:(NSObject<OASearchFieldDelegate, NSControlTextEditingDelegate> *)newValue;
 
 - (NSMenu *)menu;
 - (void)setMenu:(NSMenu *)aMenu;
@@ -53,7 +54,7 @@
 
 @end
 
-@interface NSObject (OASearchFieldDelegate)
+@protocol OASearchFieldDelegate <NSObject>
 - (void)searchField:(OASearchField *)aSearchField didChooseSearchMode:(id)newSearchMode;
 - (void)searchFieldDidEndEditing:(OASearchField *)aSearchField;
 - (BOOL)searchField:(OASearchField *)aSearchField validateMenuItem:(NSMenuItem *)item;

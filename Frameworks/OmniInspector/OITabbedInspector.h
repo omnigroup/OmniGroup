@@ -16,7 +16,7 @@
 
 #import <AppKit/NSNibDeclarations.h> // For IBOutlet and IBAction
 
-@interface OITabbedInspector : OIInspector <OIConcreteInspector, OIInspectorTabContainer>
+@interface OITabbedInspector : OIInspector <OIConcreteInspector, OIInspectorTabContainer, NSMenuItemValidation>
 {
     IBOutlet NSView *contentView;
     IBOutlet OITabMatrix *buttonMatrix;

@@ -639,7 +639,7 @@ static NSFont *smallSystemFont;
                 [[NSColor controlColor] set];
                 NSRectFill(rect);
             }
-            [[NSColor controlDarkShadowColor] set];
+            [[NSColor separatorColor] set];
             NSFrameRect([self bounds]);
             break;
         case NSGrooveBorder:

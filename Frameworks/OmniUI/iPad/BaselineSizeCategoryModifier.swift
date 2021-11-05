@@ -9,16 +9,16 @@ import OmniFoundation
 import SwiftUI
 
 /// This steps your environment's content up or down relative to the default content size. If the system is set to the .large content size and you supply the `.large` content size as the baseline, this view modifier will step the content of the modified view up to the `.extraLarge` content size. This is useful in situation where you want a specific font size at the default setting, but still want it to scale when the system size is changed. For example, 17 point system font is equivalent to the `.footnote` semantic font size in the `.extraExtraLarge` size category. So, by modifying a view given the `baselineSizeCategory` of `.extraExtraLarge` and using the `.footnote` font in it, you will get 17 point system font at the default size category. If the system content size is set to `.large`, this modifier will render the `.footnote` text at its size in the `.extraExtraExtraLarge` size category.
-public struct BaselineSizeCategoryModifier: ViewModifier {
-        
+public struct BaselineSizeCategoryModifier: OUIViewModifier {
+
     public let baselineSizeCategory: ContentSizeCategory?
     @Environment(\.sizeCategory) var sizeCategory
     
     public init(baselineSizeCategory: ContentSizeCategory?) {
         self.baselineSizeCategory = baselineSizeCategory
     }
-    
-    public func body(content: Self.Content) -> some View {
+
+    public func oui_body(content: Self.Content) -> some View {
         content
             .environment(\EnvironmentValues.sizeCategory, usedSizeCategory)
     }
@@ -39,6 +39,8 @@ extension View {
 }
 
 public extension ContentSizeCategory {
+    
+    static var `default`: ContentSizeCategory = .large
     
     func adjustedSize(for baselineSize: ContentSizeCategory) -> ContentSizeCategory {
         return step(sizesUp: baselineSize.distanceFromRegular)
@@ -80,6 +82,8 @@ public extension UIContentSizeCategory {
     func adjustedSize(for baselineSize: UIContentSizeCategory) -> UIContentSizeCategory {
         return UIContentSizeCategory(contentSizeCategory.adjustedSize(for: baselineSize.contentSizeCategory))
     }
+    
+    static var `default`: UIContentSizeCategory = .large
     
     private var contentSizeCategory: ContentSizeCategory {
         switch self {

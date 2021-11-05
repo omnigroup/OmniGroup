@@ -1,4 +1,4 @@
-// Copyright 2015-2020 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,18 +8,14 @@
 // $Id$
 
 import Foundation
-
-#if os(iOS)
-    import MobileCoreServices
-#endif
-#if os(OSX)
-    import CoreServices
-#endif
+import UniformTypeIdentifiers
+import CoreServices
 
 // Swift struct wrapper around the OFUTI functions.
 // Not conforming to CustomStringConvertible before checking that this wouldn't allow naive conversion to a string
 
 public struct UTI {
+    public let fileType: UTType
     private let lowercaseRawFileType: String
 
     // This struct ends up getting used for legacy NSPasteboard types too on macOS. This should return false for those types.
@@ -27,15 +23,50 @@ public struct UTI {
     public let rawFileType: String
 
     // Common UTIs
-    public static let Directory = UTI(kUTTypeDirectory as String) // "file system directory (includes packages AND folders)"
+    /// "file system directory (includes packages AND folders)"
+    public static var Directory: UTI {
+        if #available(macOS 11, *) {
+            return UTI(withUTType: .directory)
+        } else {
+            return UTI(kUTTypeDirectory as String)
+        }
+    }
+    
+    /// "a user-browsable directory (i.e., not a package)"
+    public static var Folder: UTI {
+        if #available(macOS 11, *) {
+            return UTI(withUTType: .folder)
+        } else {
+            return UTI(kUTTypeFolder as String)
+        }
+    }
+    
+    /// "base type for any sort of simple byte stream including files and in-memory data"
+    public static var Data: UTI {
+        if #available(macOS 11, *) {
+            return UTI(withUTType: .data)
+        } else {
+            return UTI(kUTTypeData as String)
+        }
+    }
 
-    public static let Folder = UTI(kUTTypeFolder as String) // "a user-browsable directory (i.e., not a package)"
-    public static let Data = UTI(kUTTypeData as String) // "base type for any sort of simple byte stream including files and in-memory data"
+    public static var UTF8PlainText: UTI {
+        if #available(macOS 11, *) {
+            return UTI(withUTType: .utf8PlainText)
+        } else {
+            return UTI(kUTTypeUTF8PlainText as String)
+        }
+    }
+    
+    public static var PlainText: UTI {
+        if #available(macOS 11, *) {
+            return UTI(withUTType: .plainText)
+        } else {
+            return UTI(kUTTypePlainText as String)
+        }
+    }
 
     public static let Zip = UTI("com.pkware.zip-archive") // This is the base type for public.zip-archive, but the latter defines a 'zip' extension, while this is usable for zip-formatted files that don't use that extension.
-
-    public static let UTF8PlainText = UTI(kUTTypeUTF8PlainText as String)
-    public static let PlainText = UTI(kUTTypePlainText as String)
 
     public static func fileType(forFileURL fileURL:URL, preferringNative:Bool = true) throws -> UTI {
         var error:NSError?
@@ -51,21 +82,32 @@ public struct UTI {
     }
 
     public static func fileType(forPathExtension pathExtension:String, isDirectory:Bool?, preferringNative:Bool = true) throws -> UTI {
-
         guard let isDirectory = isDirectory else {
-            return UTI.fileType(forTagClass:kUTTagClassFilenameExtension as String, tagValue: pathExtension, conformingToUTI: nil, preferringNative:preferringNative)
+            if #available(macOS 11, *) {
+                return UTI.fileType(forTagClass:UTTagClass.filenameExtension, tagValue: pathExtension, conformingToUTI: nil, preferringNative:preferringNative)
+            } else {
+                return UTI.fileType(forTagClass:kUTTagClassFilenameExtension as String, tagValue: pathExtension, conformingToUTI: nil, preferringNative:preferringNative)
+            }
         }
 
         if isDirectory && pathExtension == OFDirectoryPathExtension {
             return Folder
         }
 
-        let conformingType = (isDirectory ? kUTTypeDirectory : kUTTypeData) as String
-        return UTI.fileType(forTagClass:kUTTagClassFilenameExtension as String, tagValue: pathExtension, conformingToUTI: conformingType, preferringNative:preferringNative)
+        if #available(macOS 11, *) {
+            let conformingType = isDirectory ? UTType.directory : UTType.data
+            return UTI.fileType(forTagClass:UTTagClass.filenameExtension, tagValue: pathExtension, conformingToUTI: conformingType, preferringNative:preferringNative)
+
+        } else {
+            let conformingType = (isDirectory ? kUTTypeDirectory : kUTTypeData) as String
+            return UTI.fileType(forTagClass:kUTTagClassFilenameExtension as String, tagValue: pathExtension, conformingToUTI: conformingType, preferringNative:preferringNative)
+        }
     }
 
     // Our ObjC version asserts a non-nil return for the preferringNative case, so we use '!', but we might want to switch to an optional return or throws.
-    public static func fileType(forTagClass tagClass:String, tagValue:String, conformingToUTI:String?, preferringNative:Bool = true) -> UTI {
+    @available(macOS, deprecated: 12)
+    @available(iOS, deprecated: 15)
+    public static func fileType(forTagClass tagClass: String, tagValue: String, conformingToUTI: String?, preferringNative: Bool = true) -> UTI {
         let rawFileType:String
 
         if preferringNative {
@@ -75,11 +117,42 @@ public struct UTI {
         }
         return UTI(rawFileType)
     }
+    
+    @available(macOS 11, *) public static func fileType(forTagClass tagClass: UTTagClass, tagValue: String, conformingToUTI type: UTType?, preferringNative: Bool = true) -> UTI {
+        let rawFileType:String
+        
+        if preferringNative {
+            rawFileType = OFUTIForTagPreferringNative(tagClass.rawValue as CFString, tagValue, type?.identifier as CFString?)
+            return UTI(rawFileType)
 
-    public init(_ fileType:String) {
+        } else {
+            // this has the potential to crash, the right answer is probably to make this method failable, or throw, but for now this will at least surface bad inputs.
+            return UTI(withUTType: UTType(tag: tagValue, tagClass: tagClass, conformingTo: type)!)
+        }
+    }
+
+    @available(macOS 11, *) public init(withUTType: UTType) {
+        self.fileType = withUTType
+        self.isUTI = withUTType.isDynamic || withUTType.isDeclared
+        self.rawFileType = withUTType.identifier
+        self.lowercaseRawFileType = rawFileType.lowercased()
+    }
+    
+    @available(macOS, deprecated: 12)
+    @available(iOS, deprecated: 15)
+    private init(withIdentifier fileType: String) {
         self.rawFileType = fileType
         self.lowercaseRawFileType = fileType.lowercased() // See our Equatable conformance
         self.isUTI = UTTypeIsDeclared(fileType as CFString) || UTTypeIsDynamic(fileType as CFString) // `dyn.*`. This should be false for things like "NeXT Rich Text Format v1.0 pasteboard type"
+        self.fileType = UTType.plainText // not paid attention to, but need to initialize it.
+    }
+    
+    public init(_ fileType: String) {
+        if #available(macOS 11, *) {
+            self.init(withUTType: UTType(fileType) ?? UTType.plainText)
+        } else {
+            self.init(withIdentifier: fileType)
+        }
     }
 
     public static func fileTypePreferringNative(_ fileExtension: String) -> String? {
@@ -90,12 +163,21 @@ public struct UTI {
         return nil
     }
 
+    @available(macOS, deprecated: 12)
+    @available(iOS, deprecated: 15)
     public static func conforms(_ fileType: String?, to uti: String) -> Bool {
         guard let fileType = fileType else { return false }
 
         return UTTypeConformsTo(fileType as NSString, uti as NSString)
     }
+    
+    @available(macOS 11, *) public static func conforms(_ fileType: UTType?, to uti: UTType) -> Bool { // or just use the api directly?
+        guard let fileType = fileType else { return false }
+        return fileType.conforms(to: uti)
+    }
 
+    @available(macOS, deprecated: 12)
+    @available(iOS, deprecated: 15)
     public static func conforms(_ fileType: String?, toAnyOf types: [String]) -> Bool {
         guard let fileType = fileType else { return false }
 
@@ -111,10 +193,27 @@ public struct UTI {
     }
     // NOTE: We could define the typical '~=' pattern comparison operator, but have chosen not to, since the two types passed in are the same. This would make it too easy to swap the order of the arguments to the operator and not be checking the desire condition.
 
+    @available(macOS 11, *) public static func conforms(_ fileType: UTType?, toAnyOf types: [UTType]) -> Bool {
+        guard let fileType = fileType else { return false }
+        
+        if types.contains(fileType) {
+            return true // Avoid eventually calling UTTypeConformsTo when possible.
+        }
+        for uti in types {
+            if conforms(fileType, to: uti) {
+                return true
+            }
+        }
+        return false
+    }
 
     /// Checks if the receiver conforms to, or is equal to, the passed in type.
     public func conformsTo(_ otherUTI:UTI) -> Bool {
-        return UTTypeConformsTo(self.rawFileType as CFString, otherUTI.rawFileType as CFString)
+        if #available(macOS 11, *) {
+            return self.fileType.conforms(to: otherUTI.fileType)
+        } else {
+            return UTTypeConformsTo(self.rawFileType as CFString, otherUTI.rawFileType as CFString)
+        }
     }
 
     public func conformsToAny<T>(_ otherUTIs:T) -> Bool where T : Sequence, T.Element == UTI {
@@ -127,10 +226,14 @@ public struct UTI {
     }
     
     public var preferredPathExtension: String? {
-        guard let unmanaged = UTTypeCopyPreferredTagWithClass(self.rawFileType as CFString, kUTTagClassFilenameExtension) else {
-            return nil
+        if #available(macOS 11, *) {
+            return fileType.preferredFilenameExtension
+        } else {
+            guard let unmanaged = UTTypeCopyPreferredTagWithClass(self.rawFileType as CFString, kUTTagClassFilenameExtension) else {
+                return nil
+            }
+            return String(unmanaged.takeRetainedValue())
         }
-        return String(unmanaged.takeRetainedValue())
     }
 }
 
@@ -154,13 +257,17 @@ extension UTI: ExpressibleByStringLiteral {
 
 extension UTI: Equatable, Hashable {
     public static func ==(type1: UTI, type2: UTI) -> Bool {
-        if type1.isUTI != type2.isUTI {
-            return false
-        }
-        if type1.isUTI {
-            return UTTypeEqual(type1.rawFileType as CFString, type2.rawFileType as CFString)
+        if #available(macOS 11, *) {
+            return type1.fileType == type2.fileType
         } else {
-            return type1.rawFileType == type2.rawFileType
+            if type1.isUTI != type2.isUTI {
+                return false
+            }
+            if type1.isUTI {
+                return UTTypeEqual(type1.rawFileType as CFString, type2.rawFileType as CFString)
+            } else {
+                return type1.rawFileType == type2.rawFileType
+            }
         }
     }
     public func hash(into hasher: inout Hasher) {

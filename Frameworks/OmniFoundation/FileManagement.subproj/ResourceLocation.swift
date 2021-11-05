@@ -454,6 +454,10 @@ private func getFolderURLContainerDisplayName(_ folderURL: URL) -> String? {
 
             let isDirectory = CallOrNil(values.isDirectory, in: NSNumber.init(value:))
 
+            // we may not want to scan ANY hidden files, in which case this check can be removed in favor of adding .skipHiddenFiles above in the enumerationOptions, but I'm not confident we do not depend on that behavior currently, so being more narrow in my restrictions.
+            if fileURL.lastPathComponent == ".DS_Store" {
+                continue
+            }
             // Using this instead of URLResourceKey.typeIdentifierKey since that doesn't consult exported types in our unit test bundles.
             // .typeIdentifierKey is also not helpful when scanning an iCloud folder and we find a non-downloaded placeholder file (with the private type "com.apple.icloud-file-fault")
             // Using URL.promisedItemResourceValues(forKeys:) inside a file coordinator read passed the .immediatelyAvailableMetadataOnly option still doesn't report the metadata for the real item, possibly since we aren't exactly matching the conditions. We are a NSFilePresenter, but the URL we have is not in our container (the whole reason for this class is to be granted access to stuff outside our container!)

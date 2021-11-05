@@ -52,7 +52,7 @@ OFDeclareDebugLogLevel(OUIApplicationStateDebug);
     } while (0)
 
 
-#if defined(DEBUG_bungi)
+#if 0 && defined(DEBUG_bungi)
 
 static void TrackBackgroundTasks(void) __attribute__((constructor));
 
@@ -247,18 +247,6 @@ static void __iOS7B5CleanConsoleOutput(void)
     @autoreleasepool {
         
         // Poke OFPreference to get default values registered
-#ifdef DEBUG
-        BOOL showNonLocalizedStrings = YES;
-#else
-        BOOL showNonLocalizedStrings = NO;
-#endif
-        NSDictionary *defaults = [NSDictionary dictionaryWithObjectsAndKeys:
-                                  [NSNumber numberWithBool:showNonLocalizedStrings], @"NSShowNonLocalizableStrings",
-                                  [NSNumber numberWithBool:showNonLocalizedStrings], @"NSShowNonLocalizedStrings",
-                                  nil
-                                  ];
-        [[NSUserDefaults standardUserDefaults] registerDefaults:defaults];
-
         NeedToShowURLPreference = [OFPreference preferenceForKey:@"OSU_need_to_show_URL" defaultValue:@""];
         PreviouslyShownURLsPreference = [OFPreference preferenceForKey:@"OSU_previously_shown_URLs" defaultValue:@[]];
 

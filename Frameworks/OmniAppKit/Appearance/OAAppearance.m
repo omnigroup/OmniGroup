@@ -1718,7 +1718,7 @@ static void EnsureSystemColorsObserver(OAAppearance *self)
     EnsureSystemColorsObserver(nil);
     
     if (!SelectionBorderColor) {
-        SelectionBorderColor = [[NSColor alternateSelectedControlColor] colorWithAlphaComponent:([[OAAppearance appearance] CGFloatForKeyPath:@"OASelectionBorderColorAlphaPercentage"] / 100.0)];
+        SelectionBorderColor = [[NSColor selectedContentBackgroundColor] colorWithAlphaComponent:([[OAAppearance appearance] CGFloatForKeyPath:@"OASelectionBorderColorAlphaPercentage"] / 100.0)];
     }
     
     return SelectionBorderColor;

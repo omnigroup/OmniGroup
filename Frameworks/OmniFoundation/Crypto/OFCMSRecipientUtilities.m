@@ -1291,6 +1291,9 @@ static NSData *rsaTransportKey(NSData *payload, SecKeyRef publicKey, NSError **o
     
     NSMutableData *buffer = [[NSMutableData alloc] initWithLength:bufferSize];
     
+    // <bug:///193648> (Frameworks-Mac Engineering: Evaluate deprecated Security APIs)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     OSStatus oserr = SecKeyEncrypt(publicKey, kSecPaddingPKCS1, [payload bytes], [payload length], [buffer mutableBytes], &bufferSize);
     
     if (oserr != noErr) {
@@ -1300,7 +1303,8 @@ static NSData *rsaTransportKey(NSData *payload, SecKeyRef publicKey, NSError **o
     }
     
     [buffer setLength:bufferSize];
-    
+#pragma clang diagnostic pop
+
     return buffer;
 }
 
@@ -1311,6 +1315,9 @@ static NSData *rsaReceiveKey(NSData *encrypted, SecKeyRef secretKey, NSError **o
     
     NSMutableData *buffer = [[NSMutableData alloc] initWithLength:bufferSize];
     
+    // <bug:///193648> (Frameworks-Mac Engineering: Evaluate deprecated Security APIs)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     OSStatus oserr = SecKeyDecrypt(secretKey, kSecPaddingPKCS1, [encrypted bytes], [encrypted length], [buffer mutableBytes], &bufferSize);
     
     if (oserr != noErr) {
@@ -1320,7 +1327,8 @@ static NSData *rsaReceiveKey(NSData *encrypted, SecKeyRef secretKey, NSError **o
     }
     
     [buffer setLength:bufferSize];
-    
+#pragma clang diagnostic pop
+
     return buffer;
 }
 

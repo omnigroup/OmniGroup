@@ -109,35 +109,22 @@ static void stashError(NSMutableDictionary *errorInfo, OSStatus code, NSString *
         // Replace the default set of anchors with our own. We don't want to trust the system set.
         // (Might want to allow that as an option someday, though.)
         err = SecTrustSetAnchorCertificates(evaluationContext, (__bridge CFArrayRef)trustedKeys);
-//        if (err == noErr)
-//            err = SecTrustSetKeychains(evaluationContext, emptyArray);
         if (err != noErr) {
             NSLog(@"SecTrustSet[AnchorCertificates|Keychains] returns %@", OFOSStatusDescription(err));
             CFRelease(evaluationContext);
             continue;
         }
 
-        // If needed: SecTrustSetParameters(evaluationContext, ..., ...)
-        
-        SecTrustResultType trustResult;
-        err = SecTrustEvaluate(evaluationContext, &trustResult);
-        if (err != noErr) {
-            NSLog(@"SecTrustEvaluate returns %@", OFOSStatusDescription(err));
+        CFErrorRef error;
+        BOOL sucess = SecTrustEvaluateWithError(evaluationContext, &error);
+
+        if (!sucess) {
+            NSLog(@"SecTrustEvaluate returns %@", CFAutorelease(CFErrorCopyDescription(error)));
+            [errorInfo setObject:OFSummarizeTrustResult(evaluationContext) forKey:@"trustResult"];
             CFRelease(evaluationContext);
+            CFRelease(error);
             continue;
-        }
-        
-        /*
-         
-         I find the "Unspecified" result a little confusing. Apparently it means the mechanical verification is completely successful, but the user hasn't said anything in particular about the trust of this cert, other than having it in the anchors list (or in our case, we've put it in our own anchors list and never set any specific trust settings, so this is always what we'll get). That's good enough for us, since we're actually updating ourselves.
-         
-         This info is from a post to the apple-cdsa mailing list by PerryTheCynic <perry@apple.com> on 1 May 2007:
-         
-         "Unspecified means that the user never expressed any persistent opinion about this certificate (or any of its signers). Either this is the first time this certificate has been encountered (in these circumstances), or the user has previously dealt with it on a one-off basis without recording a persistent decision. In practice, this is what most (cryptographically successful) evaluations return. [....] The application gets to choose what it wants to do in the Unspecified case. In effect, it will map this return to either Proceed or Ask, depending on the level of paranoia it wishes to apply. Most existing clients map to Proceed and thus treat Unspecified as a success case. [...]"
-         
-         */
-        
-        if (trustResult == kSecTrustResultProceed || trustResult == kSecTrustResultUnspecified) {
+        } else {
             SecKeyRef trustedSigningKey = SecCertificateCopyKey(testCert);
             if (trustedSigningKey == NULL) {
                 // See SecItem-OFExtensions.swift for a note on this.
@@ -147,8 +134,6 @@ static void stashError(NSMutableDictionary *errorInfo, OSStatus code, NSString *
                 errorInfo = nil; // Suppress overwrite of *outError
                 resultKey = trustedSigningKey;
             }
-        } else {
-            [errorInfo setObject:OFSummarizeTrustResult(evaluationContext) forKey:@"trustResult"];
         }
         
         CFRelease(evaluationContext);

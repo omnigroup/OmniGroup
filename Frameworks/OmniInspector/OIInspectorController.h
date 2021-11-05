@@ -21,7 +21,7 @@
 
 extern NSString * const OIInspectorControllerDidChangeExpandednessNotification;
 
-@interface OIInspectorController : NSObject <OIInspectorWindowDelegate>
+@interface OIInspectorController : NSObject <OIInspectorWindowDelegate, NSMenuItemValidation>
 
 // API
 

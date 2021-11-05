@@ -15,7 +15,6 @@
 
 RCS_ID("$Id$")
 
-
 @implementation OAAquaButton
 
 - (id)initWithFrame:(NSRect)frameRect;
@@ -26,7 +25,16 @@ RCS_ID("$Id$")
     [self setButtonType:NSButtonTypeMomentaryLight];
     [self setImagePosition:NSImageOnly];
 
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_controlTintChanged:) name:NSControlTintDidChangeNotification object:nil];
+    if (@available(macOS 11, *)) {
+#if DEBUG
+        NSLog(@"should move from using OAAquaButtons, as they don't take a newer NSAppearance-based view of our world");
+#endif
+    } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_controlTintChanged:) name:NSControlTintDidChangeNotification object:nil];
+#pragma clang diagnostic pop
+    }
     
     return self;
 }

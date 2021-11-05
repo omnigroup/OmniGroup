@@ -506,7 +506,7 @@ static NSNumber *ignoredFontNeedsObliquity = nil;
         attributes = PaidAttributes;
     }
     
-    if (cellStyle == NSBackgroundStyleDark) {
+    if (cellStyle == NSBackgroundStyleEmphasized) {
         // Don't colorize text in highlighted rows --- it's too dark to read.
         attributes = [attributes dictionaryWithObject:[NSColor selectedControlTextColor] forKey:NSForegroundColorAttributeName];
     }

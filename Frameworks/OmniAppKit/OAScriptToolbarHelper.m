@@ -11,6 +11,9 @@
 #import <Foundation/Foundation.h>
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
+#if defined(MAC_OS_VERSION_11_0) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_VERSION_11_0
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
+#endif
 
 #import <OmniAppKit/NSImage-OAExtensions.h>
 #import <OmniAppKit/NSToolbar-OAExtensions.h>
@@ -224,14 +227,26 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
         return;
     }
 
-    NSString *typename = [[NSWorkspace sharedWorkspace] typeOfFile:itemPath error:NULL];
+    NSString *typename = @"";
+    [[NSURL fileURLWithPath:itemPath] getResourceValue:&typename forKey:NSURLContentTypeKey error:NULL];
+    
 
     // This code only supports 10.8 and later so we always use the sandbox savvy APIs, since they also support unsandboxed applications.
     //
     // This also avoids having to deal with new potentially false positive nullability warnings from OSAKit, which still lacks API documentation.
 
     OBASSERT_NOTNULL(typename);
-    if ([[NSWorkspace sharedWorkspace] type:typename conformsToType:@"com.apple.automator-workflow"]) {
+    BOOL conformsToAutomator;
+    if (@available(macOS 11, *)) {
+        conformsToAutomator = [[UTType typeWithIdentifier:typename] conformsToType:[UTType typeWithIdentifier:@"com.apple.automator-workflow"]];
+    } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        conformsToAutomator = [[NSWorkspace sharedWorkspace] type:typename conformsToType:@"com.apple.automator-workflow"];
+#pragma clang diagnostic pop
+    }
+    
+    if (conformsToAutomator) {
         [self _executeAutomatorWorkflowForToolbarItem:toolbarItem inWindowController:windowController completionHandler:completionHandler];
     } else {
         [self _executeOSAScriptForToolbarItem:toolbarItem inWindowController:windowController completionHandler:completionHandler];
@@ -279,12 +294,23 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
         NSMutableArray *types = [NSMutableArray array];
         [types addObjects:@"com.apple.applescript.text", @"com.apple.applescript.script", @"com.apple.automator-workflow", nil];
         
-        CFArrayRef scriptBundleUTIs = UTTypeCreateAllIdentifiersForTag(kUTTagClassFilenameExtension, CFSTR("scptd"), NULL);
-        if (scriptBundleUTIs != NULL) {
-            [types addObjectsFromArray:(__bridge NSArray *)scriptBundleUTIs];
-            CFRelease(scriptBundleUTIs);
+        if (@available(macOS 11, *)) {
+            NSArray *scriptUTTypes = [UTType typesWithTag:@"scptd" tagClass:UTTagClassFilenameExtension conformingToType:nil];
+            for (UTType *type in scriptUTTypes) {
+                [types addObject:type.identifier];
+            }
         }
-        
+        else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+            CFArrayRef scriptBundleUTIs = UTTypeCreateAllIdentifiersForTag(kUTTagClassFilenameExtension, CFSTR("scptd"), NULL);
+            
+            if (scriptBundleUTIs != NULL) {
+                [types addObjectsFromArray:(__bridge NSArray *)scriptBundleUTIs];
+                CFRelease(scriptBundleUTIs);
+            }
+#pragma clang diagnostic pop
+        }
         scriptTypes = [types copy];
     }
     
@@ -421,7 +447,7 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
 
     [alert beginSheetModalForWindow:[windowController window] completionHandler:^(NSModalResponse returnCode) {
         if (returnCode == NSAlertSecondButtonReturn) {
-            [[NSWorkspace sharedWorkspace] openFile:path];
+            [[NSWorkspace sharedWorkspace] openURL:[NSURL fileURLWithPath:path]];
         }
     }];
 }
@@ -458,7 +484,7 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
 
     [alert beginSheetModalForWindow:[windowController window] completionHandler:^(NSModalResponse returnCode) {
         if (returnCode == NSAlertSecondButtonReturn) {
-            [[NSWorkspace sharedWorkspace] openFile:path];
+            [[NSWorkspace sharedWorkspace] openURL:[NSURL fileURLWithPath:path]];
         }
     }];
 }

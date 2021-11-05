@@ -24,8 +24,8 @@ static NSString *PathExtensionForFileType(NSString *fileType, BOOL *outIsPackage
     OBASSERT([extension hasPrefix:@"dyn."] == NO, "UTI not registered in the Info.plist?");
     
     if (outIsPackage) {
-        BOOL isPackage = OFTypeConformsTo(fileType, kUTTypePackage);
-        OBASSERT_IF(!isPackage, !OFTypeConformsTo(fileType, kUTTypeFolder), "Types should be declared as conforming to kUTTypePackage, not kUTTypeFolder");
+        BOOL isPackage = OFTypeConformsTo(fileType, UTTypePackage);
+        OBASSERT_IF(!isPackage, !OFTypeConformsTo(fileType, UTTypeFolder), "Types should be declared as conforming to kUTTypePackage, not kUTTypeFolder");
         *outIsPackage = isPackage;
     }
     

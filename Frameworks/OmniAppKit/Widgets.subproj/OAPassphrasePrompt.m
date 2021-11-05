@@ -548,7 +548,7 @@ OB_REQUIRE_ARC;
     NSString *hintLabel = isCurrentlyHidden ? NSLocalizedStringFromTableInBundle(@"Show hint…", @"OmniAppKit", OMNI_BUNDLE, @"Show hint label - password/passphrase prompt dialog") : NSLocalizedStringFromTableInBundle(@"Hide hint…", @"OmniAppKit", OMNI_BUNDLE, @"Hide hint label - password/passphrase prompt dialog");
     self.hintHintField.attributedTitle = [[NSAttributedString alloc] initWithString:hintLabel attributes:@{
         NSFontAttributeName: [NSFont labelFontOfSize:[NSFont labelFontSize]],
-        NSForegroundColorAttributeName: [NSColor selectedMenuItemColor],
+        NSForegroundColorAttributeName: [NSColor selectedTextColor],
     }];
 }
 

@@ -1,4 +1,4 @@
-// Copyright 2011-2020 Omni Development, Inc. All rights reserved.
+// Copyright 2011-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -6,6 +6,9 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniBase/macros.h>
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
+
+// TODO: Remove once clients stop using the 'kUTType' constants
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 #import <MobileCoreServices/MobileCoreServices.h>
 #else
@@ -19,6 +22,10 @@ static inline CFStringRef __attribute__((overloadable)) _OFAsCFString(CFStringRe
 static inline CFStringRef __attribute__((overloadable)) _OFAsCFString(NSString *str) { return (OB_BRIDGE CFStringRef)str; }
 static inline NSString * __attribute__((overloadable)) _OFAsNSString(CFStringRef str) { return (OB_BRIDGE NSString *)str; }
 static inline NSString * __attribute__((overloadable)) _OFAsNSString(NSString *str) { return str; }
+
+static inline UTType * __attribute__((overloadable)) _OFAsUTType(CFStringRef str) { return [UTType typeWithIdentifier:(OB_BRIDGE NSString *)str]; }
+static inline UTType * __attribute__((overloadable)) _OFAsUTType(NSString *str) { return [UTType typeWithIdentifier:str]; }
+static inline UTType * __attribute__((overloadable)) _OFAsUTType(UTType *type) { return type; }
 
 // A path extension that denotes something that is definitely a folder and not a package. This allows OmniPresence iOS clients to make folders with dots in the name w/o worrying whether the thing after the last dot might be a path extension for some file format unknown to that app at that time (though OmniPresence does communitate package types to the iOS clients). This is the same path extension that iWork for iOS uses in its iCloud folder support, so it should be relatively safe to assume that some one won't come along and write an app that claims it is a package. Even so, we'll do our best to always treat things with this path extension as plain folders.
 extern NSString * const OFDirectoryPathExtension;
@@ -48,7 +55,7 @@ extern NSString * _Nullable OFPreferredFilenameExtensionForTypePreferringNative(
 typedef void (^OFUTIEnumerator)(NSString *typeIdentifier, BOOL *stop);
 extern void OFUTIEnumerateKnownTypesForTagPreferringNative(NSString *tagClass, NSString *tagValue, NSString * _Nullable conformingToUTIOrNil, OFUTIEnumerator enumerator);
 
-#define OFTypeConformsTo(type, conformsToType) UTTypeConformsTo(_OFAsCFString(type), _OFAsCFString(conformsToType))
+#define OFTypeConformsTo(type, conformsToType_) ([_OFAsUTType(type) conformsToType: _OFAsUTType(conformsToType_)])
 #define OFTypeEqual(type, otherType) UTTypeEqual(_OFAsCFString(type), _OFAsCFString(otherType))
 
 extern BOOL _OFTypeConformsToOneOfTypes(NSString *type, ...) NS_REQUIRES_NIL_TERMINATION;

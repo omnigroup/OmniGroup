@@ -414,6 +414,8 @@ static void _dictionaryDataAdder(id container, NSString *key, NSData *data)
     } else if (colorType == NSColorTypeCatalog) {
         adders.string(container, @"catalog", [self catalogNameComponent]);
         adders.string(container, @"name", [self colorNameComponent]);
+        // Also archive RGB since available catalog colors differ between platforms.
+        archiveConvertedColor = YES;
     } else if (colorType == NSColorTypePattern) {
         adders.data(container, @"tiff", [[self patternImage] TIFFRepresentation]);
     } else {

@@ -216,7 +216,7 @@ static NSTimer *WarningTimer = nil;
                         warnedCount++;
                 }
                 
-                NSLog(@"Eventually did deallocate <%@:%p> after %.2fs (%lu left)", NSStringFromClass(data->_originalClass), data->_object, deallocTime - data->_originalTime, warnedCount);
+                NSLog(@"🗑 Eventually did deallocate <%@:%p> after %.2fs (%lu left)", NSStringFromClass(data->_originalClass), data->_object, deallocTime - data->_originalTime, warnedCount);
 
                 id <OBMissedDeallocationObserver> observer = Observer;
                 if (observer) {
@@ -439,9 +439,9 @@ static float kExpectedWarningTimeout = 3.0;
                 }
 
                 if (failureReason) {
-                    NSLog(@"*** Expected deallocation of <%@:%p> %.2fs ago, possibly failed due to: %@", NSStringFromClass(warning->_originalClass), warning->_object, elapsedTime, failureReason);
+                    NSLog(@"🗑 Expected deallocation of <%@:%p> %.2fs ago, possibly failed due to: %@", NSStringFromClass(warning->_originalClass), warning->_object, elapsedTime, failureReason);
                 } else {
-                    NSLog(@"*** Expected deallocation of <%@:%p> %.2fs ago", NSStringFromClass(warning->_originalClass), warning->_object, elapsedTime);
+                    NSLog(@"🗑 Expected deallocation of <%@:%p> %.2fs ago", NSStringFromClass(warning->_originalClass), warning->_object, elapsedTime);
                 }
 
 #if 0 && defined(DEBUG_bungi)

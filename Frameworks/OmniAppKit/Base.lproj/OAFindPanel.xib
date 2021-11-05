@@ -87,7 +87,7 @@
                             <outlet property="nextKeyView" destination="110" id="p8R-og-R14"/>
                         </connections>
                     </textField>
-                    <box title="Box" boxType="oldStyle" borderType="none" titlePosition="noTitle" translatesAutoresizingMaskIntoConstraints="NO" id="116" userLabel="Find Options Placeholder">
+                    <box borderType="none" title="Box" titlePosition="noTitle" translatesAutoresizingMaskIntoConstraints="NO" id="116" userLabel="Find Options Placeholder">
                         <rect key="frame" x="20" y="83" width="502" height="21"/>
                         <view key="contentView">
                             <rect key="frame" x="0.0" y="0.0" width="502" height="21"/>

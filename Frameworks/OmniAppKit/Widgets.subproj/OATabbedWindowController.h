@@ -11,7 +11,7 @@
 @class NSTabView, NSTabViewItem;
 @class OATabViewController;
 
-@interface OATabbedWindowController : NSWindowController
+@interface OATabbedWindowController : NSWindowController <NSMenuItemValidation>
 {
     IBOutlet NSTabView *tabView;
 

@@ -59,12 +59,20 @@ static OFCertificateTrustDuration _currentTrustDuration(SecTrustRef serverTrust)
     if (OFHasTrustExceptionForTrust(serverTrust))
         return OFCertificateTrustDurationSession;
     
-    SecTrustResultType tr = kSecTrustResultOtherError;
-    if ((errSecSuccess == SecTrustEvaluate(serverTrust, &tr)) &&
-        (tr == kSecTrustResultProceed || tr == kSecTrustResultUnspecified)) {
-        return OFCertificateTrustDurationAlways;
+    if (@available(macOS 10.15, *)) {
+        if (SecTrustEvaluateWithError(serverTrust, NULL)) {
+            return OFCertificateTrustDurationAlways;
+        }
+    } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        SecTrustResultType tr = kSecTrustResultOtherError;
+        if ((errSecSuccess == SecTrustEvaluate(serverTrust, &tr)) &&
+            (tr == kSecTrustResultProceed || tr == kSecTrustResultUnspecified)) {
+            return OFCertificateTrustDurationAlways;
+        }
+#pragma clang diagnostic pop
     }
-    
     return OFCertificateTrustDurationNotEvenBriefly;
 }
 

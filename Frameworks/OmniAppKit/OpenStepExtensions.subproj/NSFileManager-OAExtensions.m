@@ -6,6 +6,9 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniAppKit/NSFileManager-OAExtensions.h>
+#if defined(MAC_OS_VERSION_11_0) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_VERSION_11_0
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
+#endif
 
 RCS_ID("$Id$")
 
@@ -39,20 +42,53 @@ RCS_ID("$Id$")
     
     NSWorkspace *ws = [NSWorkspace sharedWorkspace];
     
-    for(NSString *childName in enumerable) {
+    for (NSString *childName in enumerable) {
         NSString *childPath = [path stringByAppendingPathComponent:childName];
-        NSString *childType = [ws typeOfFile:childPath error:errOut];
+        
+        NSString *childType;
+        if (@available(macOS 11, *)) {
+            NSURL *childURL = [NSURL fileURLWithPath:childPath];
+            
+            if (![childURL getResourceValue:&childType forKey:NSURLContentTypeKey error:errOut]) {
+                if (errOut) // to match old behavior
+                    return nil;
+                else
+                    continue;
+            }
+            
+           // childType = [ws typeOfFile:childPath error:errOut];
+           // -[NSURL getResourceValue:forKey:error:] with NSURLContentTypeKey instead.
+        } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+            childType = [ws typeOfFile:childPath error:errOut];
+#pragma clang diagnostic pop
+        }
+
         if (!childType) {
             if (errOut)
                 return nil;
             else
                 continue;
         }
-        for(NSString *someDesiredType in someUTIs) {
-            if ([ws type:childType conformsToType:someDesiredType]) {
-                [filteredChildren addObject:fullPath ? childPath : childName];
-                break;
+        if (@available(macOS 11, *)) {
+            UTType *childUTType = [UTType typeWithIdentifier: childType];
+            for (NSString *someDesiredType in someUTIs) {
+                if ([childUTType conformsToType:[UTType typeWithIdentifier:someDesiredType]]) {
+                    [filteredChildren addObject:fullPath ? childPath : childName];
+                    break;
+                }
             }
+        } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+            for (NSString *someDesiredType in someUTIs) {
+                if ([ws type:childType conformsToType:someDesiredType]) {
+                    [filteredChildren addObject:fullPath ? childPath : childName];
+                    break;
+                }
+            }
+#pragma clang diagnostic pop
         }
     }
     

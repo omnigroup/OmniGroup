@@ -1,4 +1,4 @@
-// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -51,6 +51,8 @@ extern NSString * const OUITextViewInsertionPointDidChangeNotification;
 + (CGFloat)oui_defaultTopAndBottomPadding;
 
 @property (nonatomic, copy) NSString *placeholder;
+
+@property (nonatomic) BOOL isResigningFirstResponder;
 
 @property (nonatomic) IBInspectable BOOL shouldAutomaticallyUpdateColorsForCurrentTheme;
 @property(nonatomic) BOOL keepContextualMenuHidden;

@@ -335,7 +335,7 @@
         return;
     }
 
-    [[NSWorkspace sharedWorkspace] openFile:scriptsFolder];
+    [[NSWorkspace sharedWorkspace] openURL:[NSURL fileURLWithPath:scriptsFolder]];
 }
 
 - (void)checkMessageOfTheDay;

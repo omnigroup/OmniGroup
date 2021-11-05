@@ -11,6 +11,8 @@ RCS_ID("$Id$")
 
 NS_ASSUME_NONNULL_BEGIN
 
+OBDEPRECATED_METHOD(+withAppearance:performActions:); // use -performAsCurrentDrawingAppearance: on NSAppearance directly (macOS 11 and up)
+
 @implementation NSAppearance (OAExtensions)
 
 - (BOOL)OA_isDarkAppearance;
@@ -23,15 +25,23 @@ NS_ASSUME_NONNULL_BEGIN
     }
 }
 
+
 + (void)withAppearance:(NSAppearance *)overrideAppearance performActions:(void (^ NS_NOESCAPE)(void))actions;
 {
-    NSAppearance *previousAppearance = self.currentAppearance;
-    
-    @try {
-        self.currentAppearance = overrideAppearance;
-        actions();
-    } @finally {
-        self.currentAppearance = previousAppearance;
+    if (@available(macOS 11, *)) {
+        [overrideAppearance performAsCurrentDrawingAppearance:actions];
+    } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        NSAppearance *previousAppearance = self.currentAppearance;
+        
+        @try {
+            self.currentAppearance = overrideAppearance;
+            actions();
+        } @finally {
+            self.currentAppearance = previousAppearance;
+        }
+#pragma clang diagnostic pop
     }
 }
 

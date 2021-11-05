@@ -6,6 +6,9 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 import Foundation
+#if canImport(UniformTypeIdentifiers)
+import UniformTypeIdentifiers
+#endif
 
 /// A class that wraps a UTI struct and caches some other values computable from the underlying UTI.
 @objc(OFTypeIdentifier) open class TypeIdentifier : NSObject {
@@ -36,6 +39,12 @@ import Foundation
 
     // Well known types
 
-    @objc public static var plainText = TypeIdentifier(UTI(kUTTypePlainText as String))
+    @objc public static var plainText: TypeIdentifier {
+        if #available(macOS 11, *) {
+            return TypeIdentifier(UTI(withUTType: UTType.plainText))
+        } else {
+            return TypeIdentifier(UTI(kUTTypePlainText as String))
+        }
+    }
 
 }

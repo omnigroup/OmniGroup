@@ -38,12 +38,12 @@
 #pragma mark -
 #pragma mark API
 
-- (id)delegate;
+- (NSObject<OASearchFieldDelegate, NSControlTextEditingDelegate> *)delegate;
 {
     return delegate;
 }
 
-- (void)setDelegate:(id)newValue;
+- (void)setDelegate:(NSObject<OASearchFieldDelegate, NSControlTextEditingDelegate> *)newValue;
 {
     delegate = newValue;
     
@@ -153,30 +153,21 @@
     [[self cell] setSendsWholeSearchString:newValue];
 }
 
-
 #pragma mark -
-#pragma mark Validation
-
-- (BOOL)validateMenuItem:(NSMenuItem *)item;
-{
-    if (delegateRespondsTo.searchField_validateMenuItem)
-        return [delegate searchField:self validateMenuItem:item];
-    return YES;
-}
-
-#pragma mark -
-#pragma mark NSControl delegate
+#pragma mark NSControlTextEditingDelegate
 
 - (void)controlTextDidChange:(NSNotification *)aNotification
 {
-    if (delegateRespondsTo.searchFieldDidEndEditing && ![self sendsWholeSearchString])
+    if (delegateRespondsTo.searchFieldDidEndEditing && ![self sendsWholeSearchString]) {
         [delegate searchFieldDidEndEditing:self];
+    }
 }
 
 - (void)controlTextDidEndEditing:(NSNotification *)notification;
 {
-    if (delegateRespondsTo.searchFieldDidEndEditing)
+    if (delegateRespondsTo.searchFieldDidEndEditing) {
         [delegate searchFieldDidEndEditing:self];
+    }
 }
 
 - (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)commandSelector;
@@ -198,7 +189,8 @@
         NSInteger searchModeIndex = [menu indexOfItemWithRepresentedObject:searchMode];
         if (searchModeIndex != -1) {
             NSMenuItem *item = [menu itemAtIndex:searchModeIndex];
-            [self validateMenuItem:item];	// Make sure the item title is up to date (but don't actually disable the menu item if validation returns NO)
+            
+            [delegate searchField:self validateMenuItem:item];	// Make sure the item title is up to date (but don't actually disable the menu item if validation returns NO)
             return [item title];
         }
     }

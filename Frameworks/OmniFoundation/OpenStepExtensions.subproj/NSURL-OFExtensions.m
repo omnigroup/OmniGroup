@@ -1,4 +1,4 @@
-// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,7 @@
 
 @import OmniBase;
 @import Foundation;
+@import UniformTypeIdentifiers;
 
 #import <OmniFoundation/NSSet-OFExtensions.h>
 #import <OmniFoundation/NSString-OFReplacement.h>
@@ -21,7 +22,6 @@
 #import <CoreServices/CoreServices.h>
 #endif
 
-RCS_ID("$Id$")
 
 OB_REQUIRE_ARC
 
@@ -715,9 +715,21 @@ OFScanPathExtensionIsPackage OFIsPackageWithKnownPackageExtensions(NSSet * _Null
         }
 
         __block BOOL foundPackage = NO;
-        OFUTIEnumerateKnownTypesForTagPreferringNative((NSString *)kUTTagClassFilenameExtension, pathExtension, nil/*conformingToUTIOrNil*/, ^(NSString *typeIdentifier, BOOL *stop){
+        NSString *tagClass;
+        
+        if (@available(macOS 11, *)) {
+            tagClass = UTTagClassFilenameExtension;
+        } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+            tagClass = (NSString *)kUTTagClassFilenameExtension;
+#pragma clang diagnostic pop
+        }
+        
+
+        OFUTIEnumerateKnownTypesForTagPreferringNative(tagClass, pathExtension, nil/*conformingToUTIOrNil*/, ^(NSString *typeIdentifier, BOOL *stop) {
             // We check conformance here rather than passing in kUTTypePackage to OFUTIEnumerateKnownTypesForTagPreferringNative. The underlying UTTypeCreateAllIdentifiersForTag will *generate* a dynamic type that conforms to what we pass in instead of just returning an empty array.
-            if (OFTypeConformsTo(typeIdentifier, kUTTypePackage)) {
+            if (OFTypeConformsTo(typeIdentifier, UTTypePackage)) {
                 foundPackage = YES;
                 *stop = YES;
             }

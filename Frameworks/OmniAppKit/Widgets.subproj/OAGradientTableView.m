@@ -43,7 +43,7 @@ RCS_ID("$Id$");
     NSColorSpace *rgb = [NSColorSpace genericRGBColorSpace];
 
     // Take the color apart
-    NSColor *alternateSelectedControlColor = [NSColor alternateSelectedControlColor];
+    NSColor *alternateSelectedControlColor = [NSColor selectedContentBackgroundColor];
     CGFloat hue, saturation, brightness, alpha;
     [[alternateSelectedControlColor colorUsingColorSpace:rgb] getHue:&hue saturation:&saturation brightness:&brightness alpha:&alpha];
 

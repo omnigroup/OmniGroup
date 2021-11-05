@@ -15,10 +15,16 @@
 #import <CoreImage/CIContext.h>
 
 #import <OmniAppKit/OAVersion.h>
+#if defined(MAC_OS_VERSION_11_0) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_VERSION_11_0
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
+#endif
 
 #include <stdlib.h>
 #include <memory.h>
 
+#if defined(MAC_OS_VERSION_11_0) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_VERSION_11_0
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
+#endif
 
 RCS_ID("$Id$")
 
@@ -256,7 +262,14 @@ OBPerformPosing(^{
         [imageDictionaryLock lock];
         image = [imageDictionary objectForKey:fileType];
         if (image == nil) {
-            image = [[NSWorkspace sharedWorkspace] iconForFileType:fileType];
+            if (@available (macOS 11, *)) {
+                image = [[NSWorkspace sharedWorkspace] iconForContentType:[UTType typeWithIdentifier:fileType]];
+                } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+                    image = [[NSWorkspace sharedWorkspace] iconForFileType:fileType];
+#pragma clang diagnostic pop
+                }
             if (image == nil)
                 image = [NSNull null];
             [imageDictionary setObject:image forKey:fileType];
@@ -694,12 +707,26 @@ static NSData *_imageDataWithFileType(NSImage *self, NSBitmapImageFileType image
 
 - (NSData *)pngData;
 {
-    return _imageDataWithFileType(self, NSBitmapImageFileTypePNG, kUTTypePNG, @{});
+    if (@available(macOS 11, *)) {
+        return _imageDataWithFileType(self, NSBitmapImageFileTypePNG, (__bridge CFStringRef)(UTTypePNG.identifier), @{}); // the api using this doesn't need the UTType, so not making a new version right this moment.
+    } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        return _imageDataWithFileType(self, NSBitmapImageFileTypePNG, kUTTypePNG, @{});
+#pragma clang diagnostic pop
+    }
 }
 
 - (NSData *)jpegDataWithCompressionFactor:(CGFloat)compressionFactor;
 {
-    return _imageDataWithFileType(self, NSBitmapImageFileTypeJPEG, kUTTypeJPEG, @{NSImageCompressionFactor : @(compressionFactor)});
+    if (@available(macOS 11, *)) {
+        return _imageDataWithFileType(self, NSBitmapImageFileTypeJPEG, (__bridge CFStringRef)(UTTypeJPEG.identifier), @{NSImageCompressionFactor : @(compressionFactor)});
+    } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        return _imageDataWithFileType(self, NSBitmapImageFileTypeJPEG, kUTTypeJPEG, @{NSImageCompressionFactor : @(compressionFactor)});
+#pragma clang diagnostic pop
+    }
 }
 
 + (NSImage *)documentIconWithContent:(NSImage *)contentImage;
@@ -762,7 +789,6 @@ static NSData *_imageDataWithFileType(NSImage *self, NSBitmapImageFileType image
 //
 // System Images
 //
-
 static NSImage *getSystemImage(OSType fourByteCode, BOOL flip)
 {
     IconRef iconRef = 0; /* 0 is documented to be the invalid value for an IconRef */
@@ -833,6 +859,20 @@ static void setupTintTable(void)
     pthread_once(&setupTintTableOnce, setupTintTable);
     return tintTable;
 }
+
+#if defined(MAC_OS_VERSION_11_0) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_VERSION_11_0
++ (NSArray <UTType*>*)imageUTTypes;
+{
+    NSMutableArray *imageUTTypes = [NSMutableArray array];
+    for (NSString *imageUTI in [NSImage imageTypes]) {
+        UTType *imageType = [UTType typeWithIdentifier:imageUTI];
+        if (imageType) {
+            [imageUTTypes addObject:imageType];
+        }
+    }
+    return imageUTTypes;
+}
+#endif
 
 @end
 

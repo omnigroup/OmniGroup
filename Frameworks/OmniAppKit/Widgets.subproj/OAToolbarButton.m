@@ -62,11 +62,18 @@ RCS_ID("$Id$");
     else
         newSize = NSMakeSize(32.0f, 32.0f);
 
-    NSToolbarItem *toolbarItem = self.toolbarItem;
     [self setFrameSize:newSize];
-    [toolbarItem setMinSize:newSize];
-    [toolbarItem setMaxSize:newSize];
-
+    if (@available(macOS 12, *)) {
+        //nope don't do this anymore. it should Just Work.
+    } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        NSToolbarItem *toolbarItem = self.toolbarItem;
+        [toolbarItem setMinSize:newSize];
+        [toolbarItem setMaxSize:newSize];
+#pragma clang diagnostic pop
+    }
+    
     NSRect myBounds = [self bounds];
     NSArray *subviews = [self subviews];
     if ([subviews count] > 0) {

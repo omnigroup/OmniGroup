@@ -8,6 +8,9 @@
 //  Created by Timothy J. Wood on 8/31/05.
 
 #import <OmniQuartz/CIContext-OQExtensions.h>
+#if defined(MAC_OS_VERSION_11_0) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_VERSION_11_0
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
+#endif
 
 RCS_ID("$Id$")
 
@@ -16,7 +19,16 @@ RCS_ID("$Id$")
 // TODO: Change this to return an NSError.  I would have done that to start, but wasn't sure what to do about the domain.  This is mostly for debugging anyway.
 - (BOOL)writePNGImage:(CIImage *)image fromRect:(CGRect)rect toURL:(NSURL *)url;
 {
-    CGImageDestinationRef dest = CGImageDestinationCreateWithURL((CFURLRef)url, kUTTypePNG, 1, NULL);
+    CFStringRef typeIdentifier;
+    if (@available(macOS 11, *)) {
+        typeIdentifier = (CFStringRef)UTTypePNG.identifier;
+    } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        typeIdentifier = kUTTypePNG;
+#pragma clang diagnostic pop
+    }
+    CGImageDestinationRef dest = CGImageDestinationCreateWithURL((CFURLRef)url, typeIdentifier, 1, NULL);
     if (!dest)
 	return NO;
     

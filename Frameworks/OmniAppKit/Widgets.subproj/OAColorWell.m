@@ -6,6 +6,9 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniAppKit/OAColorWell.h>
+#if defined(MAC_OS_VERSION_11_0) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_VERSION_11_0
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
+#endif
 
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
@@ -137,8 +140,17 @@ NSString * const OAColorWellDidDeactivate = @"OAColorWellDidDeactivate";
     [openPanel setAllowsMultipleSelection:NO];
     [openPanel setCanChooseDirectories:NO];
     [openPanel setCanChooseFiles:YES];
-    [openPanel setAllowedFileTypes:[NSImage imageTypes]];
-
+    if (@available(macOS 11, *)) {
+        openPanel.allowedContentTypes = [[NSImage imageTypes] arrayByPerformingBlock:^id _Nonnull (NSString * _Nonnull identifier) {
+            return [UTType typeWithIdentifier: identifier];
+        }];
+    } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        [openPanel setAllowedFileTypes:[NSImage imageTypes]];
+#pragma clang diagnostic pop
+    }
+    
     // Not using a sheet since this will typically be run from an inspector.  If you want to convert this to a sheet, make sure to check whether you are in an inspector (probably easiest to add a new action and factor the method guts out into a private method).
     if ([openPanel runModal] == NSModalResponseOK) {
         NSURL *url = [openPanel URL];
