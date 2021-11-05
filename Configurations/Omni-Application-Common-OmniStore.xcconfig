@@ -1,11 +1,7 @@
-// Copyright 2005-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2021 Omni Development, Inc. All rights reserved.
+//
 // This software may only be used and reproduced according to the terms in the file OmniSourceLicense.html, which should be distributed with this project and can also be found at <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
-// $Id$
 
 // Common Application settings for building for the Omni Store
 
-OMNI_STORE_OTHER_LDFLAGS = $(value) $(OMNI_SOFTWARE_UPDATE_LDFLAGS) 
-
-OMNI_STORE_BUNDLE_IDENTIFIER_SUFFIX = $(OMNI_OMNISTORE_BUNDLE_IDENTIFIER_SUFFIX)
-OMNI_OMNISTORE_BUNDLE_IDENTIFIER_SUFFIX = 
-OMNI_STORE_IDENTIFIER_SUFFIX = 
+OMNI_STORE_OTHER_LDFLAGS = $(value) $(OMNI_SOFTWARE_UPDATE_LDFLAGS)

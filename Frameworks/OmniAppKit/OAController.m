@@ -199,6 +199,9 @@
 
 - (void)sendFeedbackEmailTo:(NSString *)feedbackAddress subject:(NSString *)subjectLine body:(NSString *)body;
 {
+#if MAC_APP_STORE_RETAIL_DEMO
+    [OAController runFeatureNotEnabledAlertForWindow:nil completion:nil];
+#else
     // Application developers should enter the feedback address in their main bundle's info dictionary.
     if (!feedbackAddress) {
         NSAlert *alert = [[NSAlert alloc] init];
@@ -213,6 +216,7 @@
         if (![internetConfig launchMailTo:feedbackAddress carbonCopy:nil subject:subjectLine body:body error:&error])
             [[NSApplication sharedApplication] presentError:error];
     }
+#endif
 }
 
 - (void)sendFeedbackEmailWithBody:(NSString *)body;
@@ -370,6 +374,26 @@
 #pragma mark -
 
 #if MAC_APP_STORE_RETAIL_DEMO
+
+static int _retailDemoBlockAutoTerminationCounter = 0;
+
+- (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)sender;
+{
+    return _retailDemoBlockAutoTerminationCounter == 0;
+}
+
++ (void)retailDemoBlockAutoTermination;
+{
+    _retailDemoBlockAutoTerminationCounter++;
+}
+
++ (void)retailDemoUnblockAutoTermination;
+{
+    if (_retailDemoBlockAutoTerminationCounter > 0) {
+        _retailDemoBlockAutoTerminationCounter--;
+    }
+}
+
 + (void)runFeatureNotEnabledAlertForWindow:(nullable NSWindow *)window completion:(void (^ _Nullable)(void))completion;
 {
     void (^completionBlock)(void) = [completion copy];
@@ -391,6 +415,7 @@
         }];
     }
 }
+
 #endif
 
 @end

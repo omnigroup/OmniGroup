@@ -1,6 +1,7 @@
 $(SRCROOT)/OmniUI.xcodeproj/project.pbxproj
 ../iOS/DifferenceEngine.swift
 ../iOS/UINavigationController-OUIExtensions.m
+BaselineSizeCategoryModifier.swift
 Bundle.swift
 ImageSwappingButton.swift
 Inspectors/DisclosableInspectorPane.swift
@@ -64,13 +65,13 @@ Inspectors/OUISegmentedControl.m
 Inspectors/OUISegmentedControlButton.m
 Inspectors/OUISegmentedControlInspectorSlice.m
 Inspectors/OUISingleViewInspectorPane.m
-Inspectors/OUISliceSeparatorView.m
 Inspectors/OUIStackedSlicesInspectorPane.m
 Inspectors/OUITabBar.m
 Inspectors/OUITabBarButton.m
 Inspectors/OUITextColorAttributeInspectorSlice.m
 Inspectors/OUITextExampleInspectorSlice.m
 Inspectors/ToggleInspectorSlice.swift
+ManualObjectWillChangeManagingObservableObject.swift
 MultiPane/MultiPaneCompactNavigationAnimator.swift
 MultiPane/MultiPaneController.swift
 MultiPane/MultiPaneControllerBarButtonManagement.swift

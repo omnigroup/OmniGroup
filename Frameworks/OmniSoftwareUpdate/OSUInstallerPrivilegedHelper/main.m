@@ -179,7 +179,9 @@ static NSString * OSUInstallerPrivilegedHelperFileNameAndNumberErrorKey = @"com.
 
 - (BOOL)listener:(NSXPCListener *)listener shouldAcceptNewConnection:(NSXPCConnection *)connection
 {
+    NSLog(@"listener:shouldAcceptNewConnection: %p", connection);
     if (!OSUCheckConnectionAuditToken(connection)) {
+        NSLog(@"audit token rejected");
         return NO;
     }
 

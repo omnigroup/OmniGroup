@@ -1,4 +1,4 @@
-// Copyright 2014-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -6,8 +6,6 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniUI/OUISplitViewController.h>
-
-RCS_ID("$Id$")
 
 @implementation OUISplitViewController
 {
@@ -29,8 +27,8 @@ RCS_ID("$Id$")
 - (void)setPreferredDisplayMode:(UISplitViewControllerDisplayMode)preferredDisplayMode;
 {
     _actualPreferredDisplayMode = preferredDisplayMode;
-    if (preferredDisplayMode == UISplitViewControllerDisplayModePrimaryHidden) {
-        preferredDisplayMode = UISplitViewControllerDisplayModeAllVisible;
+    if (preferredDisplayMode == UISplitViewControllerDisplayModeSecondaryOnly) {
+        preferredDisplayMode = UISplitViewControllerDisplayModeOneBesideSecondary;
     }
     [super setPreferredDisplayMode:preferredDisplayMode];
 }

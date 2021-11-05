@@ -90,19 +90,18 @@ OBDidLoad(^{
         defaultsScratchDirectoryPath = [defaultsScratchDirectoryPath stringByExpandingTildeInPath];
     }
     
-    [self createDirectoryAtPath:defaultsScratchDirectoryPath
-    withIntermediateDirectories:YES
-                     attributes:[NSDictionary dictionaryWithObject:[NSNumber numberWithInt:0777 | S_ISVTX] forKey:NSFilePosixPermissions]
-                          error:NULL];
+    [self createDirectoryAtPath:defaultsScratchDirectoryPath withIntermediateDirectories:YES attributes:@{NSFilePosixPermissions: @(0700 | S_ISVTX)} error:NULL];
 
+#if MAC_APP_STORE_RETAIL_DEMO
+    // Retail demos clear and reuse the same scratch directory every time
+    workingScratchDirectoryPath = defaultsScratchDirectoryPath;
+    [self removeItemAtPath:workingScratchDirectoryPath error:NULL];
+#else
     workingScratchDirectoryPath = [defaultsScratchDirectoryPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@-%@-######", [[NSProcessInfo processInfo] processName], NSUserName()]];
     workingScratchDirectoryPath = [self tempFilenameFromHashesTemplate:workingScratchDirectoryPath];
+#endif
 
-    BOOL success = [self createDirectoryAtPath:workingScratchDirectoryPath
-                   withIntermediateDirectories:NO
-                                    attributes:[NSDictionary dictionaryWithObject:[NSNumber numberWithInt:0700] forKey:NSFilePosixPermissions]
-                                         error:NULL];
-    
+    BOOL success = [self createDirectoryAtPath:workingScratchDirectoryPath withIntermediateDirectories:NO attributes:@{NSFilePosixPermissions: @(0700)} error:NULL];
     if (!success) {
         [scratchDirectoryLock unlock];
         return nil;

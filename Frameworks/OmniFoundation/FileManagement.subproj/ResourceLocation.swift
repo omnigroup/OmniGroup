@@ -496,7 +496,7 @@ private func getFolderURLContainerDisplayName(_ folderURL: URL) -> String? {
                     do {
                         try coordinator.readItem(at: fileURL, withChanges: false) { (newURL, outError) -> Bool in
                             do {
-                                let fileEdit = try OFFileEdit(fileURL: newURL)
+                                let fileEdit = try OFFileEdit(fileURL: newURL, withDeepModificationDate: true)
                                 scannedFileEdits[resourceType.0]!.fileEdits.insert(fileEdit)
                                 return true
                             } catch let editError {

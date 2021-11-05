@@ -17,6 +17,7 @@
 #import <OmniUI/OUIMinimalScrollNotifierImplementation.h>
 #import <OmniUI/UIViewController-OUIExtensions.h>
 #import <OmniUI/OUIAbstractTableViewInspectorSlice.h>
+#import <OmniUI/OUIInstructionTextInspectorSlice.h>
 
 #import "OUIParameters.h"
 
@@ -100,6 +101,12 @@ static id _commonInit(OUIStackedSlicesInspectorPaneContentView *self)
     NSArray *_slices;
     id <OUIScrollNotifier> _scrollNotifier;
     BOOL _initialLayoutHasBeenDone;
+}
+
+static BOOL addImplicitSeparators = NO;
++ (BOOL)implicitSeparators; { return addImplicitSeparators; }
++ (void)setImplicitSeparators:(BOOL)yn; {
+    addImplicitSeparators = yn;
 }
 
 + (instancetype)stackedSlicesPaneWithAvailableSlices:(OUIInspectorSlice *)slice, ...;
@@ -301,6 +308,12 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
         [slice.view removeFromSuperview];
         [slice removeFromParentViewController];
     }
+
+    // Also remove any old implicit separators
+    NSArray *separators = [NSArray arrayWithArray:self.sliceStackView.arrangedSubviews];
+    for (UIView *view in separators)
+        [self.sliceStackView removeArrangedSubview:view];
+
     // view controllers need to be told they're being added & removed from each other.
     _slices = slices;
     
@@ -317,12 +330,42 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
             slice.contentView.directionalLayoutMargins = directionalLayoutMargins;
         }
     }
+
+    NSInteger addedSeparators = 0;
+    CGRect separatorRect = self.sliceStackView.bounds;
+    separatorRect.size.height = 1.0 / [[UIScreen mainScreen] scale];
     for (NSUInteger index = 0; index < slices.count; index++) {
         OUIInspectorSlice *previous = index > 0 ? slices[index-1] : nil;
         OUIInspectorSlice *next = index < (slices.count-1) ? slices[index+1] : nil;
         OUIInspectorSlice *current = slices[index];
-        
         current.groupPosition = [OUIStackedSlicesInspectorPane _sliceGroupPositionForSlice:current precededBySlice:previous followedBySlice:next];
+
+        // Implicit separators
+        BOOL atTop = previous == nil;
+        BOOL multiRow = [previous isKindOfClass:[OUIAbstractTableViewInspectorSlice class]] && [((OUIAbstractTableViewInspectorSlice *)previous).tableView numberOfRowsInSection:0] > 1;
+        BOOL nextMultiRow = [current isKindOfClass:[OUIAbstractTableViewInspectorSlice class]] && [((OUIAbstractTableViewInspectorSlice *)current).tableView numberOfRowsInSection:0] > 1;
+        BOOL nextPadding = [current isKindOfClass:[OUIEmptyPaddingInspectorSlice class]];
+        BOOL instructions = previous != nil && [previous isKindOfClass:[OUIInstructionTextInspectorSlice class]];
+        BOOL optOut = [previous suppressesTrailingImplicitSeparator];
+        if (addImplicitSeparators && !atTop && !optOut && !multiRow && (!instructions || !(nextMultiRow || nextPadding))) {
+            UIView *separator = [[UIView alloc] initWithFrame:separatorRect];
+            separator.backgroundColor = [self sliceSeparatorColor] ?: [OUIInspectorSlice sliceSeparatorColor];
+            [self.sliceStackView insertArrangedSubview:separator atIndex:(index + addedSeparators)];
+            [separator.heightAnchor constraintEqualToConstant:separatorRect.size.height].active = YES;
+            addedSeparators++;
+        }
+    }
+
+    // Implicit bottom separator
+    BOOL multiRow = [slices.lastObject isKindOfClass:[OUIAbstractTableViewInspectorSlice class]] && [((OUIAbstractTableViewInspectorSlice *)slices.lastObject).tableView numberOfRowsInSection:0] > 1;
+    BOOL instructions = [slices.lastObject isKindOfClass:[OUIInstructionTextInspectorSlice class]];
+    BOOL emptyPadding = [slices.lastObject isKindOfClass:[OUIEmptyPaddingInspectorSlice class]];
+    if (addImplicitSeparators && slices.count && !multiRow && !emptyPadding && !instructions) {
+        UIView *separator = [[UIView alloc] initWithFrame:separatorRect];
+        separator.backgroundColor = [self sliceSeparatorColor] ?: [OUIInspectorSlice sliceSeparatorColor];
+        [self.sliceStackView insertArrangedSubview:separator atIndex:(slices.count + addedSeparators)];
+        [separator.heightAnchor constraintEqualToConstant:separatorRect.size.height].active = YES;
+        addedSeparators++;
     }
     [self setNeedsSliceLayout];
 }

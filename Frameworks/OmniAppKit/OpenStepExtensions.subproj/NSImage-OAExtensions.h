@@ -42,6 +42,8 @@ extern NSImage *OAImageNamed(NSString *name, NSBundle *bundle);
 
 + (NSImage *)imageForFileType:(NSString *)fileType;
     // Caching wrapper for -[NSWorkspace iconForFileType:].  This method is not thread-safe at the moment.
+
++ (NSImage *)customImageForFile:(NSString *)path;
 + (NSImage *)imageForFile:(NSString *)path;
 
 + (NSImage *)draggingIconWithTitle:(NSString *)title andImage:(NSImage *)image;

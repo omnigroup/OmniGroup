@@ -22,4 +22,14 @@ typedef void (^ODOObjectPropertyChangeAction)(__kindof ODOObject *object, ODOPro
 
 @end
 
+typedef void (^ODOObjectSetDefaultAttributeValues)(__kindof ODOObject *object);
+
+@interface ODOObjectSetDefaultAttributeValueActions : NSObject
+
+- (void)addAction:(ODOObjectSetDefaultAttributeValues)action;
+
+@property(nonatomic,readonly) NSArray <ODOObjectSetDefaultAttributeValues> *actions;
+
+@end
+
 NS_ASSUME_NONNULL_END

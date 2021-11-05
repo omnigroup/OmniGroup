@@ -18,17 +18,50 @@ NS_ASSUME_NONNULL_BEGIN
 // Here we assume the caller is either looking at a file that shouldn't be edited by anyone else while we are looking (in a tmp directory), or that the caller is in the midst of file coordination on this fileURL.
 - (nullable instancetype)initWithFileURL:(NSURL *)fileURL error:(NSError **)outError;
 {
+    return [self initWithFileURL:fileURL withDeepModificationDate:NO error:outError];
+}
+
+// This is a slightly better effort for supporting packages where interior members may be edited w/o generating a new inode for the file package (or possilby even modification date).
+- (nullable instancetype)initWithFileURL:(NSURL *)fileURL withDeepModificationDate:(BOOL)deepModificationDate error:(NSError **)outError;
+{
 #ifdef DEBUG_bungi0
     OBPRECONDITION([NSThread isMainThread] == NO, "Are we inside file coordination?");
 #endif
-    
+
     NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:[fileURL path]  error:outError];
     if (!attributes)
         return nil;
-    
+
     BOOL isDirectory = [attributes[NSFileType] isEqual:NSFileTypeDirectory];
-    
-    return [self initWithFileURL:fileURL fileModificationDate:attributes.fileModificationDate inode:attributes.fileSystemFileNumber isDirectory:isDirectory];
+
+    self = [self initWithFileURL:fileURL fileModificationDate:attributes.fileModificationDate inode:attributes.fileSystemFileNumber isDirectory:isDirectory];
+
+    if (deepModificationDate) {
+        if (isDirectory) {
+            NSDate *newestDate = _fileModificationDate;
+
+            NSDirectoryEnumerator *enumerator = [[NSFileManager defaultManager] enumeratorAtURL:fileURL includingPropertiesForKeys:@[NSURLContentModificationDateKey] options:0 errorHandler:^BOOL(NSURL * _Nonnull url, NSError * _Nonnull error) {
+                [error log:@"Error enumerating at %@", url];
+                return YES; // Continue anyway
+            }];
+            for (NSURL *childURL in enumerator) {
+                __autoreleasing NSError *enumError = nil;
+                __autoreleasing NSDate *childModificationDate;
+
+                if (![childURL getResourceValue:&childModificationDate forKey:NSURLContentModificationDateKey error:&enumError]) {
+                    [enumError log:@"Error getting child modification date at %@", childURL];
+                }
+                if ([childModificationDate isAfterDate:newestDate]) {
+                    newestDate = childModificationDate;
+                }
+            }
+            _deepModificationDate = newestDate;
+        } else {
+            _deepModificationDate = _fileModificationDate;
+        }
+    }
+
+    return self;
 }
 
 // Here we assume that the inputs were previously read under file coordination and so are consistent.
@@ -76,7 +109,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSUInteger)hash;
 {
-    return [_originalFileURL hash] ^ [_fileModificationDate hash] ^ _inode ^ _directory;
+    return [_originalFileURL hash] ^ [_fileModificationDate hash] ^ _inode ^ _directory ^ [_deepModificationDate hash];
 }
 
 - (BOOL)isEqual:(id)otherObject;
@@ -85,14 +118,20 @@ NS_ASSUME_NONNULL_BEGIN
         return NO;
     }
     OFFileEdit *otherEdit = otherObject;
-    return [_originalFileURL isEqual:otherEdit->_originalFileURL] && [_fileModificationDate isEqual:otherEdit->_fileModificationDate] && _inode == otherEdit->_inode && _directory == otherEdit->_directory;
+    if (![_originalFileURL isEqual:otherEdit->_originalFileURL] || ![_fileModificationDate isEqual:otherEdit->_fileModificationDate] || _inode != otherEdit->_inode || _directory != otherEdit->_directory) {
+        return NO;
+    }
+    if (OFNOTEQUAL(_deepModificationDate, otherEdit->_deepModificationDate)) {
+        return NO;
+    }
+    return YES;
 }
 
 #pragma mark - Debugging
 
 - (NSString *)debugDescription;
 {
-    return [NSString stringWithFormat:@"<%@:%p %@ date:%@, inode:%lu, directory:%d", NSStringFromClass([self class]), self, _originalFileURL, _fileModificationDate, _inode, _directory];
+    return [NSString stringWithFormat:@"<%@:%p %@ date:%@, deep:%@, inode:%lu, directory:%d", NSStringFromClass([self class]), self, _originalFileURL, _fileModificationDate, _deepModificationDate, _inode, _directory];
 }
 
 @end

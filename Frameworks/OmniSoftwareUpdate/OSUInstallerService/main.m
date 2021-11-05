@@ -120,8 +120,12 @@ typedef NS_OPTIONS(NSUInteger, OSUInstallerServiceUpdateOptions) {
         return;
     }
 
+    NSLog(@"Preflight update with arguments %@", arguments);
+
     [self checkPrivilegedHelperToolVersionWithReply:^(BOOL versionMismatch, NSInteger installedToolVersion) {
         BOOL shouldInstallOrUpdateTool = versionMismatch;
+
+        NSLog(@"Preflight finished with versionMismatch: %d, installedToolVersion: %ld", versionMismatch, installedToolVersion);
 
         // Update the authorization rights db in /etc/authorization if necessary
         OSUInstallerSetUpAuthorizationRights();
@@ -318,13 +322,6 @@ static void _afterDelayPerformBlockOnMainThread(NSTimeInterval delay, void (^blo
     
     reply = [reply copy];
     
-    id <OSUInstallerPrivilegedHelper> remoteProxy = [connection remoteObjectProxyWithErrorHandler:^(NSError *error) {
-        OBASSERT([[error domain] isEqual:NSCocoaErrorDomain]);
-        OBASSERT([error code] == NSXPCConnectionInvalid);
-        [connection invalidate];
-        reply(YES, 0);
-    }];
-
     __block NSConditionLock *hasSentReplyLock = [[NSConditionLock alloc] initWithCondition:NO];
     __block void (^replyOnce)(BOOL versionMismatch, NSInteger installedToolVersion) = ^(BOOL versionMismatch, NSInteger installedToolVersion) {
         [hasSentReplyLock lock];
@@ -334,17 +331,21 @@ static void _afterDelayPerformBlockOnMainThread(NSTimeInterval delay, void (^blo
         [hasSentReplyLock unlockWithCondition:YES];
     };
 
-    _afterDelayPerformBlockOnMainThread(1.0, ^{
-#ifdef DEBUG_kc
-        NSLog(@"DEBUG: OSUInstallerService: version check: timed out");
-#endif
+    id <OSUInstallerPrivilegedHelper> remoteProxy = [connection remoteObjectProxyWithErrorHandler:^(NSError *error) {
+        OBASSERT([[error domain] isEqual:NSCocoaErrorDomain]);
+        OBASSERT([error code] == NSXPCConnectionInvalid);
+        [connection invalidate];
+        NSLog(@"OSUInstallerService: connection invalid: %@", [error toPropertyList]);
+        replyOnce(YES, 0);
+    }];
+
+    _afterDelayPerformBlockOnMainThread(10.0, ^{
+        NSLog(@"OSUInstallerService: version check: timed out");
         replyOnce(YES, 0); // the old helper tool isn't responding, let's install a new one
     });
 
     [remoteProxy getVersionWithReply:^(NSUInteger version) {
-#ifdef DEBUG_kc
-        NSLog(@"DEBUG: OSUInstallerService: version check: installed is %@, expected is %@", @(version), @(OSUInstallerPrivilegedHelperVersion));
-#endif
+        NSLog(@"OSUInstallerService: version check: installed is %@, expected is %@", @(version), @(OSUInstallerPrivilegedHelperVersion));
         [connection invalidate];
         replyOnce(version != OSUInstallerPrivilegedHelperVersion, version);
     }];

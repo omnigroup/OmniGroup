@@ -19,6 +19,9 @@ SUPPORTED_PLATFORMS = $(OMNI_SUPPORTED_PLATFORMS)
 
 IPHONEOS_DEPLOYMENT_TARGET = 13.0
 
+// Allow each project to override the deployment target
+#include "../Omni-Version-Info.xcconfig"
+
 // Bitcode makes crash reports unreadable since Apple builds a new binary with a new uuid
 ENABLE_BITCODE = NO
 STRIP_BITCODE_FROM_COPIED_FILES = NO

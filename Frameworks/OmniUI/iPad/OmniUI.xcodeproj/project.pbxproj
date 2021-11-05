@@ -34,6 +34,8 @@
 		235D67421EB00E06007FCF56 /* OUIMultiPaneNotifications.m in Sources */ = {isa = PBXBuildFile; fileRef = 235D67401EB00E06007FCF56 /* OUIMultiPaneNotifications.m */; };
 		236CA7741B5D690B00D66AFA /* UIVisualEffectView-OUIExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 236CA7721B5D690B00D66AFA /* UIVisualEffectView-OUIExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		236CA7751B5D690B00D66AFA /* UIVisualEffectView-OUIExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 236CA7731B5D690B00D66AFA /* UIVisualEffectView-OUIExtensions.m */; };
+		2B1F275F25FA987700D64343 /* ManualObjectWillChangeManagingObservableObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B1F275E25FA987700D64343 /* ManualObjectWillChangeManagingObservableObject.swift */; };
+		2B98A6AD25F0433B007F9EE9 /* BaselineSizeCategoryModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B98A6AC25F0433B007F9EE9 /* BaselineSizeCategoryModifier.swift */; };
 		2BAF3C65250994EE003606FC /* ImageSwappingButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BAF3C64250994ED003606FC /* ImageSwappingButton.swift */; };
 		2BD092BE23E8F56E0087AECD /* OUILicensingAuthenticationCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BD092BD23E8F56E0087AECD /* OUILicensingAuthenticationCommand.swift */; };
 		2BEA0072252BD89500AA82FD /* ViewModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BEA0071252BD89500AA82FD /* ViewModifiers.swift */; };
@@ -405,8 +407,6 @@
 		5F31A2621F968A9B00F409CE /* UIApplication-OUIExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F31A2601F968A9B00F409CE /* UIApplication-OUIExtensions.m */; };
 		5FA8639A1B5DAE0F00873A12 /* UIPopoverPresentationController-OUIExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 5FA863981B5DAE0F00873A12 /* UIPopoverPresentationController-OUIExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		5FA8639B1B5DAE0F00873A12 /* UIPopoverPresentationController-OUIExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 5FA863991B5DAE0F00873A12 /* UIPopoverPresentationController-OUIExtensions.m */; };
-		6C1709201C2372BA00350F40 /* OUISliceSeparatorView.h in Headers */ = {isa = PBXBuildFile; fileRef = 6C17091E1C2372BA00350F40 /* OUISliceSeparatorView.h */; };
-		6C1709211C2372BA00350F40 /* OUISliceSeparatorView.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C17091F1C2372BA00350F40 /* OUISliceSeparatorView.m */; };
 		D9D1B82C22EA807B00BF2F1B /* ContextMenus.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D9D1B82B22EA807B00BF2F1B /* ContextMenus.xcassets */; };
 		D9F6B46E254B77790003660F /* OUIChangeGroupBundleIdentifierPreferenceURLCommand.h in Headers */ = {isa = PBXBuildFile; fileRef = D9F6B46D254B77790003660F /* OUIChangeGroupBundleIdentifierPreferenceURLCommand.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D9F6B482254B77E20003660F /* OUIChangeGroupBundleIdentifierPreferenceURLCommand.m in Sources */ = {isa = PBXBuildFile; fileRef = D9F6B481254B77E20003660F /* OUIChangeGroupBundleIdentifierPreferenceURLCommand.m */; };
@@ -650,6 +650,8 @@
 		2787A6541991F4E0008D3495 /* OmniAppKit.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniAppKit.xcodeproj; path = ../../OmniAppKit/OmniAppKit.xcodeproj; sourceTree = "<group>"; };
 		27D1BBCD1991F78A00976618 /* OmniQuartz.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniQuartz.xcodeproj; path = ../../OmniQuartz/OmniQuartz.xcodeproj; sourceTree = "<group>"; };
 		27D1BBDE1991F7D800976618 /* OmniUnzip.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniUnzip.xcodeproj; path = ../../OmniUnzip/OmniUnzip.xcodeproj; sourceTree = "<group>"; };
+		2B1F275E25FA987700D64343 /* ManualObjectWillChangeManagingObservableObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManualObjectWillChangeManagingObservableObject.swift; sourceTree = "<group>"; };
+		2B98A6AC25F0433B007F9EE9 /* BaselineSizeCategoryModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaselineSizeCategoryModifier.swift; sourceTree = "<group>"; };
 		2BAF3C64250994ED003606FC /* ImageSwappingButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageSwappingButton.swift; sourceTree = "<group>"; };
 		2BD092BD23E8F56E0087AECD /* OUILicensingAuthenticationCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OUILicensingAuthenticationCommand.swift; sourceTree = "<group>"; };
 		2BEA0071252BD89500AA82FD /* ViewModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModifiers.swift; sourceTree = "<group>"; };
@@ -994,8 +996,6 @@
 		5FA863991B5DAE0F00873A12 /* UIPopoverPresentationController-OUIExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIPopoverPresentationController-OUIExtensions.m"; sourceTree = "<group>"; };
 		6C0F03FF13F5DAE300B4D5C2 /* OUIMultiSegmentStackedSlicesInspectorPane.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIMultiSegmentStackedSlicesInspectorPane.h; sourceTree = "<group>"; };
 		6C0F040013F5DAE300B4D5C2 /* OUIMultiSegmentStackedSlicesInspectorPane.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIMultiSegmentStackedSlicesInspectorPane.m; sourceTree = "<group>"; };
-		6C17091E1C2372BA00350F40 /* OUISliceSeparatorView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUISliceSeparatorView.h; sourceTree = "<group>"; };
-		6C17091F1C2372BA00350F40 /* OUISliceSeparatorView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUISliceSeparatorView.m; sourceTree = "<group>"; };
 		6C3A462D177E15C000FCA4B8 /* OUINavigationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUINavigationController.h; sourceTree = "<group>"; };
 		6C3A462E177E15C000FCA4B8 /* OUINavigationController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUINavigationController.m; sourceTree = "<group>"; };
 		6C9DAE8F1798A37F0092347A /* OUITabBar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUITabBar.h; sourceTree = "<group>"; };
@@ -1320,6 +1320,8 @@
 			children = (
 				2BAF3C64250994ED003606FC /* ImageSwappingButton.swift */,
 				2BEA0071252BD89500AA82FD /* ViewModifiers.swift */,
+				2B98A6AC25F0433B007F9EE9 /* BaselineSizeCategoryModifier.swift */,
+				2B1F275E25FA987700D64343 /* ManualObjectWillChangeManagingObservableObject.swift */,
 			);
 			name = SwiftUI;
 			sourceTree = "<group>";
@@ -1453,8 +1455,6 @@
 				346C4A961193273600BE8C49 /* OUISingleViewInspectorPane.m */,
 				34CC468812A18CDA00270F59 /* OUIStackedSlicesInspectorPane.h */,
 				34CC468912A18CDA00270F59 /* OUIStackedSlicesInspectorPane.m */,
-				6C17091E1C2372BA00350F40 /* OUISliceSeparatorView.h */,
-				6C17091F1C2372BA00350F40 /* OUISliceSeparatorView.m */,
 				3455E65613045A7100DD7C4E /* OUITextExampleInspectorSlice.h */,
 				3455E65713045A7100DD7C4E /* OUITextExampleInspectorSlice.m */,
 				34CC454F12A187D800270F59 /* Paragraph */,
@@ -1943,7 +1943,6 @@
 				348A7A661B584B590082D55D /* OUISegmentedControlInspectorSlice.h in Headers */,
 				348A7A561B584B590082D55D /* OUIInspectorSlice-Internal.h in Headers */,
 				235D67411EB00E06007FCF56 /* OUIMultiPaneNotifications.h in Headers */,
-				6C1709201C2372BA00350F40 /* OUISliceSeparatorView.h in Headers */,
 				348A79F81B584AE10082D55D /* OUIAbstractColorInspectorSlice.h in Headers */,
 				348A7B281B584CF10082D55D /* OUIKeyboardNotifier.h in Headers */,
 				348A7B111B584CC30082D55D /* OUICustomSubclass.h in Headers */,
@@ -2413,6 +2412,7 @@
 				348A7B291B584CF10082D55D /* OUIKeyboardNotifier.m in Sources */,
 				348A7A981B584BAE0082D55D /* OUIInspectorWell.m in Sources */,
 				348A7A1D1B584AE90082D55D /* OUIColorSwatchPickerInspectorSlice.m in Sources */,
+				2B98A6AD25F0433B007F9EE9 /* BaselineSizeCategoryModifier.swift in Sources */,
 				348A7A1B1B584AE90082D55D /* OUIColorSwatchPicker.m in Sources */,
 				348A7B531B584D130082D55D /* UIView-OUIExtensions.m in Sources */,
 				42D6E8AA1F2154F9006B9697 /* DisclosableSliceGroup.swift in Sources */,
@@ -2477,7 +2477,6 @@
 				348A7A811B584BAE0082D55D /* OUIInspectorButton.m in Sources */,
 				348A7B101B584CC30082D55D /* OUICompletionMatchCell.m in Sources */,
 				2BEA0072252BD89500AA82FD /* ViewModifiers.swift in Sources */,
-				6C1709211C2372BA00350F40 /* OUISliceSeparatorView.m in Sources */,
 				348A7A631B584B590082D55D /* OUINumericFieldInspectorSlice.m in Sources */,
 				348A7AC21B584C3B0082D55D /* OUITextSelectionSpan.m in Sources */,
 				348A7B4F1B584D130082D55D /* UIScrollView-OUIExtensions.m in Sources */,
@@ -2517,6 +2516,7 @@
 				348A7B511B584D130082D55D /* UITableView-OUIExtensions.m in Sources */,
 				348A79E51B584A950082D55D /* OUIPurchaseURLCommand.m in Sources */,
 				23105FDA1EAFD9AE008E0647 /* MultiPaneController.swift in Sources */,
+				2B1F275F25FA987700D64343 /* ManualObjectWillChangeManagingObservableObject.swift in Sources */,
 				E26E8D9A1F44E7830045CBF2 /* OUIFloatingContentToolbar.swift in Sources */,
 				348A79E31B584A950082D55D /* OUIDebugURLCommand.m in Sources */,
 				348A7A091B584AE10082D55D /* OUIColorInspectorPane.m in Sources */,

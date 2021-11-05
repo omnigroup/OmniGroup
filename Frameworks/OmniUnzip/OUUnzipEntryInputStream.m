@@ -1,4 +1,4 @@
-// Copyright 2016 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -228,15 +228,15 @@ RCS_ID("$Id$");
     return self.totalBytesRead;
 }
 
-// This always returns nil, so that callers can 'return UNZIP_DATA_ERROR(...);'
-static _Nullable id _unzipDataError(OUUnzipEntryInputStream *self, const char *func, int err, NSError **outError)
+// This always returns NO, so that callers can 'return UNZIP_DATA_ERROR(...);'
+static BOOL _unzipDataError(OUUnzipEntryInputStream *self, const char *func, int err, NSError **outError)
 {
     NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to read zip data.", @"OmniUnzip", OMNI_BUNDLE, @"error description");
     NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The zip library function %s returned %d when trying to read the data for entry \"%@\" in \"%@\".", @"OmniUnzip", OMNI_BUNDLE, @"error reason"),  func, err, self.unzipEntry.name, self.archiveDescription];
     OmniUnzipError(outError, OmniUnzipUnableToReadZipFileContents, description, reason);
     
     NSLog(@"%s returned %d", func, err);
-    return nil;
+    return NO;
 }
 
 #define UNZIP_DATA_ERROR(f) _unzipDataError(self, #f, err, outError)
@@ -275,13 +275,13 @@ static _Nullable id _unzipDataError(OUUnzipEntryInputStream *self, const char *f
     
     err = unzGoToFilePos(self.unzipFileHandle, &position);
     if (err != UNZ_OK) {
-        return (BOOL)UNZIP_DATA_ERROR(unzGoToFilePos);
+        return UNZIP_DATA_ERROR(unzGoToFilePos);
     }
     
     unz_file_info fileInfo;
     err = unzGetCurrentFileInfo(self.unzipFileHandle, &fileInfo, NULL /* file name */, 0 /* size */, NULL, 0, NULL, 0);
     if (err != UNZ_OK) {
-        return (BOOL)UNZIP_DATA_ERROR(unzGetCurrentFileInfo);
+        return UNZIP_DATA_ERROR(unzGetCurrentFileInfo);
     }
     
     int method = 0;
@@ -289,7 +289,7 @@ static _Nullable id _unzipDataError(OUUnzipEntryInputStream *self, const char *f
     BOOL raw = (self.options & OUUnzipEntryInputStreamOptionRaw) != 0;
     err = unzOpenCurrentFile3(self.unzipFileHandle, &method, &level, raw ? 1 : 0, NULL/*password*/);
     if (err != UNZ_OK) {
-        return (BOOL)UNZIP_DATA_ERROR(unzOpenCurrentFile3);
+        return UNZIP_DATA_ERROR(unzOpenCurrentFile3);
     }
 
     return YES;
@@ -316,7 +316,7 @@ static _Nullable id _unzipDataError(OUUnzipEntryInputStream *self, const char *f
         self.unzipFileHandle = NULL;
 
         if (err != UNZ_OK) {
-            return (BOOL)UNZIP_DATA_ERROR(unzCloseCurrentFile);
+            return UNZIP_DATA_ERROR(unzCloseCurrentFile);
         }
     }
     

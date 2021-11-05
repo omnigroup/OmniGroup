@@ -17,7 +17,6 @@
 
 #import "OUIInspectorSlice-Internal.h"
 #import "OUIParameters.h"
-#import "OUISliceSeparatorView.h"
 
 RCS_ID("$Id$");
 
@@ -37,7 +36,6 @@ OBDEPRECATED_METHOD(-minimumHeightForWidth:);
 @implementation OUIInspectorSlice
 {
     OUIInspectorPane *_detailPane;
-    OUISliceSeparatorView *_bottomSeparator;
 }
 
 + (void)initialize;
@@ -95,11 +93,6 @@ OBDEPRECATED_METHOD(-minimumHeightForWidth:);
 
 + (UIColor *)sliceSeparatorColor;
 {
-#if 1
-    // iOS 7 GM bug: Table views in popovers draw their separators in very light gray the second time the popover is displayed. This is to match what they end up drawing on subsequent displays, so at least we'll be consistent.
-    // RADAR 14969546 : <bug:///94533> (UITableViews in popovers lose their separator color after they are first presented)
-    return [UIColor colorNamed:@"inspectorSeparatorColor" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
-#else
     // Use UITableView's default separator color as our default separator color.
     static dispatch_once_t predicate;
     static UIColor *separatorColor = nil;
@@ -108,7 +101,6 @@ OBDEPRECATED_METHOD(-minimumHeightForWidth:);
         separatorColor = tableView.separatorColor;
     });
     return separatorColor;
-#endif
 }
 
 + (CGFloat)paddingBetweenSliceGroups;
@@ -155,6 +147,7 @@ OBDEPRECATED_METHOD(-minimumHeightForWidth:);
     self.alignmentInsets = [[self class] sliceAlignmentInsets];
     self.groupPosition = OUIInspectorSliceGroupPositionAlone;
     self.separatorColor = [OUIInspectorSlice sliceSeparatorColor];
+    self.suppressesTrailingImplicitSeparator = NO;
     
     return self;
 }
@@ -209,22 +202,6 @@ OBDEPRECATED_METHOD(-minimumHeightForWidth:);
         if ([view respondsToSelector:@selector(setInspectorSliceGroupPosition:)]) {
             [(id)view setInspectorSliceGroupPosition:_groupPosition];
         }
-        
-        if (self.wantsAutoConfiguredBottomSeparator) {
-            if (!_bottomSeparator) {
-                _bottomSeparator = [[OUISliceSeparatorView alloc] initWithFrame:view.bounds];
-                _bottomSeparator.translatesAutoresizingMaskIntoConstraints = NO;
-                [view addSubview:_bottomSeparator];
-
-                NSMutableArray *constraintsToActivate = [NSMutableArray array];
-                [constraintsToActivate addObject:[_bottomSeparator.leadingAnchor constraintEqualToAnchor:view.layoutMarginsGuide.leadingAnchor]];
-                [constraintsToActivate addObject:[_bottomSeparator.bottomAnchor constraintEqualToAnchor:view.bottomAnchor]];
-                [constraintsToActivate addObject:[_bottomSeparator.heightAnchor constraintEqualToConstant:1.0]];
-                [constraintsToActivate addObject:[_bottomSeparator.rightAnchor constraintEqualToAnchor:view.rightAnchor]];
-                [NSLayoutConstraint activateConstraints:constraintsToActivate];
-            }
-            _bottomSeparator.hidden = (_groupPosition == OUIInspectorSliceGroupPositionLast || _groupPosition == OUIInspectorSliceGroupPositionAlone);
-        }
     }
 }
 
@@ -235,10 +212,6 @@ OBDEPRECATED_METHOD(-minimumHeightForWidth:);
         if ([view respondsToSelector:@selector(setInspectorSliceSeparatorColor:)]) {
             [(id)view setInspectorSliceSeparatorColor:_separatorColor];
         }
-        if ([view isKindOfClass:[UITableView class]]) {
-            [(UITableView *)view setSeparatorColor:_separatorColor];
-        }
-        
         if ([view isKindOfClass:[UITableView class]]) {
             [(UITableView *)view setSeparatorColor:_separatorColor];
         }
@@ -284,11 +257,6 @@ OBDEPRECATED_METHOD(-minimumHeightForWidth:);
         }
     }
     return NO;
-}
-
-- (BOOL)wantsAutoConfiguredBottomSeparator;
-{
-    return _wantsAutoConfiguredBottomSeparator && ![self includesInspectorSliceGroupSpacerOnBottom];
 }
 
 + (void)configureTableViewBackground:(UITableView *)tableView;

@@ -41,4 +41,29 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+@implementation ODOObjectSetDefaultAttributeValueActions
+{
+    NSMutableArray <ODOObjectSetDefaultAttributeValues> *_actions;
+}
+
+- init;
+{
+    self = [super init];
+    _actions = [[NSMutableArray alloc] init];
+    return self;
+}
+
+- (void)dealloc;
+{
+    [_actions release];
+    [super dealloc];
+}
+
+- (void)addAction:(ODOObjectSetDefaultAttributeValues)action;
+{
+    [_actions addObject:[[action copy] autorelease]];
+}
+
+@end
+
 NS_ASSUME_NONNULL_END

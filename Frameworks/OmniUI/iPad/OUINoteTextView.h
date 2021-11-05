@@ -6,10 +6,11 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <UIKit/UITextView.h>
+#import <OmniUI/OUITextView.h>
 
 @protocol OUINoteTextViewAppearanceDelegate;
 
-@interface OUINoteTextView : UITextView
+@interface OUINoteTextView : OUITextView
 
 @property (nonatomic, copy) NSString *placeholder;
 @property (nonatomic) BOOL drawsPlaceholder;

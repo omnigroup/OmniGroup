@@ -15,6 +15,9 @@ NS_ASSUME_NONNULL_BEGIN
 // This accesses the filesystem, possibly using a NSFileCoordinator, and must only be called on a background queue.
 - (nullable instancetype)initWithFileURL:(NSURL *)fileURL error:(NSError **)outError;
 
+// The same as above, but controls whether an additional `deepModificationDate` should be calculated.
+- (nullable instancetype)initWithFileURL:(NSURL *)fileURL withDeepModificationDate:(BOOL)deepModificationDate error:(NSError **)outError;
+
 // Here we assume that the inputs were previously read under file coordination and so are consistent.
 - (instancetype)initWithFileURL:(NSURL *)fileURL fileModificationDate:(NSDate *)fileModificationDate inode:(NSUInteger)inode isDirectory:(BOOL)isDirectory;
 
@@ -24,6 +27,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic,readonly,getter=isDirectory) BOOL directory;
 
 @property(nonatomic,readonly) NSString *uniqueEditIdentifier;
+
+// If this was initialized requesting a deep modification date, this will be the newest modification date within the original URL.
+@property(nonatomic,nullable,readonly) NSDate *deepModificationDate;
 
 @end
 

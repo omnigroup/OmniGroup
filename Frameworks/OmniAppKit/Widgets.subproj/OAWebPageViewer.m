@@ -1,4 +1,4 @@
-// Copyright 2007-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2019, 2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,13 +7,10 @@
 
 #import <OmniAppKit/OAWebPageViewer.h>
 
-
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
 #import <OmniAppKit/OmniAppKit.h>
 #import <WebKit/WebKit.h>
-
-RCS_ID("$Id$")
 
 // <bug:///175663> (Frameworks-Mac Unassigned: Convert OAWebPageViewer to WKWebView)
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
@@ -302,8 +299,12 @@ static NSMutableDictionary *sharedViewerCache = nil;
         }
     }
     
+#if MAC_APP_STORE_RETAIL_DEMO
+    [OAController runFeatureNotEnabledAlertForWindow:self.window completion:nil];
+#else
     // Open links in the user's browser
     [[OAController sharedController] openURL:url];
+#endif
     [listener ignore];
 }
 

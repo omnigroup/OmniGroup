@@ -538,7 +538,7 @@ static NSString *OFSymbolicBacktrace(NSException *exception) {
 
 - (BOOL)shouldLogException:(NSException *)exception mask:(NSUInteger)aMask;
 {
-    if ([exception.name isEqual:@"SenTestFailureException"]) {
+    if ([exception.name isEqual:@"_XCTSkipFailureException"]) {
         return NO;
     }
     

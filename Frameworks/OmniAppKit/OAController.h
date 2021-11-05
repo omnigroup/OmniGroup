@@ -51,6 +51,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)applicationWillTerminate:(NSNotification *)notification NS_REQUIRES_SUPER;
 
 #if MAC_APP_STORE_RETAIL_DEMO
+- (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)sender NS_REQUIRES_SUPER;
++ (void)retailDemoBlockAutoTermination;
++ (void)retailDemoUnblockAutoTermination;
 + (void)runFeatureNotEnabledAlertForWindow:(nullable NSWindow *)window completion:(void (^ _Nullable)(void))completion;
 #endif
 

@@ -41,7 +41,7 @@ typedef NS_ENUM(NSInteger, OUIInspectorSliceGroupPosition) {
 @property(nonatomic,copy) UIColor *separatorColor;
 @property(nonatomic,readonly) BOOL includesInspectorSliceGroupSpacerOnTop;
 @property(nonatomic,readonly) BOOL includesInspectorSliceGroupSpacerOnBottom;
-@property(nonatomic,assign) BOOL wantsAutoConfiguredBottomSeparator;
+@property(nonatomic,assign) BOOL suppressesTrailingImplicitSeparator;
 
 + (UIColor *)sliceBackgroundColor;
 - (UIColor *)sliceBackgroundColor; // Default color for the slice background

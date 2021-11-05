@@ -179,6 +179,9 @@ static inline BOOL _hasScheduledCheck(OSUChecker *self)
 #endif
 }
 
+#if IPAD_RETAIL_DEMO || MAC_APP_STORE_RETAIL_DEMO
+// Retail demo builds should never check for updates or submit system information
+#else
 static inline NSDate *_scheduledCheckFireDate(OSUChecker *self)
 {
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
@@ -202,6 +205,7 @@ static inline void _scheduleCheckForDate(OSUChecker *self, NSDate *date)
     [[OFScheduler mainScheduler] scheduleEvent:self->_automaticUpdateEvent];
 #endif
 }
+#endif
 
 static inline void _cancelScheduledCheck(OSUChecker *self)
 {
@@ -763,6 +767,10 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
 
 - (BOOL)_shouldCheckAutomatically;
 {
+#if IPAD_RETAIL_DEMO || MAC_APP_STORE_RETAIL_DEMO
+    // Retail demo builds should never check for updates or submit system information
+    return NO;
+#else
     // Disallow automatic checks if we are a debug build; attached to the debugger.
     // You can still trigger a manual check to debug Software Update, or turn this off if necessary.
     
@@ -772,14 +780,14 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
 #endif
     
     return _flags.shouldCheckAutomatically;
+#endif
 }
 
 - (void)_scheduleNextCheck;
 {
-    
-#if IPAD_RETAIL_DEMO
-    return;
-#endif
+#if IPAD_RETAIL_DEMO || MAC_APP_STORE_RETAIL_DEMO
+    // Retail demo builds should never check for updates or submit system information
+#else
     // Make sure we haven't been disabled
     if (![[OSUPreferences automaticSoftwareUpdateCheckEnabled] boolValue])
         _flags.shouldCheckAutomatically = 0;
@@ -829,10 +837,14 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
     }
     
     _scheduleCheckForDate(self, nextCheckDate);
+#endif
 }
 
 - (void)_initiateCheck;
-{    
+{
+#if MAC_APP_STORE_RETAIL_DEMO
+    // Retail demo builds should never check for updates or submit system information
+#else
     if (_currentCheckOperation)
         return;
     
@@ -840,10 +852,14 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
     [[NSFileManager defaultManager] removeItemAtURL:[self cachedNewsURL] error:nil];
     
     [self _beginLoadingURLInitiatedByUser:NO];
+#endif
 }
 
 - (void)_beginLoadingURLInitiatedByUser:(BOOL)initiatedByUser;
 {
+#if MAC_APP_STORE_RETAIL_DEMO
+    // Retail demo builds should never check for updates or submit system information
+#else
     if (![self _shouldLoadAfterWarningUserAboutNewVersion]) {
         // This is a hack to avoid a panel saying that there are no updates.  Instead, we should probably have an enum for the status
         return;
@@ -861,6 +877,7 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
     OSU_DEBUG(1, @"Starting check");
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_checkOperationCompleted:) name:OSUCheckOperationCompletedNotification object:_currentCheckOperation];
     [_currentCheckOperation runAsynchronously];
+#endif
 }
 
 - (void)_clearCurrentCheckOperation;

@@ -332,13 +332,19 @@ static _Nullable id _unzipError(id self, const char *func, int err, NSError **ou
         }
         else {
             // Entry is a file, write it to entryTempURL.
+            NSError *strongError = nil;
+            BOOL success = NO;
             @autoreleasepool {
-                NSData *entryData = [self dataForEntry:entry error:outError];
-                if (entryData == nil)
-                    return NO;
-
-                if (![entryData writeToURL:entryTempURL options:0 error:outError])
-                    return NO;
+                NSData *entryData = [self dataForEntry:entry error:&strongError];
+                if (entryData) {
+                    success = [entryData writeToURL:entryTempURL options:0 error:&strongError];
+                }
+            }
+            if (!success) {
+                if (outError) {
+                    *outError = strongError;
+                }
+                return success;
             }
         }
     }

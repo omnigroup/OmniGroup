@@ -299,7 +299,11 @@ static BOOL _isRetina(NSView *view)
 {
     NSRect imageRect = [super imageRectForBounds:rect];
 
-    if (![OFVersionNumber isOperatingSystemMojaveOrLater]) {
+    if ([OFVersionNumber isOperatingSystemBigSurOrLater]) {
+        // When using a system symbol image on Big Sur, it won't be vertically centered (but *other* images are).
+        // If a symbol is set on a regular NSToolbarItem (not a view-containing one) or set on a regular NSButton, it works. So something we are doing it probably messing up the default behavior.
+        imageRect.origin.y = floor(CGRectGetMinY(rect) + (rect.size.height - imageRect.size.height)/2);
+    } else if (![OFVersionNumber isOperatingSystemMojaveOrLater]) {
         // We end up with too big of a rect here for arbitrary user supplied images. Our OAScriptIcon.png has built-in padding, but random images might not.
         // Mojave does a better job here.
         imageRect = OAInsetRectBySize(imageRect, NSMakeSize(0, 3));

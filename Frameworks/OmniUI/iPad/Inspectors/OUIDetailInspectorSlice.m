@@ -13,6 +13,7 @@
 #import <OmniUI/OUIInspectorSlice.h>
 #import <OmniUI/OUIInspectorTextWell.h>
 #import <OmniUI/UITableView-OUIExtensions.h>
+#import <OmniUI/OUIStackedSlicesInspectorPane.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -182,6 +183,8 @@ NS_ASSUME_NONNULL_BEGIN
     self.view.frame = [UIScreen mainScreen].bounds;
     
     // iOS 7 GM bug: separators are not reliably drawn. This doesn't actually fix the color after the first display, but at least it gets the separators to show up.
+    if ([OUIStackedSlicesInspectorPane implicitSeparators])
+        self.tableView.separatorStyle = [self itemCount] == 1 ? UITableViewCellSeparatorStyleNone : UITableViewCellSeparatorStyleSingleLine;
     self.tableView.separatorColor = [OUIInspectorSlice sliceSeparatorColor];
 }
 

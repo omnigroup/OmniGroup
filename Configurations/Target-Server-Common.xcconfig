@@ -8,6 +8,10 @@ BZ2_LDFLAGS = -lbz2
 SDKROOT = macosx
 MACOSX_DEPLOYMENT_TARGET = 10.14
 
+// OmniFocusWeb is the only client of this, and isn't ready to use the same version as the client macOS app
+// Allow each project to override the deployment target
+// #include "../Omni-Version-Info.xcconfig"
+
 // Don't install every single thing we build. Lots of bundles and tools, in particular, are included as resources of frameworks and apps.
 SKIP_INSTALL = YES
 

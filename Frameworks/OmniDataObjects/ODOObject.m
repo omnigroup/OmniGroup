@@ -212,12 +212,9 @@ static IMP OFObjectDidChangeValueForKey;
     _objectID = [objectID copy];
     _flags.isFault = isFault;
     _flags.undeletable = [[self class] objectIDShouldBeUndeletable:objectID];
-    
-    // Only create values up front if we aren't a fault
-    if (_flags.isFault == NO) {
-        _ODOObjectCreateNullValues(self);
-    }
-    
+
+    // Our value storage will get created either when unfaulted or via -awakeFromInsertion calling the default attribute value setup actions.
+
     return self;
 }
 
@@ -655,11 +652,30 @@ void ODOObjectSetValueForKey(ODOObject *self, id _Nullable value, ODOProperty *p
 }
 
 // Subclasses should call this before doing anything in their own implementation, otherwise, this might override any setup they do.
-+ (void)addDefaultAttributeValueActions:(NSMutableArray <ODOObjectSetDefaultAttributeValues> *)actions;
++ (void)addDefaultAttributeValueActions:(ODOObjectSetDefaultAttributeValueActions *)actions entity:(ODOEntity *)entity;
 {
-    [actions addObject:^(ODOObject *object){
-        ODOEntity *entity = object.entity;
-        NSArray <ODOAttribute *> *attributes = entity.snapshotAttributes;
+    NSArray <ODOAttribute *> *attributes = entity.snapshotAttributes;
+
+    // Make a snapshot with default attribute values for newly inserted object
+    ODOObjectSnapshot *insertedObjectSnapshot = ODOObjectSnapshotCreate(entity);
+    {
+        void *snapshotBase = ODOObjectSnapshotGetStorageBase(insertedObjectSnapshot);
+        _ODOStorageCheckBase(snapshotBase);
+
+        [attributes enumerateObjectsWithOptions:0 usingBlock:^(ODOAttribute *attr, NSUInteger index, BOOL *stop){
+            ODOStorageSetObjectValue(entity, snapshotBase, attr->_storageKey, attr.defaultValue);
+        }];
+    }
+
+
+    [actions addAction:^(ODOObject *object){
+        OBASSERT(entity == object.entity);
+
+        if (object.isAwakingFromInsert) {
+            // There should be no external pointers to this object and no observers.
+            _ODOObjectCreateValuesFromSnapshot(object, insertedObjectSnapshot);
+            return;
+        }
 
         // Send all the -willChangeValueForKey: notifications, change all the values, then send all the -didChangeValueForKey: notifications.
         // This is necessary because side effects of -didChangeValueForKey: may cause reading of properties which don't have a default value yet. We expect to have default values for required scalars, and must ensure that they are set before they are accessed.

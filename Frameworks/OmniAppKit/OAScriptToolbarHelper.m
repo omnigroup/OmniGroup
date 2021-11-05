@@ -146,30 +146,17 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
         [toolbarItem setToolTip:[self _stringByRemovingScriptFilenameExtension:[toolbarItem toolTip]]];
     }
     
-    BOOL hasCustomIcon = NO;
-    FSRef fsref;
-    if (CFURLGetFSRef((CFURLRef)[NSURL fileURLWithPath:path], &fsref)) {
-        FSCatalogInfo catalogInfo;
-        if (FSGetCatalogInfo(&fsref, kFSCatInfoFinderInfo, &catalogInfo, NULL, NULL, NULL) == noErr) {
-            if ((((FileInfo *)(&catalogInfo.finderInfo))->finderFlags & kHasCustomIcon) != 0) {
-                hasCustomIcon = YES;
-
-                NSImage *image = [[NSWorkspace sharedWorkspace] iconForFile:path];
-
-                NSView *view = toolbarItem.view;
-                if ([view isKindOfClass:[NSButton class]]) {
-                    NSButton *button = (NSButton *)view;
-                    button.imageScaling = NSImageScaleProportionallyDown;
-                    button.image = image;
-                } else {
-                    [toolbarItem setImage:image];
-                }
-
-            }
+    NSImage *customImage = [NSImage customImageForFile:path];
+    if (customImage) {
+        NSView *view = toolbarItem.view;
+        if ([view isKindOfClass:[NSButton class]]) {
+            NSButton *button = (NSButton *)view;
+            button.imageScaling = NSImageScaleProportionallyDown;
+            button.image = customImage;
+        } else {
+            [toolbarItem setImage:customImage];
         }
-    }
-
-    if (!hasCustomIcon) {
+    } else {
         NSString *imageName;
 
         if (isAutomatorWorfklow) {

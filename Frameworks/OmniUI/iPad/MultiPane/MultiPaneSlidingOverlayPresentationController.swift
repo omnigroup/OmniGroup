@@ -1,4 +1,4 @@
-// Copyright 2016-2020 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -59,7 +59,7 @@ class MultiPaneSlidingOverlayPresenter: NSObject, UIViewControllerTransitioningD
 
 // MARK: -
 
-protocol SldingOverlayPresentationControllerDelegate: class {
+protocol SldingOverlayPresentationControllerDelegate: AnyObject {
     func slidingOverlayPresentationController(_ controller: SldingOverlayPresentationController, willDismiss pane: Pane)
     func slidingOverlayPresentationController(_ controller: SldingOverlayPresentationController, didDismiss pane: Pane)
 }

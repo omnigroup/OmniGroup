@@ -61,8 +61,7 @@ typedef NS_ENUM(NSUInteger, ODOFaultEvent) {
 - (nullable id)calculateValueForProperty:(ODOProperty *)property NS_REQUIRES_SUPER;
 - (void)invalidateCalculatedValueForKey:(NSString *)key;
 
-typedef void (^ODOObjectSetDefaultAttributeValues)(__kindof ODOObject *object);
-+ (void)addDefaultAttributeValueActions:(NSMutableArray <ODOObjectSetDefaultAttributeValues> *)actions;
++ (void)addDefaultAttributeValueActions:(ODOObjectSetDefaultAttributeValueActions *)actions entity:(ODOEntity *)entity;
 - (void)setDefaultAttributeValues;
 
 + (void)addChangeActionsForProperty:(ODOProperty *)property willActions:(ODOChangeActions *)willActions didActions:(ODOChangeActions *)didActions;

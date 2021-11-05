@@ -268,8 +268,8 @@ OBPerformPosing(^{
     return image != [NSNull null] ? image : nil;
 }
 
-/* Checks whether the given file has a custom image specified.  If so, it uses NSWorkspace to get said image.  Otherwise, it tries to use the file extension to get a shared version of the image.  This method will not returned uniqued results for files *with* custom images, but hopefully that calling pattern is rare. */
-+ (NSImage *)imageForFile:(NSString *)path;
+// Checks whether the given file has a custom image specified. If so, it uses NSWorkspace to get said image, otherwise returns nil.
++ (NSImage *)customImageForFile:(NSString *)path;
 {
     // <bug:///89030> (Rewrite +[NSImage(OAExtensions) imageForFile:] to not use deprecated API)
 #pragma clang diagnostic push
@@ -285,17 +285,29 @@ OBPerformPosing(^{
         // Probably the file doesn't exist; so therefor it doesn't have a custom image
     } else {
         FSCatalogInfo catalogInfo;
-        if (FSGetCatalogInfo(&fsRef, kFSCatInfoFinderInfo, &catalogInfo, NULL, NULL, NULL) == noErr)
-            if ((((FileInfo *)(&catalogInfo.finderInfo))->finderFlags & kHasCustomIcon) == 0)
+        if (FSGetCatalogInfo(&fsRef, kFSCatInfoFinderInfo, &catalogInfo, NULL, NULL, NULL) == noErr) {
+            if (((FileInfo *)(&catalogInfo.finderInfo))->finderFlags & kHasCustomIcon) {
                 return [[NSWorkspace sharedWorkspace] iconForFile:path];
+            }
+        }
+    }
+    return nil;
+#pragma clang diagnostic pop
+}
+
+/* If the file has a custom image specified, returns it. Otherwise, use the file extension to get a shared version of the image. This method will not returned uniqued results for files *with* custom images, but hopefully that calling pattern is rare. */
++ (NSImage *)imageForFile:(NSString *)path;
+{
+    NSImage *customImage = [self customImageForFile:path];
+    if (customImage) {
+        return customImage;
     }
 
-	NSString *extension = [path pathExtension];
-	if ([extension length])
-		return [self imageForFileType:extension];
-	else
-		return [[NSWorkspace sharedWorkspace] iconForFile:path];
-#pragma clang diagnostic pop
+    NSString *extension = [path pathExtension];
+    if ([extension length]) {
+        return [self imageForFileType:extension];
+    }
+    return [[NSWorkspace sharedWorkspace] iconForFile:path];
 }
 
 #define X_SPACE_BETWEEN_ICON_AND_TEXT_BOX 2

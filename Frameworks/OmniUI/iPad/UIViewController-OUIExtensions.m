@@ -128,6 +128,12 @@ RCS_ID("$Id$");
         return presentingContainingScene;
     }
     
+    // We may have a presented view controller that can resolve a scene
+    UIScene *presentedViewControllerContainingScene = self.presentedViewController.containingScene;
+    if (presentedViewControllerContainingScene != nil) {
+        return presentedViewControllerContainingScene;
+    }
+    
     // If we're in a compact multipane controller and we're in an off-screen pane, we're not in a view hierarchy at all, but we're still contained within a specific scene.
     UIViewController *mostDistantAncestor = self.mostDistantAncestorViewController;
     OBASSERT(!mostDistantAncestor.isVisible || ![mostDistantAncestor isKindOfClass:[OUIMultipanePresentationWrapperViewController class]], "If we're within in a visible presentation wrapper, we should be presented and able to find our containing scene with an earlier check.");

@@ -1,4 +1,4 @@
-// Copyright 2003-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2017, 2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,12 +7,11 @@
 
 #import <OmniAppKit/OADocument.h>
 
-#import <OmniAppKit/OAApplication.h>
-#import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
+#import <Foundation/Foundation.h>
+#import <OmniAppKit/OAApplication.h>
+#import <OmniAppKit/OAStrings.h>
 #import <OmniBase/rcsid.h>
-
-RCS_ID("$Id$");
 
 @implementation OADocument
 {
@@ -72,9 +71,13 @@ RCS_ID("$Id$");
 
 - (void)canCloseDocument:(void (^)(BOOL shouldClose))completion;
 {
+#if MAC_APP_STORE_RETAIL_DEMO
+    completion(YES); // Retail demos can close their documents without saving
+#else
     completion = [[completion copy] autorelease];
     OBStrongRetain(completion); // Doing this so later conversion to ARC doesn't fool us into getting rid of the retain-until-called hack.
     [super canCloseDocumentWithDelegate:self shouldCloseSelector:@selector(_oa_document:shouldClose:contextInfo:) contextInfo:completion];
+#endif
 }
 
 - (void)_oa_document:(NSDocument *)document shouldClose:(BOOL)shouldClose contextInfo:(void *)contextInfo;
@@ -223,6 +226,12 @@ RCS_ID("$Id$");
 
 - (BOOL)canSaveToURL:(NSURL *)url error:(NSError **)error;
 {
+#if MAC_APP_STORE_RETAIL_DEMO
+    NSString *description = OAFeatureNotEnabledForThisDemo();
+    NSString *reason = nil;
+    _OBError(error, [OMNI_BUNDLE bundleIdentifier], 1, __FILE__, __LINE__, NSLocalizedDescriptionKey, description, NSLocalizedRecoverySuggestionErrorKey, (reason), nil);
+    return NO;
+#else
     if ([self.class isFileURLInApplicationWrapper:url]) {
         NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to save document.", @"OmniAppKit", OMNI_BUNDLE, @"error description");
         NSString *reason = NSLocalizedStringFromTableInBundle(@"Documents cannot be saved inside the application package.", @"OmniAppKit", OMNI_BUNDLE, @"error message");
@@ -231,11 +240,17 @@ RCS_ID("$Id$");
         return NO;
     }
     return YES;
-
+#endif
 }
 
 - (BOOL)canMoveToURL:(NSURL *)url error:(NSError **)error;
 {
+#if MAC_APP_STORE_RETAIL_DEMO
+    NSString *description = OAFeatureNotEnabledForThisDemo();
+    NSString *reason = nil;
+    _OBError(error, [OMNI_BUNDLE bundleIdentifier], 1, __FILE__, __LINE__, NSLocalizedDescriptionKey, description, NSLocalizedRecoverySuggestionErrorKey, (reason), nil);
+    return NO;
+#else
     if ([self.class isFileURLInApplicationWrapper:url]) {
         NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to move document.", @"OmniAppKit", OMNI_BUNDLE, @"error description");
         NSString *reason = NSLocalizedStringFromTableInBundle(@"Documents cannot be moved inside the application package.", @"OmniAppKit", OMNI_BUNDLE, @"error message");
@@ -244,6 +259,7 @@ RCS_ID("$Id$");
         return NO;
     }
     return YES;
+#endif
 }
 
 @end

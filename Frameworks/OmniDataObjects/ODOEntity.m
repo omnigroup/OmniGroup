@@ -361,7 +361,7 @@ extern ODOEntity *ODOEntityCreate(NSString *entityName, NSString *insertKey, NSS
     OBASSERT(OBClassImplementingMethod(entity->_instanceClass, @selector(objectID)) == [ODOObject class]);
     OBASSERT(OBClassImplementingMethod(entity->_instanceClass, @selector(primitiveValueForKey:)) == [ODOObject class]);
     OBASSERT(OBClassImplementingMethod(entity->_instanceClass, @selector(setPrimitiveValue:forKey:)) == [ODOObject class]);
-    OBASSERT(OBClassImplementingMethod(entity->_instanceClass, @selector(setDefaultAttributeValues)) == [ODOObject class], "Override +addDefaultAttributeValueActions: instead");
+    OBASSERT(OBClassImplementingMethod(entity->_instanceClass, @selector(setDefaultAttributeValues)) == [ODOObject class], "Override +addDefaultAttributeValueActions:entity: instead");
 
     OBASSERT(OBClassImplementingMethod(entity->_instanceClass, @selector(valueForKey:)) == [ODOObject class], "ODOObjectValueForProperty depends on there being no subclasses of -valueForKey:");
     OBASSERT(OBClassImplementingMethod(entity->_instanceClass, @selector(setValue:forKey:)) == [ODOObject class], "ODOObjectSetValueForProperty depends on there being no subclasses of -setValue:forKey:");
@@ -676,9 +676,9 @@ static void ODOEntityAssignSnapshotStorageKeys(ODOEntity *self, NSArray <__kindo
     }] copy];
 
 
-    NSMutableArray <ODOObjectSetDefaultAttributeValues> *actions = [[NSMutableArray alloc] init];
-    [_instanceClass addDefaultAttributeValueActions:actions];
-    _defaultAttributeValueActions = [actions copy];
+    ODOObjectSetDefaultAttributeValueActions *actions = [[ODOObjectSetDefaultAttributeValueActions alloc] init];
+    [_instanceClass addDefaultAttributeValueActions:actions entity:self];
+    _defaultAttributeValueActions = [actions.actions copy];
     [actions release];
     
     // Old API that our instance class shouldn't try to implement any more since we aren't going to use it!

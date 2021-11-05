@@ -232,6 +232,8 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
     OBStrongRetain(self);
 
     NSDictionary *installerArguments = [self _installerArguments];
+    NSLog(@"Preflight update with installer arguments %@", installerArguments);
+
     [remoteObjectProxy preflightUpdate:installerArguments reply:^(BOOL success, NSError *preflightError, NSData *authorizationData) {
         if (!success) {
             [self _presentError:preflightError];
@@ -247,6 +249,7 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
                 [[NSNotificationCenter defaultCenter] removeObserver:self.terminationObserver];
                 self.terminationObserver = nil;
                 
+                NSLog(@"Install and relaunch");
                 __autoreleasing NSError *error = nil;
                 if (![self installAndRelaunch:YES error:&error]) {
                     // We are already in the termination sequence here.
@@ -788,6 +791,8 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
     }];
 
     NSDictionary *installerArguments = [self _installerArguments];
+    NSLog(@"Request install of update with arguments %@", installerArguments);
+    
     [remoteObjectProxy installUpdate:installerArguments reply:^(BOOL success, NSError *error) {
         installerSucceeded = success;
         installerError = error;

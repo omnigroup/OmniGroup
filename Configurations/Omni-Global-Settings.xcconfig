@@ -1,6 +1,6 @@
-// Copyright 2006-2020 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2021 Omni Development, Inc. All rights reserved.
+//
 // This software may only be used and reproduced according to the terms in the file OmniSourceLicense.html, which should be distributed with this project and can also be found at <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
-// $Id$
 
 // Common settings
 
@@ -12,7 +12,7 @@ OMNI_BUILD_STRINGS_INPUT_MISSING=warn
 // Targets still need to use these in their configurations in their bundle identifier, product name and in the source where needed.
 // Can add this when building with custom clang to avoid ARC writeback bugs: -fobjc-arc-disable-writeback
 
-OMNI_GLOBAL_COMMON_PREPROCESSOR_DEFINITIONS = NS_BUILD_32_LIKE_64 OBJC_OLD_DISPATCH_PROTOTYPES=0 OMNI_STORE_IDENTIFIER_SUFFIX="@\"$(OMNI_STORE_IDENTIFIER_SUFFIX)\"" OMNI_BUILD_IDENTIFIER_SUFFIX="@\"$(OMNI_BUILD_IDENTIFIER_SUFFIX)\"" OMNI_BUILD_FILE_SUFFIX="@\"$(OMNI_BUILD_FILE_SUFFIX)\"" $(OMNI_COMMAND_LINE_PREPROCESSOR_DEFINITIONS) NON_OMNI_BUILD_ENVIRONMENT
+OMNI_GLOBAL_COMMON_PREPROCESSOR_DEFINITIONS = NS_BUILD_32_LIKE_64 OBJC_OLD_DISPATCH_PROTOTYPES=0 OMNI_STORE_IDENTIFIER_SUFFIX="@\"$(OMNI_STORE_IDENTIFIER_SUFFIX)\"" OMNI_BUILD_IDENTIFIER_SUFFIX="@\"$(OMNI_BUILD_IDENTIFIER_SUFFIX)\"" OMNI_BUILD_FILE_SUFFIX="@\"$(OMNI_BUILD_FILE_SUFFIX)\"" OMNI_STORE_BUNDLE_IDENTIFIER_SUFFIX="@\"$(OMNI_STORE_BUNDLE_IDENTIFIER_SUFFIX)\"" $(OMNI_COMMAND_LINE_PREPROCESSOR_DEFINITIONS) NON_OMNI_BUILD_ENVIRONMENT
 
 // These are normally set by the build system when doing a demo build, but you can uncomment them here to do one in Xcode.
 // See the build system notes about why we don't append '.RetailDemo' to the bundle identifier.

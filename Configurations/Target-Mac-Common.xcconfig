@@ -9,6 +9,9 @@ BZ2_LDFLAGS = -lbz2
 SDKROOT = macosx
 MACOSX_DEPLOYMENT_TARGET = 10.14
 
+// Allow each project to override the deployment target
+#include "../Omni-Version-Info.xcconfig"
+
 // Don't install every single thing we build. Lots of bundles and tools, in particular, are included as resources of frameworks and apps.
 SKIP_INSTALL = YES
 

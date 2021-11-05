@@ -14,6 +14,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface OUIStackedSlicesInspectorPane : OUIInspectorPane
 
++ (BOOL)implicitSeparators;
++ (void)setImplicitSeparators:(BOOL)yn;
+
 + (instancetype)stackedSlicesPaneWithAvailableSlices:(OUIInspectorSlice *)slice, ... NS_REQUIRES_NIL_TERMINATION;
 
 @property(nonatomic,assign) UIEdgeInsets sliceAlignmentInsets;
