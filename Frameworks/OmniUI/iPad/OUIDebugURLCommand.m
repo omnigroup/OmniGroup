@@ -34,9 +34,9 @@ RCS_ID("$Id$");
     NSString *_parameterString;
 }
 
-- (id)initWithURL:(NSURL *)url;
+- (id)initWithURL:(NSURL *)url senderBundleIdentifier:(NSString *)senderBundleIdentifier;
 {
-    if (!(self = [super initWithURL:url])) {
+    if (!(self = [super initWithURL:url senderBundleIdentifier:senderBundleIdentifier])) {
         return nil;
     }
     

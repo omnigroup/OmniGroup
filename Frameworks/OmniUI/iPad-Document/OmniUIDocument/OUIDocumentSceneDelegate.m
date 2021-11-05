@@ -35,7 +35,7 @@
     BOOL _isOpeningURL; // TODO: Evaluate whether we can get rid of this
     UIView *_snapshotForDocumentRebuilding;
     
-    NSURL *_specialURLToHandle;
+    UIOpenURLContext *_specialURLContextToHandle;
 }
 
 static OFPreference *showFileExtensionsPreference;
@@ -1221,6 +1221,7 @@ static OFPreference *showFileExtensionsPreference;
         NSURL *url = openContext.URL;
         DEBUG_LAUNCH(1, @"url %@", url);
 
+
         // If we can't actually edit the file we should copy it to our local scope so that we can save it to a new URL without destroying the original. (i.e., this is an import)
         if (options & OUIDocumentPerformOpenURLOptionsOpenInPlaceAllowed) {
             OBASSERT(url.isFileURL);
@@ -1233,7 +1234,7 @@ static OFPreference *showFileExtensionsPreference;
         
         
         if ([controller isSpecialURL:url]) {
-            _specialURLToHandle = [url copy];
+            _specialURLContextToHandle = openContext;
             if (self.window.rootViewController == _documentBrowser) {
                 [self handleCachedSpecialURLIfNeeded];
             }
@@ -1286,15 +1287,15 @@ static OFPreference *showFileExtensionsPreference;
 
 - (void)handleCachedSpecialURLIfNeeded
 {
-    if (_specialURLToHandle != nil) {
+    if (_specialURLContextToHandle != nil) {
         UIViewController *viewController = self.window.rootViewController;
         UIViewController *presentedViewController;
         while ((presentedViewController = viewController.presentedViewController)) {
             viewController = presentedViewController;
         }
         
-        [[OUIDocumentAppController controller] handleSpecialURL:_specialURLToHandle presentingFromViewController:viewController];
-        _specialURLToHandle = nil;
+        [[OUIDocumentAppController controller] handleSpecialURL:_specialURLContextToHandle.URL senderBundleIdentifier:_specialURLContextToHandle.options.sourceApplication presentingFromViewController:viewController];
+        _specialURLContextToHandle = nil;
     }
 }
 

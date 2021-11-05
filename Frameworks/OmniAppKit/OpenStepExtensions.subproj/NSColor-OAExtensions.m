@@ -1,4 +1,4 @@
-// Copyright 2000-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -632,7 +632,9 @@ static CGFloat _colorCloseness(const OANamedColorEntry *e1, const OANamedColorEn
 {
     switch (self.type) {
         case NSColorTypeCatalog:
-            return [self localizedColorNameComponent];
+            if (![[self localizedCatalogNameComponent] isEqualToString:@"Developer"])
+                return [self localizedColorNameComponent];
+            break;
         case NSColorTypePattern:
             return NSLocalizedStringFromTableInBundle(@"Image", @"OmniAppKit", OMNI_BUNDLE, "generic color name for pattern colors");
         case NSColorTypeComponentBased:

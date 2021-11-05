@@ -10,6 +10,7 @@
 #import <OmniFileStore/OFSDocumentKey.h>
 #import <OmniFileStore/OFSDocumentKey-KeychainStorageSupport.h>
 #import <OmniFileStore/OFSEncryptingFileManager.h>
+#import <OmniFileStore/OFSSegmentedEncryptionWorker.h>
 #import <OmniFileStore/OFSFeatures.h>
 #import <OmniFileStore/OFSFileManager.h>
 #import <OmniFileStore/OFSFileManagerDelegate.h>

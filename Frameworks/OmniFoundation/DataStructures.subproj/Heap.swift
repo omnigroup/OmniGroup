@@ -1,9 +1,9 @@
+// Copyright 2020 Omni Development, Inc. All rights reserved.
 //
-//  Heap.swift
-//  OmniFoundation
-//
-//  Created by Greg Titus on 9/16/20.
-//
+// This software may only be used and reproduced according to the
+// terms in the file OmniSourceLicense.html, which should be
+// distributed with this project and can also be found at
+// <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 //
 // This is a Min-Max Heap, where the implicit binary tree always has the minimum element at the top, the maximum elements in the next level,

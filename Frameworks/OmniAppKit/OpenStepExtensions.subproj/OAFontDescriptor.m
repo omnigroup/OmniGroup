@@ -339,7 +339,13 @@ static void _setWeightInTraitsDictionary(NSMutableDictionary *traits, CTFontSymb
 #if OMNI_BUILDING_FOR_IOS
     CTFontDescriptorRef fontDescriptorRef = CTFontCopyFontDescriptor(UIFontToCTFont(font));
 #elif OMNI_BUILDING_FOR_MAC
-    CTFontDescriptorRef fontDescriptorRef = CTFontDescriptorCreateWithNameAndSize((CFStringRef)font.fontName, font.pointSize);
+    CTFontDescriptorRef fontDescriptorRef;
+    if ([font.fontName hasPrefix:@"."]) {
+        // This is a system font- just use its existing descriptor
+        fontDescriptorRef = CFRetain((__bridge CTFontDescriptorRef)[font fontDescriptor]);
+    } else {
+        fontDescriptorRef = CTFontDescriptorCreateWithNameAndSize((CFStringRef)font.fontName, font.pointSize);
+    }
 #endif
 
     NSString *family = (NSString *)CTFontDescriptorCopyAttribute(fontDescriptorRef, kCTFontFamilyNameAttribute);

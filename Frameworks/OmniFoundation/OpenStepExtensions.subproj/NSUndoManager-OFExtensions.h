@@ -7,6 +7,8 @@
 
 #import <Foundation/NSUndoManager.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 extern NSString * const OFUndoManagerEnablednessDidChangeNotification;
 
 enum {
@@ -28,21 +30,24 @@ enum {
 // Debug logging
 + (unsigned int)loggingOptions;
 + (void)setLoggingOptions:(unsigned int)options;
-- (NSString *)loggingBuffer;
+- (nullable NSString *)loggingBuffer;
 - (void)clearLoggingBuffer;
 
 @end
 
 // Support for debugging undo operations by wrapping blocks of undo operations in the log.
-extern void _OFUndoManagerPushCallSite(NSUndoManager *undoManager, id self, SEL _cmd);
-extern void _OFUndoManagerPopCallSite(NSUndoManager *undoManager);
+extern void _OFUndoManagerPushCallSite(NSUndoManager * _Nullable undoManager, id self, SEL _cmd);
+extern void _OFUndoManagerPopCallSite(NSUndoManager * _Nullable undoManager);
 
 #define OFUndoManagerPushCallSite(undoManager) _OFUndoManagerPushCallSite(undoManager, self, _cmd)
 #define OFUndoManagerPopCallSite(undoManager) _OFUndoManagerPopCallSite(undoManager)
 
-extern void OFWithoutUndo(NSUndoManager *undoManger, void (^action)(void)) NS_SWIFT_UNAVAILABLE(""); // There is a Swift version that has a generic return
+extern void OFWithoutUndo(NSUndoManager * _Nullable undoManger, void (^action)(void)) NS_SWIFT_UNAVAILABLE(""); // There is a Swift version that has a generic return
 
 @interface NSObject (OFUndoExtensions)
 // Preserves the type-checking ability by casting the result of -prepareWithInvocationTarget: instead of casting it to id.
-- (instancetype)prepareInvocationWithUndoManager:(NSUndoManager *)undoManager;
+- (nullable instancetype)prepareInvocationWithUndoManager:(nullable NSUndoManager *)undoManager;
 @end
+
+NS_ASSUME_NONNULL_END
+

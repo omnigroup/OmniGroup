@@ -1130,7 +1130,7 @@ static NSLock *PreferenceWrapperLock;
 
 - (void)addObserver:(id)anObserver selector:(SEL)aSelector forPreference:(OFPreference * _Nullable)aPreference;
 {
-    OBPRECONDITION(aPreference.wrapper == self, "Don't sign up for notifications via the class methods (using the shared preference wrapper for preferences that are in a group container wrapper");
+    OBPRECONDITION(aPreference == nil || aPreference.wrapper == self, "Don't addObserver for notifications via incorrect OFPreferenceWrapper. This could happen using OFPreference class methods for a preference registered to the group container OFPreferenceWrapper.");
     [_preferenceNotificationCenter addObserver:anObserver selector:aSelector name:OFPreferenceDidChangeNotification object:aPreference];
 }
 
@@ -1147,8 +1147,7 @@ static NSLock *PreferenceWrapperLock;
 
 - (void)removeObserver:(id)anObserver forPreference:(OFPreference * _Nullable)aPreference;
 {
-    OBPRECONDITION(aPreference.wrapper == self, "Don't sign up for notifications via the class methods (using the shared preference wrapper for preferences that are in a group container wrapper");
-
+    OBPRECONDITION(aPreference == nil || aPreference.wrapper == self, "Don't removeObserver for notifications via incorrect OFPreferenceWrapper. This could happen using OFPreference class methods for a preference registered to the group container OFPreferenceWrapper.");
     [_preferenceNotificationCenter removeObserver:anObserver name:OFPreferenceDidChangeNotification object:aPreference];
 }
 

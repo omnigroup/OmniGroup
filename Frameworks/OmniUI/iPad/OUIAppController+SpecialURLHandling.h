@@ -17,7 +17,7 @@
  */
 + (void)registerCommandClass:(Class)cls forSpecialURLPath:(NSString *)specialURLPath NS_EXTENSION_UNAVAILABLE_IOS("Special URL handling is not available in extensions");
 
-/// Determine whether the given URL is a "special" URL that can be handled by -handleSpecialURL:. In order to be considered special, the URL must have a scheme handled by this app and a path earlier registered using +registerCommandClass:forSpecialURLPath:.
+/// Determine whether the given URL is a "special" URL that can be handled by -handleSpecialURL:senderBundleIdentifier:. In order to be considered special, the URL must have a scheme handled by this app and a path earlier registered using +registerCommandClass:forSpecialURLPath:.
 - (BOOL)isSpecialURL:(NSURL *)url NS_EXTENSION_UNAVAILABLE_IOS("Special URL handling is not available in extensions");
 
 /*!
@@ -26,12 +26,12 @@
  @param url The special URL to handle. This URL must have a path component matching a string earlier registered with OUIAppController using +registerCommandClass:forSpecialURLPath:.
  @return Whether the URL was handled by the special URL system. A return value of YES simply means that a corresponding command was found and invoked for the given URL; it does not necessarily mean that the command succeeded.
  */
-- (BOOL)handleSpecialURL:(NSURL *)url NS_EXTENSION_UNAVAILABLE_IOS("Special URL handling is not available in extensions") NS_DEPRECATED_IOS(13_0, 13_0, "Use -handleSpecialURL:presentingFromViewController: instead.");
+- (BOOL)handleSpecialURL:(NSURL *)url senderBundleIdentifier:(NSString *)senderBundleIdentifier NS_EXTENSION_UNAVAILABLE_IOS("Special URL handling is not available in extensions") NS_DEPRECATED_IOS(13_0, 13_0, "Use -handleSpecialURL:senderBundleIdentifier:presentingFromViewController: instead.");
 
 /// The view controller to use as the presenter if the invocation or confirmation of a special URL command requires presenting another view controller. The default implementation searches for the current topmost presented view controller from the main window's root; subclasses can override to provide a different view controller from which to present.
 @property (nonatomic, readonly) UIViewController *viewControllerForSpecialURLHandlingPresentation NS_EXTENSION_UNAVAILABLE_IOS("Special URL handling is not available in extensions") NS_DEPRECATED_IOS(13_0, 13_0, "The singleton app controller cannot know the correct presentation source in a multi-scene context.");
 
-- (BOOL)handleSpecialURL:(NSURL *)url presentingFromViewController:(UIViewController *)controller;
+- (BOOL)handleSpecialURL:(NSURL *)url senderBundleIdentifier:(NSString *)senderBundleIdentifier presentingFromViewController:(UIViewController *)controller;
 
 @end
 
@@ -44,10 +44,13 @@
 
 /// The URL causing this command to be invoked. This is generally a copy of the URL passed to -initWithURL:.
 @property (nonatomic, readonly) NSURL *url;
+
+@property (nonatomic, readonly) NSString *senderBundleIdentifier;
+
 @property (nonatomic, strong) UIViewController *viewControllerForPresentation;
 
 /// Create a new command for invocation on behalf of the given URL. Override this method to do any command-specific setup or URL parsing.
-- (id)initWithURL:(NSURL *)url NS_DESIGNATED_INITIALIZER;
+- (id)initWithURL:(NSURL *)url senderBundleIdentifier:(NSString *)senderBundleIdentifier NS_DESIGNATED_INITIALIZER;
 
 /// A human-readable description of this command. By default, this method returns the original URL's query string; override to provide a more accessible description. The string returned from this method is used in the command's confirmation sheet shown from +confirmAndInvokeSpecialURL:withStyle:fromController:.
 - (NSString *)commandDescription;

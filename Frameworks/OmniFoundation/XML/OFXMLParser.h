@@ -22,8 +22,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (class, nonatomic, readonly) NSUInteger defaultMaximumParseChunkSize; // in bytes
 
 - (id)init NS_UNAVAILABLE;
-- (id)initWithWhitespaceBehavior:(OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior target:(id <OFXMLParserTarget>)target NS_DESIGNATED_INITIALIZER;
-- (id)initWithData:(NSData *)xmlData whitespaceBehavior:(OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior target:(id <OFXMLParserTarget>)target error:(NSError **)outError NS_DEPRECATED(10_0, 10_11, 2_0, 10_0);
+- (instancetype)initWithWhitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior target:(id <OFXMLParserTarget>)target NS_DESIGNATED_INITIALIZER;
+- (nullable instancetype)initWithData:(NSData *)xmlData whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior target:(id <OFXMLParserTarget>)target error:(NSError **)outError NS_DEPRECATED(10_0, 10_11, 2_0, 10_0);
 
 - (OFXMLQName *)getQNameWithNamespace:(NSString *)namespaceString name:(NSString *)nameString;
 
@@ -43,6 +43,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, nullable, readonly) NSArray *loadWarnings;
 
 @property(nonatomic, readonly) NSUInteger elementDepth;
+
+- (void)stopWithError:(nullable NSError *)error;
 
 @end
 

@@ -20,28 +20,28 @@
 
 #import <stdatomic.h>
 
-RCS_ID("$Id$");
+NS_ASSUME_NONNULL_BEGIN
 
 #if OB_ARC
 #error Do not convert this to ARC w/o re-checking performance. Last time it was tried, it was noticably slower.
 #endif
 
 typedef struct _OFXMLParserTargetFunctions {
-    void (*setSystemID)(id <OFXMLParserTarget> target, SEL _cmd, OFXMLParser *parser, NSURL *systemID, NSString *publicID);
-    void (*addProcessingInstruction)(id <OFXMLParserTarget> target, SEL _cmd, OFXMLParser *parser, NSString *piName, NSString *piValue);
+    void (* _Nullable setSystemID)(id <OFXMLParserTarget> target, SEL _cmd, OFXMLParser *parser, NSURL *systemID, NSString *publicID);
+    void (* _Nullable addProcessingInstruction)(id <OFXMLParserTarget> target, SEL _cmd, OFXMLParser *parser, NSString *piName, NSString *piValue);
     
-    OFXMLParserElementBehavior (*behaviorForElementWithQName)(id <OFXMLParserTarget> target, SEL _cmd, OFXMLParser *parser, OFXMLQName *name, id <OFXMLParserMultipleAttributeGenerator> multipleAttributeGenerator, id <OFXMLParserSingleAttributeGenerator> singleAttributeGenerator);
+    OFXMLParserElementBehavior (* _Nullable behaviorForElementWithQName)(id <OFXMLParserTarget> target, SEL _cmd, OFXMLParser *parser, OFXMLQName *name, id <OFXMLParserMultipleAttributeGenerator> multipleAttributeGenerator, id <OFXMLParserSingleAttributeGenerator> singleAttributeGenerator);
     
-    void (*startElementWithQName)(id <OFXMLParserTarget> target, SEL _cmd, OFXMLParser *parser, OFXMLQName *elementQName, id <OFXMLParserMultipleAttributeGenerator> multipleAttributeGenerator, id <OFXMLParserSingleAttributeGenerator> singleAttributeGenerator);
+    void (* _Nullable startElementWithQName)(id <OFXMLParserTarget> target, SEL _cmd, OFXMLParser *parser, OFXMLQName *elementQName, id <OFXMLParserMultipleAttributeGenerator> multipleAttributeGenerator, id <OFXMLParserSingleAttributeGenerator> singleAttributeGenerator);
     
-    void (*endElement)(id <OFXMLParserTarget> target, SEL _cmd, OFXMLParser *parser, OFXMLQName *elementQName);
-    void (*endUnparsedElementWithQName)(id <OFXMLParserTarget> target, SEL _cmd, OFXMLParser *parser, OFXMLQName *elementName, NSString *identifier, NSData *contents);
+    void (* _Nullable endElement)(id <OFXMLParserTarget> target, SEL _cmd, OFXMLParser *parser, OFXMLQName *elementQName);
+    void (* _Nullable endUnparsedElementWithQName)(id <OFXMLParserTarget> target, SEL _cmd, OFXMLParser *parser, OFXMLQName *elementName, NSString *identifier, NSData *contents);
     
-    void (*addWhitespace)(id <OFXMLParserTarget> target, SEL _cmd, OFXMLParser *parser, NSString *whitespace);
-    void (*addString)(id <OFXMLParserTarget> target, SEL _cmd, OFXMLParser *parser, NSString *string);
-    void (*addCharacterBytes)(id <OFXMLParserTarget> target, SEL _cmd, OFXMLParser *parser, const void *bytes, NSUInteger length);
+    void (* _Nullable addWhitespace)(id <OFXMLParserTarget> target, SEL _cmd, OFXMLParser *parser, NSString *whitespace);
+    void (* _Nullable addString)(id <OFXMLParserTarget> target, SEL _cmd, OFXMLParser *parser, NSString *string);
+    void (* _Nullable addCharacterBytes)(id <OFXMLParserTarget> target, SEL _cmd, OFXMLParser *parser, const void *bytes, NSUInteger length);
 
-    void (*addComment)(id <OFXMLParserTarget> target, SEL _cmd, OFXMLParser *parser, NSString *string);
+    void (* _Nullable addComment)(id <OFXMLParserTarget> target, SEL _cmd, OFXMLParser *parser, NSString *string);
 } OFXMLParserTargetFunctions;
 
 static void OFXMLParserTargetFunctionsLookup(OFXMLParserTargetFunctions *functions, id <OFXMLParserTarget> target)
@@ -84,10 +84,12 @@ static void OFXMLParserTargetFunctionsLookup(OFXMLParserTargetFunctions *functio
     
     NSUInteger elementDepth;
     BOOL rootElementFinished;
-    
-    OFXMLWhitespaceBehavior *whitespaceBehavior;
-    NSMutableArray *whitespaceBehaviorStack;
-    
+
+    // If whitespaceBehavior is nil, no stack will be built and the default will be used.
+    OFXMLWhitespaceBehavior * _Nullable whitespaceBehavior;
+    NSMutableArray * _Nullable whitespaceBehaviorStack;
+    OFXMLWhitespaceBehaviorType _defaultWhitespaceBehavior;
+
     NSError *error;
     NSMutableArray *loadWarnings;
     
@@ -486,7 +488,7 @@ static void _startElementNsSAX2Func(void *ctx, const xmlChar *localname, const x
 {
     OFXMLParserState *state = (__bridge OFXMLParserState *)ctx;
 
-    OBINVARIANT([state->whitespaceBehaviorStack count] == state->elementDepth + 1); // always have the default behavior on the stack!
+    OBASSERT_IF(state->whitespaceBehavior, [state->whitespaceBehaviorStack count] == state->elementDepth + 1); // always have the default behavior on the stack!
     
     // Unparsed element support
     if (state->unparsedBlockStart >= 0) {
@@ -535,16 +537,18 @@ static void _startElementNsSAX2Func(void *ctx, const xmlChar *localname, const x
     state->elementURI = NULL;
 
     // TODO: Make OFXMLWhitespaceBehaviorType QName aware.
-    OFXMLWhitespaceBehaviorType oldBehavior = (OFXMLWhitespaceBehaviorType)[[state->whitespaceBehaviorStack lastObject] unsignedIntegerValue];
-    OFXMLWhitespaceBehaviorType newBehavior = [state->whitespaceBehavior behaviorForElementName:elementQName.name];
+    if (state->whitespaceBehavior) {
+        OFXMLWhitespaceBehaviorType newBehavior = [state->whitespaceBehavior behaviorForElementName:elementQName.name];
     
-    if (newBehavior == OFXMLWhitespaceBehaviorTypeAuto)
-        newBehavior = oldBehavior;
+        if (newBehavior == OFXMLWhitespaceBehaviorTypeAuto) {
+            OFXMLWhitespaceBehaviorType oldBehavior = (OFXMLWhitespaceBehaviorType)[[state->whitespaceBehaviorStack lastObject] unsignedIntegerValue];
+            newBehavior = oldBehavior;
+        }
     
-    [state->whitespaceBehaviorStack addObject:@(newBehavior)];
-    
-    
-    OBINVARIANT([state->whitespaceBehaviorStack count] == state->elementDepth + 1); // always have the default behavior on the stack!
+        [state->whitespaceBehaviorStack addObject:@(newBehavior)];
+    }
+
+    OBASSERT_IF(state->whitespaceBehavior, [state->whitespaceBehaviorStack count] == state->elementDepth + 1); // always have the default behavior on the stack!
         
 #if 0
     NSLog(@"start element localname:'%s' prefix:'%s' URI:'%s'", localname, prefix, URI);
@@ -624,7 +628,7 @@ static void _endElementNsSAX2Func(void *ctx, const xmlChar *localname, const xml
         }
     }
     
-    OBINVARIANT([state->whitespaceBehaviorStack count] == state->elementDepth + 1); // always have the default behavior on the stack!
+    OBASSERT_IF(state->whitespaceBehavior, [state->whitespaceBehaviorStack count] == state->elementDepth + 1); // always have the default behavior on the stack!
     
     OBASSERT(state->elementDepth > 0);
     if (state->elementDepth > 0) {
@@ -639,8 +643,7 @@ static void _endElementNsSAX2Func(void *ctx, const xmlChar *localname, const xml
     }
 
     [state->whitespaceBehaviorStack removeLastObject];
-    
-    OBINVARIANT([state->whitespaceBehaviorStack count] == state->elementDepth + 1); // always have the default behavior on the stack!
+    OBASSERT_IF(state->whitespaceBehavior, [state->whitespaceBehaviorStack count] == state->elementDepth + 1); // always have the default behavior on the stack!
 }
 
 static void _commentSAXFunc(void *ctx, const xmlChar *value)
@@ -743,7 +746,12 @@ static void _charactersSAXFunc(void *ctx, const xmlChar *ch, int len)
             OBINVARIANT([state->whitespaceBehaviorStack count] == state->elementDepth + 1); // always have the default behavior on the stack!
 
             // Only add the whitespace if our current behavior dictates that we do so (and we are actually inside the root element)
-            OFXMLWhitespaceBehaviorType currentBehavior = (OFXMLWhitespaceBehaviorType)[[state->whitespaceBehaviorStack lastObject] unsignedIntegerValue];
+            OFXMLWhitespaceBehaviorType currentBehavior;
+            if (state->whitespaceBehavior) {
+                currentBehavior = (OFXMLWhitespaceBehaviorType)[[state->whitespaceBehaviorStack lastObject] unsignedIntegerValue];
+            } else {
+                currentBehavior = state->_defaultWhitespaceBehavior;
+            }
 
             if (currentBehavior == OFXMLWhitespaceBehaviorTypePreserve) {
                 if (addWhitespace) {
@@ -797,10 +805,10 @@ static void _xmlStructuredErrorFunc(void *userData, xmlErrorPtr error)
     NSError *errorObject = OFXMLCreateError(error);
     if (errorObject == nil)
         return; // should be ignored.
-    
-    if (error->level == XML_ERR_WARNING)
+
+    if (error->level == XML_ERR_WARNING) {
         [state->loadWarnings addObject:errorObject];
-    else {
+    } else {
         OBASSERT(error->level == XML_ERR_ERROR || error->level == XML_ERR_FATAL);
         
         // Error or fatal.  We don't ask for recovery, so for now anything that isn't a warning is fatal.
@@ -816,7 +824,8 @@ static void _OFXMLParserStateCleanUp(OFXMLParserState *state)
 {
     OBPRECONDITION(state->ctxt == NULL); // we don't clean this up
     OBPRECONDITION(state->error == nil); // the caller should have taken ownership and cleaned this up
-    
+
+    [state->whitespaceBehavior release];
     [state->whitespaceBehaviorStack release];
     [state->loadWarnings release];
     
@@ -835,7 +844,7 @@ static const NSUInteger OFXMLParserDefaultMaximumParseChunkSize = 1024 * 1024 * 
     return OFXMLParserDefaultMaximumParseChunkSize;
 }
 
-- (id)initWithData:(NSData *)xmlData whitespaceBehavior:(OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior target:(NSObject<OFXMLParserTarget> *)target error:(NSError **)outError;
+- (nullable instancetype)initWithData:(NSData *)xmlData whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior target:(NSObject<OFXMLParserTarget> *)target error:(NSError **)outError;
 {
     if (!(self = [self initWithWhitespaceBehavior:whitespaceBehavior defaultWhitespaceBehavior:defaultWhitespaceBehavior target:target])) {
         return nil;
@@ -848,13 +857,11 @@ static const NSUInteger OFXMLParserDefaultMaximumParseChunkSize = 1024 * 1024 * 
     return self;
 }
 
-- (id)initWithWhitespaceBehavior:(OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior target:(id <OFXMLParserTarget>)target;
+- (instancetype)initWithWhitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior target:(id <OFXMLParserTarget>)target;
 {
     if (!(self = [super init]))
         return nil;
 
-    OBPRECONDITION(whitespaceBehavior);
-    
     _maximumParseChunkSize = [[self class] defaultMaximumParseChunkSize];
     _encoding = kCFStringEncodingInvalidId;
     
@@ -863,9 +870,8 @@ static const NSUInteger OFXMLParserDefaultMaximumParseChunkSize = 1024 * 1024 * 
     _state = [[OFXMLParserState alloc] init];
     
     _state->parser = self;
-    _state->whitespaceBehaviorStack = [[NSMutableArray alloc] init];
     _state->loadWarnings = [[NSMutableArray alloc] init];
-    _state->whitespaceBehavior = whitespaceBehavior;
+    _state->whitespaceBehavior = [whitespaceBehavior retain];
 
     _state->target = target;
     OFXMLParserTargetFunctionsLookup(&_state->targetImp, target);
@@ -882,7 +888,11 @@ static const NSUInteger OFXMLParserDefaultMaximumParseChunkSize = 1024 * 1024 * 
     _state->unparsedBlockStart = -1;
     
     // Set up default whitespace behavior
-    [_state->whitespaceBehaviorStack addObject:@(defaultWhitespaceBehavior)];
+    _state->_defaultWhitespaceBehavior = defaultWhitespaceBehavior;
+    if (whitespaceBehavior) {
+        _state->whitespaceBehaviorStack = [[NSMutableArray alloc] init];
+        [_state->whitespaceBehaviorStack addObject:@(defaultWhitespaceBehavior)];
+    }
 
     return self;
 }
@@ -967,6 +977,23 @@ static const NSUInteger OFXMLParserDefaultMaximumParseChunkSize = 1024 * 1024 * 
     // N.B. Setting XML_PARSE_HUGE is no longer necessary unless we wish to use a chunk size larger than the internal parser limit of 10000000.
     
     int options = 0;
+
+    /*
+     NOTE: We intentionally do not set the recovery option. Setting this almost works for things like skipping invalid characters (like NUL and ESC that the Cocoa text system can let leak into text contents). The problem is that even when this option is set, libxml2 sets an internal `wellFormed` flag to false. Then, in its xmlParseReference(), there is this code:
+
+        ent = xmlParseEntityRef(ctxt);
+        if (ent == NULL) return;
+        if (!ctxt->wellFormed)
+        return;
+        was_checked = ent->checked;
+
+     So, when parsing a named entity like `&amp;`, the entity is correctly determined, but the function bails without ever calling the SAX characters callback.
+
+     This is the state of affairs in libxml2 v2.9.4, from 2016 which ships with macOS 11.0.1 in 2020. Looking at the most recent version (2.9.10), it has the same code.
+
+     */
+    // options |= XML_PARSE_RECOVER;
+
     options |= XML_PARSE_NOENT;     // Turn entities into content
     options |= XML_PARSE_NONET;     // Don't allow network access
     options |= XML_PARSE_NSCLEAN;   // Remove redundant namespace declarations
@@ -1106,7 +1133,7 @@ static const NSUInteger OFXMLParserDefaultMaximumParseChunkSize = 1024 * 1024 * 
         
         OBASSERT(_state->elementDepth == 0); // should have finished the root element.
         OBASSERT(_state->rootElementFinished);
-        OBASSERT([_state->whitespaceBehaviorStack count] == 1); // The default one should be one the stack.
+        OBASSERT_IF(_state->whitespaceBehavior, [_state->whitespaceBehaviorStack count] == 1); // The default one should be one the stack.
         OBASSERT(![NSString isEmptyString:_versionString]);
     }
     
@@ -1130,6 +1157,13 @@ static const NSUInteger OFXMLParserDefaultMaximumParseChunkSize = 1024 * 1024 * 
     return _state ? _state->elementDepth : 0;
 }
 
+- (void)stopWithError:(nullable NSError *)error;
+{
+    xmlStopParser(_state->ctxt);
+    OBASSERT(_state->error == nil);
+    _state->error = [error retain];
+}
+
 #pragma mark - NSProgressReporting
 
 - (NSProgress *)progress;
@@ -1142,3 +1176,5 @@ static const NSUInteger OFXMLParserDefaultMaximumParseChunkSize = 1024 * 1024 * 
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

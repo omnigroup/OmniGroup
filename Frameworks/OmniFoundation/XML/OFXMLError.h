@@ -18,3 +18,7 @@
 
 // Returns nil if the error should be ignored.
 NSError *OFXMLCreateError(xmlErrorPtr error) NS_RETURNS_RETAINED;
+
+// User info keys for libxml2 errors reported with an NSError domain and code of OFErrorDomain/OFXMLLibraryError.
+extern NSString * const OFXMLErrorDomainKey;
+extern NSString * const OFXMLErrorCodeKey;

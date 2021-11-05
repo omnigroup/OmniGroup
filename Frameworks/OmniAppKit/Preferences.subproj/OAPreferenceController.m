@@ -1096,14 +1096,24 @@ static NSString * const IdealWidthConstraintIdentifier = @"OAPreferenceControlle
     
     NSString *minimumOSVersionString = [description objectForKey:@"minimumOSVersion"];
     if (![NSString isEmptyString:minimumOSVersionString]) {
-	OFVersionNumber *minimumOSVersion = [[OFVersionNumber alloc] initWithVersionString:minimumOSVersionString];
-	OFVersionNumber *currentOSVersion = [OFVersionNumber userVisibleOperatingSystemVersionNumber];
-	
-	BOOL fulfillsMinimumRequirements = ([currentOSVersion compareToVersionNumber:minimumOSVersion] != NSOrderedAscending);
-	if (!fulfillsMinimumRequirements)
-	    return;
+        OFVersionNumber *minimumOSVersion = [[OFVersionNumber alloc] initWithVersionString:minimumOSVersionString];
+        OFVersionNumber *currentOSVersion = [OFVersionNumber userVisibleOperatingSystemVersionNumber];
+        
+        BOOL fulfillsMinimumRequirements = ([currentOSVersion compareToVersionNumber:minimumOSVersion] != NSOrderedAscending);
+        if (!fulfillsMinimumRequirements)
+            return;
     }
     
+    NSString *maximumOSVersionString = [description objectForKey:@"maximumOSVersion"];
+    if (![NSString isEmptyString:maximumOSVersionString]) {
+        OFVersionNumber *maximumOSVersion = [[OFVersionNumber alloc] initWithVersionString:maximumOSVersionString];
+        OFVersionNumber *currentOSVersion = [OFVersionNumber userVisibleOperatingSystemVersionNumber];
+        
+        BOOL fulfillsMaximumRequirements = ([currentOSVersion compareToVersionNumber:maximumOSVersion] != NSOrderedDescending);
+        if (!fulfillsMaximumRequirements)
+            return;
+    }
+
     titleEnglish = [description objectForKey:@"title"];
     if (titleEnglish == nil)
         titleEnglish = [NSString stringWithFormat:@"Localized Title for Preference Class %@", className];

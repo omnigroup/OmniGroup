@@ -1,4 +1,4 @@
-// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,6 +11,7 @@
 #import <OmniUI/OUIInspectorUpdateReason.h>
 #import <OmniAppKit/OATextAttributes.h>
 #import <CoreGraphics/CGBase.h>
+#import <OmniBase/OBUtilities.h>
 
 @class OUIInspectorPane;
 
@@ -100,7 +101,7 @@ extern NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification;
 @class OAColor;
 @protocol OUIColorInspection <NSObject>
 - (OAColor *)colorForInspectorSlice:(OUIInspectorSlice *)inspector;
-- (void)setColor:(OAColor *)color fromInspectorSlice:(OUIInspectorSlice *)inspector undoManager:(NSUndoManager *)undoManager;
+- (void)setColor:(OAColor *)color fromInspectorSlice:(OUIInspectorSlice *)inspector;
 - (NSString *)preferenceKeyForInspectorSlice:(OUIInspectorSlice *)inspector;
 @end
 
@@ -108,7 +109,7 @@ extern NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification;
 @class OAFontDescriptor;
 @protocol OUIFontInspection <NSObject>
 - (OAFontDescriptor *)fontDescriptorForInspectorSlice:(OUIInspectorSlice *)inspector;
-- (void)setFontDescriptor:(OAFontDescriptor *)fontDescriptor fromInspectorSlice:(OUIInspectorSlice *)inspector undoManager:(NSUndoManager *)undoManager;
+- (void)setFontDescriptor:(OAFontDescriptor *)fontDescriptor fromInspectorSlice:(OUIInspectorSlice *)inspector;
 - (CGFloat)fontSizeForInspectorSlice:(OUIInspectorSlice *)inspector;
 - (void)setFontSize:(CGFloat)fontSize fromInspectorSlice:(OUIInspectorSlice *)inspector;
 
@@ -126,3 +127,9 @@ extern NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification;
 - (NSParagraphStyle *)paragraphStyleForInspectorSlice:(OUIInspectorSlice *)inspector;
 - (void)setParagraphStyle:(NSParagraphStyle *)paragraphStyle fromInspectorSlice:(OUIInspectorSlice *)inspector;
 @end
+
+@interface NSObject (OUIInspectorDeprecated)
+- (void)setColor:(OAColor *)color fromInspectorSlice:(OUIInspectorSlice *)inspector undoManager:(NSUndoManager *)undoManager OB_DEPRECATED_ATTRIBUTE;
+- (void)setFontDescriptor:(OAFontDescriptor *)fontDescriptor fromInspectorSlice:(OUIInspectorSlice *)inspector undoManager:(NSUndoManager *)undoManager OB_DEPRECATED_ATTRIBUTE;
+@end
+

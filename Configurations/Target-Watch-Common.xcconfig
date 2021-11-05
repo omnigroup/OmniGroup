@@ -1,4 +1,4 @@
-// Copyright 2006-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the terms in the file OmniSourceLicense.html, which should be distributed with this project and can also be found at <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 //
@@ -13,6 +13,9 @@ DEBUG_INFORMATION_FORMAT = dwarf-with-dsym
 OMNI_WATCH_SDK_VERSION =
 OMNI_WATCH_SDKROOT = watchos
 SDKROOT = $(OMNI_WATCH_SDKROOT)$(OMNI_WATCH_SDK_VERSION)
+
+// When building for the simulator with Xcode 12, it wants to build both x86_64 and arm64 (for Apple Silicon). But this breaks apps that use the TextExpander iOS SDK, which has an arm64 segment for the *device*. For now, when building for the simulator, only allow x86_64 (which means you'd be running with Rosetta 2 on a ASi box).
+VALID_ARCHS[sdk=watchsimulator*] = x86_64
 
 // This needs to be overridden in xcodebuild builds as well, to prevent a watchOS app from being built when building for the simulator (isn't needed in Xcode for some reason).
 OMNI_WATCH_SUPPORTED_PLATFORMS = watchsimulator watchos

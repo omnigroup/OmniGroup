@@ -1,4 +1,4 @@
-// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -309,15 +309,7 @@ static OAFontDescriptor *_fixFixedPitchTrait(OAFontDescriptor *fontDescriptor, N
             }
             
             if (fontDescriptor) {
-                //NSLog(@"setting fontDescriptor = %@", fontDescriptor);
-                NSUndoManager *undoManager = nil;
-                if ([object respondsToSelector:@selector(undoManager)]) {
-                    undoManager = [object performSelector:@selector(undoManager)];
-                }
-                if (undoManager == nil) {
-                    undoManager = self.undoManager;
-                }
-                [object setFontDescriptor:fontDescriptor fromInspectorSlice:parentSlice undoManager:undoManager];
+                [object setFontDescriptor:fontDescriptor fromInspectorSlice:parentSlice];
             }
         }
     }

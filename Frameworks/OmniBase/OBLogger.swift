@@ -1,11 +1,9 @@
-// Copyright 2013-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
-//
-// $Id$
 
 import Foundation
 
@@ -26,21 +24,31 @@ public func OBLogS(_ logger: OBLogger?, _ messageLevel: OBLoggerLevel, _ message
     OBLogSwiftVariadicCover(logger, Int(messageLevel.rawValue), message)
 }
 
-/// Does a one-time initialization of an OBLogger keyed to the given name.
+/// Backwards compatible cover for initilizer offering access to the given key within the shared defaults object.
+public func OBLoggerInitializeLogLevel(_ name: String) -> OBLogger? {
+    return OBLoggerInitializeLogLevel(key: name)
+}
+
+/// Does a one-time initialization of an OBLogger keyed to the given `key` in the `suiteName` specified database or the shared defaults if not provided.
 ///
 /// For cross-platform convenience. Frameworks shouldn't have to know which platform they're on, and whether OBLogger likes to write to files on that platform.
-public func OBLoggerInitializeLogLevel(_ name: String) -> OBLogger? {
+public func OBLoggerInitializeLogLevel(suiteName: String? = nil, key: String) -> OBLogger? {
     let platformTruncatesLogs: Bool
     #if os(OSX)
         platformTruncatesLogs = false
     #else
         platformTruncatesLogs = true
     #endif
-    let result = OBLogger(name: name, shouldLogToFile:platformTruncatesLogs)
+    let result = OBLogger(suiteName: suiteName, key: key, shouldLogToFile: platformTruncatesLogs)
     return result
 }
 
-/// Observes the user default for `key`, invoking `updater` with an appropriate OBLogger instance immediately and whenever the preference changes.
+/// Backwards compatible cover for `maintainLogLevelPreference(suiteName:key:updater:)` passing `nil` for `suiteName`.
+public func maintainLogLevelPreference(for key: String, updater: ((OBLogger?) -> Void)?) {
+    maintainLogLevelPreference(suiteName: nil, key: key, updater: updater)
+}
+
+/// Observes the user default for `key` in the `suiteName` specified defaults database or shared defaults, invoking `updater` with an appropriate OBLogger instance immediately and whenever the preference changes.
 ///
 /// Sample Swift-only use:
 ///
@@ -59,7 +67,7 @@ public func OBLoggerInitializeLogLevel(_ name: String) -> OBLogger? {
 ///
 /// class CoordinatorDebugLoggerConfigurator: NSObject {
 ///     static func configure() {
-///         maintainLogLevelPreference(for: coordinatorDebugLoggerPreferenceKey) { logger in
+///         maintainLogLevelPreference(suiteName: nil, key: coordinatorDebugLoggerPreferenceKey) { logger in
 ///             coordinatorDebugLogger = logger
 ///         }
 ///     }
@@ -87,23 +95,25 @@ public func OBLoggerInitializeLogLevel(_ name: String) -> OBLogger? {
 ///     OBLog(CoordinatorDebugLoggerConfigurator.logger, 1, format, ## __VA_ARGS__); \
 /// } while (0)
 /// ```
-/// 
+///
 /// And call it like:
 /// ```
 /// COORDINATOR_DEBUG_LOG("Message: %@", parameter);
 /// ```
 ///
+/// - parameter suiteName: specified defaults database or the shared defaults if not provided
 /// - parameter key: the user defaults key to read and observe
 /// - parameter updater: a block that is executed whenever a new OBLogger, or the absence thereof, is needed. N.B., this block is retained for the life of the program. You probably don't want it to capture anything.
-public func maintainLogLevelPreference(for key: String, updater: ((OBLogger?) -> Void)?) {
+public func maintainLogLevelPreference(suiteName: String?, key: String, updater: ((OBLogger?) -> Void)?) {
+    let suiteNameKey = [suiteName, key].compactMap { $0 }.joined(separator: ".")
     guard let updater = updater else {
         // unregister key
-        logLevelMaintainers[key] = nil
+        logLevelMaintainers[suiteNameKey] = nil
         return
     }
 
     // add or replace maintainer
-    logLevelMaintainers[key] = OBLogLevelMaintainer(key: key, updater: updater)
+    logLevelMaintainers[suiteNameKey] = OBLogLevelMaintainer(suiteName: suiteName, key: key, updater: updater)
 }
 
 private var logLevelMaintainers: [String: OBLogLevelMaintainer] = [:]
@@ -114,27 +124,36 @@ private let observerContext = UnsafeMutableRawPointer.allocate(bytes: 4, aligned
 #endif
 
 private class OBLogLevelMaintainer: NSObject {
+    private let suiteName: String?
     private let key: String
     private let updater: (OBLogger?) -> Void
+    private lazy var userDefaults: UserDefaults = {
+        if let suiteName = suiteName, let suiteNameDefaults = UserDefaults(suiteName: suiteName) {
+            return suiteNameDefaults
+        }
+        
+        return UserDefaults.standard
+    }()
 
-    @objc /**REVIEW**/ init(key: String, updater: @escaping (OBLogger?) -> Void) {
+    init(suiteName: String?, key: String, updater: @escaping (OBLogger?) -> Void) {
+        self.suiteName = suiteName
         self.key = key
         self.updater = updater
         
         super.init()
         
-        // Only register 0 for the log level a value hasn't already registered a value; we don't want to stop an existing registration.
-        let registrationDomain = UserDefaults.standard.volatileDomain(forName: UserDefaults.registrationDomain)
+        // Only register 0 for the log level if a value wasn't already registered; we don't want to stomp on an existing registration.
+        let registrationDomain = userDefaults.volatileDomain(forName: UserDefaults.registrationDomain)
         let registeredValue = registrationDomain[key]
         if registeredValue == nil {
-            UserDefaults.standard.register(defaults: [key: 0])
+            userDefaults.register(defaults: [key: 0])
         }
 
-        UserDefaults.standard.addObserver(self, forKeyPath: key, options: [.new], context: observerContext)
+        userDefaults.addObserver(self, forKeyPath: key, options: [.new], context: observerContext)
     }
     
     deinit {
-        UserDefaults.standard.removeObserver(self, forKeyPath: key, context: observerContext)
+        userDefaults.removeObserver(self, forKeyPath: key, context: observerContext)
     }
     
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
@@ -147,7 +166,7 @@ private class OBLogLevelMaintainer: NSObject {
     }
     
     private func update() {
-        updater(OBLoggerInitializeLogLevel(key))
+        updater(OBLoggerInitializeLogLevel(suiteName: suiteName, key: key))
     }
 }
 

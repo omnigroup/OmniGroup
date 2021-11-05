@@ -18,12 +18,12 @@
 #import <CoreGraphics/CGGeometry.h>
 #endif
 
-RCS_ID("$Id$");
+NS_ASSUME_NONNULL_BEGIN
 
 NSString * const OFUndoManagerEnablednessDidChangeNotification = @"OFUndoManagerEnablednessDidChangeNotification";
 
 static unsigned int OFUndoManagerLoggingOptions = OFUndoManagerNoLogging;
-static CFMutableSetRef OFUndoManagerStates = NULL;
+static CFMutableSetRef _Nullable OFUndoManagerStates = NULL;
 static Ivar targetIvar;
 
 typedef struct {
@@ -186,7 +186,7 @@ static void (*logging_original_dealloc)(id self, SEL _cmd) = NULL;
     }
 }
 
-- (NSString *)loggingBuffer;
+- (nullable NSString *)loggingBuffer;
 {
     if ((OFUndoManagerLoggingOptions & OFUndoManagerLogToBuffer) == 0)
         return nil;
@@ -249,7 +249,7 @@ static OFUndoManagerLoggingState *_log(NSUndoManager *self, BOOL indent, NSStrin
     }
 }
 
-void _OFUndoManagerPushCallSite(NSUndoManager *undoManager, id self, SEL _cmd)
+void _OFUndoManagerPushCallSite(NSUndoManager * _Nullable undoManager, id self, SEL _cmd)
 {
     if ((OFUndoManagerLoggingOptions != OFUndoManagerNoLogging) && [undoManager isUndoRegistrationEnabled]) {
         OFUndoManagerLoggingState *state = _log(undoManager, YES, @"%@ %s {\n", [self shortDescription], _cmd);
@@ -257,7 +257,7 @@ void _OFUndoManagerPushCallSite(NSUndoManager *undoManager, id self, SEL _cmd)
     }
 }
 
-void _OFUndoManagerPopCallSite(NSUndoManager *undoManager)
+void _OFUndoManagerPopCallSite(NSUndoManager * _Nullable undoManager)
 {
     if ((OFUndoManagerLoggingOptions != OFUndoManagerNoLogging) && [undoManager isUndoRegistrationEnabled]) {
         OFUndoManagerLoggingState *state = _log(undoManager, YES, @"}\n");
@@ -412,6 +412,7 @@ static void logging_replacement_proxyFowardInvocation(id proxy, SEL _cmd, NSInvo
     id proxy = logging_original_prepareWithInvocationTarget(self, _cmd, target);
     if (!proxy) {
         OBASSERT(![self isUndoRegistrationEnabled]);
+        OBAnalyzerNotReached(); // See NSUndoManager(OOExtensions)
         return nil;
     }
     
@@ -526,7 +527,7 @@ static void logging_replacement_proxyFowardInvocation(id proxy, SEL _cmd, NSInvo
 
 @end
 
-void OFWithoutUndo(NSUndoManager *undoManger, void (^action)(void))
+void OFWithoutUndo(NSUndoManager * _Nullable undoManger, void (^action)(void))
 {
     [undoManger disableUndoRegistration];
     action();
@@ -535,9 +536,11 @@ void OFWithoutUndo(NSUndoManager *undoManger, void (^action)(void))
 
 @implementation NSObject (OFUndoExtensions)
 
-- (instancetype)prepareInvocationWithUndoManager:(NSUndoManager *)undoManager;
+- (nullable instancetype)prepareInvocationWithUndoManager:(nullable NSUndoManager *)undoManager;
 {
     return [undoManager prepareWithInvocationTarget:self];
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

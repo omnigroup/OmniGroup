@@ -56,6 +56,11 @@ static NSString *const AddCloudAccountReuseIdentifier = @"OUIServerAccounts.AddA
 - (IBAction)_action:(id)sender;
 @end
 
+@interface _OUIServerAccountsViewControllerFolderPicker: NSObject
++ (void)pickFolderInViewController:(UIViewController *)viewController withCompletionBlock:(void (^)(NSURL * _Nullable))completionBlock;
+@end
+
+
 #pragma mark - View Controller
 
 @implementation OUIServerAccountsViewController
@@ -300,11 +305,27 @@ static NSString *const AddCloudAccountReuseIdentifier = @"OUIServerAccounts.AddA
     }
 }
 
+- (void)_recoverLocalDocumentsDirectoryForAccount:(OFXServerAccount *)account;
+{
+    [_OUIServerAccountsViewControllerFolderPicker pickFolderInViewController:self withCompletionBlock:^(NSURL * _Nullable folderURL) {
+#ifdef DEBUG_kc
+        NSLog(@"DEBUG: Picked %@", [folderURL absoluteString]);
+#endif
+        [account recoverLostLocalDocumentsURL:folderURL];
+        [account clearError];
+        [_observer.agentActivity.agent sync:NULL];
+    }];
+}
+
 - (void)_showAccount:(OFXServerAccount *)account;
 {
     // We can't browse the account's documents if the local documents folder is missing.
-    if (_isForBrowsing && ![account.lastError hasUnderlyingErrorDomain:OFXErrorDomain code:OFXLocalAccountDocumentsDirectoryMissing]) {
-        [self _openFileListForAccount:account sender:self.tableView];
+    if (_isForBrowsing) {
+        if ([account.lastError hasUnderlyingErrorDomain:OFXErrorDomain code:OFXLocalAccountDocumentsDirectoryMissing]) {
+            [self _recoverLocalDocumentsDirectoryForAccount:account];
+        } else {
+            [self _openFileListForAccount:account sender:self.tableView];
+        }
     } else {
         [self _editAccountSettings:account sender:self.tableView];
     }
@@ -430,3 +451,39 @@ static NSString *const AddCloudAccountReuseIdentifier = @"OUIServerAccounts.AddA
 
 @end
 
+@interface _OUIServerAccountsViewControllerFolderPicker () <UIDocumentPickerDelegate>
+@property (nonatomic, copy) void (^completionBlock)(NSURL * _Nullable);
+@end
+
+@implementation _OUIServerAccountsViewControllerFolderPicker
+
+static NSMutableArray *activeInstances;
+
++ (void)initialize;
+{
+    OBINITIALIZE;
+
+    activeInstances = [[NSMutableArray alloc] init];
+}
+
++ (void)pickFolderInViewController:(UIViewController *)viewController withCompletionBlock:(void (^)(NSURL * _Nullable))completionBlock;
+{
+    _OUIServerAccountsViewControllerFolderPicker *delegate = [[self alloc] init];
+    delegate.completionBlock = completionBlock;
+    [activeInstances addObject:delegate];
+
+    UIDocumentPickerViewController *picker = [[UIDocumentPickerViewController alloc] initWithDocumentTypes:@[(NSString *)kUTTypeFolder] inMode:UIDocumentPickerModeOpen];
+    picker.delegate = delegate;
+    picker.directoryURL = OFUserDocumentsDirectoryURL();
+    picker.modalPresentationStyle = UIModalPresentationOverCurrentContext;
+    [viewController presentViewController:picker animated:YES completion:^{}];
+}
+
+- (void)documentPicker:(UIDocumentPickerViewController *)controller didPickDocumentsAtURLs:(NSArray <NSURL *>*)urls API_AVAILABLE(ios(11.0));
+{
+    self.completionBlock(urls.firstObject);
+    controller.delegate = nil;
+    [activeInstances removeObject:self];
+}
+
+@end

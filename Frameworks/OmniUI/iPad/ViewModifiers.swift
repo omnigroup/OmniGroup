@@ -8,6 +8,31 @@
 import Foundation
 import SwiftUI
 
+
+/*
+ Use these modifiers with caution! Wherever they are used, they are equivalent to an inline if-else. This means in a situation like this:
+ 
+ var body: some View {
+    MyView()
+        .if(condition) { view in
+            view.background(Color.blue)
+        }
+ }
+ 
+ You are really writing this:
+ 
+ 
+ var body: some View {
+    if condition {
+        MyView().background(Color.blue)
+    } else {
+        MyView()
+    }
+ }
+ 
+ You are potentially returning two *different* views using that modifier, even though it only looks like one view is initialized in the original code. If you modify an @State variable in one and then `condition` changes, that @State change will *not* be carried over to the view in the other branch of the conditional.
+ 
+ */
 extension View {
     @ViewBuilder
     public func `if`<Transform: View>( _ condition: Bool, transform: (Self) -> Transform ) -> some View {

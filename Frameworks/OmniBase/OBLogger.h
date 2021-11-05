@@ -1,4 +1,4 @@
-// Copyright 2013-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,19 +18,29 @@ typedef void(^OBLogFileHandler)(NSURL *url);
  */
 @interface OBLogger : NSObject
 @property (nonatomic, readonly) NSInteger level;
+@property (nullable, nonatomic, readonly) NSString *suiteName;
+@property (nonatomic, readonly) NSString *key;
+/// `name` accessor provided as backwards compatibility; cover for now preferred `key` property.
 @property (nonatomic, readonly) NSString *name;
 @property (nonatomic, readonly) BOOL shouldLogToFile;
 
 /**
- Initializes the logger according to user preferences or environment variables.
- 
- If an environment variable matching the name parameter exists and has a numeric value greater than 0, then that is used as the threshold for messages to be logged by the logger. If such an environment variable exists and has a non-numeric value or has the value 0, then nil is returned. Otherwise, if a user preference matching the name parameter exists, it is used similarly.
- Messages sent to the logger---via OBLog()---that are at the preference level or higher are logged. Message with a lower level are ignored.
- If the log level is set at 0, then before returning nil, this method removes any existing log files for 'name'. This allows the logger to clean up after itself when logging is turned off.
- \param name the name of the logger, also used as the name of the environment variable or user preference for setting the logging level and in the name of any files logged.
- \param shouldLogToFile if YES, then log to files in addition to console.
+ Convenience provided as backwards compatible cover. Calls through to `-[OBLogger initWithSuiteName:key:shouldLogToFile:]` with an empty `suiteName` and uses `name` parameter for the `key`.
  */
 - (id)initWithName:(NSString *)name shouldLogToFile:(BOOL)shouldLogToFile; // We support logging to files for iOS only, where the console is truncated by the system.
+
+/**
+ Initializes the logger according to user preferences or environment variables.
+ 
+ If an environment variable matching the key parameter exists and has a numeric value greater than 0, then that is used as the threshold for messages to be logged by the logger. If such an environment variable exists and has a non-numeric value or has the value 0, then nil is returned. Otherwise, if a user preference matching the key parameter exists, it is used similarly. An optional suiteName can be provided to retrieve the current value from a specific database, rather than the shared default. The latter is used in cases where no suiteName is provided by the caller.
+ Messages sent to the logger---via OBLog()---that are at the preference level or higher are logged. Messages with a lower level are ignored.
+ If the log level is set at 0, then before returning nil, this method removes any existing log files for 'key'. This allows the logger to clean up after itself when logging is turned off.
+ \param suiteName specifies the user defaults database to use; otherwise the shared default is used.
+ \param key identifies the logger, also used as the environment variable or user default for setting the logging level, and in the file name for any logs persisted to disk.
+ \param shouldLogToFile if YES, then log to files in addition to console.
+ */
+- (id)initWithSuiteName:(nullable NSString *)suiteName key:(NSString *)key shouldLogToFile:(BOOL)shouldLogToFile; // We support logging to files for iOS only, where the console is truncated by the system.
+
 - (void)log:(NSString *)format arguments:(va_list)args;
 
 /**

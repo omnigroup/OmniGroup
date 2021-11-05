@@ -101,6 +101,7 @@ OUIButtonGridView.m
 OUIButtonGridView.swift
 OUICertificateTrustAlert.m
 OUIChangeAppIconURLCommand.m
+OUIChangeGroupBundleIdentifierPreferenceURLCommand.m
 OUIChangePreferenceURLCommand.m
 OUICompletionMatchCell.m
 OUICrossfadeViewControllerTransition.m

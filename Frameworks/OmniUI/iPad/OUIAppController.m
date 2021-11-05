@@ -615,6 +615,7 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
     Class myClass = [self class];
     [myClass registerCommandClass:[OUIChangeAppIconURLCommand class] forSpecialURLPath:@"/change-app-icon"];
     [myClass registerCommandClass:[OUIChangePreferenceURLCommand class] forSpecialURLPath:@"/change-preference"];
+    [myClass registerCommandClass:[OUIChangeGroupBundleIdentifierPreferenceURLCommand class] forSpecialURLPath:@"/change-group-preference"];
     [myClass registerCommandClass:[OUIDebugURLCommand class] forSpecialURLPath:@"/debug"];
     [myClass registerCommandClass:[OUIHelpURLCommand class] forSpecialURLPath:@"/help"];
     [myClass registerCommandClass:[OUIPurchaseURLCommand class] forSpecialURLPath:@"/purchase"];

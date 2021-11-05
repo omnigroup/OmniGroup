@@ -43,7 +43,7 @@ RCS_ID("$Id$");
         return nil;
 
     _defaultBehavior = defaultBehavior;
-    _nameToBehavior = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &OFNSObjectDictionaryKeyCallbacks, &OFIntegerDictionaryValueCallbacks);
+
     return self;
 }
 
@@ -69,15 +69,24 @@ RCS_ID("$Id$");
     OBPRECONDITION(OFXMLWhitespaceBehaviorTypeAuto == 0);
     
     if (behavior == OFXMLWhitespaceBehaviorTypeAuto) {
-        CFDictionaryRemoveValue(_nameToBehavior, (__bridge CFStringRef)elementName);
+        if (_nameToBehavior) {
+            CFDictionaryRemoveValue(_nameToBehavior, (__bridge CFStringRef)elementName);
+        }
     } else {
+        if (!_nameToBehavior) {
+            _nameToBehavior = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &OFNSObjectDictionaryKeyCallbacks, &OFIntegerDictionaryValueCallbacks);
+        }
         OFCFDictionarySetUIntegerValue(_nameToBehavior, (__bridge CFStringRef)elementName, behavior);
     }
 }
 
 - (OFXMLWhitespaceBehaviorType)behaviorForElementName:(NSString *)elementName;
 {
-    return (OFXMLWhitespaceBehaviorType)OFCFDictionaryGetUIntegerValueWithDefault(_nameToBehavior, (__bridge CFStringRef)elementName, _defaultBehavior);
+    if (_nameToBehavior) {
+        return (OFXMLWhitespaceBehaviorType)OFCFDictionaryGetUIntegerValueWithDefault(_nameToBehavior, (__bridge CFStringRef)elementName, _defaultBehavior);
+    } else {
+        return _defaultBehavior;
+    }
 }
 
 @end

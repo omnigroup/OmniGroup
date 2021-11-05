@@ -1,4 +1,4 @@
-// Copyright 2014-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -45,7 +45,7 @@ RCS_ID("$Id$");
     [[self commandClassesBySpecialURLPath] setObject:cls forKey:specialURLPath];
 }
 
-+ (BOOL)invokeSpecialURL:(NSURL *)url confirmingIfNeededWithStyle:(UIAlertControllerStyle)alertStyle fromViewController:(UIViewController *)sourceController NS_EXTENSION_UNAVAILABLE_IOS("Special URL handling is not available in extensions");
++ (BOOL)invokeSpecialURL:(NSURL *)url senderBundleIdentifier:(NSString *)senderBundleIdentifier confirmingIfNeededWithStyle:(UIAlertControllerStyle)alertStyle fromViewController:(UIViewController *)sourceController NS_EXTENSION_UNAVAILABLE_IOS("Special URL handling is not available in extensions");
 {
     OBPRECONDITION(url != nil);
     OBPRECONDITION(sourceController != nil);
@@ -55,7 +55,7 @@ RCS_ID("$Id$");
         return NO;
     }
     
-    OUISpecialURLCommand *command = [[commandCls alloc] initWithURL:url];
+    OUISpecialURLCommand *command = [[commandCls alloc] initWithURL:url senderBundleIdentifier:senderBundleIdentifier];
     if (command == nil) {
         return NO;
     }
@@ -118,16 +118,16 @@ RCS_ID("$Id$");
     return YES;
 }
 
-- (BOOL)handleSpecialURL:(NSURL *)url;
+- (BOOL)handleSpecialURL:(NSURL *)url senderBundleIdentifier:(NSString *)senderBundleIdentifier;
 {
-    return [self handleSpecialURL:url presentingFromViewController:[self viewControllerForSpecialURLHandlingPresentation]];
+    return [self handleSpecialURL:url senderBundleIdentifier:senderBundleIdentifier presentingFromViewController:[self viewControllerForSpecialURLHandlingPresentation]];
 }
 
-- (BOOL)handleSpecialURL:(NSURL *)url presentingFromViewController:(UIViewController *)controller;
+- (BOOL)handleSpecialURL:(NSURL *)url senderBundleIdentifier:(NSString *)senderBundleIdentifier presentingFromViewController:(UIViewController *)controller;
 {
     OBPRECONDITION([self isSpecialURL:url]);
     
-    return [[self class] invokeSpecialURL:url confirmingIfNeededWithStyle:UIAlertControllerStyleAlert fromViewController:controller];
+    return [[self class] invokeSpecialURL:url senderBundleIdentifier:senderBundleIdentifier confirmingIfNeededWithStyle:UIAlertControllerStyleAlert fromViewController:controller];
 }
 
 @end
@@ -136,12 +136,13 @@ RCS_ID("$Id$");
 
 @implementation OUISpecialURLCommand
 
-- (id)initWithURL:(NSURL *)url;
+- (id)initWithURL:(NSURL *)url senderBundleIdentifier:(NSString *)senderBundleIdentifier;
 {
     if (!(self = [super init])) {
         return nil;
     }
     _url = [url copy];
+    _senderBundleIdentifier = [senderBundleIdentifier copy];
     return self;
 }
 
@@ -149,7 +150,7 @@ RCS_ID("$Id$");
 - (instancetype)init NS_EXTENSION_UNAVAILABLE_IOS("Special URL handling is not available in extensions");
 {
     OBRejectUnusedImplementation(self, _cmd);
-    return [self initWithURL:nil];
+    return [self initWithURL:nil senderBundleIdentifier:nil];
 }
 
 - (void)dealloc;

@@ -1,4 +1,4 @@
-// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -224,7 +224,7 @@ static BOOL _toggledFlagToAssign(OUIFontAttributesInspectorSlice *self, SEL sel)
         for (id <OUIFontInspection> object in self.appropriateObjectsForInspection) {
             OAFontDescriptor *desc = [object fontDescriptorForInspectorSlice:self];
             desc = [desc newFontDescriptorWithBold:flag];
-            [object setFontDescriptor:desc fromInspectorSlice:self undoManager:self.undoManager];
+            [object setFontDescriptor:desc fromInspectorSlice:self];
             //    FinishUndoGroup();  // I think this should be here for Graffle iOS, but our build dependencies won't allow it and testing shows this isn't currently a problem
         }
     }
@@ -239,7 +239,7 @@ static BOOL _toggledFlagToAssign(OUIFontAttributesInspectorSlice *self, SEL sel)
         for (id <OUIFontInspection> object in self.appropriateObjectsForInspection) {
             OAFontDescriptor *desc = [object fontDescriptorForInspectorSlice:self];
             desc = [desc newFontDescriptorWithItalic:flag];
-            [object setFontDescriptor:desc fromInspectorSlice:self undoManager:self.undoManager];
+            [object setFontDescriptor:desc fromInspectorSlice:self];
             //    FinishUndoGroup();  // I think this should be here for Graffle iOS, but our build dependencies won't allow it and testing shows this isn't currently a problem
         }
     }

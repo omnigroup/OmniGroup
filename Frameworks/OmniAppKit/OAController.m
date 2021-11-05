@@ -42,28 +42,39 @@ RCS_ID("$Id$")
 
 + (BOOL)handleChangePreferenceURL:(NSURL *)url error:(NSError **)outError;
 {
+    return [self handleChangePreferenceURL:url preferenceWrapper:[OFPreferenceWrapper sharedPreferenceWrapper] error:outError];
+}
+
++ (BOOL)handleChangeGroupPreferenceURL:(NSURL *)url error:(NSError **)outError;
+{
+    OFPreferenceWrapper *preferenceWrapper = [OFPreferenceWrapper groupContainerIdentifierForContainingApplicationBundleIdentifierPreferenceWrapper];
+    return [self handleChangePreferenceURL:url preferenceWrapper:preferenceWrapper error:outError];
+}
+
++ (BOOL)handleChangePreferenceURL:(NSURL *)url preferenceWrapper:(OFPreferenceWrapper *)preferenceWrapper error:(NSError **)outError;
+{
     OFMultiValueDictionary *parameters = [[url query] parametersFromQueryString];
-    NSLog(@"Changing preferences for URL <%@>: parameters=%@", [url absoluteString], parameters);
-    OFPreferenceWrapper *preferences = [OFPreferenceWrapper sharedPreferenceWrapper];
+    NSLog(@"Changing preferences for URL <%@>: parameters=%@; preferences database=%@", [url absoluteString], parameters, preferenceWrapper.suiteName);
     NSEnumerator *keyEnumerator = [parameters keyEnumerator];
     NSString *key = nil;
+
     while ((key = [keyEnumerator nextObject]) != nil) {
         NSString *stringValue = [parameters lastObjectForKey:key];
         if ([stringValue isNull])
             stringValue = nil;
-        id oldValue = [preferences valueForKey:key];
-        id defaultValue = [[preferences preferenceForKey:key] defaultObjectValue];
+        id oldValue = [preferenceWrapper valueForKey:key];
+        id defaultValue = [[preferenceWrapper preferenceForKey:key] defaultObjectValue];
         id coercedValue = [OFPreference coerceStringValue:stringValue toTypeOfPropertyListValue:defaultValue error:outError];
         if (coercedValue == nil) {
             return NO;
         } else if ([coercedValue isNull]) {
             // Reset this setting
-            [preferences removeObjectForKey:key];
+            [preferenceWrapper removeObjectForKey:key];
         } else {
             // Set this setting
-            [preferences setObject:coercedValue forKey:key];
+            [preferenceWrapper setObject:coercedValue forKey:key];
         }
-        id updatedValue = [preferences valueForKey:key];
+        id updatedValue = [preferenceWrapper valueForKey:key];
         NSLog(@"... %@: %@ (%@) -> %@ (%@)", key, oldValue, [oldValue class], updatedValue, [updatedValue class]);
         
         NSAlert *alert = [[NSAlert alloc] init];
@@ -72,6 +83,7 @@ RCS_ID("$Id$")
         [alert addButtonWithTitle:OAOK()];
         (void)[alert runModal];
     }
+
     return YES;
 }
 

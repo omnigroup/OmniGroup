@@ -408,6 +408,8 @@
 		6C1709201C2372BA00350F40 /* OUISliceSeparatorView.h in Headers */ = {isa = PBXBuildFile; fileRef = 6C17091E1C2372BA00350F40 /* OUISliceSeparatorView.h */; };
 		6C1709211C2372BA00350F40 /* OUISliceSeparatorView.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C17091F1C2372BA00350F40 /* OUISliceSeparatorView.m */; };
 		D9D1B82C22EA807B00BF2F1B /* ContextMenus.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D9D1B82B22EA807B00BF2F1B /* ContextMenus.xcassets */; };
+		D9F6B46E254B77790003660F /* OUIChangeGroupBundleIdentifierPreferenceURLCommand.h in Headers */ = {isa = PBXBuildFile; fileRef = D9F6B46D254B77790003660F /* OUIChangeGroupBundleIdentifierPreferenceURLCommand.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D9F6B482254B77E20003660F /* OUIChangeGroupBundleIdentifierPreferenceURLCommand.m in Sources */ = {isa = PBXBuildFile; fileRef = D9F6B481254B77E20003660F /* OUIChangeGroupBundleIdentifierPreferenceURLCommand.m */; };
 		E22B37381FC4BF90004423FE /* OUINoteInspectorPane.xib in Resources */ = {isa = PBXBuildFile; fileRef = E22B37371FC4BF90004423FE /* OUINoteInspectorPane.xib */; };
 		E26E8D9A1F44E7830045CBF2 /* OUIFloatingContentToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = E26E8D991F44E7830045CBF2 /* OUIFloatingContentToolbar.swift */; };
 		E27879721BD1C0C200B38C43 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E27879711BD1C0C200B38C43 /* WebKit.framework */; };
@@ -1020,6 +1022,8 @@
 		AA747D9E0F9514B9006C5449 /* OmniUI_Prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniUI_Prefix.h; sourceTree = "<group>"; };
 		AACBBE490F95108600F1A2B1 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		D9D1B82B22EA807B00BF2F1B /* ContextMenus.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = ContextMenus.xcassets; sourceTree = "<group>"; };
+		D9F6B46D254B77790003660F /* OUIChangeGroupBundleIdentifierPreferenceURLCommand.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OUIChangeGroupBundleIdentifierPreferenceURLCommand.h; sourceTree = "<group>"; };
+		D9F6B481254B77E20003660F /* OUIChangeGroupBundleIdentifierPreferenceURLCommand.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = OUIChangeGroupBundleIdentifierPreferenceURLCommand.m; sourceTree = "<group>"; };
 		E215F45C16542E2000E2CD70 /* OUISegmentedControlInspectorSlice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUISegmentedControlInspectorSlice.h; sourceTree = "<group>"; };
 		E215F45D16542E2000E2CD70 /* OUISegmentedControlInspectorSlice.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUISegmentedControlInspectorSlice.m; sourceTree = "<group>"; };
 		E22B37371FC4BF90004423FE /* OUINoteInspectorPane.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = OUINoteInspectorPane.xib; sourceTree = "<group>"; };
@@ -1809,6 +1813,8 @@
 				3E609BE0198B5DC9006BCF43 /* OUIAppController+SpecialURLHandling.m */,
 				4A1BDAC3204CAC00003917CB /* OUIChangeAppIconURLCommand.h */,
 				4A1BDAC4204CAC00003917CB /* OUIChangeAppIconURLCommand.m */,
+				D9F6B46D254B77790003660F /* OUIChangeGroupBundleIdentifierPreferenceURLCommand.h */,
+				D9F6B481254B77E20003660F /* OUIChangeGroupBundleIdentifierPreferenceURLCommand.m */,
 				3E609C0E198B78ED006BCF43 /* OUIChangePreferenceURLCommand.h */,
 				3E609C0F198B78ED006BCF43 /* OUIChangePreferenceURLCommand.m */,
 				3E609C12198B7951006BCF43 /* OUIDebugURLCommand.h */,
@@ -1933,6 +1939,7 @@
 				4AF93D7E1E9D328D00DA8E01 /* OUISendFeedbackURLCommand.h in Headers */,
 				348A7AC81B584C650082D55D /* OUILoupeOverlaySubject.h in Headers */,
 				348A7A9B1B584BAE0082D55D /* OUIPaletteTheme.h in Headers */,
+				D9F6B46E254B77790003660F /* OUIChangeGroupBundleIdentifierPreferenceURLCommand.h in Headers */,
 				348A7A661B584B590082D55D /* OUISegmentedControlInspectorSlice.h in Headers */,
 				348A7A561B584B590082D55D /* OUIInspectorSlice-Internal.h in Headers */,
 				235D67411EB00E06007FCF56 /* OUIMultiPaneNotifications.h in Headers */,
@@ -2131,7 +2138,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0920;
-				LastUpgradeCheck = 1200;
+				LastUpgradeCheck = 1220;
 				TargetAttributes = {
 					348A79BA1B5849C70082D55D = {
 						CreatedOnToolsVersion = 7.0;
@@ -2497,6 +2504,7 @@
 				4DD560C61ED39D5B00F9A088 /* OUIButtonGridView.swift in Sources */,
 				348A7B121B584CC30082D55D /* OUICustomSubclass.m in Sources */,
 				348A7AE51B584C980082D55D /* OUIEditableLabeledValueCell.m in Sources */,
+				D9F6B482254B77E20003660F /* OUIChangeGroupBundleIdentifierPreferenceURLCommand.m in Sources */,
 				348A7AC61B584C3B0082D55D /* OUIKeyCommands.m in Sources */,
 				348A7AFB1B584CB90082D55D /* OUIUndoBarButtonItem.m in Sources */,
 				348A7AFE1B584CB90082D55D /* OUIUndoButton.m in Sources */,

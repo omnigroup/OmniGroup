@@ -9,7 +9,8 @@
 
 #import <OmniFoundation/OFErrors.h>
 
-RCS_ID("$Id$");
+NSString * const OFXMLErrorDomainKey = @"libxml_domain";
+NSString * const OFXMLErrorCodeKey = @"libxml_code";
 
 NSError *OFXMLCreateError(xmlErrorPtr error)
 {
@@ -25,8 +26,8 @@ NSError *OFXMLCreateError(xmlErrorPtr error)
     
     // libxml2 has its own notion of domain/code -- put those in the user info.
     NSMutableDictionary *userInfo = [[NSMutableDictionary alloc] initWithObjectsAndKeys:
-                                     [NSNumber numberWithInt:error->domain], @"libxml_domain",
-                                     [NSNumber numberWithInt:error->code], @"libxml_code",
+                                     [NSNumber numberWithInt:error->domain], OFXMLErrorDomainKey,
+                                     [NSNumber numberWithInt:error->code], OFXMLErrorCodeKey,
                                      [NSString stringWithUTF8String:error->message], NSLocalizedFailureReasonErrorKey,
                                      NSLocalizedStringFromTableInBundle(@"Warning encountered while loading XML.", @"OmniFoundation", OMNI_BUNDLE, @"error description"), NSLocalizedDescriptionKey,
                                      nil];

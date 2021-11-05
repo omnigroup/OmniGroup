@@ -1,4 +1,4 @@
-// Copyright 2015-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,6 +22,7 @@
 #import <OmniUI/OUIBorderedAuxiliaryButton.h>
 #import <OmniUI/OUIButtonGridView.h>
 #import <OmniUI/OUICertificateTrustAlert.h>
+#import <OmniUI/OUIChangeGroupBundleIdentifierPreferenceURLCommand.h>
 #import <OmniUI/OUIChangePreferenceURLCommand.h>
 #import <OmniUI/OUIColorAttributeInspectorSlice.h>
 #import <OmniUI/OUIColorAttributeInspectorWell.h>

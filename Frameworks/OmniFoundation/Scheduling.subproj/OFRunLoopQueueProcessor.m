@@ -1,4 +1,4 @@
-// Copyright 1998-2017 Omni Development, Inc. All rights reserved.
+// Copyright 1998-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -32,6 +32,8 @@ static OFRunLoopQueueProcessor *mainThreadProcessor = nil;
 + (OFRunLoopQueueProcessor *)mainThreadProcessor;
 {
     static dispatch_once_t onceToken;
+    static BOOL didCreate = NO;
+
     dispatch_once(&onceToken, ^{
         // If OmniAppKit is used, use the subclass that knows about AppKit run loop modes
         Class processorClass = NSClassFromString(@"OAAppKitQueueProcessor");
@@ -39,13 +41,18 @@ static OFRunLoopQueueProcessor *mainThreadProcessor = nil;
             processorClass = self;
         
         mainThreadProcessor = [[processorClass alloc] initForQueue:[OFMessageQueue mainQueue]];
-        
+        didCreate = YES;
+
         // Call the +mainThreadRunLoopModes method so the OmniAppKit subclass can add more modes
         if (![NSThread isMainThread])
             [NSException raise:@"OFRunLoopQueueProcessorWrongThread" format:@"Attempted to start the main thread's OFRunLoopQueueProcessor from a thread other than the main thread"];
-        
-        [mainThreadProcessor runFromCurrentRunLoopInModes:[self mainThreadRunLoopModes]];
     });
+
+    if (didCreate) {
+        // Avoid possibly reentrantly calling this while the dispatch_once is still resolving.
+        [mainThreadProcessor runFromCurrentRunLoopInModes:[self mainThreadRunLoopModes]];
+    }
+
     return mainThreadProcessor;
 }
 

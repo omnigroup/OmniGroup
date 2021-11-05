@@ -17,6 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface OAController : OFController <NSApplicationDelegate>
 
 + (BOOL)handleChangePreferenceURL:(NSURL *)url error:(NSError **)outError;
++ (BOOL)handleChangeGroupPreferenceURL:(NSURL *)url error:(NSError **)outError;
 
 - (OAAboutPanelController *)aboutPanelController;
 

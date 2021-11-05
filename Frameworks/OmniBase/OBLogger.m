@@ -1,4 +1,4 @@
-// Copyright 2013-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -163,6 +163,11 @@ static void _setPOSIXError(NSError **error, NSString *description)
 
 - (id)initWithName:(NSString *)name shouldLogToFile:(BOOL)shouldLogToFile;
 {
+    return [self initWithSuiteName:nil key:name shouldLogToFile:shouldLogToFile];
+}
+
+- (id)initWithSuiteName:(nullable NSString *)suiteName key:(NSString *)key shouldLogToFile:(BOOL)shouldLogToFile;
+{
     self = [super init];
     if (self == nil)
         return nil;
@@ -176,22 +181,25 @@ static void _setPOSIXError(NSError **error, NSString *description)
     
     NSInteger level;
     
-    const char *env = getenv([name UTF8String]); /* easier for command line tools */
-    if (env)
+    const char *env = getenv([key UTF8String]); /* easier for command line tools */
+    if (env) {
         level = strtol(env, NULL, 0);
-    else
-        level = [[NSUserDefaults standardUserDefaults] integerForKey:name];
+    } else {
+        NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:suiteName] ?: [NSUserDefaults standardUserDefaults];
+        level = [defaults integerForKey:key];
+    }
     
     if (level == 0) {
 #if REMOVE_OLD_LOG_FILES
-        _RemoveLogFiles(name, nil);
+        _RemoveLogFiles(key, nil);
 #endif
         return nil;
     }
 
-    NSLog(@"%@: DEBUG LEVEL = %ld", name, level);
+    NSLog(@"%@: DEBUG LEVEL = %ld", key, level);
     _level = level;
-    _name = [name copy];
+    _suiteName = [suiteName copy];
+    _key = [key copy];
     
     _messageDateFormatter = [[NSDateFormatter alloc] init];
     [_messageDateFormatter setTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"GMT"]];
@@ -206,7 +214,7 @@ static void _setPOSIXError(NSError **error, NSString *description)
 
 #if REMOVE_OLD_LOG_FILES
     NSDate *purgeBeforeDate = [NSDate dateWithTimeIntervalSinceNow: - _oneWeekInSeconds];
-    _RemoveLogFiles(self.name, purgeBeforeDate);
+    _RemoveLogFiles(self.key, purgeBeforeDate);
     
     _logPurgeTimer = [NSTimer timerWithTimeInterval:_oneDayInSeconds target:self selector:@selector(_purgeOldLogFiles:) userInfo:nil repeats:YES];
     [[NSRunLoop mainRunLoop] addTimer:_logPurgeTimer forMode:NSDefaultRunLoopMode];
@@ -224,7 +232,7 @@ static void _setPOSIXError(NSError **error, NSString *description)
 {
     NSString *message = [[NSString alloc] initWithFormat:format arguments:args];
     
-    NSLog(@"%@: %@", self.name, message);
+    NSLog(@"%@: %@", self.key, message);
     
     if (!self.shouldLogToFile)
         return;
@@ -241,20 +249,25 @@ static void _setPOSIXError(NSError **error, NSString *description)
         
         NSURL *logFileURL = [strongSelf _currentLogFile];
         if (logFileURL == nil) {
-            NSLog(@"No log file URL for %@", strongSelf.name);
+            NSLog(@"No log file URL for %@", strongSelf.key);
             return;
         }
         
         OB_AUTORELEASING NSError *error = nil;
         if (![timeStampedMessage appendToURL:logFileURL atomically:YES error:&error]) {
-            NSLog(@"Error logging for %@: %@", strongSelf.name, error);
+            NSLog(@"Error logging for %@: %@", strongSelf.key, error);
         }
     }];
 }
 
 - (void)processLogFilesWithHandler:(OBLogFileHandler)handler;
 {
-    _ProcessLogFiles(self.name, [NSDate distantFuture], handler);
+    _ProcessLogFiles(self.key, [NSDate distantFuture], handler);
+}
+
+- (NSString *)name;
+{
+    return self.key;
 }
 
 #pragma mark - Private API
@@ -263,7 +276,7 @@ static void _setPOSIXError(NSError **error, NSString *description)
 {
     NSURL *documentsDirectory = _DocumentsDirectoryURL();
     NSString *dateString = [_fileNameDateFormatter stringFromDate:[NSDate date]];
-    NSString *logFileName = [NSString stringWithFormat:@"%@ %@%@", self.name, dateString, _logFileSuffix];
+    NSString *logFileName = [NSString stringWithFormat:@"%@ %@%@", self.key, dateString, _logFileSuffix];
     NSURL *logFileURL = [documentsDirectory URLByAppendingPathComponent:logFileName isDirectory:NO];
     
     return logFileURL;
@@ -273,7 +286,7 @@ static void _setPOSIXError(NSError **error, NSString *description)
 - (void)_purgeOldLogFiles:(NSTimer *)timer;
 {
     NSDate *purgeBeforeDate = [NSDate dateWithTimeIntervalSinceNow: - _oneWeekInSeconds];
-    _RemoveLogFiles(self.name, purgeBeforeDate);
+    _RemoveLogFiles(self.key, purgeBeforeDate);
 }
 #endif
 

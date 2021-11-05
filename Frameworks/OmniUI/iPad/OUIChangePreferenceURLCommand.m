@@ -1,4 +1,4 @@
-// Copyright 2014-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -23,6 +23,9 @@ RCS_ID("$Id$");
 // Radar 37952455: Regression: Spurious "implementing unavailable method" warning when subclassing
 - (NSString *)confirmationMessage NS_EXTENSION_UNAVAILABLE_IOS("Special URL handling is not available in extensions");
 - (void)invoke NS_EXTENSION_UNAVAILABLE_IOS("Special URL handling is not available in extensions");
+
+- (OFPreferenceWrapper *)preferenceWrapper;
+
 @end
 
 @implementation OUIChangePreferenceURLCommand
@@ -37,7 +40,7 @@ RCS_ID("$Id$");
 {
     OFMultiValueDictionary *parameters = [[self.url query] parametersFromQueryString];
     NSLog(@"Changing preferences for URL <%@>: parameters=%@", [self.url absoluteString], parameters);
-    OFPreferenceWrapper *preferences = [OFPreferenceWrapper sharedPreferenceWrapper];
+    OFPreferenceWrapper *preferences = [self preferenceWrapper];
     DEBUG_PREFERENCES(@"Using shared preferences object: %@", preferences);
     for (NSString *key in [parameters allKeys]) {
         DEBUG_PREFERENCES(@"Setting preference for key %@: %@", key, [preferences preferenceForKey:key]);
@@ -72,6 +75,11 @@ RCS_ID("$Id$");
 
          [self.viewControllerForPresentation presentViewController:alertController animated:YES completion:NULL];
     }
+}
+
+- (OFPreferenceWrapper *)preferenceWrapper;
+{
+    return [OFPreferenceWrapper sharedPreferenceWrapper];
 }
 
 @end

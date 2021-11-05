@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -29,7 +29,7 @@ OBDEPRECATED_METHOD(-colorsForInspectorSlice:); // -> -colorForInspectorSlice:
 
 - (void)setColor:(OAColor *)color forObject:(id)object;
 {
-    [(id <OUIColorInspection>)object setColor:color fromInspectorSlice:self undoManager:self.undoManager];  // FinishUndoGroup() is elsewhere
+    [(id <OUIColorInspection>)object setColor:color fromInspectorSlice:self];
 }
 
 - (void)loadColorSwatchesForObject:(id)object;

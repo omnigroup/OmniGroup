@@ -1,4 +1,4 @@
-// Copyright 2013-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -69,6 +69,7 @@ typedef NS_ENUM(NSUInteger, OFXServerAccountUsageMode) {
 // The user can move the local documents folder, possibly changing its name. We track these moves by storing a bookmark URL. The display name is derived: it's simply the name of the folder.
 - (BOOL)resolveLocalDocumentsURL:(NSError **)outError; // Decodes the bookmark and attempts to start accessing the security scoped bookmark
 - (void)clearLocalDocumentsURL; // Relinquishes the local documents directory
+- (void)recoverLostLocalDocumentsURL:(NSURL *)url;
 
 // On iOS, the user never sees the local documents URL so it never changes. However, they need to be able to edit the display name.
 #if !OFX_MAC_STYLE_ACCOUNT

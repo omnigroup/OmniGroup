@@ -1,4 +1,4 @@
-// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -242,7 +242,7 @@ static NSString * const InvalidScheme = @"x-invalid";
         decisionHandler(WKNavigationActionPolicyCancel); // Never try to load our URLs in the web view
 
         OUIAppController *appController = OUIAppController.sharedController;
-        if ([appController isSpecialURL:requestURL] && [appController handleSpecialURL:requestURL presentingFromViewController:self]) {
+        if ([appController isSpecialURL:requestURL] && [appController handleSpecialURL:requestURL senderBundleIdentifier:[[NSBundle mainBundle] bundleIdentifier] presentingFromViewController:self]) {
             return;
         }
 

@@ -75,6 +75,39 @@ static NSData *bookmarkDataWithURL(NSURL *url, NSError **outError)
     return [url bookmarkDataWithOptions:options includingResourceValuesForKeys:nil relativeToURL:nil/*app scoped*/ error:outError];
 }
 
+#if OMNI_BUILDING_FOR_IOS
+static NSURL * _Nullable RecoveredURLFromBookmarkData(NSData *data, BOOL *outStale)
+{
+    NSString *originalPath = [NSURL resourceValuesForKeys:@[NSURLPathKey] fromBookmarkData:data][NSURLPathKey];
+    if (originalPath == nil)
+        return nil;
+
+    // Try to figure out the original path relative to the original location of our NSHomeDirectory() sandbox
+    NSString *homeDirectory = NSHomeDirectory();
+    NSURL *homeURL = [NSURL fileURLWithPath:homeDirectory];
+    NSURL *documentsURL = OFUserDocumentsDirectoryURL();
+    if (homeURL == nil || documentsURL == nil)
+        return nil;
+
+    NSString *relativeDocumentsPath = OFFileURLRelativePath(homeURL, documentsURL);
+    NSString *pathToHome = [homeDirectory stringByDeletingLastPathComponent];
+    NSString *oldDocumentsPrefixPattern = [NSString stringWithFormat:@"^.*%@/[^/]+/%@", [pathToHome regularExpressionForLiteralString], [relativeDocumentsPath regularExpressionForLiteralString]];
+    NSString *recoveredPath = [originalPath stringByReplacingAllOccurrencesOfRegularExpressionPattern:oldDocumentsPrefixPattern withString:[documentsURL path]];
+    NSURL *recoveredURL = [NSURL fileURLWithPath:recoveredPath];
+
+    // Test to make sure we actually found a valid directory
+    __autoreleasing NSNumber *isDirectoryValue = nil;
+    if (![recoveredURL getResourceValue:&isDirectoryValue forKey:NSURLIsDirectoryKey error:NULL] || !isDirectoryValue.boolValue) {
+        return nil;
+    }
+
+    if (outStale) {
+        *outStale = YES;
+    }
+    return recoveredURL;
+}
+#endif
+
 static NSURL * _Nullable URLWithBookmarkData(NSData *data, BOOL *outStale, NSError **outError)
 {
     if (CannotUseAppScopedBookmarks()) {
@@ -93,10 +126,16 @@ static NSURL * _Nullable URLWithBookmarkData(NSData *data, BOOL *outStale, NSErr
 #endif
 
     NSURL *url = [NSURL URLByResolvingBookmarkData:data options:NSURLBookmarkResolutionWithoutUI|options relativeToURL:nil/*app-scoped*/ bookmarkDataIsStale:outStale error:outError];
-    if (!url)
-        return nil;
-    
-    return url;
+    if (url != nil)
+        return url;
+
+    // Note: We've already populated outError
+#if OMNI_BUILDING_FOR_IOS
+    return RecoveredURLFromBookmarkData(data, outStale);
+#else
+    return nil;
+#endif
+
 }
 
 static BOOL StartAccessing(NSURL *url)
@@ -806,6 +845,36 @@ static BOOL _validateWithinSandboxedDocumentsFolder(NSURL *url, NSError **outErr
     }
 }
 
+- (void)recoverLostLocalDocumentsURL:(NSURL *)url;
+{
+    @synchronized(self) {
+        [self willChangeValueForKey:OFValidateKeyPath(self, propertyList)];
+        [self _updateLocalDocumentsURL:url];
+        [self didChangeValueForKey:OFValidateKeyPath(self, propertyList)];
+    }
+}
+
+- (BOOL)_updateLocalDocumentsURL:(NSURL *)updatedDocumentsURL;
+{
+    // Speculatively fill out the bookmark
+    __autoreleasing NSError *bookmarkError;
+    _localDocumentsBookmarkData = bookmarkDataWithURL(updatedDocumentsURL, &bookmarkError);
+    if (!_localDocumentsBookmarkData) {
+        DEBUG_BOOKMARK(0, @"Error creating bookmark data for %@: %@", updatedDocumentsURL, bookmarkError);
+        return NO;
+    }
+
+     __autoreleasing NSError *resolveError;
+    if (![self _resolveLocalDocumentsURL:&resolveError]) {
+        _localDocumentsBookmarkData = nil; // Clear the bookmark data that didn't work.
+
+        DEBUG_BOOKMARK(0, @"Error resolving new bookmark: %@", resolveError);
+        return NO;
+    }
+
+    return YES;
+}
+
 #if !OFX_MAC_STYLE_ACCOUNT
 @synthesize nickname = _unmigratedNickname;
 
@@ -893,19 +962,7 @@ static BOOL _validateWithinSandboxedDocumentsFolder(NSURL *url, NSError **outErr
 
     DEBUG_BOOKMARK(1, @"Did migrate to local documents URL %@", updatedDocumentsURL);
 
-    // Speculatively fill out the bookmark
-    __autoreleasing NSError *bookmarkError;
-    _localDocumentsBookmarkData = bookmarkDataWithURL(updatedDocumentsURL, &bookmarkError);
-    if (!_localDocumentsBookmarkData) {
-        DEBUG_BOOKMARK(0, @"Error creating bookmark data for %@: %@", updatedDocumentsURL, bookmarkError);
-        return;
-    }
-    
-     __autoreleasing NSError *resolveError;
-    if (![self _resolveLocalDocumentsURL:&resolveError]) {
-        _localDocumentsBookmarkData = nil; // Clear the bookmark data that didn't work.
-        
-        DEBUG_BOOKMARK(0, @"Error resolving new migrated bookmark: %@", resolveError);
+    if (![self _updateLocalDocumentsURL:updatedDocumentsURL]) {
         return;
     }
 
