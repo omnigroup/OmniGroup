@@ -1,4 +1,4 @@
-// Copyright 1997-2019 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -80,6 +80,11 @@ extern id OBAllocateObject(Class cls, NSUInteger extraBytes) NS_RETURNS_RETAINED
 
 // ARC doesn't allow object_getIndexedIvars
 extern void *OBGetIndexedIvars(id object);
+
+#ifdef DEBUG
+// Occasionally useful in debugging, but ARC doesn't allow it.
+NSUInteger OBRetainCount(id object);
+#endif
 
 extern void _OBRequestConcreteImplementation(id self, SEL _cmd, const char *file, unsigned int line) NORETURN;
 extern void _OBRejectUnusedImplementation(id self, SEL _cmd, const char *file, unsigned int line) NORETURN;

@@ -371,7 +371,7 @@ static BOOL _bindUpdateSchemaProperties(struct sqlite3 *sqlite, ODOSQLStatement 
 
         // clang scan-build will issue a use-after release warning below if we don't do this (since it doesn't know that -_setCachedStatement:forKey: will retain.  Really, this makes sense since the method might do anything, including rejecting the new statement for some reason.  So, look it up again.
         updateStatement = [database _cachedStatementForKey:_updateStatementKey];
-}
+    }
     
     // Bind all the property values.
     if (!_bindUpdateSchemaProperties(sqlite, updateStatement, object, _schemaProperties, _primaryKeyAttribute, outError))

@@ -1,4 +1,4 @@
-// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -226,6 +226,10 @@ static NSString *_doneActionButtonTitle;
     _tableView.separatorColor = [OUIInspectorSlice sliceSeparatorColor];
     _tableView.delegate = (id <UITableViewDelegate>)self;
     _tableView.dataSource = (id <UITableViewDataSource>)self;
+    
+    _tableView.estimatedRowHeight = 0;
+    _tableView.estimatedSectionHeaderHeight = 0;
+    _tableView.estimatedSectionFooterHeight = 0;
     
     UIView *view = [[UIView alloc] init];
     [view addSubview:_tableView];

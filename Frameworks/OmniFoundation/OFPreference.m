@@ -1014,7 +1014,8 @@ static NSLock *PreferenceWrapperLock;
 
     _suiteName = [suiteName copy];
 
-    if (suiteName == nil) {
+    // The second case can come up when running unit tests and we end up with com.apple.dt.xctest.tool for both the main bundle and for the containingApplicationBundleIdentifier (since that short circuits when running unit tests to avoid trying to write into Xcode's preferences).
+    if (suiteName == nil || [suiteName isEqual:[[NSBundle mainBundle] bundleIdentifier]]) {
         _userDefaults = [[NSUserDefaults standardUserDefaults] retain];
     } else {
         _userDefaults = [[NSUserDefaults alloc] initWithSuiteName:suiteName];
@@ -1059,6 +1060,11 @@ static NSLock *PreferenceWrapperLock;
     [_preferencesLock unlock];
 
     return [result autorelease];
+}
+
+- (NSUserDefaults *)underlyingUserDefaults;
+{
+    return _userDefaults;
 }
 
 - (void)recacheRegisteredKeys
@@ -1124,6 +1130,7 @@ static NSLock *PreferenceWrapperLock;
 
 - (void)addObserver:(id)anObserver selector:(SEL)aSelector forPreference:(OFPreference * _Nullable)aPreference;
 {
+    OBPRECONDITION(aPreference.wrapper == self, "Don't sign up for notifications via the class methods (using the shared preference wrapper for preferences that are in a group container wrapper");
     [_preferenceNotificationCenter addObserver:anObserver selector:aSelector name:OFPreferenceDidChangeNotification object:aPreference];
 }
 
@@ -1140,6 +1147,8 @@ static NSLock *PreferenceWrapperLock;
 
 - (void)removeObserver:(id)anObserver forPreference:(OFPreference * _Nullable)aPreference;
 {
+    OBPRECONDITION(aPreference.wrapper == self, "Don't sign up for notifications via the class methods (using the shared preference wrapper for preferences that are in a group container wrapper");
+
     [_preferenceNotificationCenter removeObserver:anObserver name:OFPreferenceDidChangeNotification object:aPreference];
 }
 

@@ -1,4 +1,4 @@
-// Copyright 2014-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -330,7 +330,7 @@ RCS_ID("$Id$");
 
  @param zipPath The path at which to create the resulting zip archive.
  @param URLs A list of URLs specifying files to include in the zip archive, if possible. This array must contain all NSURL instances, and each NSURL instance must be a file URL.
- @param includeFailureList Whether to write a text file into the zip archive listing all of the files that could not be added to the archive for any reason. If YES, the zip archive will always include at least one file named "failures.txt" which will list each failed path on its own line.
+ @param includeFailureList Whether to write a text file into the zip archive listing all of the files that could not be added to the archive for any reason. If YES, the zip archive will always include at least one file named "failures.log" which will list each failed path on its own line.
  @param outError If the method returns NO, will be populated with more information about the failure.
  @return YES if the zip archive could be created at all, regardless of how many files were actually compressed. NO otherwise.
  */
@@ -343,35 +343,32 @@ RCS_ID("$Id$");
     }
 
     NSFileManager *fileManager = [NSFileManager defaultManager];
-    NSMutableArray *failedURLs = [NSMutableArray array];
+    NSMutableArray <NSString *> *failureMessages = [NSMutableArray array];
 
     for (NSURL *URL in URLs) {
         OBASSERT([URL isFileURL]);
-        OUZipMember *zipMember = [[OUZipMember alloc] initWithPath:[URL path] fileManager:fileManager];
+        NSString *path = URL.path;
+        NSError *error = nil;
+
+        OUZipMember *zipMember = [[OUZipMember alloc] initWithPath:path fileManager:fileManager outError:&error];
         if (zipMember == nil) {
-            [failedURLs addObject:URL];
+            [failureMessages addObject:[NSString stringWithFormat:@"Unable to open file %@: %@", path, [error toPropertyList]]];
             continue;
         }
 
-        NSError *error = nil;
         if (![zipMember appendToZipArchive:zip fileNamePrefix:@"" error:&error]) {
             // Unable to add one of the files to the zip archive.  Just skipping it for now.
-            [failedURLs addObject:URL];
+            [failureMessages addObject:[NSString stringWithFormat:@"Unable to append file %@: %@", path, [error toPropertyList]]];
         }
     }
 
-    if ([failedURLs count] > 0) {
-        NSArray *failedPaths = [failedURLs arrayByPerformingBlock:^NSString*(NSURL *URL) {
-            return [URL path];
-        }];
-        NSString *contents = [failedPaths componentsJoinedByString:@"\n"];
-
-        OUZipMember *failuresMember = [[OUZipFileMember alloc] initWithName:@"failures.txt"
-                                                                       date:[NSDate date]
-                                                                   contents:[contents dataUsingEncoding:NSUTF8StringEncoding]];
+    if ([failureMessages count] > 0) {
+        NSString *contents = [failureMessages componentsJoinedByString:@"\n"];
+        OUZipMember *failuresMember = [[OUZipFileMember alloc] initWithName:@"failures.log" date:[NSDate date] contents:[contents dataUsingEncoding:NSUTF8StringEncoding]];
         NSError *error = nil;
         if (![failuresMember appendToZipArchive:zip fileNamePrefix:@"" error:&error]) {
-            // Couldn't even add the failures list! Something is seriously wrong.
+            // Couldn't even add the failure log to the zip archive? Something is seriously wrong.
+            NSLog(@"Unable to add failures.log to %@: %@\nFailures:\n%@", zipPath, [error toPropertyList], contents);
         }
     }
 

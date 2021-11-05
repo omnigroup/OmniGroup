@@ -15,6 +15,11 @@ NS_ASSUME_NONNULL_BEGIN
 + (XCTest *)testSuiteForMethod:(NSString *)methodName cases:(NSArray *)testCases;
 + (XCTest *)testSuiteNamed:(NSString *)suiteName usingSelector:(SEL)testSelector cases:(NSArray *)testCases;
 
+// Fixture directory driven test suites
++ (void)addFixtureDrivenTestsToSuite:(XCTestSuite *)suite fixturesURL:(NSURL *)fixturesURL processSelector:(SEL)processSelector;
+@property(nonatomic,readonly,class) NSURL *fixturesURL;
++ (NSString *)nameForFixtureDrivenTestCase:(OFTestCase *)testCase;
+
 @end
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
@@ -44,12 +49,16 @@ do { \
 #endif
 
 typedef BOOL (^OFDiffFilesPathFilter)(NSString *relativePath);
+typedef NSData * _Nonnull (^OFDiffFileTransformData)(NSString *relativePath, NSData *data);
 typedef BOOL (^OFDiffFileCompareData)(NSString *relativePath1, NSData *data1,
                                       NSString *relativePath2, NSData *data2);
 
 @interface OFDiffFileOperations : NSObject
 @property(nonatomic,copy) OFDiffFilesPathFilter pathFilter;
-@property(nonatomic,copy) OFDiffFileCompareData compareData; // Only used if the two data objects are not -isEqual:. This can do semantic comparisons (like unarchiving and comparing the unarchived versions).
+
+ // Only used if the two data objects are not -isEqual:. This can do semantic comparisons (like unarchiving and comparing the unarchived versions).
+@property(nonatomic,copy) OFDiffFileTransformData transformData;
+@property(nonatomic,copy) OFDiffFileCompareData compareData;
 @end
 
 extern BOOL OFSameFiles(XCTestCase *testCase, NSString *path1, NSString *path2, OFDiffFileOperations * _Nullable operations); // query, not required

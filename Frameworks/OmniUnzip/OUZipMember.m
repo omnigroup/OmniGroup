@@ -1,4 +1,4 @@
-// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,12 +7,11 @@
 
 #import <OmniUnzip/OUZipMember.h>
 
+#import <Foundation/NSFileWrapper.h>
+#import <OmniUnzip/OUErrors.h>
 #import <OmniUnzip/OUZipFileMember.h>
 #import <OmniUnzip/OUZipDirectoryMember.h>
 #import <OmniUnzip/OUZipLinkMember.h>
-#import <Foundation/NSFileWrapper.h>
-
-RCS_ID("$Id$");
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -60,7 +59,7 @@ NS_ASSUME_NONNULL_BEGIN
     return nil;
 }
 
-- (instancetype)initWithPath:(NSString *)path fileManager:(NSFileManager *)fileManager;
+- (nullable instancetype)initWithPath:(NSString *)path fileManager:(NSFileManager *)fileManager outError:(NSError **)outError;
 {
     // This shouldn't be called on a concrete class.  That would imply the caller knew the type of the file wrapper, which it shouldn't bother with.
     OBPRECONDITION([self class] == [OUZipMember class]);
@@ -68,7 +67,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     NSString *preferredFilename = [path lastPathComponent];
     
-    NSDictionary <NSString *, id> *fileAttributes = [fileManager attributesOfItemAtPath:path error:NULL];
+    NSDictionary <NSString *, id> *fileAttributes = [fileManager attributesOfItemAtPath:path error:outError];
     if (!fileAttributes)
         return nil;
     
@@ -78,7 +77,7 @@ NS_ASSUME_NONNULL_BEGIN
         return [[OUZipFileMember alloc] initWithName:preferredFilename date:[fileAttributes fileModificationDate] mappedFilePath:path];
 
     if ([fileType isEqualToString:NSFileTypeSymbolicLink]) {
-        NSString *destination = [fileManager destinationOfSymbolicLinkAtPath:path error:NULL];
+        NSString *destination = [fileManager destinationOfSymbolicLinkAtPath:path error:outError];
         if (!destination)
             return nil;
         return [[OUZipLinkMember alloc] initWithName:preferredFilename date:[fileAttributes fileModificationDate] destination:destination];
@@ -86,24 +85,33 @@ NS_ASSUME_NONNULL_BEGIN
     
     if ([fileType isEqualToString:NSFileTypeDirectory]) {
         OUZipDirectoryMember *directory = [[OUZipDirectoryMember alloc] initWithName:preferredFilename date:[fileAttributes fileModificationDate] children:nil archive:YES];
-        NSArray<NSString *> *childNames = [fileManager contentsOfDirectoryAtPath:path error:NULL];
+        NSArray<NSString *> *childNames = [fileManager contentsOfDirectoryAtPath:path error:outError];
+        if (childNames == nil)
+            return nil;
+
         NSUInteger childIndex, childCount = [childNames count];
         for (childIndex = 0; childIndex < childCount; childIndex++) {
             NSString *childName = [childNames objectAtIndex:childIndex];
             NSString *childPath = [path stringByAppendingPathComponent:childName];
-            OUZipMember *child = [[OUZipMember alloc] initWithPath:childPath fileManager:fileManager];
-            if (child == nil)
+            NSError *childError = nil;
+            OUZipMember *child = [[OUZipMember alloc] initWithPath:childPath fileManager:fileManager outError:&childError];
+            if (child == nil) {
+                // Skip any failing children, but don't do it _completely_ silently
+                NSLog(@"Unable to archive child path %@: %@", childPath, [childError toPropertyList]);
                 continue;
+            }
             [directory addChild:child];
         }
         return directory;
     }
 
-    // Silently skip file types we don't know how to archive (sockets, character special, block special, and unknown)
+    // Skip file types we don't know how to archive (sockets, character special, block special, and unknown)
+    NSString *reason = [NSString stringWithFormat:@"%@: Unable to archive files of type %@", path, fileType];
+    OmniUnzipError(outError, OmniUnzipUnknownFileType, @"Unable to archive unsupported file type", reason);
     return nil;
 }
 
-- (id)initWithName:(NSString *)name date:(NSDate * _Nullable)date;
+- (instancetype)initWithName:(NSString *)name date:(NSDate * _Nullable)date;
 {
     // TODO: Convert some of these to error/exceptions
     OBPRECONDITION(![NSString isEmptyString:name]);

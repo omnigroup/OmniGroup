@@ -1,4 +1,4 @@
-// Copyright 1997-2019 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -53,8 +53,16 @@ static NSString * const OAPreferenceClientRecordIconNameAppPrefix = @"app:"; // 
             _iconImage = [[NSWorkspace sharedWorkspace] iconForFile:appPath];
         }
     } else {
-        NSBundle *bundle = [OFBundledClass bundleForClassNamed:self.className];
-        _iconImage = OAImageNamed(self.iconName, bundle);
+#ifdef MAC_OS_X_VERSION_10_16
+        if (@available(macOS 10.16, *)) {
+            _iconImage = [NSImage imageWithSystemSymbolName:self.iconName accessibilityDescription:self.identifier];
+        }
+#endif
+        
+        if (_iconImage == nil) {
+            NSBundle *bundle = [OFBundledClass bundleForClassNamed:self.className];
+            _iconImage = OAImageNamed(self.iconName, bundle);
+        }
     }
 
 #ifdef DEBUG

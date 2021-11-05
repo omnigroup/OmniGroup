@@ -615,7 +615,8 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
 
         if (!self.forPreviewGeneration && _documentViewController != nil) {
             // When saving, we don't end editing since the user might just be switching to another app quickly and coming right back (maybe to paste something at us). But here we are closing and should commit our edits and shut down the field editor. The edits should have been committed when we were backgrounded, but it is nicer to clean up any editor here before views get removed from the view hierarchy.
-            UIView *viewControllerToPresentView = self.viewControllerToPresent.view;
+            // However, do this in a way that doesn't actually provoke view loading if it wasn't previously necessary (e.g. `_documentViewController` was created by side effect for printing, sharing, etc.).
+            UIView *viewControllerToPresentView = self.viewControllerToPresent.isViewLoaded ? self.viewControllerToPresent.view : nil;
             [viewControllerToPresentView endEditing:YES];
             [viewControllerToPresentView layoutIfNeeded];
         }

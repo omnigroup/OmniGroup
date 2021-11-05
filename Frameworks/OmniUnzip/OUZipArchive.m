@@ -1,4 +1,4 @@
-// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,8 +13,6 @@
 #import <OmniFoundation/OFByteProviderProtocol.h>
 #import "zip.h"
 #import "OUUtilities.h"
-
-RCS_ID("$Id$");
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -32,12 +30,12 @@ NS_ASSUME_NONNULL_BEGIN
     }
     NSFileManager *fileManager = [NSFileManager defaultManager];
     for (NSString *path in paths) {
-        OUZipMember *zipMember = [[OUZipMember alloc] initWithPath:path fileManager:fileManager];
-        if (zipMember == nil)
-            continue;
         OB_AUTORELEASING NSError *error = nil;
-        if (![zipMember appendToZipArchive:zip fileNamePrefix:@"" error:&error]) {
-            // Unable to add one of the files to the zip archive.  Just skipping it for now.
+        OUZipMember *zipMember = [[OUZipMember alloc] initWithPath:path fileManager:fileManager outError:&error];
+        if (zipMember == nil || ![zipMember appendToZipArchive:zip fileNamePrefix:@"" error:&error]) {
+            // Unable to add one of the files to the zip archive. Log the reason and skip it.
+            NSLog(@"Unable to archive path %@: %@", path, [error toPropertyList]);
+            continue;
         }
     }
 

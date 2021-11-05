@@ -1,4 +1,4 @@
-// Copyright 2006-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,7 +8,9 @@
 #import <OmniBase/NSError-OBExtensions.h>
 
 enum {
-    // zip
+    OmniUnzipUnknownFileType = 1,
+    
+    // Error codes mapped from zip library
     OmniUnzipUnableToOpenZipFile = 1012,
     OmniUnzipUnableToCloseZipFile,
     OmniUnzipUnableToReadZipFileContents,

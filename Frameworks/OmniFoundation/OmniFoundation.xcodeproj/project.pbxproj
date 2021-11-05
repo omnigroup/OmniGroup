@@ -833,6 +833,9 @@
 		34CE1617169DEA0D00219574 /* OFIndexPathTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 34CE1615169DEA0D00219574 /* OFIndexPathTests.m */; };
 		34D07D481C90B6FB009438F9 /* OFSelectionSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34D07D471C90B6FB009438F9 /* OFSelectionSet.swift */; };
 		34D07D491C90B6FB009438F9 /* OFSelectionSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34D07D471C90B6FB009438F9 /* OFSelectionSet.swift */; };
+		34D2DA9324F703AF009AB454 /* NSUndoManager-OFExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34D2DA9224F703AF009AB454 /* NSUndoManager-OFExtensions.swift */; };
+		34D2DA9424F703AF009AB454 /* NSUndoManager-OFExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34D2DA9224F703AF009AB454 /* NSUndoManager-OFExtensions.swift */; };
+		34D2DA9524F703AF009AB454 /* NSUndoManager-OFExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34D2DA9224F703AF009AB454 /* NSUndoManager-OFExtensions.swift */; };
 		34D5F9F70E9EF0420055E958 /* OFXMLIdentifier.h in Headers */ = {isa = PBXBuildFile; fileRef = 34D5F9F50E9EF0420055E958 /* OFXMLIdentifier.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34D5F9F80E9EF0420055E958 /* OFXMLIdentifier.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D5F9F60E9EF0420055E958 /* OFXMLIdentifier.m */; };
 		34D606DD0CCAA74100467736 /* OFErrors.h in Headers */ = {isa = PBXBuildFile; fileRef = 34D606DC0CCAA74100467736 /* OFErrors.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -2367,6 +2370,7 @@
 		34CC9F4F1D5A6EC600FFA233 /* OFXMLElementTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXMLElementTests.m; sourceTree = "<group>"; };
 		34CE1615169DEA0D00219574 /* OFIndexPathTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFIndexPathTests.m; sourceTree = "<group>"; };
 		34D07D471C90B6FB009438F9 /* OFSelectionSet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OFSelectionSet.swift; sourceTree = "<group>"; };
+		34D2DA9224F703AF009AB454 /* NSUndoManager-OFExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSUndoManager-OFExtensions.swift"; sourceTree = "<group>"; };
 		34D5F9F50E9EF0420055E958 /* OFXMLIdentifier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFXMLIdentifier.h; sourceTree = "<group>"; };
 		34D5F9F60E9EF0420055E958 /* OFXMLIdentifier.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXMLIdentifier.m; sourceTree = "<group>"; };
 		34D606DC0CCAA74100467736 /* OFErrors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFErrors.h; sourceTree = "<group>"; };
@@ -3070,6 +3074,7 @@
 				347DB78A0D863F3B00338653 /* NSString-OFURLEncoding.m */,
 				467ADC25003CE443C697A14B /* NSUndoManager-OFExtensions.h */,
 				467ADC26003CE443C697A14B /* NSUndoManager-OFExtensions.m */,
+				34D2DA9224F703AF009AB454 /* NSUndoManager-OFExtensions.swift */,
 				00E51D43FE8AAEA611C9CC38 /* NSUserDefaults-OFExtensions.h */,
 				00E51D25FE8AAEA611C9CC38 /* NSUserDefaults-OFExtensions.m */,
 				344AD00A172740D2004B30B1 /* NSURL-OFExtensions.h */,
@@ -5010,7 +5015,7 @@
 			attributes = {
 				LastSwiftUpdateCheck = 0730;
 				LastTestingUpgradeCheck = 0510;
-				LastUpgradeCheck = 1150;
+				LastUpgradeCheck = 1200;
 				TargetAttributes = {
 					34F16B19194F6C3200AD9C4D = {
 						CreatedOnToolsVersion = 6.0;
@@ -5512,6 +5517,7 @@
 				34A062851EC110A60099028D /* NSProcessInfo-OFExtensions.m in Sources */,
 				34A062861EC110A60099028D /* NSScanner-OFExtensions.m in Sources */,
 				34A062871EC110A60099028D /* NSString-OFExtensions.m in Sources */,
+				34D2DA9524F703AF009AB454 /* NSUndoManager-OFExtensions.swift in Sources */,
 				34A062881EC110A60099028D /* NSString-OFPathExtensions.m in Sources */,
 				34A062891EC110A60099028D /* NSRange-OFExtensions.m in Sources */,
 				34A0628A1EC110A60099028D /* OFRelativeDateParser-Internal.m in Sources */,
@@ -5724,6 +5730,7 @@
 				34F16BD6194F76A100AD9C4D /* NSData-OFCompression.m in Sources */,
 				34F16BDE194F76C000AD9C4D /* NSDictionary-OFExtensions.m in Sources */,
 				34A4C3F2224AD4C4002E5942 /* ResourceBookmarks.swift in Sources */,
+				34D2DA9424F703AF009AB454 /* NSUndoManager-OFExtensions.swift in Sources */,
 				34F16BE2194F76D000AD9C4D /* NSFileManager-OFSimpleExtensions.m in Sources */,
 				1EA896771D651F1D0058942E /* SecItem-OFExtensions.swift in Sources */,
 				347811A8245CBC6400BB0B7A /* TypeIdentifier.swift in Sources */,
@@ -5934,6 +5941,7 @@
 				4A4E06D908AA72B10098FF0F /* OFTrieEnumerator.m in Sources */,
 				4A4E06DA08AA72B10098FF0F /* OFTrieNode.m in Sources */,
 				4A4E06DF08AA72B10098FF0F /* OFAlias.m in Sources */,
+				34D2DA9324F703AF009AB454 /* NSUndoManager-OFExtensions.swift in Sources */,
 				34FA59921BE99DD900B0FD64 /* OFObservation.m in Sources */,
 				4A4E06E008AA72B10098FF0F /* OFCacheFile.m in Sources */,
 				4A4E06E308AA72B10098FF0F /* OFScratchFile.m in Sources */,

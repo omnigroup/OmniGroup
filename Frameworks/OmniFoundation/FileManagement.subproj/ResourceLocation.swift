@@ -435,7 +435,6 @@ private func getFolderURLContainerDisplayName(_ folderURL: URL) -> String? {
         // DirectoryEnumerator is a NSEnumerator, which isn't generic and can't declare that it yields NSURLs.
         for item in topLevelEnumerator {
             let fileURL = (item as! NSURL) as URL
-            os_log("%x fileURL %{public}@", log: Log, type: .debug, x(self), fileURL.absoluteString)
 
             #if os(iOS)
             guard !fileURL.path.contains("/.Trash/") else { continue }
@@ -445,6 +444,8 @@ private func getFolderURLContainerDisplayName(_ folderURL: URL) -> String? {
                 continue
             }
             #endif
+
+            os_log("%x fileURL %{public}@", log: Log, type: .debug, x(self), fileURL.absoluteString)
 
             guard let values = try? fileURL.resourceValues(forKeys: keys) else {
                 continue

@@ -1,4 +1,4 @@
-// Copyright 2013-2015,2017 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,8 +25,8 @@ RCS_ID("$Id$")
     OFXFileSnapshot *_currentSnapshot;
     
     OFXDownloadFileSnapshot *_downloadingSnapshot;
-    NSMutableDictionary <ODAVOperation *, NSURL *> *_readOperationToLocalFileURL;
-    ODAVOperation *_runningOperation;
+    NSMutableDictionary <id <ODAVAsynchronousOperation>, NSURL *> *_readOperationToLocalFileURL;
+    id <ODAVAsynchronousOperation> _runningOperation;
     NSMutableData *_resultData; // Would need a separate map for op->results if we run more than one at a time.
     
     BOOL _cancelled;
@@ -107,7 +107,7 @@ RCS_ID("$Id$")
             ODAVOperation *readOperation = [connection asynchronousGetContentsOfURL:remoteFileURL];
             
             __weak OFXFileSnapshotDownloadTransfer *weakSelf = self;
-            readOperation.didFinish = ^(ODAVOperation *op, NSError *errorOrNil){
+            readOperation.didFinish = ^(id <ODAVAsynchronousOperation> __nonnull op, NSError *errorOrNil) {
                 OFXFileSnapshotDownloadTransfer *strongSelf = weakSelf;
                 if (!strongSelf)
                     return; // Operation cancelled.
@@ -116,7 +116,7 @@ RCS_ID("$Id$")
                 }];
             };
             
-            readOperation.didReceiveData = ^(ODAVOperation *op, NSData *data){
+            readOperation.didReceiveData = ^(id <ODAVAsynchronousOperation> __nonnull op, NSData *data) {
                 OFXFileSnapshotDownloadTransfer *strongSelf = weakSelf;
                 if (!strongSelf)
                     return; // Operation cancelled.
@@ -189,7 +189,7 @@ RCS_ID("$Id$")
     }
 }
 
-- (void)_readOperation:(ODAVOperation *)operation didReceiveData:(NSData *)data;
+- (void)_readOperation:(id <ODAVAsynchronousOperation>)operation didReceiveData:(NSData *)data;
 {
     OBPRECONDITION([NSOperationQueue currentQueue] == self.operationQueue);
     OBPRECONDITION(operation == _runningOperation);
@@ -206,7 +206,7 @@ RCS_ID("$Id$")
     [self updatePercentCompleted:CLAMP(percentComplete, 0.0, 1.0)];
 }
 
-- (void)_readOperation:(ODAVOperation *)operation finishedWithError:(NSError *)errorOrNil;
+- (void)_readOperation:(id <ODAVAsynchronousOperation> __nonnull)operation finishedWithError:(NSError *)errorOrNil;
 {
     OBPRECONDITION([NSOperationQueue currentQueue] == self.operationQueue);
     OBPRECONDITION(operation == _runningOperation);

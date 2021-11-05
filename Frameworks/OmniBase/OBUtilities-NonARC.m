@@ -1,4 +1,4 @@
-// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -35,6 +35,13 @@ void *OBGetIndexedIvars(id object)
 {
     return object_getIndexedIvars(object);
 }
+
+#ifdef DEBUG
+NSUInteger OBRetainCount(id object)
+{
+    return [object retainCount];
+}
+#endif
 
 NS_ASSUME_NONNULL_END
 

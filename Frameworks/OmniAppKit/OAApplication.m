@@ -1,4 +1,4 @@
-// Copyright 1997-2019 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -77,23 +77,24 @@ static NSImage *CautionIcon = nil;
 + (instancetype)sharedApplication;
 {
     static OAApplication *omniApplication = nil;
-    if (omniApplication == nil) {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
         if (OFIsRunningUnitTests()) {
             // If we are running tests, xctest will look at the test bundle's princial class and create one. If we set the test bundle's class to OAApplication, that means we'll get two instances of OAApplication, one from the xctest and one from NSApplicationMain. If xctest is running standalone w/o a host app, it's fine to have it create an OAApplication since there isn't one otherwise.
-            return [super sharedApplication];
-        }
-
-        Class principalClass = [OFControllingBundle() principalClass];
-        if (principalClass != self) {
-            assert(OBClassIsSubclassOfClass(principalClass, self));
-            return [principalClass sharedApplication]; // Let our intended principal class allocate its shared application
+            omniApplication = [super sharedApplication];
         } else {
-            __kindof NSApplication *sharedApplication = [super sharedApplication];
-            assert([sharedApplication isKindOfClass:principalClass]); // Someone called +[NSApplication sharedApplication] directly before calling NSApplicationMain() and accidentally allocated the wrong class. Fix by deferring the early call or changing it to +[OAApplication sharedApplication].
-            omniApplication = OB_CHECKED_CAST(OAApplication, sharedApplication);
-            [self _setupOmniApplication]; // We don't call this in -init so because we want to be able to call +sharedApplication
+            Class principalClass = [OFControllingBundle() principalClass];
+            if (principalClass != self) {
+                assert(OBClassIsSubclassOfClass(principalClass, self));
+                omniApplication = [principalClass sharedApplication]; // Let our intended principal class allocate its shared application
+            } else {
+                __kindof NSApplication *sharedApplication = [super sharedApplication];
+                assert([sharedApplication isKindOfClass:principalClass]); // Someone called +[NSApplication sharedApplication] directly before calling NSApplicationMain() and accidentally allocated the wrong class. Fix by deferring the early call or changing it to +[OAApplication sharedApplication].
+                omniApplication = OB_CHECKED_CAST(OAApplication, sharedApplication);
+            }
         }
-    }
+        [self _setupOmniApplication];
+    });
 
     return omniApplication;
 }
@@ -989,14 +990,17 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
 
 + (void)_setupOmniApplication;
 {
-    OBInvokeRegisteredLoadActions();
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        OBInvokeRegisteredLoadActions();
 
-    // Wait until defaults are registered via OBInvokeRegisteredLoadActions() to look this up.
-    OATargetSelection = [[NSUserDefaults standardUserDefaults] boolForKey:@"OATargetSelection"];
+        // Wait until defaults are registered via OBInvokeRegisteredLoadActions() to look this up.
+        OATargetSelection = [[NSUserDefaults standardUserDefaults] boolForKey:@"OATargetSelection"];
 
-    // make these images available to client nibs and whatnot (retaining them so they stick around in cache).
-    // Store them in ivars to avoid clang scan-build warnings.
-    CautionIcon = [OAImageNamed(@"OACautionIcon", OMNI_BUNDLE) retain];
+        // make these images available to client nibs and whatnot (retaining them so they stick around in cache).
+        // Store them in ivars to avoid clang scan-build warnings.
+        CautionIcon = [OAImageNamed(@"OACautionIcon", OMNI_BUNDLE) retain];
+    });
 }
 
 - (void)processMouseButtonsChangedEvent:(NSEvent *)event;

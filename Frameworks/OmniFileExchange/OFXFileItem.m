@@ -1,4 +1,4 @@
-// Copyright 2013-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -1390,31 +1390,40 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, ODAVConn
             }
             if (hasLocalEdit)
                 return NO;
+
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+            // Will do the delete after file coordination
+            return YES;
+#else
             return [coordinator removeItemAtURL:newURL error:outWriteItemError byAccessor:^BOOL(NSURL *newURL2, NSError **outError) {
                 NSFileManager *fileManager = NSFileManager.defaultManager;
                 NSError *trashError = nil;
                 if (![fileManager trashItemAtURL:newURL2 resultingItemURL:NULL error:&trashError]) {
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-                    // We'd like to save this file in the trash, but we get a permissions error on iOS 13. Delete the file instead.
-                    NSError *removeError = nil;
-                    if (![fileManager removeItemAtURL:newURL error:&removeError]) {
-                        if (outError != NULL)
-                            *outError = removeError;
-                        OBASSERT_NOT_REACHED("The item will likely be resurrected");
-                        return NO;
-                    }
-#else
                     if (outError != NULL)
                         *outError = trashError;
                     OBASSERT_NOT_REACHED("The item will likely be resurrected");
                     return NO;
-#endif
                 }
                 TRACE_SIGNAL(OFXFileItem.incoming_delete.removed_local_document);
                 OFXNoteContentDeleted(self, newURL2);
                 return YES;
             }];
+#endif
         }];
+
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+        if (success) {
+            // NSFileManager -trashItemAtURL:resultingItemURL:error: uses its own internal file coordination on iOS, so we can't do this inside the file coordination above.
+            NSFileManager *fileManager = NSFileManager.defaultManager;
+            NSError *trashError = nil;
+            if (![fileManager trashItemAtURL:_localDocumentURL resultingItemURL:NULL error:&trashError]) {
+                error = trashError;
+                OBASSERT_NOT_REACHED("The item will likely be resurrected");
+                success = NO;
+            }
+        }
+#endif
+
         if (!success) {
             if (hasLocalEdit) {
                 DEBUG_TRANSFER(1, @"Local edit conflicts with incoming delete -- will resurrect document under the same name");

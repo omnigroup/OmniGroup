@@ -23,6 +23,15 @@ OBDEPRECATED_METHOD(-tableViewTypeAheadSelectionColumn:); // NSTableView automag
 
 NS_ASSUME_NONNULL_BEGIN
 
+void OATableViewSetFullWidthStyle(NSTableView *tableView)
+{
+#ifdef MAC_OS_X_VERSION_10_16
+    if (@available(macOS 10.16, *)) {
+        tableView.style = NSTableViewStyleFullWidth;
+    }
+#endif
+}
+
 @interface NSTableView (OAExtensionsPrivate)
 - (BOOL)_canCopyToPasteboard;
 - (BOOL)_copyToPasteboard:(NSPasteboard *)pasteboard;

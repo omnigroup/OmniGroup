@@ -12,7 +12,8 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class OFEnumNameTable;
-@class NSArray, NSDictionary, NSData, NSSet, NSString;
+@class NSArray, NSDictionary, NSData, NSSet, NSString, NSUserDefaults;
+@class OFPreferenceWrapper;
 
 // OFPreference is KVO compliant for the objectValue key.
 // Like +addObserver:selector:forPreference:, the notification will be delivered on the thread where the preference was changed.
@@ -63,6 +64,8 @@ typedef NS_OPTIONS(NSUInteger, OFPreferenceRegistrationOptions) {
 @property(nonatomic,assign) BOOL boolValue;
 @property(nonatomic,assign) NSInteger enumeratedValue;
 
+@property(nonatomic,nullable,readonly) OFPreferenceWrapper *wrapper;
+
 @end
 
 // Wrappers that call through to the shared OFPreferenceWrapper
@@ -111,6 +114,9 @@ typedef NS_OPTIONS(NSUInteger, OFPreferenceRegistrationOptions) {
 - init NS_UNAVAILABLE;
 
 @property(nullable,nonatomic,readonly) NSString *suiteName;
+
+// Should generally be avoided, but useful when you may want to add a KVO observation for user defaults keys
+@property(nonatomic,readonly) NSUserDefaults *underlyingUserDefaults;
 
 - (BOOL)hasPreferenceForKey:(NSString *)key;
 - (OFPreference *)preferenceForKey:(NSString *)key;

@@ -1,4 +1,4 @@
-// Copyright 2003-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -287,15 +287,6 @@ static void _processEditing(OATextStorage_ *self)
         _processEditing(self);
         OBASSERT(_editingCount == 0); // Any delegate/notification must have had balanced begin/end pairs too
     }
-}
-
-#pragma mark -
-#pragma mark Private
-
-// OOTextStorage subclasses this to send out -fastDelegateTextStorageWillUndoOrRedo:. So, we either need to change that, or use the same undo pattern that the Cocoa text system does.
-- (void)_undoRedoTextOperation:(id)arg;
-{
-    
 }
 
 @end

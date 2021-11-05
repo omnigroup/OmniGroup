@@ -28,8 +28,6 @@
 #import <OmniAppKit/NSUserDefaults-OAExtensions.h>
 #endif
 
-RCS_ID("$Id$");
-
 NS_ASSUME_NONNULL_BEGIN
 
 /*
@@ -974,15 +972,15 @@ static OAColor *OAWhiteColorCreate(CGFloat white, CGFloat alpha)
 
 @end
 
-@interface OAUnkownXMLColor : OAWhiteColor
+@interface OAUnknownXMLColor : OAWhiteColor
 @property (nonatomic, strong) OFXMLElement *element;
 @end
 
-@implementation OAUnkownXMLColor
+@implementation OAUnknownXMLColor
 
 static OAColor *OAUnknownXMLColorCreate(OFXMLElement *element)
 {
-    OAUnkownXMLColor *color = [[OAUnkownXMLColor alloc] init];
+    OAUnknownXMLColor *color = [[OAUnknownXMLColor alloc] init];
     color->_white = 1.0;
     color->_alpha = 1.0;
     color.element = element;

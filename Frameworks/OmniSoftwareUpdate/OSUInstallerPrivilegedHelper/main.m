@@ -1,4 +1,4 @@
-// Copyright 2013-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,14 +9,10 @@
 
 #import <Foundation/Foundation.h>
 #import <ServiceManagement/ServiceManagement.h>
-#import <OmniBase/rcsid.h>
 
-#import "OSUErrors.h"
 #import "OSUInstallerPrivilegedHelperProtocol.h"
 #import "OSUInstallerPrivilegedHelperRights.h"
 #import "OSUInstallerScript.h"
-
-RCS_ID("$Id$")
 
 static NSString * OSUInstallerPrivilegedHelperFileNameAndNumberErrorKey = @"com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.ErrorFileLineAndNumber";
 
@@ -129,7 +125,7 @@ static NSString * OSUInstallerPrivilegedHelperFileNameAndNumberErrorKey = @"com.
     [authorizationData getBytes:&authorizationExternalForm length:sizeof(authorizationExternalForm)];
     
     status = AuthorizationCreateFromExternalForm(&authorizationExternalForm, &authorizationRef);
-    if (status != errAuthorizationSuccess) {
+    if (status != errAuthorizationSuccess || authorizationRef == NULL) {
         if (error != NULL) {
             NSDictionary *userInfo = @{
                 OSUInstallerPrivilegedHelperFileNameAndNumberErrorKey : ERROR_FILENAME_AND_NUMBER,
@@ -137,8 +133,6 @@ static NSString * OSUInstallerPrivilegedHelperFileNameAndNumberErrorKey = @"com.
             *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:userInfo];
         }
         return NULL;
-    } else {
-        OBASSERT_NOTNULL(authorizationRef);
     }
     
     return authorizationRef;

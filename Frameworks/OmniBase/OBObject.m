@@ -1,4 +1,4 @@
-// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -234,12 +234,12 @@ static NSString *methodsWithPrefix(Class cls, char prefix)
     return result;
 }
 
-+ (NSArray *)subclasses;
+static Class *_OBCopyClassList(int *outClassCount)
 {
     __unsafe_unretained Class *classes = NULL;
     int classCount = 0;
     int returnedClassCount;
-    
+
     while (YES) {
         returnedClassCount = objc_getClassList(classes, classCount);
         if (returnedClassCount == classCount)
@@ -247,6 +247,16 @@ static NSString *methodsWithPrefix(Class cls, char prefix)
         classCount = returnedClassCount;
         classes = (__unsafe_unretained Class *)reallocf(classes, sizeof(*classes) * classCount);
     }
+
+    *outClassCount = classCount;
+    return classes;
+}
+
+// Returns all the direct and indirect subclasses of the receiver.
++ (NSArray *)subclasses;
+{
+    int classCount = 0;
+    __unsafe_unretained Class *classes = _OBCopyClassList(&classCount);
 
     NSMutableArray *results = [NSMutableArray array];
     
@@ -270,6 +280,55 @@ static NSString *methodsWithPrefix(Class cls, char prefix)
         free(classes);
     
     return results;
+}
+
+static void _appendSubclassesTree(NSMutableString *result, NSUInteger depth, Class cls, NSDictionary<NSValue *, NSArray *> *classToSubclasses)
+{
+    for (NSUInteger indent = 0; indent < depth; indent++) {
+        [result appendString:@"  "];
+    }
+    [result appendString:NSStringFromClass(cls)];
+    [result appendString:@"\n"];
+
+    NSArray *subclasses = [classToSubclasses[[NSValue valueWithPointer:(__bridge const void *)cls]] sortedArrayUsingComparator:^NSComparisonResult(Class cls1, Class cls2) {
+        return strcmp(class_getName(cls1), class_getName(cls2));
+    }];
+    for (Class subCls in subclasses) {
+        _appendSubclassesTree(result, depth + 1, subCls, classToSubclasses);
+    }
+}
+
++ (NSString *)subclassesTree;
+{
+    int classCount = 0;
+    __unsafe_unretained Class *classes = _OBCopyClassList(&classCount);
+
+    NSMutableDictionary <NSValue *, NSMutableArray *> *classToSubclasses = [NSMutableDictionary dictionary];
+
+    for (int classIndex = 0; classIndex < classCount; classIndex++) {
+        Class cls = classes[classIndex];
+        Class superCls = class_getSuperclass(cls);
+
+        if (superCls == nil) {
+            continue;
+        }
+
+        NSMutableArray *subclasses = classToSubclasses[[NSValue valueWithPointer:(__bridge const void *)superCls]];
+        if (subclasses == nil) {
+            subclasses = [NSMutableArray array];
+            classToSubclasses[[NSValue valueWithPointer:(__bridge const void *)superCls]] = subclasses;
+        }
+
+        [subclasses addObject:cls];
+    }
+
+    NSMutableString *result = [NSMutableString string];
+    _appendSubclassesTree(result, 0, self, classToSubclasses);
+
+    if (classes)
+        free(classes);
+
+    return result;
 }
 
 #endif

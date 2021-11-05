@@ -49,6 +49,8 @@
 		3446926B186284E200FBDD73 /* OSUPrivacyAlertWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 34469267186284E200FBDD73 /* OSUPrivacyAlertWindowController.m */; };
 		344692791862855400FBDD73 /* OSUPrivacyAlert.xib in Resources */ = {isa = PBXBuildFile; fileRef = 344692771862855400FBDD73 /* OSUPrivacyAlert.xib */; };
 		3446927A1862855400FBDD73 /* OSUPrivacyAlert.xib in Resources */ = {isa = PBXBuildFile; fileRef = 344692771862855400FBDD73 /* OSUPrivacyAlert.xib */; };
+		344E5D2024E2257B009BAB4E /* OSUErrorDomain.h in Headers */ = {isa = PBXBuildFile; fileRef = 344E5D1F24E2257B009BAB4E /* OSUErrorDomain.h */; };
+		344E5D2124E228A4009BAB4E /* OSUErrors.m in Sources */ = {isa = PBXBuildFile; fileRef = 34F300701263A6850044AB52 /* OSUErrors.m */; };
 		3456AED20C1201300066F5F4 /* OSURunTime.h in Headers */ = {isa = PBXBuildFile; fileRef = 3456AED00C1201300066F5F4 /* OSURunTime.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3456AED30C1201300066F5F4 /* OSURunTime.m in Sources */ = {isa = PBXBuildFile; fileRef = 3456AED10C1201300066F5F4 /* OSURunTime.m */; };
 		34591B870A751FAD00BA6CCA /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34591B860A751FAD00BA6CCA /* WebKit.framework */; };
@@ -239,7 +241,6 @@
 		5F7DE65916EFF3E70072E86C /* OSUInstallerPrivilegedHelperProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F7DE65716EFF3E70072E86C /* OSUInstallerPrivilegedHelperProtocol.m */; };
 		5F7DE66016F0EFEC0072E86C /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34E6552B0C95C85D0005A12E /* Security.framework */; };
 		5F7DE66116F0EFF60072E86C /* ServiceManagement.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F234E8116E9607D000E2C0E /* ServiceManagement.framework */; };
-		5F7DE66216F0FE610072E86C /* OSUErrors.m in Sources */ = {isa = PBXBuildFile; fileRef = 34F300701263A6850044AB52 /* OSUErrors.m */; };
 		5FAF8F6816F2916100BFFE55 /* OSUInstallerScript.m in Sources */ = {isa = PBXBuildFile; fileRef = 5FAF8F6716F2916100BFFE55 /* OSUInstallerScript.m */; };
 		5FAF8F6916F2916100BFFE55 /* OSUInstallerScript.m in Sources */ = {isa = PBXBuildFile; fileRef = 5FAF8F6716F2916100BFFE55 /* OSUInstallerScript.m */; };
 		5FF0FACB16E7E83D00F87CB7 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F1C023916DC8D82006F9D51 /* Foundation.framework */; };
@@ -297,6 +298,20 @@
 			proxyType = 2;
 			remoteGlobalIDString = 3E1F09D12034C0BD001EE416;
 			remoteInfo = "OUIUnitTests-iOS";
+		};
+		344E5D0224E222D6009BAB4E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 5F1C68F016F7C1AE00D0F98B /* OmniBase.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 4A33D40608A0191B003A3FA5;
+			remoteInfo = OmniBase;
+		};
+		344E5D1D24E222DA009BAB4E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 5F1C68F016F7C1AE00D0F98B /* OmniBase.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 34637CCB194F448F009B51C5;
+			remoteInfo = "OmniBase-iOS";
 		};
 		345299AF1ECA151B005E71F5 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -571,13 +586,6 @@
 			remoteGlobalIDString = 34EE20D114F0354300722491;
 			remoteInfo = OBUnitTests;
 		};
-		5F5380EE16F8DA2600E7A8EC /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 5F1C68F016F7C1AE00D0F98B /* OmniBase.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 4A33D40608A0191B003A3FA5;
-			remoteInfo = OmniBase;
-		};
 		5FF0FB1616E80D4800F87CB7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
@@ -728,6 +736,7 @@
 		3440A0291D28721700298619 /* CheckVersionNumber */ = {isa = PBXFileReference; lastKnownFileType = text; path = CheckVersionNumber; sourceTree = "<group>"; };
 		34469266186284E200FBDD73 /* OSUPrivacyAlertWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUPrivacyAlertWindowController.h; sourceTree = "<group>"; };
 		34469267186284E200FBDD73 /* OSUPrivacyAlertWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUPrivacyAlertWindowController.m; sourceTree = "<group>"; };
+		344E5D1F24E2257B009BAB4E /* OSUErrorDomain.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OSUErrorDomain.h; sourceTree = "<group>"; };
 		3456AED00C1201300066F5F4 /* OSURunTime.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = OSURunTime.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		3456AED10C1201300066F5F4 /* OSURunTime.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSURunTime.m; sourceTree = "<group>"; };
 		34591B860A751FAD00BA6CCA /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
@@ -1183,6 +1192,7 @@
 			isa = PBXGroup;
 			children = (
 				34A5F559184E62E500E8BA9A /* OSUFeatures.h */,
+				344E5D1F24E2257B009BAB4E /* OSUErrorDomain.h */,
 				34EDDEC80C6127FD009E2E27 /* OSUErrors.h */,
 				34F300701263A6850044AB52 /* OSUErrors.m */,
 				34D5FE6F1264F09D00FDFEBB /* OSUPreferences.h */,
@@ -1567,6 +1577,7 @@
 				3456AED20C1201300066F5F4 /* OSURunTime.h in Headers */,
 				34EDDEC90C6127FD009E2E27 /* OSUErrors.h in Headers */,
 				34972BC81AC1ECDB00D2DC2D /* OSULookupCredentialProtocol.h in Headers */,
+				344E5D2024E2257B009BAB4E /* OSUErrorDomain.h in Headers */,
 				34A5F56B184E67C700E8BA9A /* OSUSystemConfigurationController.h in Headers */,
 				34A5F55A184E62E500E8BA9A /* OSUFeatures.h in Headers */,
 				3433C1F91A12BB920021318A /* OSUSettings.h in Headers */,
@@ -1620,6 +1631,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				344E5D1E24E222DA009BAB4E /* PBXTargetDependency */,
 				345299D31ECA1523005E71F5 /* PBXTargetDependency */,
 			);
 			name = "OmniSoftwareUpdate-iOS";
@@ -1705,6 +1717,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				344E5D0324E222D6009BAB4E /* PBXTargetDependency */,
 				345299D51ECA1529005E71F5 /* PBXTargetDependency */,
 				347BAC941AC49CB900DC5466 /* PBXTargetDependency */,
 				347BAC961AC49CB900DC5466 /* PBXTargetDependency */,
@@ -1783,7 +1796,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				5F5380EF16F8DA2600E7A8EC /* PBXTargetDependency */,
 			);
 			name = OSUInstallerPrivilegedHelper;
 			productName = OSUInstaller;
@@ -1796,7 +1808,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1150;
+				LastUpgradeCheck = 1200;
 				TargetAttributes = {
 					3489E8BF1AD56BA10039E24D = {
 						CreatedOnToolsVersion = 6.2;
@@ -2431,8 +2443,8 @@
 			files = (
 				5FF0FACE16E7E83D00F87CB7 /* main.m in Sources */,
 				5F7DE65916EFF3E70072E86C /* OSUInstallerPrivilegedHelperProtocol.m in Sources */,
-				5F7DE66216F0FE610072E86C /* OSUErrors.m in Sources */,
 				5FAF8F6916F2916100BFFE55 /* OSUInstallerScript.m in Sources */,
+				344E5D2124E228A4009BAB4E /* OSUErrors.m in Sources */,
 				5F53811916F9010000E7A8EC /* OSUInstallerPrivilegedHelperRights.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2440,6 +2452,16 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		344E5D0324E222D6009BAB4E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = OmniBase;
+			targetProxy = 344E5D0224E222D6009BAB4E /* PBXContainerItemProxy */;
+		};
+		344E5D1E24E222DA009BAB4E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "OmniBase-iOS";
+			targetProxy = 344E5D1D24E222DA009BAB4E /* PBXContainerItemProxy */;
+		};
 		345299B01ECA151B005E71F5 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = OmniAppKit;
@@ -2514,11 +2536,6 @@
 			isa = PBXTargetDependency;
 			target = 5F049AEB16DE74C5004F398B /* OSULaunchTrampoline */;
 			targetProxy = 5F049B0516DE7D58004F398B /* PBXContainerItemProxy */;
-		};
-		5F5380EF16F8DA2600E7A8EC /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = OmniBase;
-			targetProxy = 5F5380EE16F8DA2600E7A8EC /* PBXContainerItemProxy */;
 		};
 		5FF0FB1716E80D4800F87CB7 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;

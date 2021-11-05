@@ -1,4 +1,4 @@
-// Copyright 2013-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,7 +25,7 @@ RCS_ID("$Id$")
 {
     OFXUploadContentsFileSnapshot *_uploadingSnapshot;
     
-    NSMutableArray <ODAVOperation *> *_writeOperations;
+    NSMutableArray <id <ODAVAsynchronousOperation>> *_writeOperations;
     id <ODAVAsynchronousOperation> _runningOperation;
     BOOL _cancelled;
     
@@ -33,7 +33,7 @@ RCS_ID("$Id$")
     long long _totalBytesWritten;
 }
 
-- (id)initWithConnection:(ODAVConnection *)connection currentSnapshot:(OFXFileSnapshot *)currentSnapshot forUploadingVersionOfDocumentAtURL:(NSURL *)localDocumentURL localRelativePath:(NSString *)localRelativePath remoteTemporaryDirectory:(NSURL *)remoteTemporaryDirectory error:(NSError **)outError;
+- (instancetype)initWithConnection:(ODAVConnection *)connection currentSnapshot:(OFXFileSnapshot *)currentSnapshot forUploadingVersionOfDocumentAtURL:(NSURL *)localDocumentURL localRelativePath:(NSString *)localRelativePath remoteTemporaryDirectory:(NSURL *)remoteTemporaryDirectory error:(NSError **)outError;
 {    
     if (!(self = [super initWithConnection:connection currentSnapshot:currentSnapshot remoteTemporaryDirectory:remoteTemporaryDirectory]))
         return nil;
@@ -194,7 +194,7 @@ RCS_ID("$Id$")
     _runningOperation = [_writeOperations lastObject];
     if (_runningOperation) {
         __weak OFXFileSnapshotUploadContentsTransfer *weakSelf = self;
-        _runningOperation.didFinish = ^(ODAVOperation *op, NSError *errorOrNil){
+        _runningOperation.didFinish = ^(id <ODAVAsynchronousOperation> __nonnull op, NSError *errorOrNil){
             OFXFileSnapshotUploadContentsTransfer *strongSelf = weakSelf;
             if (!strongSelf)
                 return; // Cancelled, presumably
@@ -203,7 +203,7 @@ RCS_ID("$Id$")
                 [strongSelf _writeOperation:op didFinish:errorOrNil];
             }];
         };
-        _runningOperation.didSendBytes = ^(ODAVOperation *op, long long byteCount){
+        _runningOperation.didSendBytes = ^(id <ODAVAsynchronousOperation> __nonnull op, long long byteCount) {
             OFXFileSnapshotUploadContentsTransfer *strongSelf = weakSelf;
             if (!strongSelf)
                 return; // Cancelled, presumably
@@ -226,7 +226,7 @@ RCS_ID("$Id$")
     [self finished:nil];
 }
 
-- (void)_writeOperation:(ODAVOperation *)operation didFinish:(NSError *)error;
+- (void)_writeOperation:(id <ODAVAsynchronousOperation> __nonnull)operation didFinish:(NSError *)error;
 {
     OBPRECONDITION([NSOperationQueue currentQueue] == self.operationQueue);
     OBPRECONDITION(operation == _runningOperation);
@@ -245,7 +245,7 @@ RCS_ID("$Id$")
     [self _startWriteOperation];
 }
 
-- (void)_writeOperation:(ODAVOperation *)operation didSendBytes:(long long)processedBytes;
+- (void)_writeOperation:(id <ODAVAsynchronousOperation> __nonnull)operation didSendBytes:(long long)processedBytes;
 {
     OBPRECONDITION([NSOperationQueue currentQueue] == self.operationQueue);
     

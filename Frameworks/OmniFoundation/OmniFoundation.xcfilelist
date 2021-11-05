@@ -202,6 +202,7 @@ OpenStepExtensions.subproj/NSString-OFURLEncoding.m
 OpenStepExtensions.subproj/NSString-OFUnicodeCharacters.m
 OpenStepExtensions.subproj/NSURL-OFExtensions.m
 OpenStepExtensions.subproj/NSUndoManager-OFExtensions.m
+OpenStepExtensions.subproj/NSUndoManager-OFExtensions.swift
 OpenStepExtensions.subproj/NSUserDefaults-OFExtensions.m
 Scheduling.subproj/OFAsynchronousOperation.m
 Scheduling.subproj/OFBackgroundActivity.m

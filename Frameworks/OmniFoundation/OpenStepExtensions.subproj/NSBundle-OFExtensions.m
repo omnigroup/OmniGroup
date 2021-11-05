@@ -20,6 +20,11 @@
 
 + (NSString *)containingApplicationBundleIdentifier;
 {
+    if (OFIsRunningUnitTests()) {
+        // com.apple.dt.xctest.tool instead of looking up and finding Xcode and writing user defaults in it.
+        return [[NSBundle mainBundle] bundleIdentifier];
+    }
+
     NSBundle *mainBundle = [NSBundle mainBundle];
     NSString *plistValue = mainBundle.infoDictionary[@"OFContainingApplicationBundleIdentifier"];
     if (plistValue != nil)

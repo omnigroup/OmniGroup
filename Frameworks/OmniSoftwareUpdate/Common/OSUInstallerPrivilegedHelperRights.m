@@ -1,4 +1,4 @@
-// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,10 +8,6 @@
 #import "OSUInstallerPrivilegedHelperRights.h"
 
 #import <Foundation/Foundation.h>
-#import <OmniBase/rcsid.h>
-#import <OmniBase/assertions.h>
-
-RCS_ID("$Id$")
 
 NSString * const OSUInstallUpdateRightName = @"com.omnigroup.OmniSoftwareUpdate.InstallUpdate";
 

@@ -792,6 +792,7 @@ void OASplitBezierCurveTo(const NSPoint *c, CGFloat t, NSPoint *l, NSPoint *r)
     
     CGFloat distance = CGFLOAT_MAX;
     NSInteger segment = 0;
+    CGFloat tempPosition = 0;
     for (i = 1; i < count; i++) {
         element = [self elementAtIndex:i associatedPoints:points];
         if (OFPointEqualToPointWithAccuracy(points[0], point, 1e-5)) {
@@ -810,20 +811,20 @@ void OASplitBezierCurveTo(const NSPoint *c, CGFloat t, NSPoint *l, NSPoint *r)
                 }
                 break;
             case NSClosePathBezierPathElement:
-                if ([self straightLineHit:currentPoint :startPoint :point :position padding:padding distance:&elementDistance]){
+                if ([self straightLineHit:currentPoint :startPoint :point :&tempPosition padding:padding distance:&elementDistance]) {
                     elementSegmentHit = i;
                 }
                 currentPoint = startPoint;
                 needANewStartPoint = YES;
                 break;
             case NSLineToBezierPathElement:
-                if ([self straightLineHit:currentPoint :points[0] :point :position padding:padding distance:&elementDistance]){
+                if ([self straightLineHit:currentPoint :points[0] :point :&tempPosition padding:padding distance:&elementDistance]) {
                     elementSegmentHit = i;
                 }
                 currentPoint = points[0];
                 break;
             case NSCurveToBezierPathElement:
-                if ([self curvedLineHit:point startPoint:currentPoint endPoint:points[2] controlPoint1:points[0] controlPoint2:points[1] position:position padding:padding distance:&elementDistance]) {
+                if ([self curvedLineHit:point startPoint:currentPoint endPoint:points[2] controlPoint1:points[0] controlPoint2:points[1] position:&tempPosition padding:padding distance:&elementDistance]) {
                     elementSegmentHit = i;
                 }
                 currentPoint = points[2];
@@ -833,6 +834,7 @@ void OASplitBezierCurveTo(const NSPoint *c, CGFloat t, NSPoint *l, NSPoint *r)
         if (elementDistance < distance && elementSegmentHit > 0) {
             segment = elementSegmentHit;
             distance = elementDistance;
+            *position = tempPosition;
         }
     }
     return segment;

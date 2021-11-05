@@ -1,4 +1,4 @@
-// Copyright 2008-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,7 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithFileWrapper:(NSFileWrapper *)fileWrapper; // Returns an instance of the appropriate subclass
 - (NSFileWrapper *)fileWrapperRepresentation; // Returns a new autoreleased file wrapper; won't return the same wrapper on multiple calls
 
-- (instancetype)initWithPath:(NSString *)path fileManager:(NSFileManager *)fileManager;
+- (nullable instancetype)initWithPath:(NSString *)path fileManager:(NSFileManager *)fileManager outError:(NSError **)outError;
 
 - (instancetype)initWithName:(NSString *)name date:(NSDate * _Nullable)date; // Assumes that you won't create a duplicate/bad name within a parent (case conflicts, embedded '/', etc.)
 

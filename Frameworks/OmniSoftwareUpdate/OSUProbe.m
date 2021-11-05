@@ -1,4 +1,4 @@
-// Copyright 2014-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -129,7 +129,7 @@ static NSMutableDictionary *ProbeByKey;
 - (void)reset;
 {
     dispatch_async(ProbeQueue, ^{
-        [self _setValue:nil action:@"Reset"];
+        [self _setValue:@(0) action:@"Reset"];
     });
 }
 
@@ -198,6 +198,8 @@ static NSString *_defaultsKey(NSString *key)
 // Must be called on the probe queue.
 - (void)_setValue:(id)value action:(NSString *)action;
 {
+    OBPRECONDITION(value != nil);
+
     if ([_value isEqual:value])
         return;
     
@@ -208,10 +210,7 @@ static NSString *_defaultsKey(NSString *key)
     NSString *key = _defaultsKey(_key);
     // We cannot poke NSUserDefaults here. It posts a notification which could have an observer on the main thread (NSNC seems to do some operation queuing/waiting) where the main thread is blocked looking up a probe. Deadlock.
     dispatch_async(dispatch_get_main_queue(), ^{
-        if (value)
-            [[NSUserDefaults standardUserDefaults] setObject:value forKey:key];
-        else
-            [[NSUserDefaults standardUserDefaults] removeObjectForKey:key];
+        [[NSUserDefaults standardUserDefaults] setObject:value forKey:key];
     });
 }
 

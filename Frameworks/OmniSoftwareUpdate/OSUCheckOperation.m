@@ -1,4 +1,4 @@
-// Copyright 2001-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -350,8 +350,20 @@ static NSError *OSUTransformCheckServiceError(NSError *error, NSString *hostname
 #endif
     
     // Transform errors from the background service (even it is compiled in)
-    if (!dict)
+    if (!dict) {
         error = OSUTransformCheckServiceError(error, host);
+    } else {
+        // On success of actual server queries, reset probes.
+        if (_forQuery) {
+            // There is a race here if the probe's value is set/incremented while the query is processing.
+            for (NSString *key in [probes keyEnumerator]) {
+                OSUProbe *probe = [OSUProbe existingProbeWithKey:key];
+                if ([probe options] & OSUProbeOptionResetOnSubmit) {
+                    [probe reset];
+                }
+            }
+        }
+    }
     
     id object = dict ? (id)dict : (id)error;
     

@@ -1,4 +1,4 @@
-// Copyright 2013-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,5 +8,5 @@
 #import "OFXFileSnapshotUploadTransfer.h"
 
 @interface OFXFileSnapshotUploadContentsTransfer : OFXFileSnapshotUploadTransfer
-- (id)initWithConnection:(ODAVConnection *)connection currentSnapshot:(OFXFileSnapshot *)currentSnapshot forUploadingVersionOfDocumentAtURL:(NSURL *)localDocumentURL localRelativePath:(NSString *)localRelativePath remoteTemporaryDirectory:(NSURL *)remoteTemporaryDirectory error:(NSError **)outError;
+- (instancetype)initWithConnection:(ODAVConnection *)connection currentSnapshot:(OFXFileSnapshot *)currentSnapshot forUploadingVersionOfDocumentAtURL:(NSURL *)localDocumentURL localRelativePath:(NSString *)localRelativePath remoteTemporaryDirectory:(NSURL *)remoteTemporaryDirectory error:(NSError **)outError;
 @end

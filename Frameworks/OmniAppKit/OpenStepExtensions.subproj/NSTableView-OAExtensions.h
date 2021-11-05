@@ -1,4 +1,4 @@
-// Copyright 1997-2019 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,6 +17,8 @@ typedef NS_ENUM(NSInteger, OATableViewRowVisibility) {
 #import <OmniAppKit/OAFindControllerTargetProtocol.h>
 
 NS_ASSUME_NONNULL_BEGIN
+
+extern void OATableViewSetFullWidthStyle(NSTableView *tableView);
 
 @interface NSTableView (OAExtensions) <OAFindControllerTarget>
 

@@ -1,4 +1,4 @@
-// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -92,6 +92,76 @@ NS_ASSUME_NONNULL_BEGIN
         }
     }
     return [super name];
+}
+
+// MARK:- Fixture driven test support
+
+/**
+
+ Subclasses can override `+defaultTestSuite` to call this with their directory of fixtures and a selector to call, which should take one argument (the URL to the individual file to process).
+
+ They may additionally override `-name` to call `+nameForFixtureDrivenTestCase:`.
+
+ */
+
++ (void)addFixtureDrivenTestsToSuite:(XCTestSuite *)suite fixturesURL:(NSURL *)fixturesURL processSelector:(SEL)processSelector;
+{
+    NSError *error = nil;
+    NSArray <NSURL *> *fileURLs = [[NSFileManager defaultManager] contentsOfDirectoryAtURL:fixturesURL includingPropertiesForKeys:nil options:0 error:&error];
+    if (!fileURLs) {
+        NSLog(@"Error looking for files in %@: %@", fixturesURL, [error toPropertyList]);
+        [NSException raise:NSInternalInconsistencyException format:@"Unable to find files in fixtures %@.", fixturesURL];
+    }
+
+    // otest is lame and doesn't let us filter dynamic suites, as far as I can tell... and it hates arguments it doesn't understand, so pass this in the environment.
+    NSString *onlyTestNamed = [[[NSProcessInfo processInfo] environment] objectForKey:@"OnlyTestNamed"];
+
+    NSMethodSignature *methodSignature = [self instanceMethodSignatureForSelector:processSelector];
+    if (!methodSignature || [methodSignature numberOfArguments] != 3 || /* 4 args: self, _cmd, fileURL */
+        strcmp([methodSignature methodReturnType], "v") != 0) {
+        [NSException raise:NSGenericException format:@"Method -[%@ %@] has incorrect signature", NSStringFromClass(self), NSStringFromSelector(processSelector)];
+    }
+
+    // For each output, make a test case that converts the input to that output (might be more than one output for each input).
+    for (NSURL *fileURL in fileURLs) {
+        NSInvocation *testInvocation = [NSInvocation invocationWithMethodSignature:methodSignature];
+        [testInvocation setSelector:processSelector];
+        [testInvocation setArgument:(void *)&fileURL atIndex:2];
+        [testInvocation retainArguments];
+
+        OFTestCase *testCase = [self testCaseWithInvocation:testInvocation];
+
+        if (!onlyTestNamed || OFISEQUAL([testCase name], onlyTestNamed))
+            [suite addTest:testCase];
+    }
+}
+
++ (NSURL *)fixturesURL;
+{
+    NSURL *baseFixtures = [[NSBundle bundleForClass:self] URLForResource:@"fixtures" withExtension:@""];
+    if (!baseFixtures) {
+        [NSException raise:NSInternalInconsistencyException format:@"Missing fixtures resource."];
+    }
+
+    NSString *className = NSStringFromClass(self);
+    NSRange dotRange = [className rangeOfString:@"."];
+    if (dotRange.location != NSNotFound) {
+        // Swift class with module prefix
+        className = [className substringFromIndex: NSMaxRange(dotRange)];
+    }
+
+    return [baseFixtures URLByAppendingPathComponent:className];
+}
+
++ (NSString *)nameForFixtureDrivenTestCase:(OFTestCase *)testCase;
+{
+    NSInvocation *invocation = [testCase invocation];
+
+    // This file is using ARC and we don't want this variable to be `strong` since we are modifying it w/o strong semantics here (which would cause an extra -release on the NSURL each time this method was called!)
+    __unsafe_unretained NSURL *output = nil;
+    [invocation getArgument:&output atIndex:2];
+
+    return [output lastPathComponent];
 }
 
 @end
@@ -245,6 +315,15 @@ static BOOL _OFCheckFilesSame(XCTestCase *self, NSString *path1, NSString *path2
 
             BOOL same = [data1 isEqual:data2];
             if (!same) {
+                OFDiffFileTransformData transform = operations.transformData;
+                if (transform) {
+                    data1 = transform(map1, data1);
+                    data2 = transform(map2, data2);
+                }
+                same = [data1 isEqual:data2];
+            }
+
+            if (!same) {
                 // Might still mean the same thing as far as the caller is concerned.
                 OFDiffFileCompareData compare = operations.compareData;
                 if (compare) {
@@ -258,6 +337,10 @@ static BOOL _OFCheckFilesSame(XCTestCase *self, NSString *path1, NSString *path2
                     XCTFail(@"Files differ!\ndiff \"%@\" \"%@\"", map1, map2);
 #else
                     OFDiffDataFiles(self, map1, map2);
+
+                    // If we transformed the data, show the diff of the transformed value as well (which may be smaller)
+                    OFDiffData(self, data1, data2);
+
                     XCTFail(@"Files differ!"); // This can raise if the test is set to not continue after failures.
 #endif
                 }

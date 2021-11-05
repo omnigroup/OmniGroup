@@ -1,4 +1,4 @@
-// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,9 +8,6 @@
 #import "OSUInstallerPrivilegedHelperProtocol.h"
 
 #import <Foundation/NSString.h>
-#import <OmniBase/rcsid.h>
-
-RCS_ID("$Id$")
 
 // We write a new version of the tool for each protocol update so that we don't need to try to uninstall the tool to downgrade to an older protocol version, which doesn't work well and uses deprecate SMJob* functions See <bug:///113413>
 

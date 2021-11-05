@@ -1,4 +1,4 @@
-// Copyright 2001-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -526,6 +526,12 @@ static void logging_replacement_proxyFowardInvocation(id proxy, SEL _cmd, NSInvo
 
 @end
 
+void OFWithoutUndo(NSUndoManager *undoManger, void (^action)(void))
+{
+    [undoManger disableUndoRegistration];
+    action();
+    [undoManger enableUndoRegistration];
+}
 
 @implementation NSObject (OFUndoExtensions)
 
