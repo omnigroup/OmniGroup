@@ -36,6 +36,8 @@
     struct sqlite3_stmt *_statement;
 }
 
++ (void)logBacktracesForPreparedStatements;
+
 @property (nonatomic, readonly) ODOSQLConnection *connection;
 
 /// Convenience that initializes and prepares a statement immediately, using -prepareIfNeededWithSQLite:error:. As with that method, must be called on a queue appropriate for interacting with the given SQLite database handle.

@@ -406,8 +406,13 @@ static void copyProperty(NSToolbarItem *anItem,
         button.toolbarItem = newItem;
 
         newItem.view = button;
-        newItem.minSize = buttonSize;
-        newItem.maxSize = buttonSize;
+
+        if ([OFVersionNumber isOperatingSystemBigSurOrLater]) {
+            // These properties are soft-deprecated on Big Sur (and log a message when called).
+        } else {
+            newItem.minSize = buttonSize;
+            newItem.maxSize = buttonSize;
+        }
     }
 
     id newItemTarget;

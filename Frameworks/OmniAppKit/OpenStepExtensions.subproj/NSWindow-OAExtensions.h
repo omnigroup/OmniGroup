@@ -1,4 +1,4 @@
-// Copyright 1997-2019 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,11 +14,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface NSWindow (Sierra)
-// These are present on 10.12, but not declared publically until 10.14.
-- (NSPoint)convertPointToScreen:(NSPoint)windowPoint;
-- (NSPoint)convertPointFromScreen:(NSPoint)screenPoint;
-@end
+extern void OAWindowUseExpandedToolbarStyle(NSWindow *window);
 
 @interface NSWindow (OAExtensions)
 

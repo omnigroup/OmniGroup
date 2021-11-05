@@ -1,4 +1,4 @@
-// Copyright 2019 Omni Development, Inc. All rights reserved.
+// Copyright 2019-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -134,9 +134,9 @@ open class CardView: NSView {
     private var _contentInsets: NSEdgeInsets? = nil
 
     private func commonInit() {
-        wantsLayer = true
         installSubviews()
-
+        wantsLayer = true
+        
         // Use the dynamic (subclass) defaults rather than local defaults.
         cornerRadius = type(of: self).defaultCornerRadius
         edgeInsets = type(of: self).defaultEdgeInsets

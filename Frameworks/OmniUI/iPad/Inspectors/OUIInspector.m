@@ -1,4 +1,4 @@
-// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -398,6 +398,10 @@ static CGFloat _currentDefaultInspectorContentWidth = 320;
     UIViewController *mostDistantAncestor = [self.navigationController mostDistantAncestorViewController];
     BOOL isCurrentlyPresented = mostDistantAncestor.presentingViewController != nil;
     
+    id <OUIInspectorDelegate> delegate = self.delegate;
+    if ([delegate respondsToSelector:@selector(inspectorShouldSuppressDoneButton:)] && [delegate inspectorShouldSuppressDoneButton:self]) {
+        return NO;
+    }
     
     if (!isCurrentlyPresented) {
         return NO;

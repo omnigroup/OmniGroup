@@ -1,4 +1,4 @@
-// Copyright 2006-2008, 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,10 +21,11 @@ RCS_ID("$Id$");
 #define INT_TO_ID(x) ((__bridge __unsafe_unretained id)((void *)x))
 - (void)testPointerArray;
 {
+#if !defined(__arm64__)
     NSMutableArray *array = CFBridgingRelease(OFCreateNonOwnedPointerArray());
     [array addObject:INT_TO_ID(0xdeadbeef)];
     XCTAssertTrue([array count] == 1);
-    XCTAssertTrue([array objectAtIndex:0] == INT_TO_ID(0xdeadbeef));
+    XCTAssertTrue((uintptr_t)[array objectAtIndex:0] == 0xdeadbeef);
     XCTAssertTrue([array indexOfObject:INT_TO_ID(0xdeadbeef)] == 0);
     
     // This crashes; -[NSArray description] isn't the same, apparently
@@ -32,6 +33,7 @@ RCS_ID("$Id$");
     NSString *description = CFBridgingRelease(CFCopyDescription((__bridge CFArrayRef)array));
     
     XCTAssertTrue([description containsString:@"0xdeadbeef"]);
+#endif
 }
 
 @end

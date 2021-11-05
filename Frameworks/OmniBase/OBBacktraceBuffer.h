@@ -27,6 +27,9 @@ static inline void _OBRecordBacktraceU8(const uint8_t *message, OBBacktraceBuffe
 static inline void _OBRecordBacktraceWithContextU8(const uint8_t *message, OBBacktraceBufferType optype, id context) {
     OBRecordBacktraceWithContext((const char *)message, optype, (__bridge const void *)context);
 }
+static inline void _OBRecordBacktraceWithIntContextU8(const uint8_t *message, OBBacktraceBufferType optype, uintptr_t context) {
+    OBRecordBacktraceWithContext((const char *)message, optype, (const void *)context);
+}
 
 static inline void OBRecordBacktraceWithSelector(SEL selector) {
     OBRecordBacktrace(sel_getName(selector), OBBacktraceBuffer_PerformSelector);
@@ -35,10 +38,10 @@ static inline void  OBRecordBacktraceWithSelectorAndContext(SEL selector, const 
     OBRecordBacktraceWithContext(sel_getName(selector), OBBacktraceBuffer_PerformSelector, context);
 }
 
-/*.doc.
- Records a backtrace for possible debugging use in the future. The input message must be a constant string. The optype must be greater than one. The context pointer is not examined at all, but just stored. This allows matching up call sites where delayed operations are enqueued with where they are performed in a crash report.
- */
-
+// Support for copying standalone backtrace buffers, which won't be reported unless later added.
+extern struct OBBacktraceBuffer *OBCreateBacktraceBuffer(const char *message, OBBacktraceBufferType optype, const void *context);
+extern void OBFreeBacktraceBuffer(struct OBBacktraceBuffer *buffer);
+extern void OBAddBacktraceBuffer(struct OBBacktraceBuffer *buffer);
 
 #ifdef DEBUG
 extern void OBBacktraceDumpEntries(void);

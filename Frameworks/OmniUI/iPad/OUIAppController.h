@@ -241,6 +241,9 @@ extern NSNotificationName const OUISystemIsSnapshottingNotification;
 // Defaults to YES. Setting this to NO will prevent interactions enqueued via enqueueInteractionControllerPresentationForAnyForegroundScene and it's scene-specific counterpart from being dequeued. Setting this from NO back to YES will immediately dequeue and present any queued interaction if some scene is in the foreground.
 @property (nonatomic) BOOL canDequeueQueuedInteractions;
 
+// Defaults to NO, override in the app subclass if the watch is supported.
+@property (nonatomic, readonly) BOOL supportsAppleWatch;
+
 @end
 
 extern BOOL OUIShouldLogPerformanceMetrics;

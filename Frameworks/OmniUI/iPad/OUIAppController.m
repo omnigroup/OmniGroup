@@ -993,6 +993,11 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
 
 #pragma mark - Subclass responsibility
 
+- (BOOL)supportsAppleWatch
+{
+    return NO;
+}
+
 - (NSString *)appSpecificDebugInfo
 {
     return @"";

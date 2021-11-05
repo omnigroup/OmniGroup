@@ -1,4 +1,4 @@
-// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,7 +9,10 @@
 #import <OmniUI/OUIDrawing.h>
 #import <UIKit/UIView.h>
 
-RCS_ID("$Id$");
+NSString * const OUIHuggingConstraintIdentifierLeading = @"com.omnigroup.framework.OmniUI.leading";
+NSString * const OUIHuggingConstraintIdentifierTrailing = @"com.omnigroup.framework.OmniUI.trailing";
+NSString * const OUIHuggingConstraintIdentifierTop = @"com.omnigroup.framework.OmniUI.top";
+NSString * const OUIHuggingConstraintIdentifierBottom = @"com.omnigroup.framework.OmniUI.bottom";
 
 @implementation UIView (OUIExtensions)
 
@@ -460,6 +463,122 @@ static void OUIViewPerformPosingForThreading(void)
             return OUIViewVisitorResultStop;
     }
 }
+
+const CGFloat StandardSpacingMetric = -10000.0f;
+const CGFloat LayoutMarginMetric = -20000.0f;
+
++ (CGFloat)standardSpacingMetric;
+{
+    return StandardSpacingMetric;
+}
+
++ (CGFloat)layoutMarginMetric;
+{
+    return LayoutMarginMetric;
+}
+
++ (UIEdgeInsets)standardSpacingEdgeInsets;
+{
+    return UIEdgeInsetsMake(StandardSpacingMetric, StandardSpacingMetric, StandardSpacingMetric, StandardSpacingMetric);
+}
+
++ (UIEdgeInsets)layoutMarginEdgeInsets;
+{
+    return UIEdgeInsetsMake(LayoutMarginMetric, LayoutMarginMetric, LayoutMarginMetric, LayoutMarginMetric);
+}
+
+- (NSArray<NSLayoutConstraint *> *)constraintsToHugSubview:(UIView *)subview horizontalLayoutMargin:(CGFloat)horizontalLayoutMargin verticalLayoutMargin:(CGFloat)verticalLayoutMargin;
+{
+    UIEdgeInsets insets = UIEdgeInsetsMake(verticalLayoutMargin, horizontalLayoutMargin, verticalLayoutMargin, horizontalLayoutMargin);
+    return [self constraintsToHugSubview:subview insets:insets];
+}
+
+- (NSArray<NSLayoutConstraint *> *)constraintsToHugSubview:(UIView *)subview insets:(UIEdgeInsets)insets;
+{
+    OBPRECONDITION(subview.superview == self);
+    subview.translatesAutoresizingMaskIntoConstraints = NO;
+
+    NSLayoutConstraint *leadingConstraint = nil;
+    NSLayoutConstraint *trailingConstraint = nil;
+    NSLayoutConstraint *topConstraint = nil;
+    NSLayoutConstraint *bottomConstraint = nil;
+
+    if (insets.left == StandardSpacingMetric) {
+        leadingConstraint = [subview.leadingAnchor constraintEqualToSystemSpacingAfterAnchor:self.leadingAnchor multiplier:1.0];
+    } else if (insets.left == LayoutMarginMetric) {
+        leadingConstraint = [subview.leadingAnchor constraintEqualToSystemSpacingAfterAnchor:self.layoutMarginsGuide.leadingAnchor multiplier:1.0];
+    } else {
+        leadingConstraint = [subview.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:insets.left];
+    }
+
+    if (insets.right == StandardSpacingMetric) {
+        trailingConstraint = [self.trailingAnchor constraintEqualToSystemSpacingAfterAnchor:subview.trailingAnchor multiplier:1.0];
+    } else if (insets.right == LayoutMarginMetric) {
+        trailingConstraint = [self.layoutMarginsGuide.trailingAnchor constraintEqualToSystemSpacingAfterAnchor:subview.trailingAnchor multiplier:1.0];
+    } else {
+        trailingConstraint = [self.trailingAnchor constraintEqualToAnchor:subview.trailingAnchor constant:insets.right];
+    }
+
+    if (insets.top == StandardSpacingMetric) {
+        topConstraint = [subview.topAnchor constraintEqualToSystemSpacingBelowAnchor:self.topAnchor multiplier:1.0];
+    } else if (insets.top == LayoutMarginMetric) {
+        topConstraint = [subview.topAnchor constraintEqualToSystemSpacingBelowAnchor:self.layoutMarginsGuide.topAnchor multiplier:1.0];
+    } else {
+        topConstraint = [subview.topAnchor constraintEqualToAnchor:self.topAnchor constant:insets.top];
+    }
+
+    if (insets.bottom == StandardSpacingMetric) {
+        bottomConstraint = [self.bottomAnchor constraintEqualToSystemSpacingBelowAnchor:subview.bottomAnchor multiplier:1.0];
+    } else if (insets.bottom == LayoutMarginMetric) {
+        bottomConstraint = [subview.bottomAnchor constraintEqualToSystemSpacingBelowAnchor:self.layoutMarginsGuide.bottomAnchor multiplier:1.0];
+    } else {
+        bottomConstraint = [self.bottomAnchor constraintEqualToAnchor:subview.bottomAnchor constant:insets.bottom];
+    }
+    
+    leadingConstraint.identifier = OUIHuggingConstraintIdentifierLeading;
+    trailingConstraint.identifier = OUIHuggingConstraintIdentifierTrailing;
+    topConstraint.identifier = OUIHuggingConstraintIdentifierTop;
+    bottomConstraint.identifier = OUIHuggingConstraintIdentifierBottom;
+    
+    return @[
+        leadingConstraint,
+        trailingConstraint,
+        topConstraint,
+        bottomConstraint,
+    ];
+}
+
+- (NSArray<NSLayoutConstraint *> *)constraintsToHugSubview:(UIView *)subview preferHorizontalLayoutMargin:(BOOL)preferHorizontalLayoutMargin preferVerticalLayoutMargin:(BOOL)preferVerticalLayoutMargin;
+{
+    return [self constraintsToHugSubview:subview horizontalLayoutMargin:preferHorizontalLayoutMargin ? LayoutMarginMetric : 0.0f verticalLayoutMargin:preferVerticalLayoutMargin ? LayoutMarginMetric : 0.0f];
+}
+
+- (void)addConstraintsToHugSubview:(UIView *)subview preferHorizontalLayoutMargin:(BOOL)preferHorizontalLayoutMargin preferVerticalLayoutMargin:(BOOL)preferVerticalLayoutMargin;
+{
+    NSArray *constraints = [self constraintsToHugSubview:subview preferHorizontalLayoutMargin:preferHorizontalLayoutMargin preferVerticalLayoutMargin:preferVerticalLayoutMargin];
+    [NSLayoutConstraint activateConstraints:constraints];
+}
+
+- (NSArray<NSLayoutConstraint *> *)standardSpacingConstraintsForSubview:(UIView *)subview;
+{
+    return [self constraintsToHugSubview:subview preferHorizontalLayoutMargin:YES preferVerticalLayoutMargin:YES];
+}
+
+- (void)addStandardSpacingConstraintsForSubview:(UIView *)subview;
+{
+    [self addConstraintsToHugSubview:subview preferHorizontalLayoutMargin:YES preferVerticalLayoutMargin:YES];
+}
+
+- (NSArray<NSLayoutConstraint *> *)huggingConstraintsForSubview:(UIView *)subview;
+{
+    return [self constraintsToHugSubview:subview preferHorizontalLayoutMargin:NO preferVerticalLayoutMargin:NO];
+}
+
+- (void)addHuggingConstraintsForSubview:(UIView *)subview;
+{
+    [self addConstraintsToHugSubview:subview preferHorizontalLayoutMargin:NO preferVerticalLayoutMargin:NO];
+}
+
 
 // Subclass to return YES if this view has no border or doesn't want to be in your border finding nonsense.
 - (BOOL)skipWhenComputingBorderEdgeInsets;

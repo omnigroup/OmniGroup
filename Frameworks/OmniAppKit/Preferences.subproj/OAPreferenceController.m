@@ -19,6 +19,7 @@
 #import <OmniAppKit/NSImage-OAExtensions.h>
 #import <OmniAppKit/NSToolbar-OAExtensions.h>
 #import <OmniAppKit/NSView-OAExtensions.h>
+#import <OmniAppKit/NSWindow-OAExtensions.h>
 #import <OmniAppKit/OAPreferenceClient.h>
 #import <OmniAppKit/OAPreferenceClientRecord.h>
 #import "OAPreferencesIconView.h"
@@ -743,6 +744,8 @@ static NSString *windowFrameSaveName = @"Preferences";
 
     globalControlsHeight = NSHeight(_globalControlsView.frame);
     idealWidth = [[self class] idealWindowWidth];
+
+    OAWindowUseExpandedToolbarStyle(_window);
 
     [_window center];
     [_window setFrameAutosaveName:windowFrameSaveName];

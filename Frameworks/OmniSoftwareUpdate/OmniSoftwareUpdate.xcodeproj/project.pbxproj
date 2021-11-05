@@ -214,6 +214,7 @@
 		4A40EC1008AB009A00E1769D /* OSUCheckTool.m in Sources */ = {isa = PBXBuildFile; fileRef = 34821F010634074F0097A113 /* OSUCheckTool.m */; };
 		4A40EC1208AB009A00E1769D /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34821F140634086B0097A113 /* CoreFoundation.framework */; };
 		4A40EC1908AB009A00E1769D /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */; };
+		4A65801B24A3D9FD009C5FF4 /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3456277A1ECA122D00181154 /* OmniFoundation.framework */; };
 		4AA5E8F7148D5F7F00633311 /* OSUDownloadController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4AA5E8F5148D5F7F00633311 /* OSUDownloadController.xib */; };
 		4AA5E8FB148D601500633311 /* OSUAvailableUpdateController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4AA5E8F9148D601500633311 /* OSUAvailableUpdateController.xib */; };
 		5F049AED16DE74C5004F398B /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F1C023916DC8D82006F9D51 /* Foundation.framework */; };
@@ -923,6 +924,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4A65801B24A3D9FD009C5FF4 /* OmniFoundation.framework in Frameworks */,
 				3467B20B1EC528AB005DA568 /* OmniBase.framework in Frameworks */,
 				34972BBD1AC1C77D00D2DC2D /* Security.framework in Frameworks */,
 				3479A3AE1AB8DE260077BB01 /* Cocoa.framework in Frameworks */,
@@ -1044,6 +1046,7 @@
 				1058C7B0FEA5585E11CA2CBB /* Linked Frameworks */,
 				034768DFFF38A50411DB9C8B /* Products */,
 				15AFEAFA18A069F800AC19A2 /* Localization */,
+				4A65800D24A3D9FD009C5FF4 /* Frameworks */,
 			);
 			name = OmniSoftwareUpdate;
 			sourceTree = "<group>";
@@ -1396,6 +1399,13 @@
 			name = Configurations;
 			path = ../../Configurations;
 			sourceTree = SOURCE_ROOT;
+		};
+		4A65800D24A3D9FD009C5FF4 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
 		};
 		5F049AEE16DE74C5004F398B /* Launch Trampoline Tool */ = {
 			isa = PBXGroup;

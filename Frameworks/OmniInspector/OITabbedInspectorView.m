@@ -1,4 +1,4 @@
-// Copyright 2016-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -23,11 +23,7 @@ RCS_ID("$Id$");
 - (void)awakeFromNib;
 {
     self.blendingMode = NSVisualEffectBlendingModeWithinWindow;
-#if defined(MAC_OS_X_VERSION_10_14)
-    if(@available(macOS 10.14, *)) {
-        self.material = NSVisualEffectMaterialWindowBackground;
-    }
-#endif
+    self.material = NSVisualEffectMaterialWindowBackground;
 }
 
 @end

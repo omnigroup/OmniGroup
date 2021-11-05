@@ -378,12 +378,6 @@ static unsigned AccountAgentNetStateRegistrationGroupIdentifierContext;
     OBASSERT(_registrationTable == nil);
     _registrationTable = [[OFXRegistrationTable alloc] initWithName:[NSString stringWithFormat:@"Sync Agent %p registrations", self]];
     
-    OBASSERT(_stateNotifier == nil);
-    _stateNotifier = [[OFNetStateNotifier alloc] initWithMemberIdentifier:_memberIdentifier];
-    _stateNotifier.delegate = self;
-    _stateNotifier.name = _debugName;
-    DEBUG_SYNC(1, @"State notifier is %@", _stateNotifier);
-    
     _netReachability = [[OFNetReachability alloc] initWithDefaultRoute:YES/*ignore ad-hoc wi-fi*/];
     _netReachability.delegate = self;
     
@@ -1187,7 +1181,14 @@ static __weak OFXAgent *BackgroundFetchSyncAgent;
 
     // Update our net state monitor for all the accounts we are using.
     BOOL changedGroupIdentifiers = NO;
-    OBASSERT(_stateNotifier);
+
+    if (_stateNotifier == nil && runningAccounts.count > 0) {
+        _stateNotifier = [[OFNetStateNotifier alloc] initWithMemberIdentifier:_memberIdentifier];
+        _stateNotifier.delegate = self;
+        _stateNotifier.name = _debugName;
+        DEBUG_SYNC(1, @"State notifier is %@", _stateNotifier);
+    }
+
     if (OFNOTEQUAL(_stateNotifier.monitoredGroupIdentifiers, accountNetStateGroupIdentifiers)) {
         DEBUG_SYNC(1, @"Monitoring groups %@", accountNetStateGroupIdentifiers);
         _stateNotifier.monitoredGroupIdentifiers = accountNetStateGroupIdentifiers;

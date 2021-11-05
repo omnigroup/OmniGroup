@@ -225,6 +225,8 @@
 		3470616F1BF656C1009BC3AB /* OFSelectionSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 347061661BF65666009BC3AB /* OFSelectionSet.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		3472CB5012E3BF1B00F646AE /* NSData-OFSignature.h in Headers */ = {isa = PBXBuildFile; fileRef = 3472CB4C12E3BF1B00F646AE /* NSData-OFSignature.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3472CB5112E3BF1B00F646AE /* NSData-OFSignature.m in Sources */ = {isa = PBXBuildFile; fileRef = 3472CB4D12E3BF1B00F646AE /* NSData-OFSignature.m */; };
+		34735A63249C0E5100657C3C /* OFEnumNameTable-OFFlagMask.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A2CDF40D865A6100219E36 /* OFEnumNameTable-OFFlagMask.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34735A68249C0E5700657C3C /* OFEnumNameTable-OFFlagMask.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A2CDF50D865A6100219E36 /* OFEnumNameTable-OFFlagMask.m */; };
 		3475A0290DE2330E00FB73CC /* OFTestCase.h in Headers */ = {isa = PBXBuildFile; fileRef = 3475A0270DE2330E00FB73CC /* OFTestCase.h */; };
 		3475A02A0DE2330E00FB73CC /* OFTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 3475A0280DE2330E00FB73CC /* OFTestCase.m */; };
 		3475A0760DE2350F00FB73CC /* OBTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 3475A0250DE232F900FB73CC /* OBTestCase.m */; };
@@ -4412,6 +4414,7 @@
 				34F16B66194F6E7F00AD9C4D /* OFBundleRegistry.h in Headers */,
 				D96FC71923EE1BCC00FD6D74 /* OFBundleMigrationTarget.h in Headers */,
 				34F16B82194F6F0300AD9C4D /* OFTransientObjectsTracker.h in Headers */,
+				34735A63249C0E5100657C3C /* OFEnumNameTable-OFFlagMask.h in Headers */,
 				34F16BF3194F770600AD9C4D /* NSNumber-OFExtensions-CGTypes.h in Headers */,
 				34F16C3A194F799F00AD9C4D /* OFXMLInternedStringTable.h in Headers */,
 				42DB7D6F1C8F8BC0008100E4 /* OFBundledClass.h in Headers */,
@@ -5750,6 +5753,7 @@
 				34F16BEA194F76E800AD9C4D /* NSMutableArray-OFExtensions.m in Sources */,
 				1E498A9E1D6BC76E00996D7D /* OF_CTR_CBCMAC_Util.c in Sources */,
 				34F16B79194F6ED300AD9C4D /* OFStringDecoder.m in Sources */,
+				34735A68249C0E5700657C3C /* OFEnumNameTable-OFFlagMask.m in Sources */,
 				4A8D11E71F2FB4D600030070 /* OFHTTPHeaderDictionary.m in Sources */,
 				34F16BF6194F771000AD9C4D /* NSNumber-OFExtensions.m in Sources */,
 				1E1B93AD19D232A700693752 /* OFASN1Utilities.m in Sources */,

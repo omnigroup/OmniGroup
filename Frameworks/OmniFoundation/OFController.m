@@ -48,6 +48,7 @@ static OFController *sharedController = nil;
 static BOOL CrashOnAssertionOrUnhandledException = NO; // Cached so we can get this w/in the handler w/o calling into ObjC (since it might be unsafe)
 static BOOL LogExceptionHandlerShouldLogException = NO;
 static int CrashShouldExitWithCode = 0; // If this is set, OFCrashImmediately will exit with this code.
+static BOOL UseAbortToCrash = NO;
 
 
 #ifdef OMNI_ASSERTIONS_ON
@@ -153,6 +154,9 @@ static NSString *ControllerClassName(NSBundle *bundle)
     // We are setting up the shared instance in +sharedController
     if (!(self = [super init]))
         return nil;
+
+    // Illegal instructions/memory accesses with NSExceptionHandler enabled cause an infinite spin on Big Sur, but abort works. In earlier OSes, abort *didn't* work.
+    UseAbortToCrash = [OFVersionNumber isOperatingSystemBigSurOrLater];
 
     // We can't depend on the default being registered here since we are early in startup. Default to on, but then cache the actual value in -didInitialize, once things get registered.
     CrashOnAssertionOrUnhandledException = YES;
@@ -482,6 +486,10 @@ static void OFCrashImmediately(void)
     }
 
     OBAnalyzerNotReached();
+
+    if (UseAbortToCrash) {
+        abort();
+    }
 
     unsigned int *bad = (unsigned int *)sizeof(unsigned int);
     bad[-1] = 0; // Crash immediately; crazy approach is to defeat the clang error about dereferencing NULL, which is the point!

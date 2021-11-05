@@ -437,6 +437,7 @@ static BOOL _fetchRowCountCallback(struct sqlite3 *sqlite, ODOSQLStatement *stat
     }];
     
     OBExpectDeallocation(statement);
+    [statement invalidate];
     [statement release];
     return success;
 }
@@ -471,6 +472,7 @@ static BOOL _fetchSumCallback(struct sqlite3 *sqlite, ODOSQLStatement *statement
     }];
     
     OBExpectDeallocation(statement);
+    [statement invalidate];
     [statement release];
     return success;
 }
@@ -528,6 +530,7 @@ static BOOL _fetchAttributesCallback(struct sqlite3 *sqlite, ODOSQLStatement *st
     }];
     
     OBExpectDeallocation(statement);
+    [statement invalidate];
     [statement release];
     return (success ? results : nil);
 }
@@ -563,6 +566,7 @@ static BOOL _fetchAttributesCallback(struct sqlite3 *sqlite, ODOSQLStatement *st
     }];
     
     OBExpectDeallocation(statement);
+    [statement invalidate];
     [statement release];
     return (success ? results : nil);
 }
@@ -645,6 +649,7 @@ static BOOL _populateCachedMetadataRowCallback(struct sqlite3 *sqlite, ODOSQLSta
     }];
     
     OBExpectDeallocation(statement);
+    [statement invalidate];
     [statement release];
     return success;
 }

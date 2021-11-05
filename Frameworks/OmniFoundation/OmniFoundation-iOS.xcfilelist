@@ -25,6 +25,7 @@ DataStructures.subproj/OFCharacterSet.m
 DataStructures.subproj/OFCompletionMatch.m
 DataStructures.subproj/OFDataBuffer.m
 DataStructures.subproj/OFDataCursor.m
+DataStructures.subproj/OFEnumNameTable-OFFlagMask.m
 DataStructures.subproj/OFEnumNameTable-OFXMLArchiving.m
 DataStructures.subproj/OFEnumNameTable.m
 DataStructures.subproj/OFExtent.m

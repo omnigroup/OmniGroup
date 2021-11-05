@@ -1,4 +1,4 @@
-// Copyright 2016-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -352,7 +352,7 @@ static int whined = 0;
         return NO;
     }
     
-    NSLog(@"After insert, readback = %@", readback);
+    //NSLog(@"After insert, readback = %@", readback);
     
     BOOL found = NO;
     NSUInteger count = readback.count;

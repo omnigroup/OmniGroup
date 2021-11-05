@@ -14,6 +14,7 @@
 #import <OmniFoundation/OFExtent.h>
 #import <OmniAppKit/NSAttributedString-OAExtensions.h>
 #import <OmniAppKit/OATextAttachment.h>
+#import <OmniFoundation/OFUTI.h>
 
 #import "AppController.h"
 #import "TextDocument.h"
@@ -186,7 +187,8 @@ RCS_ID("$Id$");
             // Listed right to left
             self.navigationItem.rightBarButtonItems = @[
                                                         [[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCamera target:self action:@selector(attachImage:)] autorelease],
-                                                        sceneDelegate.infoBarButtonItem
+                                                        sceneDelegate.infoBarButtonItem,
+                                                        [[[UIBarButtonItem alloc] initWithImage:[UIImage actionsImage] style:UIBarButtonItemStylePlain target:self action:@selector(_changeDocumentType:)] autorelease],
                                                         ];
             
         }
@@ -379,6 +381,34 @@ static void _scrollVerticallyInView(OUITextView *textView, CGRect viewRect, BOOL
         CGRect selectionRect = [textView boundsOfRange:selection];
         _scrollVerticallyInView(textView, selectionRect, animated);
     }
+}
+
+- (void)_changeDocumentType:(id)sender;
+{
+    NSString *fileType = OFUTIForFileURLPreferringNative(_weak_document.fileURL, NULL);
+
+    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:OBUnlocalized(@"Change Document Type") message:OBUnlocalized([NSString stringWithFormat:@"Current type is %@", fileType]) preferredStyle:UIAlertControllerStyleAlert];
+    
+    TextDocument *currentDocument = _weak_document;
+    NSArray *types = @[(OB_BRIDGE NSString *)kUTTypePlainText, (OB_BRIDGE NSString *)kUTTypeRTF, (OB_BRIDGE NSString *)kUTTypeRTFD];
+
+    for (NSString *type in types) {
+        if (OFTypeConformsToOneOfTypesInArray(fileType, @[type])) {
+            continue;
+        }
+        UIAlertAction *convert = [UIAlertAction actionWithTitle:type style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+            currentDocument.preferredSaveUTI = type;
+            [_weak_document updateChangeCount:UIDocumentChangeDone];
+        }];
+        [alertController addAction:convert];
+    }
+    
+    UIAlertAction *cancel = [UIAlertAction actionWithTitle:OBUnlocalized(@"Cancel") style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+        NSLog(@"Cancel");
+    }];
+    [alertController addAction:cancel];
+    
+    [self presentViewController:alertController animated:YES completion:nil];
 }
 
 @end

@@ -1,4 +1,4 @@
-// Copyright 2015-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -86,14 +86,8 @@ RCS_ID("$Id$")
     [self _createButtonCellForAllTabs];
     [self _layoutSelectedTabs]; // updates the inspection set in the tabs
     
-    if (@available(macOS 10.13, *)) {
-        self.tabLabel.textColor = [NSColor colorNamed:@"InspectorTabOnStateTintColor" bundle:[NSBundle bundleForClass:[OIAppearance class]]];
-    }
-#if defined(MAC_OS_X_VERSION_10_14)
-    if (@available(macOS 10.14, *)) {
-        self.tabLabel.textColor = [NSColor controlAccentColor];
-    }
-#endif
+    self.tabLabel.textColor = [NSColor controlAccentColor];
+
     self.inspectorScrollView.drawsBackground = NO;
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_scrollerStyleDidChange:) name:NSPreferredScrollerStyleDidChangeNotification object:nil];
     

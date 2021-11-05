@@ -1,4 +1,4 @@
-// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -60,8 +60,12 @@
 
 - (BOOL)isAppropriateForInspectedObject:(id)object;
 {
+    if (_appropriateForObject != nil)
+        return self.appropriateForObject(object);
+    
     return YES;
 }
+
 
 - (UIColor *)sliceBackgroundColor;
 {

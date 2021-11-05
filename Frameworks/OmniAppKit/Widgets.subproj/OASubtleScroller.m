@@ -1,4 +1,4 @@
-// Copyright 2013-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,14 +8,6 @@
 #import <OmniAppKit/OASubtleScroller.h>
 #import <AvailabilityMacros.h>
 
-#if !defined(MAC_OS_X_VERSION_10_9)
-@interface NSView (DeclarationsMissingIn10_8SDK)
-- (NSUserInterfaceLayoutDirection)userInterfaceLayoutDirection NS_AVAILABLE_MAC(10_8);
-- (void)setUserInterfaceLayoutDirection:(NSUserInterfaceLayoutDirection)value NS_AVAILABLE_MAC(10_8);
-@end
-#endif
-
-RCS_ID("$Id$");
 
 @implementation OASubtleScroller
 {

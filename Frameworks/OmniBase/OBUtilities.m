@@ -1,4 +1,4 @@
-// Copyright 1997-2019 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -400,14 +400,12 @@ BOOL OBIsBeingDebugged(void)
 
 void OBTrap(void)
 {
-#if __x86_64__
+#if defined(TARGET_OS_WATCH) && TARGET_OS_WATCH
+    // Fall through to the abort() -- building for watchOS doesn't allow inline assembly (for the simulator on x86_64, or the devide on ARM)
+#elif __x86_64__
     asm("\tint3");
 #elif __arm__
-    #if defined(TARGET_OS_WATCH) && TARGET_OS_WATCH
-        // Fall through to the abort() -- building for watchOS doesn't allow inline assembly
-    #else
-        asm("\tbkpt");
-    #endif
+    asm("\tbkpt");
 #else
     kill(getpid(), SIGTRAP);
 #endif

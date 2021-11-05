@@ -97,39 +97,6 @@ static BOOL isOperatingSystemAtLeastVersionString(NSString *versionString)
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 
-+ (BOOL)isOperatingSystem114OrLater;
-{
-    static BOOL isLater;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        isLater = isOperatingSystemAtLeastVersionString(@"11.4");
-    });
-    
-    return isLater;
-}
-
-+ (BOOL)isOperatingSystem120OrLater;
-{
-    static BOOL isLater;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        isLater = isOperatingSystemAtLeastVersionString(@"12.0");
-    });
-    
-    return isLater;
-}
-
-+ (BOOL)isOperatingSystem130OrLater;
-{
-    static BOOL isLater;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        isLater = isOperatingSystemAtLeastVersionString(@"13.0");
-    });
-    
-    return isLater;
-}
-
 #else
 
 + (BOOL)isOperatingSystemMojaveOrLater;
@@ -151,6 +118,17 @@ static BOOL isOperatingSystemAtLeastVersionString(NSString *versionString)
         isLater = isOperatingSystemAtLeastVersionString(@"10.15");
     });
     
+    return isLater;
+}
+
++ (BOOL)isOperatingSystemBigSurOrLater;
+{
+    static BOOL isLater;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        isLater = isOperatingSystemAtLeastVersionString(@"10.16");
+    });
+
     return isLater;
 }
 

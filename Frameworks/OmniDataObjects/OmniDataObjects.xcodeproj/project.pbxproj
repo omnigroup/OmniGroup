@@ -295,13 +295,6 @@
 			remoteGlobalIDString = 8DC2EF4F0486A6940098B216;
 			remoteInfo = OmniDataObjects;
 		};
-		34AF756F1EEB05CA007E253F /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 34AF755B1EEB05C2007E253F /* SVNVersion.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 34DBCD14190709F400968086;
-			remoteInfo = SVNVersion;
-		};
 		34AF75711EEB05CE007E253F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34AF755B1EEB05C2007E253F /* SVNVersion.xcodeproj */;
@@ -406,6 +399,13 @@
 			proxyType = 2;
 			remoteGlobalIDString = 342691D317C578F600B1372F;
 			remoteInfo = OFNetStateNotifier;
+		};
+		34D91B5D24C22DF2003EC09F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34AF755B1EEB05C2007E253F /* SVNVersion.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 3440204119072DB60002120F;
+			remoteInfo = "SVNVersion-Mac-Only";
 		};
 		A25A4AC81F844D73001F30B1 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -1321,7 +1321,7 @@
 			buildRules = (
 			);
 			dependencies = (
-				34AF75701EEB05CA007E253F /* PBXTargetDependency */,
+				34D91B5E24C22DF2003EC09F /* PBXTargetDependency */,
 				3456281F1ECA12F500181154 /* PBXTargetDependency */,
 			);
 			name = OmniDataObjects;
@@ -1937,11 +1937,6 @@
 			target = 8DC2EF4F0486A6940098B216 /* OmniDataObjects */;
 			targetProxy = 34A779F40D89D54B0037DE8C /* PBXContainerItemProxy */;
 		};
-		34AF75701EEB05CA007E253F /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = SVNVersion;
-			targetProxy = 34AF756F1EEB05CA007E253F /* PBXContainerItemProxy */;
-		};
 		34AF75721EEB05CE007E253F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = "SVNVersion-iOS-Only";
@@ -1951,6 +1946,11 @@
 			isa = PBXTargetDependency;
 			name = "SVNVersion-Server-Only";
 			targetProxy = 34AF75731EEB05D2007E253F /* PBXContainerItemProxy */;
+		};
+		34D91B5E24C22DF2003EC09F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "SVNVersion-Mac-Only";
+			targetProxy = 34D91B5D24C22DF2003EC09F /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 

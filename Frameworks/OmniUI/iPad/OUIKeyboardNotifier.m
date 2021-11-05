@@ -1,4 +1,4 @@
-// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -35,17 +35,8 @@ NSString * const OUIKeyboardNotifierKeyboardDidHideNotification = @"OUIKeyboardN
 NSString * const OUIKeyboardNotifierOriginalUserInfoKey = @"OUIKeyboardNotifierOriginalUserInfoKey";
 NSString * const OUIKeyboardNotifierLastKnownKeyboardHeightKey = @"OUIKeyboardNotifierLastKnownKeyboardHeightKey";
 
-typedef NS_ENUM(NSInteger, OUIKeyboardState) {
-    OUIKeyboardStateUnknown = 0,
-    OUIKeyboardStateAppearing,
-    OUIKeyboardStateVisible,
-    OUIKeyboardStateDisappearing,
-    OUIKeyboardStateHidden
-};
-
 @interface OUIKeyboardNotifier ()
 
-@property (nonatomic) OUIKeyboardState keyboardState;
 @property (nonatomic, nullable, copy) NSDictionary *lastKnownKeyboardInfo;
 
 @end

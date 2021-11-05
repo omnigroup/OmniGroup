@@ -183,7 +183,7 @@ static NSString *const AddCloudAccountReuseIdentifier = @"OUIServerAccounts.AddA
         if (accountActivity != nil) {
             NSSet <OFXFileMetadata *> *metadataItems = accountActivity.registrationTable.values;
 
-            [metadataStrings addObject:[NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%d items", @"OmniUIDocument", OMNI_BUNDLE, @"home screen detail label"), metadataItems.count]];
+            [metadataStrings addObject:[NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%d items", @"OmniUIDocument", OMNI_BUNDLE, @"home screen detail label"), (int)metadataItems.count]];
 
             if ([metadataItems count] > 0) {
                 NSUInteger totalSize = 0;

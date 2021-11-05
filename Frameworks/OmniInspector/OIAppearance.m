@@ -1,4 +1,4 @@
-// Copyright 2014-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -43,20 +43,12 @@ RCS_ID("$Id$");
 
 - (NSColor *)inspectorBackgroundColorForView:(NSView *)view;
 {
-    if (@available(macOS 10.13, *)) {
-        return [OIAppearanceDynamicColor dynamicColorForView:view darkColor:[NSColor colorNamed:@"DarkInspectorBackgroundColor" bundle:OMNI_BUNDLE] lightColor:[NSColor colorNamed:@"LightInspectorBackgroundColor" bundle:OMNI_BUNDLE]];
-    } else {
-        return [OIAppearanceDynamicColor dynamicColorForView:view darkColor:self.DarkInspectorBackgroundColor lightColor:self.LightInspectorBackgroundColor];
-    }
+    return [OIAppearanceDynamicColor dynamicColorForView:view darkColor:[NSColor colorNamed:@"DarkInspectorBackgroundColor" bundle:OMNI_BUNDLE] lightColor:[NSColor colorNamed:@"LightInspectorBackgroundColor" bundle:OMNI_BUNDLE]];
 }
 
 - (NSColor *)inspectorHeaderSeparatorColorForView:(NSView *)view;
 {
-    if (@available(macOS 10.13, *)) {
-        return [OIAppearanceDynamicColor dynamicColorForView:view darkColor:[NSColor colorNamed:@"DarkInspectorHeaderSeparatorColor" bundle:OMNI_BUNDLE] lightColor:[NSColor colorNamed:@"LightInspectorHeaderSeparatorColor" bundle:OMNI_BUNDLE]];
-    } else {
-        return [OIAppearanceDynamicColor dynamicColorForView:view darkColor:self.DarkInspectorHeaderSeparatorColor lightColor:self.LightInspectorHeaderSeparatorColor];
-    }
+    return [OIAppearanceDynamicColor dynamicColorForView:view darkColor:[NSColor colorNamed:@"DarkInspectorHeaderSeparatorColor" bundle:OMNI_BUNDLE] lightColor:[NSColor colorNamed:@"LightInspectorHeaderSeparatorColor" bundle:OMNI_BUNDLE]];
 }
 
 @end

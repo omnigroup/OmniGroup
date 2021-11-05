@@ -1,4 +1,4 @@
-// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,14 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef NS_ENUM(NSInteger, OUIKeyboardState) {
+    OUIKeyboardStateUnknown = 0,
+    OUIKeyboardStateAppearing,
+    OUIKeyboardStateVisible,
+    OUIKeyboardStateDisappearing,
+    OUIKeyboardStateHidden
+};
+
 @interface OUIKeyboardNotifier : NSObject
 
 @property(class,nonatomic,readonly) OUIKeyboardNotifier *sharedNotifier;
@@ -16,6 +24,8 @@ NS_ASSUME_NONNULL_BEGIN
 /// The last known height for the docked keyboard; avoid this height at the bottom of the screen when laying out in response to a keyboard notification. If a floating keyboard is displayed, this will return 0.
 @property (nonatomic, readonly) CGFloat lastKnownKeyboardHeight;
 @property (nonatomic, readonly, getter=isKeyboardVisible) BOOL keyboardVisible;
+
+@property (nonatomic) OUIKeyboardState keyboardState;
 
 @property(nonatomic,readonly) NSTimeInterval lastAnimationDuration;
 @property(nonatomic,readonly) UIViewAnimationCurve lastAnimationCurve;

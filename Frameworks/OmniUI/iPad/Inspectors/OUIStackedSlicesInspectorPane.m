@@ -1,4 +1,4 @@
-// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -528,16 +528,7 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
     UIPresentationController *inspectorPresentationController = self.navigationController.presentationController;
     UITraitCollection *presentingTraitCollection = inspectorPresentationController.presentingViewController.traitCollection;
     
-    BOOL shouldTreatAsPopover = NO;
-    
-#if !defined(__IPHONE_8_3) || (__IPHONE_8_3 > __IPHONE_OS_VERSION_MAX_ALLOWED)
-    // iOS 8.2 and before
-    shouldTreatAsPopover = (presentingTraitCollection.horizontalSizeClass == UIUserInterfaceSizeClassRegular);
-#else
-    // iOS 8.3 and after
-    shouldTreatAsPopover = (presentingTraitCollection.horizontalSizeClass == UIUserInterfaceSizeClassRegular) && (presentingTraitCollection.verticalSizeClass == UIUserInterfaceSizeClassRegular);
-#endif
-    
+    BOOL shouldTreatAsPopover = (presentingTraitCollection.horizontalSizeClass == UIUserInterfaceSizeClassRegular) && (presentingTraitCollection.verticalSizeClass == UIUserInterfaceSizeClassRegular);
     if (shouldTreatAsPopover) {
         return;
     }

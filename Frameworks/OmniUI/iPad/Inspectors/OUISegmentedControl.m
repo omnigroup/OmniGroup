@@ -17,14 +17,9 @@ RCS_ID("$Id$");
 
 static const CGFloat kButtonWidth = 57;
 
-@interface OUISegmentedControl (/*Private*/)
+@interface OUISegmentedControl () <UIPointerInteractionDelegate>
 - (void)_segmentPressed:(OUISegmentedControlButton *)segment;
 @end
-#if defined(__IPHONE_13_4) && __IPHONE_13_4 >= __IPHONE_OS_VERSION_MIN_REQUIRED
-@interface OUISegmentedControl (/*Private*/) <UIPointerInteractionDelegate>
-@end
-#endif
-
 
 @implementation OUISegmentedControl
 {
@@ -288,7 +283,6 @@ static id _commonInit(OUISegmentedControl *self)
     }
 }
 
-#if defined(__IPHONE_13_4) && __IPHONE_13_4 >= __IPHONE_OS_VERSION_MIN_REQUIRED
 - (void)didMoveToSuperview
 {
     [super didMoveToSuperview];
@@ -296,7 +290,6 @@ static id _commonInit(OUISegmentedControl *self)
         [self addInteraction:[[UIPointerInteraction alloc] initWithDelegate:self]];
     }
 }
-#endif
 
 - (void)setSegmentFont:(UIFont *)font;
 {
@@ -309,9 +302,7 @@ static id _commonInit(OUISegmentedControl *self)
         segment.titleLabel.font = font;
 }
 
-#if defined(__IPHONE_13_4) && __IPHONE_13_4 >= __IPHONE_OS_VERSION_MIN_REQUIRED
-#pragma mark -
-#pragma mark UIPointerInteractionDelegate
+#pragma mark - UIPointerInteractionDelegate
 
 - (nullable UIPointerRegion *)pointerInteraction:(UIPointerInteraction *)interaction regionForRequest:(UIPointerRegionRequest *)request defaultRegion:(UIPointerRegion *)defaultRegion API_AVAILABLE(ios(13.4));
 {
@@ -327,10 +318,8 @@ static id _commonInit(OUISegmentedControl *self)
     UIPointerHighlightEffect *segmentHighlightEffect = [UIPointerHighlightEffect effectWithPreview:[[UITargetedPreview alloc] initWithView:segmentButton]];
     return [UIPointerStyle styleWithEffect:segmentHighlightEffect shape:nil];
 }
-#endif
 
-#pragma mark -
-#pragma mark UIAccessibility
+#pragma mark - UIAccessibility
 
 - (BOOL)isAccessibilityElement;
 {
@@ -338,8 +327,7 @@ static id _commonInit(OUISegmentedControl *self)
     return NO;
 }
 
-#pragma mark -
-#pragma mark Private
+#pragma mark - Private
 
 - (void)_segmentPressed:(OUISegmentedControlButton *)segment;
 {

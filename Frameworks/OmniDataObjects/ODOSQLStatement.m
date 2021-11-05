@@ -85,6 +85,16 @@ RCS_ID("$Id$")
 @end
 
 @implementation ODOSQLStatement
+{
+    struct OBBacktraceBuffer *_creationBacktrace;
+}
+
+static NSNotificationName ODOSQLStatementLogBacktraceIfPreparedNotification = @"ODOSQLStatementLogBacktraceIfPrepared";
+
++ (void)logBacktracesForPreparedStatements;
+{
+    [[NSNotificationCenter defaultCenter] postNotificationName:ODOSQLStatementLogBacktraceIfPreparedNotification object:nil];
+}
 
 + (instancetype)preparedStatementWithConnection:(ODOSQLConnection *)connection SQLite:(struct sqlite3 *)sqlite sql:(NSString *)sql error:(NSError **)outError;
 {
@@ -112,7 +122,10 @@ RCS_ID("$Id$")
     
     _sql = [sql copy];
     _connection = [connection retain];
-    
+    _creationBacktrace = OBCreateBacktraceBuffer("create statement", OBBacktraceBuffer_Generic, self);
+
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_logBacktraceIfPrepared:) name:ODOSQLStatementLogBacktraceIfPreparedNotification object:nil];
+
     return self;
 }
 
@@ -209,6 +222,10 @@ RCS_ID("$Id$")
     [_bindingConstants release];
     [_connection release];
     [_sql release];
+    OBFreeBacktraceBuffer(_creationBacktrace);
+
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:ODOSQLStatementLogBacktraceIfPreparedNotification object:nil];
+
     [super dealloc];
 }
 
@@ -242,7 +259,7 @@ RCS_ID("$Id$")
     if ([self isPrepared]) {
         return YES;
     }
-    
+
     const char *sqlTail = NULL;
     int rc = sqlite3_prepare_v2(sqlite, [_sql UTF8String], -1/*length -> to NUL*/, &_statement, &sqlTail);
     if (rc != SQLITE_OK) {
@@ -268,6 +285,14 @@ RCS_ID("$Id$")
     
     TRACK_INSTANCES(@"STMT %p:INI on db %p with sql '%@'", self, database, sql);
     return YES;
+}
+
+- (void)_logBacktraceIfPrepared:(NSNotification *)note;
+{
+    // We aren't properly on the right queue here and shouldn't be looking at the _statement ivar normally, but this is only called if sqlite_close failed with SQLITE_BUSY and we are about to crash on an unhandled exception.
+    if (_statement != NULL) {
+        OBAddBacktraceBuffer(_creationBacktrace);
+    }
 }
 
 @end

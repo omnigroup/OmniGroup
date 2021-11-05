@@ -429,11 +429,7 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
     }
     
     if ((_options & OUIPasswordAlertOptionRequiresPasswordConfirmation) != 0) {
-        if (@available(iOS 12.0, *)) {
-            return UITextContentTypeNewPassword;
-        } else {
-            return nil;
-        }
+        return UITextContentTypeNewPassword;
     }
     
     return UITextContentTypePassword;

@@ -1,4 +1,4 @@
-// Copyright 2000-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -112,6 +112,8 @@ extern void _OAParameterizeCurve(NSPoint *coefficients, NSPoint startPoint, NSPo
 - (BOOL)isEqual:(NSBezierPath * __nullable)otherBezierPath;
 - (NSUInteger)hash;
 
+- (BOOL)curvedLineHit:(NSPoint)point startPoint:(NSPoint)startPoint endPoint:(NSPoint)endPoint controlPoint1:(NSPoint)controlPoint1 controlPoint2:(NSPoint)controlPoint2 position:(CGFloat *)position padding:(CGFloat)padding distance:(CGFloat *)distanceFromPoint;
+- (BOOL)straightLineHit:(NSPoint)startPoint :(NSPoint)endPoint :(NSPoint)point  :(CGFloat *)position padding:(CGFloat)padding distance:(CGFloat *)distanceFromPoint;
 @end
 
 NS_ASSUME_NONNULL_END

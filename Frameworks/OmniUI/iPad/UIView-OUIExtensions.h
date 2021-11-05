@@ -1,4 +1,4 @@
-// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -44,6 +44,32 @@ typedef OUIViewVisitorResult(^OUIViewVisitorBlock)(UIView *view);
 - (nullable __kindof UIView *)enclosingViewOfClass:(Class)cls NS_REFINED_FOR_SWIFT; // can return self
 - (nullable __kindof UIView *)enclosingViewMatching:(NS_NOESCAPE OFPredicateBlock)predicate;
 - (OUIViewVisitorResult)applyToViewTree:(OUIViewVisitorBlock)block; // in-order traversal
+
+extern const CGFloat StandardSpacingMetric;
+extern const CGFloat LayoutMarginMetric;
+
+extern NSString * const OUIHuggingConstraintIdentifierLeading;
+extern NSString * const OUIHuggingConstraintIdentifierTrailing;
+extern NSString * const OUIHuggingConstraintIdentifierTop;
+extern NSString * const OUIHuggingConstraintIdentifierBottom;
+
+@property (class, nonatomic, readonly) CGFloat standardSpacingMetric;
+@property (class, nonatomic, readonly) CGFloat layoutMarginMetric;
+
+@property (class, nonatomic, readonly) UIEdgeInsets standardSpacingEdgeInsets;
+@property (class, nonatomic, readonly) UIEdgeInsets layoutMarginEdgeInsets;
+
+- (NSArray<NSLayoutConstraint *> *)constraintsToHugSubview:(UIView *)subview horizontalLayoutMargin:(CGFloat)horizontalLayoutMargin verticalLayoutMargin:(CGFloat)verticalLayoutMargin;
+- (NSArray<NSLayoutConstraint *> *)constraintsToHugSubview:(UIView *)subview insets:(UIEdgeInsets)insets;
+
+- (NSArray<NSLayoutConstraint *> *)constraintsToHugSubview:(UIView *)subview preferHorizontalLayoutMargin:(BOOL)preferHorizontalLayoutMargin preferVerticalLayoutMargin:(BOOL)preferVerticalLayoutMargin;
+- (void)addConstraintsToHugSubview:(UIView *)subview preferHorizontalLayoutMargin:(BOOL)preferHorizontalLayoutMargin preferVerticalLayoutMargin:(BOOL)preferVerticalLayoutMargin;
+
+- (NSArray<NSLayoutConstraint *> *)standardSpacingConstraintsForSubview:(UIView *)subview;
+- (void)addStandardSpacingConstraintsForSubview:(UIView *)subview;
+
+- (NSArray<NSLayoutConstraint *> *)huggingConstraintsForSubview:(UIView *)subview;
+- (void)addHuggingConstraintsForSubview:(UIView *)subview;
 
 @property (readonly, nonatomic, nullable) UIScene *containingScene;
 

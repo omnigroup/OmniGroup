@@ -108,6 +108,8 @@ RCS_ID("$Id$");
         NSMutableDictionary *userInfo = [[@{ NSUnderlyingErrorKey : [NSError errorWithDomain:ODOSQLiteErrorDomain code:rc userInfo:nil] } mutableCopy] autorelease];
 
         if (rc == SQLITE_BUSY) {
+            [ODOSQLStatement logBacktracesForPreparedStatements];
+            
             NSString *suggestion = [NSString stringWithFormat:@"Make sure that all outstanding ODOSQLStatements using %p as their connection have been invalidated.", self];
             [userInfo setObject:suggestion forKey:NSLocalizedRecoverySuggestionErrorKey];
         }

@@ -1,4 +1,4 @@
-// Copyright 2009-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2009-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -221,7 +221,7 @@ static void _testReadBoolContents(OFXMLReaderTests *self, SEL _cmd, NSString *in
     
     OBShouldNotError([reader openElement:&error]);
     
-    BOOL value = ~expectedValue; // make sure it gets written to.
+    BOOL value = !expectedValue; // make sure it gets written to.
     
     OBShouldNotError([reader readBoolContentsOfElement:&value defaultValue:defaultValue error:&error]);
     

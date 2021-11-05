@@ -75,6 +75,10 @@
     
     /// Called when the MPC transitions from compact with a presentation atop a modally presented pane to a multipane environment. This gives the caller a chance to anchor the popover to a new bar button item after that transition. If this is not implemented or returns nil, the popover is anchored to the bar button its popoverPresentationController was supplied with when it was originally presented. If your app recalculates and regenerates bar button items during this transition, implement this method and return newly created bar button item that fulfills the same function as the old item. Otherwise, the popover will be presented without an anchor, at the top left corner of the screen.
     @objc optional func barButtonItemForRetargetingPopoverOnTransitionToMultiMode(_ popover: UIViewController, presentingOn controller: UIViewController, originalSourceBarButtonItem: UIBarButtonItem) -> UIBarButtonItem?
+    
+    @objc optional func userWillBeginInteractiveGesturePresentation(at location: MultiPaneLocation, multiPaneController: MultiPaneController)
+    
+    @objc optional func userDidEndInteractiveGesturePresentation(at location: MultiPaneLocation, multiPaneController: MultiPaneController)
 }
 
 @objc (OUIMultiPaneAppearanceDelegate) public protocol MultiPaneAppearanceDelegate {
@@ -1287,15 +1291,27 @@ extension MultiPaneControllerSidebarPresentation {
     }
     
     @objc internal func handleScreenEdgePanGesture(gesture: UIScreenEdgePanGestureRecognizer) {
-        guard gesture.state == .began else { return } // we only pick up the gesture start here, the presenter handles the rest
+        guard gesture.state == .began else {
+            if gesture.state == .ended || gesture.state == .cancelled {
+                if gesture.edges.contains(.left) {
+                    navigationDelegate?.userDidEndInteractiveGesturePresentation?(at: .left, multiPaneController: self)
+                }
+                if gesture.edges.contains(.right) {
+                    navigationDelegate?.userDidEndInteractiveGesturePresentation?(at: .right, multiPaneController: self)
+                }
+            }
+            return
+        }
         
         if gesture.edges == .left {
             guard let leftPane = pane(withLocation: .left) else { return }
+            navigationDelegate?.userWillBeginInteractiveGesturePresentation?(at: .left, multiPaneController: self)
             multiPanePresenter.present(pane: leftPane, fromViewController: self, usingDisplayMode: displayMode, interactivelyWith: gesture)
         } else if gesture.edges == .right {
             // ignore this gesture when we are in compact since it is not a configuration the MultiPanePresenter supports.
             guard displayMode != .compact else { return }
             guard let rightPane = pane(withLocation: .right) else { return }
+            navigationDelegate?.userWillBeginInteractiveGesturePresentation?(at: .right, multiPaneController: self)
             multiPanePresenter.present(pane: rightPane, fromViewController: self, usingDisplayMode: displayMode, interactivelyWith: gesture)
         } else {
             assertionFailure("unexpected screen edge pan gesture direction \(gesture.edges)")

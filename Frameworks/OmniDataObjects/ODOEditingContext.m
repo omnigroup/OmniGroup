@@ -193,7 +193,11 @@ BOOL ODOEditingContextExecuteWithOwnership(ODOEditingContext *self, dispatch_que
 }
 - (void)setUndoManager:(nullable NSUndoManager *)undoManager;
 {
+    OBRecordBacktraceWithContext("Editing context", OBBacktraceBuffer_Generic, (const void *)self);
+    OBRecordBacktraceWithContext("Set undo manager", OBBacktraceBuffer_Generic, (const void *)undoManager);
+
     ODOEditingContextAssertOwnership(self);
+
     if (_undoManager != nil) {
         [_undoManager removeAllActionsWithTarget:self];
         [_undoManager release];
@@ -1196,22 +1200,6 @@ BOOL ODOEditingContextObjectIsInsertedNotConsideringDeletions(ODOEditingContext 
     return registered != nil;
 }
 
-- (BOOL)shouldSetSaveDates;
-{
-    ODOEditingContextAssertOwnership(self);
-
-    return !_avoidSettingSaveDates;
-}
-
-- (void)setShouldSetSaveDates:(BOOL)shouldSetSaveDates;
-{
-    ODOEditingContextAssertOwnership(self);
-    OBPRECONDITION(_saveDate == nil); // Don't set this in the middle of -save:
-    
-    // Store the inverse so that the default BOOL of NO preserves the right behavior
-    _avoidSettingSaveDates = !shouldSetSaveDates;
-}
-
 - (BOOL)saveWithDate:(NSDate *)saveDate error:(NSError **)outError;
 {
     ODOEditingContextAssertOwnership(self);
@@ -1355,6 +1343,12 @@ BOOL ODOEditingContextObjectIsInsertedNotConsideringDeletions(ODOEditingContext 
     }
     
     return success;
+}
+
+- (BOOL)isSaving;
+{
+    ODOEditingContextAssertOwnership(self);
+    return _saveDate != nil;
 }
 
 - (NSDate *)saveDate;

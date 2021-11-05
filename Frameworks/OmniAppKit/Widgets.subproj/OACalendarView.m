@@ -1,4 +1,4 @@
-// Copyright 2001-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -612,11 +612,6 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
     [button setTarget:self];
     [button setContinuous:YES];
     [[button cell] setShowsStateBy:(NSPushInCellMask | NSChangeGrayCellMask | NSChangeBackgroundCellMask)];
-    if(@available(macOS 10.14, *)) {
-        // just let the view behind show through.
-    } else {
-        [[button cell] setBackgroundColor:[NSColor whiteColor]];
-    }
     [buttons addObject:button];
     [button release];
 

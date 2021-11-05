@@ -10,6 +10,9 @@ import Foundation
 public func OBRecordBacktraceS(_ message: StaticString, _ optype: OBBacktraceBufferType) {
     _OBRecordBacktraceU8(message.utf8Start, optype)
 }
-public func OBRecordBacktraceWithContextS(_ message: StaticString, _ optype: OBBacktraceBufferType, _ context: AnyObject) {
+public func OBRecordBacktraceWithContextS(_ message: StaticString, _ optype: OBBacktraceBufferType, _ context: AnyObject?) {
     _OBRecordBacktraceWithContextU8(message.utf8Start, optype, context)
+}
+public func OBRecordBacktraceWithIntContextS(_ message: StaticString, _ optype: OBBacktraceBufferType, _ context: UInt) {
+    _OBRecordBacktraceWithIntContextU8(message.utf8Start, optype, context)
 }

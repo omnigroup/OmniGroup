@@ -48,9 +48,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)isDeleted:(ODOObject *)object;
 - (BOOL)isRegistered:(ODOObject *)object;
 
-@property (nonatomic) BOOL shouldSetSaveDates;
-
 - (BOOL)saveWithDate:(NSDate *)saveDate error:(NSError **)outError;
+@property (nonatomic, readonly) BOOL isSaving;
 @property (nonatomic, readonly) NSDate *saveDate; // Should only be accessed inside of -saveWithDate:error:
 
 @property (nonatomic, readonly) BOOL hasChanges;

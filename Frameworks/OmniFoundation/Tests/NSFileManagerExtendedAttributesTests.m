@@ -1,4 +1,4 @@
-// Copyright 2016-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -117,30 +117,6 @@ static NSString * const TestXattrName = @"com.omnigroup.OmniFoundation.UnitTests
     BOOL success = [[NSFileManager defaultManager] setExtendedAttribute:TestXattrName data:nil forItemAtPath:self.tempFilePath error:&error];
     XCTAssertTrue(success);
     XCTAssertNil(error);
-}
-
-- (void)testVeryLongXattrData;
-{
-    // pathconf(2) says that passing _PC_XATTR_SIZE_BITS will return the maximum number of bits that can be used to store xattr data size on the given file (e.g. 18 => max size is 256KB - 1). Try storing data just a bit larger and expect an error.
-    const char * path = [self.tempFilePath cStringUsingEncoding:NSUTF8StringEncoding];
-    long maxSizeBits = pathconf(path, _PC_XATTR_SIZE_BITS);
-    XCTAssert(maxSizeBits > 0);
-
-    if (maxSizeBits == 64) {
-        // Newer OSes claim to store giant xattrs; we certainly can't malloc that much memory (or anywhere close).
-        return;
-    }
-
-    size_t size = pow(2, maxSizeBits);
-    void *value = memset(malloc(size), 1, size);
-    NSData *data = [NSData dataWithBytes:value length:size];
-    
-    NSError *error = nil;
-    BOOL success = [[NSFileManager defaultManager] setExtendedAttribute:TestXattrName data:data forItemAtPath:self.tempFilePath error:&error];
-    XCTAssertFalse(success);
-    XCTAssertTrue([error hasUnderlyingErrorDomain:NSPOSIXErrorDomain code:E2BIG]);
-    
-    free(value);
 }
 
 @end

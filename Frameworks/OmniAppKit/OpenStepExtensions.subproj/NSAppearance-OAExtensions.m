@@ -1,4 +1,4 @@
-// Copyright 2017-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2017-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,15 +15,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)OA_isDarkAppearance;
 {
-    if (@available(macOS 10.14, *)) {
-        NSString *matchingAppearanceName = [self bestMatchFromAppearancesWithNames:@[NSAppearanceNameAqua, NSAppearanceNameDarkAqua]];
-        if (matchingAppearanceName != nil && [matchingAppearanceName isEqualToString:NSAppearanceNameDarkAqua]) {
-            return YES;
-        } else {
-            return NO;
-        }
+    NSString *matchingAppearanceName = [self bestMatchFromAppearancesWithNames:@[NSAppearanceNameAqua, NSAppearanceNameDarkAqua]];
+    if (matchingAppearanceName != nil && [matchingAppearanceName isEqualToString:NSAppearanceNameDarkAqua]) {
+        return YES;
     } else {
-        return [self.name isEqualToString:NSAppearanceNameVibrantDark];
+        return NO;
     }
 }
 

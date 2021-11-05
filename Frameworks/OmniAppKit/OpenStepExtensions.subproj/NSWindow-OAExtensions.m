@@ -1,4 +1,4 @@
-// Copyright 1997-2019 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,6 +21,16 @@
 RCS_ID("$Id$")
 
 NS_ASSUME_NONNULL_BEGIN
+
+void OAWindowUseExpandedToolbarStyle(NSWindow *window)
+{
+    // Revert back to looking more like Catalina
+#ifdef MAC_OS_X_VERSION_10_16
+    if (@available(macOS 10.16, *)) {
+        window.toolbarStyle = NSWindowToolbarStyleExpanded;
+    }
+#endif
+}
 
 @interface NSView (DebuggingSPI)
 - (NSString *)_subtreeDescription;

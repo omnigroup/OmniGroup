@@ -1,4 +1,4 @@
-// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -27,5 +27,8 @@
 
 // gives the delegate an opportunity to configure the inspectors on reopen. Return NO to let OUIInspector pop to root view controller.
 - (BOOL)inspectorShouldMaintainStateWhileReopening:(OUIInspector *)inspector;
+
+// supress the automatic addition of a done button by the inspector. See -[OUIInspector _shouldShowDoneButton].
+- (BOOL)inspectorShouldSuppressDoneButton:(OUIInspector *)inspector;
 
 @end

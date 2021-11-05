@@ -21,6 +21,7 @@ RCS_ID("$Id$")
 
 static struct OBBacktraceBuffer backtraces[OBBacktraceBufferTraceCount];
 static volatile int32_t next_available_backtrace;
+static void OBFillBacktraceBuffer(struct OBBacktraceBuffer *buf, const char *message, OBBacktraceBufferType optype, const void *context);
 static struct OBBacktraceBuffer *OBAcquireBacktraceBuffer(void);
 
 /* this is non-static so that CrashCatcher can find it even in a stripped build */
@@ -40,7 +41,11 @@ void OBRecordBacktraceWithContext(const char *message, OBBacktraceBufferType opt
     assert(optype != OBBacktraceBuffer_Unused && optype != OBBacktraceBuffer_Allocated); // 0 and 1 reserved for us
     
     struct OBBacktraceBuffer *buf = OBAcquireBacktraceBuffer();
-    
+    OBFillBacktraceBuffer(buf, message, optype, context);
+}
+
+static void OBFillBacktraceBuffer(struct OBBacktraceBuffer *buf, const char *message, OBBacktraceBufferType optype, const void *context)
+{
     buf->message = message;
     buf->context = context;
     int got = backtrace(buf->frames, OBBacktraceBufferAddressCount);
@@ -58,7 +63,7 @@ void OBRecordBacktraceWithContext(const char *message, OBBacktraceBufferType opt
         buf->tv_usec = 0;
     }
     
-    // Memory barrier. We want everything we just did to be committed before we update 'type'.
+    // Memory barrier (for the shared circular buffer). We want everything we just did to be committed before we update 'type'.
 #ifdef OB_BUILTIN_ATOMICS_AVAILABLE
     __sync_synchronize();
 #else
@@ -70,6 +75,8 @@ void OBRecordBacktraceWithContext(const char *message, OBBacktraceBufferType opt
 
 static struct OBBacktraceBuffer *OBAcquireBacktraceBuffer(void)
 {
+    // This only works correctly under light contention.
+
     int32_t slot;
     
     for(;;) {
@@ -88,6 +95,31 @@ static struct OBBacktraceBuffer *OBAcquireBacktraceBuffer(void)
     buf->type = OBBacktraceBuffer_Allocated;
     
     return buf;
+}
+
+struct OBBacktraceBuffer *OBCreateBacktraceBuffer(const char *message, OBBacktraceBufferType optype, const void *context)
+{
+    struct OBBacktraceBuffer *buf = calloc(1, sizeof(*buf));
+    OBFillBacktraceBuffer(buf, message, optype, context);
+    return buf;
+}
+
+void OBFreeBacktraceBuffer(struct OBBacktraceBuffer *buffer)
+{
+    free(buffer);
+}
+
+void OBAddBacktraceBuffer(struct OBBacktraceBuffer *buffer)
+{
+    struct OBBacktraceBuffer *dst = OBAcquireBacktraceBuffer();
+    memcpy(dst, buffer, sizeof(*dst));
+
+    // We've already written the type field here, and currently the only callers of this are on crashing paths. It would be better to leave the `type` field as OBBacktraceBuffer_Allocated and write it after the memory barrier though.
+#ifdef OB_BUILTIN_ATOMICS_AVAILABLE
+    __sync_synchronize();
+#else
+    OSMemoryBarrier();
+#endif
 }
 
 #ifdef DEBUG

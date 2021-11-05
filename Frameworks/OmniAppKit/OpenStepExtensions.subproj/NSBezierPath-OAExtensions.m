@@ -1,4 +1,4 @@
-// Copyright 2000-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -105,9 +105,7 @@ static BOOL _straightLineIntersectsRect(const NSPoint *a, NSRect rect) NONNULL_A
 // static void _splitCurve(const NSPoint *c, NSPoint *left, NSPoint *right);  // Not currently used
 static BOOL _curvedLineIntersectsRect(const NSPoint *c, NSRect rect, CGFloat tolerance) NONNULL_ARGS;
 
-- (BOOL)_curvedLineHit:(NSPoint)point startPoint:(NSPoint)startPoint endPoint:(NSPoint)endPoint controlPoint1:(NSPoint)controlPoint1 controlPoint2:(NSPoint)controlPoint2 position:(CGFloat *)position padding:(CGFloat)padding;
 - (BOOL)_straightLineIntersection:(CGFloat *)length time:(CGFloat *)time segment:(NSPoint *)s line:(const NSPoint *)l;
-- (BOOL)_straightLineHit:(NSPoint)startPoint :(NSPoint)endPoint :(NSPoint)point  :(CGFloat *)position padding:(CGFloat)padding;
 - (NSPoint)_endPointForSegment:(NSInteger)i;
 
 @end
@@ -792,13 +790,18 @@ void OASplitBezierCurveTo(const NSPoint *c, CGFloat t, NSPoint *l, NSPoint *r)
     startPoint = currentPoint = points[0];
     needANewStartPoint = NO;
     
-    for(i=1;i<count;i++) {
+    CGFloat distance = CGFLOAT_MAX;
+    NSInteger segment = 0;
+    for (i = 1; i < count; i++) {
         element = [self elementAtIndex:i associatedPoints:points];
         if (OFPointEqualToPointWithAccuracy(points[0], point, 1e-5)) {
             *position = 1.0; // If we hit the ith point, then we are at the very end of the ith segment
             return i;
         }
-        switch(element) {
+        
+        CGFloat elementDistance = CGFLOAT_MAX;
+        NSInteger elementSegmentHit = 0;
+        switch (element) {
             case NSMoveToBezierPathElement:
                 currentPoint = points[0];
                 if (needANewStartPoint) {
@@ -807,27 +810,32 @@ void OASplitBezierCurveTo(const NSPoint *c, CGFloat t, NSPoint *l, NSPoint *r)
                 }
                 break;
             case NSClosePathBezierPathElement:
-                if ([self _straightLineHit:currentPoint :startPoint :point :position padding:padding]){
-                    return i;
+                if ([self straightLineHit:currentPoint :startPoint :point :position padding:padding distance:&elementDistance]){
+                    elementSegmentHit = i;
                 }
                 currentPoint = startPoint;
                 needANewStartPoint = YES;
                 break;
             case NSLineToBezierPathElement:
-                if ([self _straightLineHit:currentPoint :points[0] :point :position padding:padding]){
-                    return i;
+                if ([self straightLineHit:currentPoint :points[0] :point :position padding:padding distance:&elementDistance]){
+                    elementSegmentHit = i;
                 }
                 currentPoint = points[0];
                 break;
             case NSCurveToBezierPathElement:
-                if ([self _curvedLineHit:point startPoint:currentPoint endPoint:points[2] controlPoint1:points[0] controlPoint2:points[1] position:position padding:padding]) {
-                    return i;
+                if ([self curvedLineHit:point startPoint:currentPoint endPoint:points[2] controlPoint1:points[0] controlPoint2:points[1] position:position padding:padding distance:&elementDistance]) {
+                    elementSegmentHit = i;
                 }
                 currentPoint = points[2];
                 break;
         }
+        
+        if (elementDistance < distance && elementSegmentHit > 0) {
+            segment = elementSegmentHit;
+            distance = elementDistance;
+        }
     }
-    return 0;
+    return segment;
 }
 
 - (BOOL)isStrokeHitByPoint:(NSPoint)point padding:(CGFloat)padding
@@ -1704,7 +1712,150 @@ static inline NSUInteger _threeBitsForPoint(NSPoint point)
     return hashValue;
 }
 
+- (BOOL)curvedLineHit:(NSPoint)point startPoint:(NSPoint)startPoint endPoint:(NSPoint)endPoint controlPoint1:(NSPoint)controlPoint1 controlPoint2:(NSPoint)controlPoint2 position:(CGFloat *)position padding:(CGFloat)padding distance:(CGFloat *)distanceFromPoint
+{
+    // find the square of the distance between the point and a point
+    // on the curve (u).
+    // use newtons method to approach the minumum u.
+    NSPoint a[4];     // our regular coefficients
+    double  c[7];  // a cubic squared gives us 7 coefficients
+    double  u, bestU;
 
+    double  tolerance = padding + [self lineWidth] / 2;
+    double  delta, minDelta;
+    NSInteger i;
+        
+//    if (tolerance < 3) {
+//        tolerance = 3;
+//    }
+    
+    tolerance *= tolerance;
+
+    _OAParameterizeCurve(a, startPoint, endPoint, controlPoint1, controlPoint2);
+    
+    delta = a[0].x - point.x;
+    c[0] = delta * delta;
+    delta = a[0].y - point.y;
+    c[0] += delta * delta;
+    c[1] = 2 * ((a[0].x - point.x) * a[1].x + (a[0].y - point.y) * a[1].y);
+    c[2] = a[1].x * a[1].x + a[1].y * a[1].y +
+        2 * (a[2].x * (a[0].x - point.x) + a[2].y * (a[0].y - point.y));
+    c[3] = 2 * (a[1].x * a[2].x + (a[0].x - point.x) * a[3].x +
+                a[1].y * a[2].y + (a[0].y - point.y) * a[3].y);
+    c[4] = a[2].x * a[2].x + a[2].y * a[2].y +
+      2 * (a[1].x * a[3].x + a[1].y * a[3].y);
+    c[5] = 2.0f * (a[2].x * a[3].x + a[2].y * a[3].y);
+    c[6] = a[3].x * a[3].x + a[3].y * a[3].y;
+
+
+    // Estimate a starting U
+    if (endPoint.x < startPoint.x) {
+        u = point.x - endPoint.x;
+    } else {
+        u = point.x - startPoint.x;
+    }
+    
+    delta = fabs(startPoint.x - point.x) + fabs(endPoint.x - point.x);
+    delta += fabs(startPoint.y - point.y) + fabs(endPoint.y - point.y);
+
+    if (endPoint.y < startPoint.y) {
+        u += point.y - endPoint.y;
+        delta += startPoint.y - endPoint.y;
+    } else {
+        u += point.y - startPoint.y;
+        delta += endPoint.y - startPoint.y;
+    }
+
+    u /= delta;
+    if (u < 0) {
+        u = 0;
+    } else if (u > 1) {
+        u = 1;
+    }
+
+    // Iterate while adjust U with our error function
+
+    // NOTE: Sadly, Newton's method becomes unstable as we approach the solution.  Also, the farther away from the curve, the wider the oscillation will be.
+    // To get around this, we're keeping track of our best result, adding a few more iterations, and damping our approach.
+    minDelta = 100000;
+    bestU = u;
+    
+    for(i=0;i< 12;i++) {
+        delta = (((((c[6] * u + c[5]) * u + c[4]) * u + c[3]) * u + c[2]) * u + c[1]) * u + c[0];
+        if (delta < minDelta) {
+            minDelta = delta;
+            bestU = u;
+        }
+
+        if (i==11 && minDelta <= tolerance) {
+            *position = (float)bestU;
+            *distanceFromPoint = minDelta;
+            return YES;
+        } else {
+            double  slope = ((((( 6 * c[6] * u + 5 * c[5]) * u + 4 * c[4]) * u + 3 * c[3]) * u + 2 * c[2]) * u + c[1]);
+            double  deltaU = delta/slope;
+
+            if ((u==0 && delta > 0) || (u==1 && delta < 0)) {
+                *position = (float)bestU;
+                *distanceFromPoint = minDelta;
+                return minDelta <= tolerance;
+            }
+            u -= 0.75f * deltaU; // Used to be just deltaU, but we're damping it a bit
+            if (u<0.0) {
+                u = 0.0f;
+            }
+            if (u>1.0) {
+                u = 1.0f;
+            }
+        }
+    }
+
+    return NO;
+}
+
+- (BOOL)straightLineHit:(NSPoint)startPoint :(NSPoint)endPoint :(NSPoint)point  :(CGFloat *)position padding:(CGFloat)padding distance:(CGFloat *)distanceFromPoint {
+    NSPoint delta;
+    NSPoint vector;
+    NSPoint linePoint;
+    CGFloat length;
+    CGFloat dotProduct;
+    CGFloat distance;
+    CGFloat tolerance = padding + [self lineWidth]/2;
+    
+//    if (tolerance < 3) {
+//        tolerance = 3;
+//    }
+    
+    delta.x = endPoint.x - startPoint.x;
+    delta.y = endPoint.y - startPoint.y;
+    length = sqrt(delta.x * delta.x + delta.y * delta.y);
+    delta.x /=length;
+    delta.y /=length;
+
+    vector.x = point.x - startPoint.x;
+    vector.y = point.y - startPoint.y;
+
+    dotProduct = vector.x * delta.x + vector.y * delta.y;
+
+    linePoint.x = startPoint.x + delta.x * dotProduct;
+    linePoint.y = startPoint.y + delta.y * dotProduct;
+
+    delta.x = point.x - linePoint.x;
+    delta.y = point.y - linePoint.y;
+
+    // really the distance squared
+    distance = delta.x * delta.x + delta.y * delta.y;
+    
+    if (distance < (tolerance * tolerance)) {
+        *position = dotProduct/length;
+        if ((*position > 0 || OFFloatEqualToFloatWithAccuracy(*position, 0, 1e-5)) && (*position < 1 || OFFloatEqualToFloatWithAccuracy(*position, 1, 1e-5))) {
+            *distanceFromPoint = distance;
+            return YES;
+        }
+    }
+    
+    return NO;
+}
 @end
 
 
@@ -3525,105 +3676,6 @@ static BOOL _curvedLineIntersectsRect(const NSPoint *c, NSRect rect, CGFloat tol
     return NO;
 }
 
-- (BOOL)_curvedLineHit:(NSPoint)point startPoint:(NSPoint)startPoint endPoint:(NSPoint)endPoint controlPoint1:(NSPoint)controlPoint1 controlPoint2:(NSPoint)controlPoint2 position:(CGFloat *)position padding:(CGFloat)padding
-{
-    // find the square of the distance between the point and a point
-    // on the curve (u).
-    // use newtons method to approach the minumum u.
-    NSPoint a[4];     // our regular coefficients
-    double  c[7];  // a cubic squared gives us 7 coefficients
-    double  u, bestU;
-
-    double  tolerance = padding + [self lineWidth] / 2;
-    double  delta, minDelta;
-    NSInteger i;
-        
-//    if (tolerance < 3) {
-//        tolerance = 3;
-//    }
-    
-    tolerance *= tolerance;
-
-    _OAParameterizeCurve(a, startPoint, endPoint, controlPoint1, controlPoint2);
-    
-    delta = a[0].x - point.x;
-    c[0] = delta * delta;
-    delta = a[0].y - point.y;
-    c[0] += delta * delta;
-    c[1] = 2 * ((a[0].x - point.x) * a[1].x + (a[0].y - point.y) * a[1].y);
-    c[2] = a[1].x * a[1].x + a[1].y * a[1].y +
-        2 * (a[2].x * (a[0].x - point.x) + a[2].y * (a[0].y - point.y));
-    c[3] = 2 * (a[1].x * a[2].x + (a[0].x - point.x) * a[3].x +
-                a[1].y * a[2].y + (a[0].y - point.y) * a[3].y);
-    c[4] = a[2].x * a[2].x + a[2].y * a[2].y +
-      2 * (a[1].x * a[3].x + a[1].y * a[3].y);
-    c[5] = 2.0f * (a[2].x * a[3].x + a[2].y * a[3].y);
-    c[6] = a[3].x * a[3].x + a[3].y * a[3].y;
-
-
-    // Estimate a starting U
-    if (endPoint.x < startPoint.x) {
-        u = point.x - endPoint.x;
-    } else {
-        u = point.x - startPoint.x;
-    }
-    
-    delta = fabs(startPoint.x - point.x) + fabs(endPoint.x - point.x);
-    delta += fabs(startPoint.y - point.y) + fabs(endPoint.y - point.y);
-
-    if (endPoint.y < startPoint.y) {
-        u += point.y - endPoint.y;
-        delta += startPoint.y - endPoint.y;
-    } else {
-        u += point.y - startPoint.y;
-        delta += endPoint.y - startPoint.y;
-    }
-
-    u /= delta;
-    if (u < 0) {
-        u = 0;
-    } else if (u > 1) {
-        u = 1;
-    }
-
-    // Iterate while adjust U with our error function
-
-    // NOTE: Sadly, Newton's method becomes unstable as we approach the solution.  Also, the farther away from the curve, the wider the oscillation will be.
-    // To get around this, we're keeping track of our best result, adding a few more iterations, and damping our approach.
-    minDelta = 100000;
-    bestU = u;
-    
-    for(i=0;i< 12;i++) {
-        delta = (((((c[6] * u + c[5]) * u + c[4]) * u + c[3]) * u + c[2]) * u + c[1]) * u + c[0];
-        if (delta < minDelta) {
-            minDelta = delta;
-            bestU = u;
-        }
-
-        if (i==11 && minDelta <= tolerance) {
-            *position = (float)bestU;
-            return YES;
-        } else {
-            double  slope = ((((( 6 * c[6] * u + 5 * c[5]) * u + 4 * c[4]) * u + 3 * c[3]) * u + 2 * c[2]) * u + c[1]);
-            double  deltaU = delta/slope;
-
-            if ((u==0 && delta > 0) || (u==1 && delta < 0)) {
-                *position = (float)bestU;
-                return minDelta <= tolerance;
-            }
-            u -= 0.75f * deltaU; // Used to be just deltaU, but we're damping it a bit
-            if (u<0.0) {
-                u = 0.0f;
-            }
-            if (u>1.0) {
-                u = 1.0f;
-            }
-        }
-    }
-
-    return NO;
-}
-
 - (BOOL)_straightLineIntersection:(CGFloat *)length time:(CGFloat *)time segment:(NSPoint *)s line:(const NSPoint *)l {
     // PENDING: should optimize this for the most common cases (s[1] == 0);
     double u;
@@ -3663,49 +3715,6 @@ static BOOL _curvedLineIntersectsRect(const NSPoint *c, NSRect rect, CGFloat tol
     *length = (CGFloat)u;
     *time = (CGFloat)t;
     return YES;
-}
-
-- (BOOL)_straightLineHit:(NSPoint)startPoint :(NSPoint)endPoint :(NSPoint)point  :(CGFloat *)position padding:(CGFloat)padding {
-    NSPoint delta;
-    NSPoint vector;
-    NSPoint linePoint;
-    CGFloat length;
-    CGFloat dotProduct;
-    CGFloat distance;
-    CGFloat tolerance = padding + [self lineWidth]/2;
-    
-//    if (tolerance < 3) {
-//        tolerance = 3;
-//    }
-    
-    delta.x = endPoint.x - startPoint.x;
-    delta.y = endPoint.y - startPoint.y;
-    length = sqrt(delta.x * delta.x + delta.y * delta.y);
-    delta.x /=length;
-    delta.y /=length;
-
-    vector.x = point.x - startPoint.x;
-    vector.y = point.y - startPoint.y;
-
-    dotProduct = vector.x * delta.x + vector.y * delta.y;
-
-    linePoint.x = startPoint.x + delta.x * dotProduct;
-    linePoint.y = startPoint.y + delta.y * dotProduct;
-
-    delta.x = point.x - linePoint.x;
-    delta.y = point.y - linePoint.y;
-
-    // really the distance squared
-    distance = delta.x * delta.x + delta.y * delta.y;
-    
-    if (distance < (tolerance * tolerance)) {
-        *position = dotProduct/length;
-        if ((*position > 0 || OFFloatEqualToFloatWithAccuracy(*position, 0, 1e-5)) && (*position < 1 || OFFloatEqualToFloatWithAccuracy(*position, 1, 1e-5))) {
-            return YES;
-        }
-    }
-    
-    return NO;
 }
 
 - (NSPoint)_endPointForSegment:(NSInteger)i;

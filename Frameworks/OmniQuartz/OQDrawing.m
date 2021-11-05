@@ -1,4 +1,4 @@
-// Copyright 2003-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -354,24 +354,10 @@ CGRect OQCenterAndFitIntegralRectInRectWithSameAspectRatioAsSize(CGRect enclosin
     return OQLargestCenteredIntegralRectInRectWithAspectRatioAsSize(enclosingRect, toCenter);
 }
 
-#ifdef __IPHONE_OS_VERSION_MIN_REQUIRED
-
-#if __MAC_OS_X_VERSION_MIN_REQUIRED < 40000 /* Apple recommends using literal numbers here instead of version constants */
-/* It's important that the compiler select the CGFloat declaration of -scale instead of the one that returns 'short' ! */
-@interface UIImage (OQForwardCompatibility)
-@property(nonatomic,readonly) CGFloat scale;
-@end
-#endif
-
+#if TARGET_OS_IPHONE
 void OQDrawImageCenteredInRect(CGContextRef ctx, UIImage *image, CGRect rect)
 {
-#if __MAC_OS_X_VERSION_MIN_REQUIRED < 40000 /* Apple recommends using literal numbers here instead of version constants */
-    /* -[UIImage scale] appeared in iOS 4.0 */
-    CGFloat scale = [image respondsToSelector:@selector(scale)] ? [image scale] : 1.0;
-#else
-    CGFloat scale = [image scale];
-#endif
-    OQDrawCGImageWithScaleCenteredInRect(ctx, [image CGImage], scale, rect);
+    OQDrawCGImageWithScaleCenteredInRect(ctx, [image CGImage], [image scale], rect);
 }
 #endif
 

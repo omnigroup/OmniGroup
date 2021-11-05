@@ -1,4 +1,4 @@
-// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -452,11 +452,7 @@ static const NSTimeInterval kUpdateStateCoalesceInterval = 0.25;
     if (_updateStateTimer)
         return;
     _updateStateTimer = [NSTimer scheduledTimerWithTimeInterval:kUpdateStateCoalesceInterval target:self selector:@selector(_updateStateTimerFired:) userInfo:nil repeats:NO];
-#if (defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE) || defined(MAC_OS_X_VERSION_10_9)
-    if ([_updateStateTimer respondsToSelector:@selector(setTolerance:)]) {
-        [_updateStateTimer setTolerance:kUpdateStateCoalesceInterval];
-    }
-#endif
+    [_updateStateTimer setTolerance:kUpdateStateCoalesceInterval];
 }
 
 - (void)_updateStateTimerFired:(NSTimer *)timer;

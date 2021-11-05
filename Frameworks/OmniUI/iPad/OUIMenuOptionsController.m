@@ -406,7 +406,7 @@ NS_ASSUME_NONNULL_BEGIN
         // Placeholder; one such case is in the 'move to folder' where some folders aren't valid destinations but are listed to show hierarchy
         label.textColor = [OUIInspector disabledLabelTextColor];
         cell.imageView.tintColor = [OUIInspector disabledLabelTextColor];
-        cell.selectionStyle = UITableViewCellEditingStyleNone;
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
     }
     
     cell.indentationWidth = kOUIMenuOptionIndentationWidth;

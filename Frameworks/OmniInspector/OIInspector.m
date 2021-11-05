@@ -1,4 +1,4 @@
-// Copyright 2005-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -298,7 +298,7 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
 - (NSArray *)menuItemsForTarget:(nullable id)target action:(SEL)action;
 {
     NSMenuItem *singleItem = [self menuItemForTarget:target action:action];
-    return singleItem ? [NSArray arrayWithObject:singleItem] : nil;
+    return singleItem ? [NSArray arrayWithObject:singleItem] : @[];
 }
 
 // Useful utility method in -inspectObjects:.  Not currently called automatically anywhere, just intended for subclasses at the moment.

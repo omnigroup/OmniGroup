@@ -5,7 +5,7 @@
 "%@ of %@" = "%1$@ sur %2$@";
 
 /* Default title for the About menu item */
-"About %@" = "À propos de %@";
+"About %@" = "À propos d’%@";
 
 /* Bold button accessibility label */
 "Bold" = "Gras";

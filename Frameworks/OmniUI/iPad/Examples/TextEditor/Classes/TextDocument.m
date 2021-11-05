@@ -140,6 +140,10 @@ RCS_ID("$Id$");
 
 - (NSString *)savingFileType;
 {
+    if (![NSString isEmptyString:_preferredSaveUTI]) {
+        return _preferredSaveUTI;
+    }
+    
     if ([_text containsAttachments])
         return (OB_BRIDGE NSString *)kUTTypeRTFD;
     

@@ -1,4 +1,4 @@
-// Copyright 2007-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -39,7 +39,7 @@ static void _checkFile(OAColorArchivingTests *self, NSString *path, NSData *actu
 
 static BOOL _compareColors(NSColor *a, NSColor *b)
 {
-    if ([[a colorSpaceName] isEqualToString:NSPatternColorSpace] && [[b colorSpaceName] isEqualToString:NSPatternColorSpace]) {
+    if (a.type == NSColorTypePattern && b.type == NSColorTypePattern) {
         // NSImages are only -isEqual: if they are ==, which they won't be after an archive/unarchive.
         NSData *tiffA = [[a patternImage] TIFFRepresentation];
         NSData *tiffB = [[b patternImage] TIFFRepresentation];

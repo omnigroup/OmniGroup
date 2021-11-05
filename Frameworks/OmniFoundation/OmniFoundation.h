@@ -33,6 +33,7 @@
 #import <OmniFoundation/OFDocumentEncryption-ObjC.h>
 #import <OmniFoundation/OFEnumNameTable-OFXMLArchiving.h>
 #import <OmniFoundation/OFEnumNameTable.h>
+#import <OmniFoundation/OFEnumNameTable-OFFlagMask.h>
 #import <OmniFoundation/OFErrorRecovery.h>
 #import <OmniFoundation/OFErrors.h>
 #import <OmniFoundation/OFExtent.h>
@@ -96,7 +97,6 @@
 	#import <OmniFoundation/OFDelayedEvent.h>
         //#import <OmniFoundation/OFDigestUtilities.h> -- imports non-module headers
 	#import <OmniFoundation/OFDynamicStoreListener.h>
-	#import <OmniFoundation/OFEnumNameTable-OFFlagMask.h>
 	#import <OmniFoundation/OFFileUtilities.h>
 	#import <OmniFoundation/OFHeap.h>
 	#import <OmniFoundation/OFInvocation.h>
