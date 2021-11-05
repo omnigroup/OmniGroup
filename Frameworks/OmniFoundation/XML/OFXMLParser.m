@@ -1,4 +1,4 @@
-// Copyright 2003-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -812,9 +812,12 @@ static void _xmlStructuredErrorFunc(void *userData, xmlErrorPtr error)
         OBASSERT(error->level == XML_ERR_ERROR || error->level == XML_ERR_FATAL);
         
         // Error or fatal.  We don't ask for recovery, so for now anything that isn't a warning is fatal.
-        OBASSERT(state->error == nil);
-        state->error = [errorObject retain];
-        xmlStopParser(state->ctxt);
+        if (state->error == nil) {
+            state->error = [errorObject retain];
+            xmlStopParser(state->ctxt);
+        } else {
+            // Drop any extra errors where libxml2 didn't immediately obey our request to stop (it does this if given a DOCTYPE w/o a closing '>' as one example).
+        }
     }
     [errorObject release];
 }
@@ -1073,7 +1076,7 @@ static const NSUInteger OFXMLParserDefaultMaximumParseChunkSize = 1024 * 1024 * 
     } while (inputStream.streamStatus == NSStreamStatusOpen);
     
     if (rc == 0) {
-        xmlParseChunk(_state->ctxt, NULL, 0, TRUE);
+        rc = xmlParseChunk(_state->ctxt, NULL, 0, TRUE);
     }
 
     if (maxChunkSize == OFXMLParserDefaultMaximumParseChunkSize) {

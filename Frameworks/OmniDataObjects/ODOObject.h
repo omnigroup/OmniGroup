@@ -1,4 +1,4 @@
-// Copyright 2008-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -136,6 +136,10 @@ typedef void (^ODOObjectSetDefaultAttributeValues)(__kindof ODOObject *object);
 
 + (void)computeNonDateModifyingPropertyNameSet:(NSMutableSet<NSString *> *)set withEntity:(ODOEntity *)entity;
 - (BOOL)shouldChangeDateModified;
+
+#if !OMNI_BUILDING_FOR_SERVER
+@property(nonatomic,weak) id objectWillChangeStorage;
+#endif
 
 @end
 

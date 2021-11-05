@@ -7,7 +7,20 @@
 
 @available(OSX 10.15, *)
 extension ODOObject : ObservableObject {
+
+    public var objectWillChange: ObjectWillChangePublisher {
+        if let existing = objectWillChangeStorage {
+            return existing as! ObjectWillChangePublisher
+        }
+        let updated = ObjectWillChangePublisher()
+        objectWillChangeStorage = updated
+        return updated
+    }
+
     @objc final public func sendWillChange() {
-        objectWillChange.send()
+        guard let existing = objectWillChangeStorage else {
+            return // No one is listening
+        }
+        (existing as! ObjectWillChangePublisher).send()
     }
 }
