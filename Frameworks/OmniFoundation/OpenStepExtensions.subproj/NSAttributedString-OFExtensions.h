@@ -22,4 +22,8 @@
 
 - (BOOL)hasAttribute:(NSString *)attributeName;
 
+- (NSAttributedString *)localizedLowercaseString;
+- (NSAttributedString *)localizedUppercaseString;
+- (NSAttributedString *)localizedCapitalizedString;
+
 @end

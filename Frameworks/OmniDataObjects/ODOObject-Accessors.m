@@ -133,12 +133,9 @@ NS_ASSUME_NONNULL_BEGIN
 // Pass a key of nil if you don't know or care what the key is and just want to clear the fault.  Right now we short circuit on the primary key attribute name.
 static inline void __inline_ODOObjectWillAccessValueForKey(ODOObject *self, NSString * _Nullable key)
 {
-#ifdef OMNI_ASSERTIONS_ON
-    // We can always access the primary key. But, other properties we can't access once we are deleted. We let in-progress deletes look up properties here, though, so since -isDeleted returns YES for objects that are in the middle of deletion (so that triggering OFMLiveFetch updates won't return result sets with about-to-be-deleted objects). See r202914 with the fix for <bug:///98546> (Crash updating forecast/inbox badge after sync? -[HomeController _forecastCount])
-    if ([key isEqualToString:self->_objectID.entity.primaryKeyAttribute.name] == NO) {
-        OBPRECONDITION(![self isDeleted] || [self->_editingContext _isBeingDeleted:self]);
+    if (self->_flags.hasFinishedDeletion) {
+        return;
     }
-#endif
     
     if (!self->_flags.invalid && self->_flags.isFault) {
         // Don't clear faults for the primary key
@@ -367,24 +364,20 @@ static _Nullable id _ODOObjectToOneRelationshipGetterAtIndex(ODOObject *self, NS
         OBASSERT(flags.toMany == NO);
     }
 #endif
-    
-    // Deleted objects clear all their to-one relationships to ensure that KVO unsubscription is accurate across multi-step keyPaths.  So, we can and should return nil here (since the receiver of a did-delete notification can remove observation of a keyPath that will cause lookups of intermediate objects).
-    {
-        // If we are a saved delete or reverted object or our editing context was -reset, we should have cleaned up already and can return nil.
-        if (self->_flags.invalid)
-            return nil;
-        
-        // Ensure that this early-out we are going to use is valid -- deleted objects should be faults.
-        // It is valid (and desirable) to access properties of objects while handling ODOEditingContextObjectsWillBeDeletedNotification, so allow that.
-#define isHandlingObjectsWillBeDeletedNotificationForSelf ([self->_editingContext _isSendingObjectsWillBeDeletedNotificationForObject:self])
-        
-        OBASSERT(![self isDeleted] || isHandlingObjectsWillBeDeletedNotificationForSelf || self->_flags.isFault);
-        if (self->_flags.isFault && ([self isDeleted] && !isHandlingObjectsWillBeDeletedNotificationForSelf))
-            return nil;
+
+    if (self->_flags.invalid) {
+        OBASSERT_NOT_REACHED("Shouldn't call accessors on invalidated objects");
+        return nil;
     }
-    
+
+    // Deleted objects clear all their to-one relationships to ensure that KVO unsubscription is accurate across multi-step keyPaths. Deleted objects also keep their storage buffer and should have a nil in the to-one relationship slots.
+
     __inline_ODOObjectWillAccessValueForKey(self, nil/*we know it isn't the pk in this case*/);
-    return _ODOObjectCheckForLazyToOneFaultCreation(self, ODOStorageGetObject(entity, self->_valueStorage, storageKey), snapshotIndex, nil/*relationship == we has it not!*/);
+    id result = _ODOObjectCheckForLazyToOneFaultCreation(self, ODOStorageGetObject(entity, self->_valueStorage, storageKey), snapshotIndex, nil/*relationship == we has it not!*/);
+
+    OBASSERT_IF(self->_flags.hasFinishedDeletion, result == nil);
+    
+    return result;
 }
 
 static id _ODOObjectToManyRelationshipGetterAtIndex(ODOObject *self, NSUInteger snapshotIndex)
@@ -415,6 +408,18 @@ void ODOObjectSetPrimitiveValueForProperty(ODOObject *self, _Nullable id value, 
     
     struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
     
+    ODOStorageKey storageKey = prop->_storageKey;
+    if (storageKey.snapshotIndex == ODO_STORAGE_KEY_PRIMARY_KEY_SNAPSHOT_INDEX) {
+        OBASSERT_NOT_REACHED("Ignoring attempt to set the primary key");
+        return;
+    }
+
+    // We allow property changes after deletion starts (for nullifying relationships), but not after it is finished.
+    if (self->_flags.hasFinishedDeletion) {
+        OBASSERT_NOT_REACHED("Ignoring attempt to set a property on a deleted object");
+        return;
+    }
+
 #ifdef OMNI_ASSERTIONS_ON
     {
         // The value should match the property.  We allow nil here, even if th property doesn't (that should only be enforced when saving).
@@ -453,12 +458,6 @@ void ODOObjectSetPrimitiveValueForProperty(ODOObject *self, _Nullable id value, 
         }
     }
 #endif
-    
-    ODOStorageKey storageKey = prop->_storageKey;
-    if (storageKey.snapshotIndex == ODO_STORAGE_KEY_PRIMARY_KEY_SNAPSHOT_INDEX) {
-        OBASSERT_NOT_REACHED("Ignoring attempt to set the primary key");
-        return;
-    }
     
     ODOObjectPrimitiveValueForPropertyOptions options = ODOObjectPrimitiveValueForPropertyOptionDefault & ~(ODOObjectPrimitiveValueForPropertyOptionAllowCalculationOfLazyTransientValues);
     

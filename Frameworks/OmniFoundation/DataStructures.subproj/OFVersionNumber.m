@@ -97,6 +97,17 @@ static BOOL isOperatingSystemAtLeastVersionString(NSString *versionString)
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 
++ (BOOL)isOperatingSystemBeforeiOS15; // 15.0
+{
+    static BOOL isAtOrAfter;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        isAtOrAfter = isOperatingSystemAtLeastVersionString(@"15.0");
+    });
+    
+    return !isAtOrAfter;
+}
+
 #else
 
 + (BOOL)isOperatingSystemMojaveOrLater;

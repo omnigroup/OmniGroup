@@ -8,6 +8,10 @@
 import Combine
 import SwiftUI
 
+/*
+ Normally `@Published` properties broadcast change notifications automatically. But, if you declare a `objectWillChange` publisher locally in order to avoid the cost incurred by the global object-to-publisher table, the `@Published` property wrapper will not use your local `objectWillChange` publisher and no updates will happen.
+ */
+
 public protocol ManualObjectWillChangeManagingObservableObject: ObservableObject where Self.ObjectWillChangePublisher == ObservableObjectPublisher {
     var cancellableSet: Set<AnyCancellable> { get set }
 }

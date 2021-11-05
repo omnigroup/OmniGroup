@@ -41,7 +41,8 @@ NS_ASSUME_NONNULL_BEGIN
         unsigned int isAwakingFromUnarchive : 1;
         unsigned int hasChangedModifyingToManyRelationshipSinceLastSave : 1;
         unsigned int undeletable : 1;
-        unsigned int lastSaveWasDeletion : 1;
+        unsigned int hasStartedDeletion : 1; // -isDeleted is only true while the object is pending deletion
+        unsigned int hasFinishedDeletion : 1; // -isDeleted is only true while the object is pending deletion
         unsigned int propertyBeingCalculatedIsMultiple : 1;
     } _flags;
 

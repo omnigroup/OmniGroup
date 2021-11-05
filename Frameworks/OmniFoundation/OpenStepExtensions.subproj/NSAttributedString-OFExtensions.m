@@ -144,4 +144,35 @@ OBPerformPosing(^{
     return NO;
 }
 
+- (NSAttributedString *)localizedLowercaseString;
+{
+    NSMutableAttributedString *temp = [[NSMutableAttributedString alloc] initWithAttributedString:self];
+    [self enumerateAttributesInRange:NSMakeRange(0, temp.length) options:0 usingBlock:^(NSDictionary<NSAttributedStringKey,id> * _Nonnull attrs, NSRange range, BOOL * _Nonnull stop) {
+        [temp replaceCharactersInRange:range withString:[[temp.string substringWithRange:range] localizedLowercaseString]];
+    }];
+
+    return temp;
+}
+
+- (NSAttributedString *)localizedUppercaseString;
+{
+    NSMutableAttributedString *temp = [[NSMutableAttributedString alloc] initWithAttributedString:self];
+    [self enumerateAttributesInRange:NSMakeRange(0, temp.length) options:0 usingBlock:^(NSDictionary<NSAttributedStringKey,id> * _Nonnull attrs, NSRange range, BOOL * _Nonnull stop) {
+        [temp replaceCharactersInRange:range withString:[[temp.string substringWithRange:range] localizedUppercaseString]];
+    }];
+
+    return temp;
+}
+
+- (NSAttributedString *)localizedCapitalizedString;
+{
+    NSMutableAttributedString *temp = [[NSMutableAttributedString alloc] initWithAttributedString:self];
+    [self enumerateAttributesInRange:NSMakeRange(0, temp.length) options:0 usingBlock:^(NSDictionary<NSAttributedStringKey,id> * _Nonnull attrs, NSRange range, BOOL * _Nonnull stop) {
+        [temp replaceCharactersInRange:range withString:[[temp.string substringWithRange:range] localizedCapitalizedString]];
+    }];
+
+    return temp;
+}
+
+
 @end

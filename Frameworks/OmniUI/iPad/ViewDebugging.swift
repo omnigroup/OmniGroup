@@ -20,11 +20,30 @@ extension View {
     }
 }
 
+#if DEBUG
+private var randomGenerator = SystemRandomNumberGenerator()
+#endif
+
 extension View {
     public func printValues(_ vars: Any...) -> some View {
         #if DEBUG
         for v in vars { Swift.print(v) }
-        #endif
+        let strings = vars.map { String(describing: $0) }
         return self
+            .background(
+                Text(verbatim: strings.joined(separator: ","))
+                    .foregroundColor(.clear)
+        )
+        #else
+        self
+        #endif
+    }
+    public func randomColorBorder() -> some View {
+        #if DEBUG
+        self
+            .border(Color(hue: Double(randomGenerator.next() % 1000) / 1000, saturation: 0.5, brightness: 1.0))
+        #else
+        self
+        #endif
     }
 }

@@ -24,9 +24,19 @@ typedef NS_ENUM(NSUInteger, ODOAwakeEvent) {
 };
 
 typedef NS_ENUM(NSUInteger, ODOFaultEvent) {
-    ODOFaultEventGeneric = 0, // some caller just wanted the object to be faulted
-    ODOFaultEventDeletion, // deleted an object (possibly by cascading)
-    ODOFaultEventInvalidation, // invalidated the associated OmniDataObjects stack
+    // Some caller just wanted the object to be faulted to free up memory or possibly allow cycles to be cleared up.
+    ODOFaultEventGeneric = 0,
+
+    // Invalidated by the containing ODOEditingContext being reset.
+    ODOFaultEventInvalidation,
+};
+
+typedef NS_ENUM(NSUInteger, ODOWillDeleteEvent) {
+    // An actual delete operation will be saved
+    ODOWillDeleteEventMaterial,
+
+    // This deletion is a cancelled insert and no actual save of the original object was ever done.
+    ODOWillDeleteEventCancelledInsert,
 };
 
 @interface ODOObject : OFObject {
@@ -88,7 +98,7 @@ typedef NS_ENUM(NSUInteger, ODOFaultEvent) {
 - (void)willSave NS_REQUIRES_SUPER;
 - (void)willInsert NS_REQUIRES_SUPER; // Just calls -willSave
 - (void)willUpdate NS_REQUIRES_SUPER; // Just calls -willSave
-- (void)willDelete NS_REQUIRES_SUPER; // Just calls -willSave
+- (void)willDelete:(ODOWillDeleteEvent)event NS_REQUIRES_SUPER; // Just calls -willSave
 
 - (void)prepareForDeletion; // Nothing; for subclasses
 
@@ -101,7 +111,6 @@ typedef NS_ENUM(NSUInteger, ODOFaultEvent) {
 @property (nonatomic, readonly, getter=isFault) BOOL fault;
 
 - (void)willTurnIntoFault:(ODOFaultEvent)faultEvent NS_REQUIRES_SUPER;
-- (void)didTurnIntoFault:(ODOFaultEvent)faultEvent NS_REQUIRES_SUPER;
 
 - (void)turnIntoFault;
 
@@ -119,8 +128,8 @@ typedef NS_ENUM(NSUInteger, ODOFaultEvent) {
 @property (nonatomic, readonly, getter=isInvalid) BOOL invalid;
 @property (nonatomic, readonly, getter=isUndeletable) BOOL undeletable;
 
-- (BOOL)lastSaveWasDeletion;
-- (BOOL)hasBeenDeletedOrInvalidated;
+@property (nonatomic,readonly) BOOL hasBeenDeleted;
+@property (nonatomic,readonly) BOOL hasBeenDeletedOrInvalidated;
 
 - (BOOL)hasChangedKeySinceLastSave:(NSString *)key NS_SWIFT_NAME(hasChangedKeySinceLastSave(_:));
 @property (nonatomic, nullable, readonly) NSDictionary<NSString *, id> *changedValues;

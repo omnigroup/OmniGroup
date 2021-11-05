@@ -110,8 +110,6 @@ BOOL _ODOAssertSnapshotIsValidForObject(ODOObject *self, ODOObjectSnapshot *snap
     _ODOObjectReleaseValues(self);
 
     _flags.isFault = YES;
-    
-    [self didTurnIntoFault:faultEvent];
 }
 
 - (void)_invalidate;
@@ -131,7 +129,7 @@ BOOL _ODOAssertSnapshotIsValidForObject(ODOObject *self, ODOObjectSnapshot *snap
     [_editingContext release];
     _editingContext = nil;
     
-    // We leave _objectID; notification observers need to be able to get the entity/pk of deleted objects.
+    // We leave _objectID for debugging and for the clean up of our registered objects table.
 }
 
 - (BOOL)_isCalculatingValueForProperty:(ODOProperty *)property;
@@ -324,7 +322,11 @@ static void _validateRelationshipDestination(const void *value, void *context)
         OBASSERT(_ODOObjectHasValues(self) == NO);
     } else {
         OBASSERT(_editingContext);
-        OBASSERT([_editingContext objectRegisteredForID:_objectID] == self);
+        if (_flags.hasFinishedDeletion) {
+            OBASSERT([_editingContext objectRegisteredForID:_objectID] != self);
+        } else {
+            OBASSERT([_editingContext objectRegisteredForID:_objectID] == self);
+        }
         
         // Objects can be in only one state and faults can't be edited at all.
         BOOL inserted = [self isInserted];
@@ -339,9 +341,8 @@ static void _validateRelationshipDestination(const void *value, void *context)
             OBASSERT(!updated);
             OBASSERT(_ODOObjectHasValues(self) == NO); // No point in holding values.
         } else {
-            OBASSERT(_ODOObjectHasValues(self) == YES); // Real objects have values!
-            OBASSERT(deleted == NO); // deleted objects are turned into faults first
-            
+            OBASSERT(_ODOObjectHasValues(self) == YES); // Real objects have values, including deleted ones
+
             NSUInteger mods = 0;
             if (inserted) {
                 mods++;
@@ -388,7 +389,11 @@ static void _validateRelationshipDestination(const void *value, void *context)
                         }
                     }
                 } else {
-                    OBASSERT(value == nil || [value isKindOfClass:[(ODOAttribute *)prop valueClass]]); // OK to temporarily violate the nullity, but not the type
+                    if (_flags.hasFinishedDeletion) {
+                        OBASSERT(value == nil);
+                    } else {
+                        OBASSERT(value == nil || [value isKindOfClass:[(ODOAttribute *)prop valueClass]]); // OK to temporarily violate the nullity, but not the type
+                    }
                 }
             }
         }
@@ -647,7 +652,7 @@ static inline void _ODOObjectAwakeSingleObjectFromUnarchive(ODOObject *self, SEL
 {
     OBPRECONDITION([self isKindOfClass:[ODOObject class]]);
     
-    if ([self isDeleted] || [self isInvalid]) {
+    if (self.hasBeenDeletedOrInvalidated) {
         return;
     }
     

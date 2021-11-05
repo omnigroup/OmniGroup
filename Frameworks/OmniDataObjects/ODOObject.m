@@ -176,7 +176,7 @@ static IMP OFObjectDidChangeValueForKey;
     // Record whether this should be undeletable. This only gets called
     self->_flags.undeletable = [[self class] objectIDShouldBeUndeletable:objectID];
     
-    [context insertObject:self];
+    [context _insertObject:self];
     
     return self;
 }
@@ -245,13 +245,13 @@ static IMP OFObjectDidChangeValueForKey;
 {
     // For now, ODOEditingContext holds onto us until it is reset and we are made invalid.
     OBPRECONDITION(_editingContext == nil);
-    OBPRECONDITION(_flags.invalid == YES);
-    OBPRECONDITION(!_ODOObjectHasValues(self));
+    OBPRECONDITION(_flags.invalid == YES || _flags.hasFinishedDeletion);
+    OBPRECONDITION(!_ODOObjectHasValues(self) || _flags.hasFinishedDeletion);
 
     OBPRECONDITION(_objectID != nil); // This doesn't get cleared when the object is invalidated.  Notification listeners need to know the entity/pk of deleted objects.
     OBPRECONDITION(_propertyBeingCalculated.single == nil);
 
-    _ODOObjectReleaseValuesIfPresent(self); // Just in case
+    _ODOObjectReleaseValuesIfPresent(self); // For deleted object husks
 
     [_editingContext release];
     [_objectID release];
@@ -382,7 +382,10 @@ static void ODOObjectDidChangeValueForKey(ODOObject *object, NSString *key)
 void ODOObjectWillChangeValueForProperty(ODOObject *object, ODOProperty *property)
 {
 #if !OMNI_BUILDING_FOR_SERVER
-    [object sendWillChange];
+    // Don't poke SwiftUI Views when delete propagation is happening. We do go through this path to propagate nullification of dependent key paths through KVO.
+    if (!object->_flags.hasStartedDeletion) {
+        [object sendWillChange];
+    }
 #endif
     for (ODOObjectPropertyChangeAction action in ODOPropertyWillChangeActions(property)) {
         action(object, property);
@@ -541,8 +544,8 @@ void ODOObjectDidChangeValueForProperty(ODOObject *object, ODOProperty *property
 
 - (void)invalidateCalculatedValueForKey:(NSString *)key;
 {
-    OBPRECONDITION(![self isDeleted] && ![self isInvalid]);
-    if ([self isDeleted] || [self isInvalid] || [self isFault]) {
+    OBPRECONDITION(!self.hasBeenDeletedOrInvalidated);
+    if (self.hasBeenDeletedOrInvalidated || [self isFault]) {
         return;
     }
 
@@ -816,7 +819,7 @@ void ODOObjectSetValueForKey(ODOObject *self, id _Nullable value, ODOProperty *p
 
 - (void)willSave;
 {
-    _flags.lastSaveWasDeletion = [self isDeleted] ? 1 : 0;
+    _flags.hasStartedDeletion = [self isDeleted] ? 1 : 0;
 }
 
 - (void)willInsert;
@@ -829,7 +832,7 @@ void ODOObjectSetValueForKey(ODOObject *self, id _Nullable value, ODOProperty *p
     [self willSave];
 }
 
-- (void)willDelete;
+- (void)willDelete:(ODOWillDeleteEvent)event;
 {
     [self willSave];
 }
@@ -973,11 +976,6 @@ static void _validateRelatedObjectClass(const void *value, void *context)
     // Nothing; for subclasses
 }
 
-- (void)didTurnIntoFault:(ODOFaultEvent)faultEvent;
-{
-    // Nothing; for subclasses
-}
-
 - (void)turnIntoFault;
 {
     // The underlying code gets called when deleting objects, but the public API should only be called on saved objects.
@@ -1066,24 +1064,27 @@ static void _validateRelatedObjectClass(const void *value, void *context)
 
 - (BOOL)isInserted;
 {
-    if (_flags.invalid)
+    if (_flags.invalid || _flags.hasFinishedDeletion) {
         return NO;
+    }
     
     return [[self editingContext] isInserted:self];
 }
 
 - (BOOL)isDeleted;
 {
-    if (_flags.invalid)
+    if (_flags.invalid || _flags.hasFinishedDeletion) {
         return NO;
+    }
 
     return [[self editingContext] isDeleted:self];
 }
 
 - (BOOL)isUpdated;
 {
-    if (_flags.invalid)
+    if (_flags.invalid || _flags.hasFinishedDeletion) {
         return NO;
+    }
 
     return [[self editingContext] isUpdated:self];
 }
@@ -1098,12 +1099,10 @@ static void _validateRelatedObjectClass(const void *value, void *context)
     return _ODOObjectIsUndeletable(self);
 }
 
-- (BOOL)lastSaveWasDeletion;
+- (BOOL)hasBeenDeleted;
 {
-    // Since the same object gets retained and re-inserted when undoing a delete; we need to check for re-insertion.
-    if ([self isInserted])
-        return NO;
-    return _flags.lastSaveWasDeletion;
+    // For compatibility with existing callers, this returns the 'started' flag, not the 'finished'
+    return _flags.hasStartedDeletion;
 }
 
 // This tries to answer the question "will this explode if I do something that would unfault it".  This can happen due to deleting the object and saving, or invalidating the managed object context.
@@ -1117,7 +1116,7 @@ static void _validateRelatedObjectClass(const void *value, void *context)
     } else if (_editingContext == nil) {
         // This can be the case when the context has been invalidated.
         invalidationReason = 0x2;
-    } else if ([_editingContext isDeleted:self] || _flags.lastSaveWasDeletion) {
+    } else if (_flags.hasStartedDeletion || [_editingContext isDeleted:self]) {
         // In the process of being deleted or already done
         invalidationReason = 0x3;
     } else {
@@ -1472,20 +1471,26 @@ static BOOL _changedPropertyNotInSet(ODOObject *self, NSSet *ignoredPropertySet,
 
 - (NSString *)shortDescription;
 {
-    if (_flags.invalid)
+    if (_flags.invalid) {
         return [NSString stringWithFormat:@"<%@:%p INVALID>", NSStringFromClass([self class]), self];
-    else
-        return [NSString stringWithFormat:@"<%@:%p %@ %@>", NSStringFromClass([self class]), self, [[_objectID entity] name], [_objectID primaryKey]];
+    }
+    if (_flags.hasFinishedDeletion) {
+        return [NSString stringWithFormat:@"<%@:%p DELETED %@ %@>", NSStringFromClass([self class]), self, [[_objectID entity] name], [_objectID primaryKey]];
+    }
+
+    return [NSString stringWithFormat:@"<%@:%p %@ %@>", NSStringFromClass([self class]), self, [[_objectID entity] name], [_objectID primaryKey]];
 }
 
 - (NSMutableDictionary *)debugDictionary;
 {
     NSMutableDictionary *dict = [super debugDictionary];
     
-    if (_flags.invalid)
-        return dict;
-
     [dict setObject:[_objectID shortDescription] forKey:@"objectID"];
+
+    if (_flags.invalid) {
+        return dict;
+    }
+
     if (!_flags.isFault) {
         NSMutableDictionary *valueDict = [[NSMutableDictionary alloc] init];
         [dict setObject:valueDict forKey:@"values"];

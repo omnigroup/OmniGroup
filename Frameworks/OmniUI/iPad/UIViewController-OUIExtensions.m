@@ -103,7 +103,7 @@ RCS_ID("$Id$");
     return YES;
 }
 
-- (UIScene *)containingScene NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based solutions where available instead.");
+- (UIScene *)_containingSceneAllowingCheckPresentedController:(BOOL)canCheckPresentedController NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based solutions where available instead.");
 {
     // If the view's in the view hierarchy, it'll have a scene
     if ([self isViewLoaded]) {
@@ -122,16 +122,18 @@ RCS_ID("$Id$");
         }
     }
 
-    // We may have a presenting view controller that can resolve a scene
-    UIScene *presentingContainingScene = self.presentingViewController.containingScene;
+    // We may have a presenting view controller that can resolve a scene. When it is checking for its containing scene, do not allow it to try to check us (its presented view controller) for our containing scene. Otherwise, we can ping-pong back and forth asking each other for our containing scenes forever.
+    UIScene *presentingContainingScene = [self.presentingViewController _containingSceneAllowingCheckPresentedController:NO];
     if (presentingContainingScene != nil) {
         return presentingContainingScene;
     }
     
-    // We may have a presented view controller that can resolve a scene
-    UIScene *presentedViewControllerContainingScene = self.presentedViewController.containingScene;
-    if (presentedViewControllerContainingScene != nil) {
-        return presentedViewControllerContainingScene;
+    if (canCheckPresentedController) {
+        // We may have a presented view controller that can resolve a scene
+        UIScene *presentedViewControllerContainingScene = self.presentedViewController.containingScene;
+        if (presentedViewControllerContainingScene != nil) {
+            return presentedViewControllerContainingScene;
+        }
     }
     
     // If we're in a compact multipane controller and we're in an off-screen pane, we're not in a view hierarchy at all, but we're still contained within a specific scene.
@@ -157,6 +159,11 @@ RCS_ID("$Id$");
             return NO;
         }
     }];
+}
+
+- (UIScene *)containingScene NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based solutions where available instead.");
+{
+    return [self _containingSceneAllowingCheckPresentedController:YES];
 }
 
 - (OUIMultiPaneController *)_descendantMultiPaneController

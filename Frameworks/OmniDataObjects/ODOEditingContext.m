@@ -311,10 +311,14 @@ static void ODOEditingContextInternalInsertObject(ODOEditingContext *self, ODOOb
     if (previouslyRegisteredObject != nil) {
         // Assert that the object we are trying to "replace" has been deleted. If this is not the case, we'll be severely messing up the lifecycle messages, so this is a hard assert.
         assert([self->_recentlyDeletedObjects containsObject:previouslyRegisteredObject] || [self->_processedDeletedObjects containsObject:previouslyRegisteredObject]);
-        
+
+        // This can't be a cancelled insert since those never make it into the deleted objects sets.
+        // Do this before altering the sets so that -willSave will set _flags.hasStartedDeletion.
+        [previouslyRegisteredObject willDelete:ODOWillDeleteEventMaterial];
+
         [self->_recentlyDeletedObjects removeObject:previouslyRegisteredObject];
         [self->_processedDeletedObjects removeObject:previouslyRegisteredObject];
-        
+
         ODOEditingContextDidDeleteObjects(self, [NSSet setWithObject:previouslyRegisteredObject]);
         
         if (outMostRecentSnapshot != NULL) {
@@ -350,10 +354,16 @@ static void ODOEditingContextInternalInsertObject(ODOEditingContext *self, ODOOb
 }
 
 // This is the global first-time insertion hook.  This should only be called with *new* objects.  That is, the undo of a delete should *not* go through here since that would re-call the -awakeFromInsert method.
-- (void)insertObject:(ODOObject *)object;
+- (void)_insertObject:(ODOObject *)object;
 {
     ODOEditingContextAssertOwnership(self);
     OBINVARIANT([self _checkInvariants]);
+
+    // We don't allow re-inserted previously deleted objects. Even on undo of a delete, we make a new object and apply a snapshot to it.
+    OBASSERT(object->_flags.isFault == NO);
+    OBASSERT(object->_flags.hasStartedDeletion == NO);
+    OBASSERT(object->_flags.hasFinishedDeletion == NO);
+    OBASSERT(object.isDeleted == NO);
 
     // Record the pointers of objects being inserted in case save validation fails and we need to know where it came from.
     OBRecordBacktraceWithContext(class_getName(object_getClass(object)), OBBacktraceBuffer_Generic, (const void *)object);
@@ -600,7 +610,7 @@ static void _validateForDeleteApplier(const void *value, void *context)
 }
 #endif
 
-- (void)_snapshotAndClearObjectForDeletion:(ODOObject *)object;
+- (void)_snapshotObjectForDeletion:(ODOObject *)object;
 {
     // Reject if object is undeletable... should not have gotten this far. This means all undeletable objects must be inserted w/o undo enabled or having undo flushed afterwards.
     if (_ODOObjectIsUndeletable(object))
@@ -618,10 +628,8 @@ static void _validateForDeleteApplier(const void *value, void *context)
     // OBASSERT(([_objectIDToCommittedPropertySnapshot objectForKey:[object objectID]] == nil && [_objectIDToLastProcessedSnapshot objectForKey:[object objectID]] == nil) == ([_recentlyUpdatedObjects member:object] == nil && [_processedUpdatedObjects member:object] == nil));
     
     [self _snapshotObjectPropertiesIfNeeded:object];
-    
-    // Turn the object into a fault.  This is what CoreData does, and our OFMTask/OFMProjectInfo mirroring expects this.
-    // This also clears our properties.  Some of these may have already been cleared due to delete propagation, but not all of them.  Also, in the case that we are undoing an assertion, delete propagation won't clear any relationships for us in the deleted objects.
-    [object _turnIntoFault:ODOFaultEventDeletion];
+
+    // We used to turn deleted objects into faults here and release all their properties. But SwiftUI Views that are given access to ODOObjects can end up being evaluated  again unpredictably, causing crashes that are difficult to solve. Instead, deleted objects now are left with their properties intact and relationships cleared (firing KVO to clean up dependent key path observations, but *not* propagating those changes to the ObjectWillChangePublisher and possibly provoking more View evaluations).
 }
 
 static void _removeDenyApplier(const void *value, void *context)
@@ -718,21 +726,14 @@ static void ODOEditingContextInternalDeleteObjects(ODOEditingContext *self, NSSe
         [self _snapshotObjectPropertiesIfNeeded:object];
     }
     
-    OBASSERT(self->_objectsForObjectsWillBeDeletedNotification == nil);
-    self->_objectsForObjectsWillBeDeletedNotification = toDelete;
+    // Some objects (I'm looking at you NSArrayController) are dumb as posts and if you clear their content, they'll ask their old content questions like, "Hey; what's your value for this key?".  That doesn't work well for deleted objects.  CoreData has some hack into NSArrayController to avoid this, we need something of the like.  For now we'll post a note before finalizing the deletion.
 
-    @try {
-        // Some objects (I'm looking at you NSArrayController) are dumb as posts and if you clear their content, they'll ask their old content questions like, "Hey; what's your value for this key?".  That doesn't work well for deleted objects.  CoreData has some hack into NSArrayController to avoid this, we need something of the like.  For now we'll post a note before finalizing the deletion.
-
-        NSDictionary *userInfo = _createChangeSetNotificationUserInfo(nil, nil, toDelete, self->_objectIDToCommittedPropertySnapshot, self->_objectIDToLastProcessedSnapshot);
-        [[NSNotificationCenter defaultCenter] postNotificationName:ODOEditingContextObjectsWillBeDeletedNotification object:self userInfo:userInfo];
-        [userInfo release];
-    } @finally {
-        self->_objectsForObjectsWillBeDeletedNotification = nil;
-    }
+    NSDictionary *userInfo = _createChangeSetNotificationUserInfo(nil, nil, toDelete, self->_objectIDToCommittedPropertySnapshot, self->_objectIDToLastProcessedSnapshot);
+    [[NSNotificationCenter defaultCenter] postNotificationName:ODOEditingContextObjectsWillBeDeletedNotification object:self userInfo:userInfo];
+    [userInfo release];
     
     for (ODOObject *object in toDelete) {
-        [self _snapshotAndClearObjectForDeletion:object];
+        [self _snapshotObjectForDeletion:object];
     }
 }
 
@@ -751,8 +752,12 @@ static void ODOEditingContextInternalDeleteObjects(ODOEditingContext *self, NSSe
     OBPRECONDITION(![_undoManager isUndoingOrRedoing]); // this public API shouldn't be called to undo/redo.  Only to 'do'.
 
     // Bail on objects that are already deleted or invalid instead of crashing.  This can easily happen if UI code can select both a parent and child and delete them w/o knowing that the deletion of the parent will get the child too.  Nice if the UI handles it, but shouldn't crash or do something crazy otherwise.
-    if (!object || [object isInvalid] || [object isDeleted]) {
-        DEBUG_DELETE(@"DELETE: %@ already invalid:%d deleted:%d -- bailing", [object shortDescription], [object isInvalid], [object isDeleted]);
+    if (!object) {
+        DEBUG_DELETE(@"DELETE: given nil object");
+        return YES; // maybe return a user-cancelled error?
+    }
+    if (object.hasBeenDeletedOrInvalidated) {
+        DEBUG_DELETE(@"DELETE: %@ already invalid:%d deleted:%d hasStartedDeletion:%d hasFinishedDeletion:%d -- bailing", [object shortDescription], [object isInvalid], [object isDeleted], object->_flags.hasStartedDeletion, object->_flags.hasFinishedDeletion);
         return YES; // maybe return a user-cancelled error?
     }
     
@@ -764,7 +769,7 @@ static void ODOEditingContextInternalDeleteObjects(ODOEditingContext *self, NSSe
         return NO;
     }
     
-    OBASSERT(![object isInvalid]);
+    OBASSERT(!object.hasBeenDeletedOrInvalidated);
     OBASSERT([_processedDeletedObjects member:object] == nil); // can't be deleted already
     OBASSERT([_recentlyDeletedObjects member:object] == nil); // or recently
 
@@ -851,22 +856,30 @@ static void ODOEditingContextInternalDeleteObjects(ODOEditingContext *self, NSSe
     return YES;
 }
 
-static void _forgetObjectApplier(const void *value, void *context)
-{
-    ODOObject *object = (ODOObject *)value;
-    NSMutableDictionary *objectByID = (NSMutableDictionary *)context;
-    
-    ODOObjectID *objectID = [object objectID];
-    OBASSERT([objectByID objectForKey:objectID] == object);
-    [objectByID removeObjectForKey:objectID];
-}
-
 static void ODOEditingContextDidDeleteObjects(ODOEditingContext *self, NSSet *deleted)
 {
-    [deleted makeObjectsPerformSelector:@selector(_invalidate)]; // Once saved, deleted objects are gone forever.  Unless we resurrect them by pointer for undo.  Might just create new objects.
-    
-    // Forget the invalidated objects. They still have their objectID, which is good since we need to remove those keys from our registered objects.
-    CFSetApplyFunction((CFSetRef)deleted, _forgetObjectApplier, self->_registeredObjectByID);
+    // We used to also call _invalidate on deleted objects, but do not any longer to allow SwiftUI Views to access their values.
+
+    NSMutableDictionary *objectByID = self->_registeredObjectByID;
+
+    for (ODOObject *object in deleted) {
+        // Mark the object as having finished deletion. Property changes past this point will be ignored and produce an assertion failure.
+        OBASSERT(object->_flags.hasStartedDeletion);
+        OBASSERT(!object->_flags.hasFinishedDeletion);
+        object->_flags.hasFinishedDeletion = 1;
+
+        // Forget the deleted object.
+        ODOObjectID *objectID = [object objectID];
+        OBASSERT([objectByID objectForKey:objectID] == object);
+        [objectByID removeObjectForKey:objectID];
+
+        // Clear its backpointer to us. We used to get this from calling -_invalidate.
+        [object->_editingContext release];
+        object->_editingContext = nil;
+
+        // Clients should hear about the deletion viw KVO/notifications or the like and should have no reason to keep this object
+        OBExpectDeallocation(object);
+    }
 }
 
 static NSDictionary *_createChangeSetNotificationUserInfo(NSSet * _Nullable insertedObjects, NSSet * _Nullable updatedObjects, NSSet * _Nullable deletedObjects, NSDictionary <ODOObjectID *, ODOObjectSnapshot *> *committedPropertySnapshotByObjectID, NSDictionary <ODOObjectID *, ODOObjectSnapshot *> *lastProcessedPropertySnapshotByObjectID)
@@ -972,13 +985,18 @@ static NSDictionary *_createChangeSetNotificationUserInfo(NSSet * _Nullable inse
     // Any previously processed inserts or updates that have recently been deleted are also now irrelevant for -save:.
     if (_recentlyDeletedObjects != nil) {
         // Also, any processed inserts are irrelevant for -save:.  That is, the processed insert and recent delete cancel out.
+        // TODO: We don't actually allow re-inserts and should clean out lingering support for it.
         // However, if the processed insert was actual a re-insert, the delete does not cancel it out; we must preserve the delete as a material delete.
         if ([_processedInsertedObjects intersectsSet:_recentlyDeletedObjects]) {
             // Anything that was inserted, but not reinserted can just be cancelled; a material delete is not required
             NSMutableSet *cancelledInserts = [[NSMutableSet alloc] initWithSet:_recentlyDeletedObjects];
             [cancelledInserts intersectSet:_processedInsertedObjects];
             [cancelledInserts minusSet:_reinsertedObjects];
-            
+
+            for (ODOObject *object in cancelledInserts) {
+                [object willDelete:ODOWillDeleteEventCancelledInsert];
+            }
+
             // Anything that was re-inserted must be preserved as a material delete
             NSMutableSet *uncancellableInserts = [[NSMutableSet alloc] initWithSet:_recentlyDeletedObjects];
             [uncancellableInserts intersectSet:_reinsertedObjects];
@@ -1441,17 +1459,17 @@ BOOL ODOEditingContextObjectIsInsertedNotConsideringDeletions(ODOEditingContext 
     
     ODOObject *object = (ODOObject *)[self objectRegisteredForID:objectID];
     if (object != nil) {
-        if ([object isInvalid]) {
-            OBASSERT_NOT_REACHED("Maybe should have been purged from the registered objects?");
-            // ... but maybe it is in the undo stack or otherwise not deallocated.  At any rate, this is happening, so let's be defensive.  See <bug://45150> (Clicking URL to recently deleted task can crash)
-            return missingObjectErrorReturn();
-        }
-        
         if ([object isDeleted]) {
             // Object is scheudled for deletion
             return objectScheduledForDeletionErrorReturn();
         }
-        
+
+        if (object.hasBeenDeletedOrInvalidated) {
+            OBASSERT_NOT_REACHED("Maybe should have been purged from the registered objects?");
+            // ... but maybe it is in the undo stack or otherwise not deallocated.  At any rate, this is happening, so let's be defensive.  See <bug://45150> (Clicking URL to recently deleted task can crash)
+            return missingObjectErrorReturn();
+        }
+
         OBASSERT([[object objectID] isEqual:objectID]);
         return object;
     }
@@ -1580,9 +1598,16 @@ static void _runLoopObserverCallBack(CFRunLoopObserverRef observer, CFRunLoopAct
             // Notify our processed objects.  If they make changes during this, they'll go into the recent changes.  The objects themselves must not call -processPendingChanges while we are looping.  We might be able to lift this restriction, but if we don't make a copy of the sets being iterated here, then we'd end up with them mutating a set we are enumerating.  On the other hand, if we do make a copy and they mutate the set, we'd lose track of the fact that there were recent changes and those objects wouldn't get a -willSave!  So, we set a flag here and assert that it isn't set in -processPendingChanges.
             _isSendingWillSave = YES;
             {
-                [_processedInsertedObjects makeObjectsPerformSelector:@selector(willInsert)];
-                [_processedUpdatedObjects makeObjectsPerformSelector:@selector(willUpdate)];
-                [_processedDeletedObjects makeObjectsPerformSelector:@selector(willDelete)]; // OmniFocusModel, in particular OFMProjectInfo's metadata support, wants to be notified when a delete is saved, as opposed to happening in memory (-prepareForDeletion)
+                for (ODOObject *object in _processedInsertedObjects) {
+                    [object willInsert];
+                }
+                for (ODOObject *object in _processedUpdatedObjects) {
+                    [object willUpdate];
+                }
+                 // OmniFocusModel, in particular OFMProjectInfo's metadata support, wants to be notified when a delete is saved, as opposed to happening in memory (-prepareForDeletion)
+                for (ODOObject *object in _processedDeletedObjects) {
+                    [object willDelete:ODOWillDeleteEventMaterial];
+                }
             }
             _isSendingWillSave = NO;
             

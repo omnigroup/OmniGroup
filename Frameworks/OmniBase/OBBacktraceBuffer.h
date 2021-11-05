@@ -27,6 +27,9 @@ static inline void _OBRecordBacktraceU8(const uint8_t *message, OBBacktraceBuffe
 static inline void _OBRecordBacktraceWithContextU8(const uint8_t *message, OBBacktraceBufferType optype, id context) {
     OBRecordBacktraceWithContext((const char *)message, optype, (__bridge const void *)context);
 }
+static inline void _OBRecordBacktraceWithContextI8(const int8_t *message, OBBacktraceBufferType optype, id context) {
+    OBRecordBacktraceWithContext((const char *)message, optype, (__bridge const void *)context);
+}
 static inline void _OBRecordBacktraceWithIntContextU8(const uint8_t *message, OBBacktraceBufferType optype, uintptr_t context) {
     OBRecordBacktraceWithContext((const char *)message, optype, (const void *)context);
 }

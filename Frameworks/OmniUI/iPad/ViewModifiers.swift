@@ -35,7 +35,7 @@ import SwiftUI
  */
 extension View {
     @ViewBuilder
-    public func `if`<Transform: View>( _ condition: Bool, transform: (Self) -> Transform ) -> some View {
+    public func `if`<Transform: View>( _ condition: Bool, @ViewBuilder transform: (Self) -> Transform ) -> some View {
         if condition {
             transform(self)
         } else {
@@ -44,7 +44,7 @@ extension View {
     }
     
     @ViewBuilder
-    public func `ifLet`<Transform: View, T: Any>( _ optional: T?, transform: (T, Self) -> Transform ) -> some View {
+    public func `ifLet`<Transform: View, T: Any>( _ optional: T?, @ViewBuilder transform: (T, Self) -> Transform ) -> some View {
         if let instance = optional {
             transform(instance, self)
         } else {
@@ -53,7 +53,7 @@ extension View {
     }
     
     @ViewBuilder
-    public func `ifElse`<IfTransform: View, ElseTransform: View>( _ condition: Bool, ifTransform: (Self) -> IfTransform, elseTransform: (Self) -> ElseTransform ) -> some View {
+    public func `ifElse`<IfTransform: View, ElseTransform: View>( _ condition: Bool, @ViewBuilder ifTransform: (Self) -> IfTransform, @ViewBuilder elseTransform: (Self) -> ElseTransform ) -> some View {
         if condition {
             ifTransform(self)
         } else {
@@ -62,12 +62,17 @@ extension View {
     }
     
     @ViewBuilder
-    public func `ifLetElse`<IfTransform: View, ElseTransform: View, T: Any>( _ optional: T?, ifTransform: (T, Self) -> IfTransform, elseTransform: (Self) -> ElseTransform ) -> some View {
+    public func `ifLetElse`<IfTransform: View, ElseTransform: View, T: Any>( _ optional: T?, @ViewBuilder ifTransform: (T, Self) -> IfTransform, @ViewBuilder elseTransform: (Self) -> ElseTransform ) -> some View {
         if let instance = optional {
             ifTransform(instance, self)
         } else {
             elseTransform(self)
         }
+    }
+
+    public func assertNotReached(_ message: String) -> Self {
+        Swift.assertionFailure(message)
+        return self
     }
 }
 

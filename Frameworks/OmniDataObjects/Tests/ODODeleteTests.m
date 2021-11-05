@@ -239,8 +239,8 @@ OB_REQUIRE_ARC;
     [_undoManager undo];
 
     // The old objects should be dead and gone, but there should be new incarnations
-    XCTAssertTrue([left isInvalid], @"should be dead");
-    XCTAssertTrue([right isInvalid], @"should be dead");
+    XCTAssertTrue([left hasBeenDeleted], @"should be dead");
+    XCTAssertTrue([right hasBeenDeleted], @"should be dead");
     CURRENT(left);
     CURRENT(right);
     XCTAssertFalse([left isDeleted], @"should be added back");
