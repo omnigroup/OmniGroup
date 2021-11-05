@@ -1,4 +1,4 @@
-// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -70,8 +70,6 @@ OFDeclareDebugLogLevel(OUIApplicationLaunchDebug);
     OFXAgent *_syncAgent;
     BOOL _syncAgentForegrounded; // Keep track of whether we have told the sync agent to run. We might get backgrounded while starting up (when handling a crash alert, for example).
     OUIDocumentSyncActivityObserver *_syncActivityObserver;
-
-    OFBackgroundActivity *_backgroundFlushActivity;
 
     NSString *_agentStatusImageName;
 
@@ -823,8 +821,6 @@ static NSSet *ViewableFileTypes()
 
 - (void)applicationWillEnterForeground;
 {
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:OUISystemIsSnapshottingNotification object:nil];
-    [self destroyCurrentSnapshotTimer];
     DEBUG_LAUNCH(1, @"Will enter foreground");
 
     if (_syncAgent && _syncAgentForegrounded == NO) {
@@ -847,15 +843,6 @@ static NSSet *ViewableFileTypes()
         [_syncAgent applicationDidEnterBackground];
     }
 
-    //Register to observe the ViewDidLayoutSubviewsNotification, which we post in the -didLayoutSubviews method of the DocumentPickerViewController.
-    //-didLayoutSubviews gets called during Apple's snapshots. Each time it is called while we are backgrounded, we assume they are taking another snapshot,
-    //so we reset the countdown to clearing the cache (since the cache is used in generating the views they are snapshotting).
-    _backgroundFlushActivity = [OFBackgroundActivity backgroundActivityWithIdentifier: @"com.omnigroup.OmniUI.OUIDocumentAppController.delayedCacheClearing"];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willWaitForSnapshots) name:OUISystemIsSnapshottingNotification object: nil];
-    
-    //Need to actually kick off the timer, since the system may not take the snapshots that end up causing the notification to post, and we do want to clear the cache eventually.
-    [self willWaitForSnapshots];
-    
     [super applicationDidEnterBackground];
 }
 
@@ -1115,14 +1102,6 @@ static NSMutableDictionary *spotlightToFileURL;
     [OUIDocumentSceneDelegate activeSceneDelegatesPerformBlock:^(OUIDocumentSceneDelegate *sceneDelegate) {
         [sceneDelegate updateBrowserToolbarItems];
     }];
-}
-
-#pragma mark -Snapshots
-
-- (void)didFinishWaitingForSnapshots;
-{
-    [super didFinishWaitingForSnapshots];
-    [_backgroundFlushActivity finished];
 }
 
 @end

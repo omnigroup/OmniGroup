@@ -1,4 +1,4 @@
-// Copyright 2013-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,8 +20,7 @@
 #import "OSUInstallerPrivilegedHelperProtocol.h"
 #import "OSUInstallerPrivilegedHelperRights.h"
 #import "OSUErrors.h"
-
-RCS_ID("$Id$");
+#import "OSUConnectionAudit.h"
 
 #define ERROR_FILENAME_AND_NUMBER \
     ([[[NSFileManager defaultManager] stringWithFileSystemRepresentation:__FILE__ length:strlen(__FILE__)] stringByAppendingFormat:@":%d", __LINE__])
@@ -1041,6 +1040,10 @@ static BOOL _PerformPrivilegedTrashFile(NSString *path, NSString *description, N
 
 - (BOOL)listener:(NSXPCListener *)listener shouldAcceptNewConnection:(NSXPCConnection *)connection
 {
+    if (!OSUCheckConnectionAuditToken(connection)) {
+        return NO;
+    }
+
     // Each connection gets its own instance of an OSUInstallerService, since there is per instance data.
     // Typically, there is only ever one of these, and the host application will reuse a single connection. (Unless it was interrupted or invalidated.)
     OSUInstallerService *installerService = [[OSUInstallerService alloc] init];

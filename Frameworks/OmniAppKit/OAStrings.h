@@ -1,4 +1,4 @@
-// Copyright 2016-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,3 +12,6 @@ extern NSString * _Nonnull OAOK(void);
 extern NSString * _Nonnull OACancel(void);
 extern NSString * _Nonnull OALearnMore(void);
 extern NSString * _Nonnull OARetry(void);
+#if MAC_APP_STORE_RETAIL_DEMO
+extern NSString * _Nonnull OAFeatureNotEnabledForThisDemo(void);
+#endif

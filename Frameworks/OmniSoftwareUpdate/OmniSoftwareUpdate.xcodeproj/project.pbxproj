@@ -49,6 +49,7 @@
 		3446926B186284E200FBDD73 /* OSUPrivacyAlertWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 34469267186284E200FBDD73 /* OSUPrivacyAlertWindowController.m */; };
 		344692791862855400FBDD73 /* OSUPrivacyAlert.xib in Resources */ = {isa = PBXBuildFile; fileRef = 344692771862855400FBDD73 /* OSUPrivacyAlert.xib */; };
 		3446927A1862855400FBDD73 /* OSUPrivacyAlert.xib in Resources */ = {isa = PBXBuildFile; fileRef = 344692771862855400FBDD73 /* OSUPrivacyAlert.xib */; };
+		344D537B25BF4BBC00A857A8 /* OSUConnectionAudit.m in Sources */ = {isa = PBXBuildFile; fileRef = 3470E48125BB4E6500FCE182 /* OSUConnectionAudit.m */; settings = {COMPILER_FLAGS = "-DOSU_DEVELOPMENT_TEAM=\\\"$(DEVELOPMENT_TEAM)\\\""; }; };
 		344E5D2024E2257B009BAB4E /* OSUErrorDomain.h in Headers */ = {isa = PBXBuildFile; fileRef = 344E5D1F24E2257B009BAB4E /* OSUErrorDomain.h */; };
 		344E5D2124E228A4009BAB4E /* OSUErrors.m in Sources */ = {isa = PBXBuildFile; fileRef = 34F300701263A6850044AB52 /* OSUErrors.m */; };
 		3456AED20C1201300066F5F4 /* OSURunTime.h in Headers */ = {isa = PBXBuildFile; fileRef = 3456AED00C1201300066F5F4 /* OSURunTime.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -158,6 +159,7 @@
 		34CED0031B59A0FB0075705C /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3479A3AA1AB8DDF10077BB01 /* CoreGraphics.framework */; };
 		34CF60AD184E73AC00C09946 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34591B860A751FAD00BA6CCA /* WebKit.framework */; };
 		34CF60AE184E769000C09946 /* OmniSoftwareUpdate.defaults in Resources */ = {isa = PBXBuildFile; fileRef = 34D0FD7A184D04C800453075 /* OmniSoftwareUpdate.defaults */; };
+		34D02D1125BB902700808183 /* OSUConnectionAudit.m in Sources */ = {isa = PBXBuildFile; fileRef = 3470E48125BB4E6500FCE182 /* OSUConnectionAudit.m */; settings = {COMPILER_FLAGS = "-DOSU_DEVELOPMENT_TEAM=\\\"$(DEVELOPMENT_TEAM)\\\""; }; };
 		34D0FD85184D04CE00453075 /* OmniSoftwareUpdate.defaults in Resources */ = {isa = PBXBuildFile; fileRef = 34D0FD7A184D04C800453075 /* OmniSoftwareUpdate.defaults */; };
 		34D5FE681264EFD700FDFEBB /* OSUPreferences.xib in Resources */ = {isa = PBXBuildFile; fileRef = 34D5FE661264EFD700FDFEBB /* OSUPreferences.xib */; };
 		34D5FE711264F09D00FDFEBB /* OSUPreferences.h in Headers */ = {isa = PBXBuildFile; fileRef = 34D5FE6F1264F09D00FDFEBB /* OSUPreferences.h */; settings = {ATTRIBUTES = (); }; };
@@ -245,7 +247,7 @@
 		5FAF8F6916F2916100BFFE55 /* OSUInstallerScript.m in Sources */ = {isa = PBXBuildFile; fileRef = 5FAF8F6716F2916100BFFE55 /* OSUInstallerScript.m */; };
 		5FF0FACB16E7E83D00F87CB7 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F1C023916DC8D82006F9D51 /* Foundation.framework */; };
 		5FF0FACE16E7E83D00F87CB7 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 5FF0FACD16E7E83D00F87CB7 /* main.m */; };
-		5FF0FB1916E80E1D00F87CB7 /* com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.7 in Copy Privileged Helpers */ = {isa = PBXBuildFile; fileRef = 5FF0FACA16E7E83D00F87CB7 /* com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.7 */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		5FF0FB1916E80E1D00F87CB7 /* com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.8 in Copy Privileged Helpers */ = {isa = PBXBuildFile; fileRef = 5FF0FACA16E7E83D00F87CB7 /* com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.8 */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		6A93324E0C6141A0002DC78C /* OSUDownloadController.h in Headers */ = {isa = PBXBuildFile; fileRef = 6A93324C0C6141A0002DC78C /* OSUDownloadController.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		6A93324F0C6141A0002DC78C /* OSUDownloadController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6A93324D0C6141A0002DC78C /* OSUDownloadController.m */; };
 		6A950E4F0C8DCAA500C807DD /* OSUSendFeedbackErrorRecovery.h in Headers */ = {isa = PBXBuildFile; fileRef = 6A950E4D0C8DCAA500C807DD /* OSUSendFeedbackErrorRecovery.h */; };
@@ -647,7 +649,7 @@
 			dstPath = Contents/Library/LaunchServices;
 			dstSubfolderSpec = 1;
 			files = (
-				5FF0FB1916E80E1D00F87CB7 /* com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.7 in Copy Privileged Helpers */,
+				5FF0FB1916E80E1D00F87CB7 /* com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.8 in Copy Privileged Helpers */,
 			);
 			name = "Copy Privileged Helpers";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -744,6 +746,8 @@
 		3467B1FC1EC52876005DA568 /* OmniUI.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniUI.xcodeproj; path = ../OmniUI/iPad/OmniUI.xcodeproj; sourceTree = "<group>"; };
 		346F34BF0C627E4600AAEE4D /* OSUInstaller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUInstaller.h; sourceTree = "<group>"; };
 		346F34C00C627E4600AAEE4D /* OSUInstaller.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUInstaller.m; sourceTree = "<group>"; };
+		3470E48025BB4E6500FCE182 /* OSUConnectionAudit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OSUConnectionAudit.h; sourceTree = "<group>"; };
+		3470E48125BB4E6500FCE182 /* OSUConnectionAudit.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = OSUConnectionAudit.m; sourceTree = "<group>"; };
 		34775A231266672800FCDD2D /* InfoPlist.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InfoPlist.h; sourceTree = "<group>"; };
 		3478696022383922001914C2 /* OmniSoftwareUpdate-iOS.xcfilelist */ = {isa = PBXFileReference; lastKnownFileType = text.xcfilelist; path = "OmniSoftwareUpdate-iOS.xcfilelist"; sourceTree = "<group>"; };
 		3479A3961AB8D8590077BB01 /* OSURunOperationParameters.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSURunOperationParameters.h; sourceTree = "<group>"; };
@@ -883,7 +887,7 @@
 		5F9568571C0E4D7100DBA34D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/OmniSystemInfoPreferences.xib; sourceTree = "<group>"; };
 		5FAF8F6616F2916100BFFE55 /* OSUInstallerScript.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OSUInstallerScript.h; path = Common/OSUInstallerScript.h; sourceTree = SOURCE_ROOT; };
 		5FAF8F6716F2916100BFFE55 /* OSUInstallerScript.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OSUInstallerScript.m; path = Common/OSUInstallerScript.m; sourceTree = SOURCE_ROOT; };
-		5FF0FACA16E7E83D00F87CB7 /* com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.7 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.7; sourceTree = BUILT_PRODUCTS_DIR; };
+		5FF0FACA16E7E83D00F87CB7 /* com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.8 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.8; sourceTree = BUILT_PRODUCTS_DIR; };
 		5FF0FACD16E7E83D00F87CB7 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		5FF0FADF16E7FC8900F87CB7 /* Info.plist */ = {isa = PBXFileReference; explicitFileType = text.xml; fileEncoding = 4; path = Info.plist; sourceTree = "<group>"; };
 		5FF0FAE016E7FE0100F87CB7 /* launchd.plist */ = {isa = PBXFileReference; explicitFileType = text.xml; fileEncoding = 4; path = launchd.plist; sourceTree = "<group>"; };
@@ -1032,7 +1036,7 @@
 				4912123B09D39ED7003DC19F /* OSUTestApp.app */,
 				5F1C023716DC8D82006F9D51 /* com.omnigroup.OmniSoftwareUpdate.OSUInstallerService.xpc */,
 				5F049AEC16DE74C5004F398B /* OSULaunchTrampoline */,
-				5FF0FACA16E7E83D00F87CB7 /* com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.7 */,
+				5FF0FACA16E7E83D00F87CB7 /* com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.8 */,
 				34A5F504184E474C00E8BA9A /* OmniSystemInfo.framework */,
 				348D92E21AB798A40093AD35 /* com.omnigroup.OmniSoftwareUpdate.OSUCheckService.xpc */,
 				348A78681B583C390082D55D /* OmniSoftwareUpdate.framework */,
@@ -1478,6 +1482,8 @@
 				5FAF8F6616F2916100BFFE55 /* OSUInstallerScript.h */,
 				5FAF8F6716F2916100BFFE55 /* OSUInstallerScript.m */,
 				5F6DF88116E0115F00C524A6 /* OSUInstaller.sh */,
+				3470E48025BB4E6500FCE182 /* OSUConnectionAudit.h */,
+				3470E48125BB4E6500FCE182 /* OSUConnectionAudit.m */,
 			);
 			name = Common;
 			path = Interfaces;
@@ -1799,7 +1805,7 @@
 			);
 			name = OSUInstallerPrivilegedHelper;
 			productName = OSUInstaller;
-			productReference = 5FF0FACA16E7E83D00F87CB7 /* com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.7 */;
+			productReference = 5FF0FACA16E7E83D00F87CB7 /* com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.8 */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
@@ -1808,7 +1814,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1220;
+				LastUpgradeCheck = 1250;
 				TargetAttributes = {
 					3489E8BF1AD56BA10039E24D = {
 						CreatedOnToolsVersion = 6.2;
@@ -2431,6 +2437,7 @@
 				5F1C024316DC8D82006F9D51 /* main.m in Sources */,
 				5F6DF84B16DFC97D00C524A6 /* OSUErrors.m in Sources */,
 				5F6DF87C16DFEDFD00C524A6 /* OSUInstallerServiceProtocol.m in Sources */,
+				344D537B25BF4BBC00A857A8 /* OSUConnectionAudit.m in Sources */,
 				5F7DE65816EFF3E70072E86C /* OSUInstallerPrivilegedHelperProtocol.m in Sources */,
 				5F0F074616F2489B009149BA /* OSUInstallerPrivilegedHelperRights.m in Sources */,
 				5FAF8F6816F2916100BFFE55 /* OSUInstallerScript.m in Sources */,
@@ -2442,6 +2449,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				5FF0FACE16E7E83D00F87CB7 /* main.m in Sources */,
+				34D02D1125BB902700808183 /* OSUConnectionAudit.m in Sources */,
 				5F7DE65916EFF3E70072E86C /* OSUInstallerPrivilegedHelperProtocol.m in Sources */,
 				5FAF8F6916F2916100BFFE55 /* OSUInstallerScript.m in Sources */,
 				344E5D2124E228A4009BAB4E /* OSUErrors.m in Sources */,
@@ -2842,7 +2850,7 @@
 				);
 				HEADER_SEARCH_PATHS = /usr/include/libxml2;
 				INFOPLIST_OTHER_PREPROCESSOR_FLAGS = "$(value) -DOSUInstallerPrivilegedHelperVersion=$(OSUInstallerPrivilegedHelperVersion) -DOSUInstallerPrivilegedHelperIdentifier=com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.$(OSUInstallerPrivilegedHelperVersion)";
-				OSUInstallerPrivilegedHelperVersion = 7;
+				OSUInstallerPrivilegedHelperVersion = 8;
 			};
 			name = Debug;
 		};
@@ -2858,7 +2866,7 @@
 				);
 				HEADER_SEARCH_PATHS = /usr/include/libxml2;
 				INFOPLIST_OTHER_PREPROCESSOR_FLAGS = "$(value) -DOSUInstallerPrivilegedHelperVersion=$(OSUInstallerPrivilegedHelperVersion) -DOSUInstallerPrivilegedHelperIdentifier=com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.$(OSUInstallerPrivilegedHelperVersion)";
-				OSUInstallerPrivilegedHelperVersion = 7;
+				OSUInstallerPrivilegedHelperVersion = 8;
 			};
 			name = Release;
 		};
@@ -2970,6 +2978,7 @@
 					"@loader_path/../../../../../../../",
 				);
 				MACH_O_TYPE = mh_execute;
+				OTHER_CODE_SIGN_FLAGS = "-o hard,kill";
 				OTHER_LDFLAGS = (
 					"-sectcreate",
 					__TEXT,

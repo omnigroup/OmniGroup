@@ -1,4 +1,4 @@
-// Copyright 2004-2020 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,8 +17,6 @@
 #import <OmniAppKit/OAInternetConfig.h>
 #import <OmniAppKit/OAWebPageViewer.h>
 #import <OmniAppKit/OAStrings.h>
-
-RCS_ID("$Id$")
 
 @implementation OAController
 {
@@ -140,7 +138,9 @@ RCS_ID("$Id$")
     if (![NSString isEmptyString:buildRevision])
         buildVersion = [NSString stringWithFormat:@"%@ r%@", buildVersion, buildRevision];
     
-#if defined(MAC_APP_STORE) && MAC_APP_STORE
+#if MAC_APP_STORE_RETAIL_DEMO
+    buildVersionSuffix = @" Retail Demo";
+#elif defined(MAC_APP_STORE) && MAC_APP_STORE
     buildVersionSuffix = @" Mac App Store";
 #endif
     
@@ -336,6 +336,10 @@ RCS_ID("$Id$")
 
 - (void)checkMessageOfTheDay;
 {
+#if MAC_APP_STORE_RETAIL_DEMO
+    // Retail demos shouldn't show release notes when launching the app
+    return;
+#else
     NSString *path = [self _messageOfTheDayPath];
     if (path == nil)
         return;
@@ -360,6 +364,33 @@ RCS_ID("$Id$")
             }
 	}
     }
+#endif
 }
+
+#pragma mark -
+
+#if MAC_APP_STORE_RETAIL_DEMO
++ (void)runFeatureNotEnabledAlertForWindow:(nullable NSWindow *)window completion:(void (^ _Nullable)(void))completion;
+{
+    void (^completionBlock)(void) = [completion copy];
+
+    NSAlert *alert = [[NSAlert alloc] init];
+    alert.alertStyle = NSAlertStyleInformational;
+    alert.messageText = OAFeatureNotEnabledForThisDemo();
+    [alert addButtonWithTitle:OACancel()];
+    if (window == nil) {
+        [alert runModal];
+        if (completionBlock != NULL) {
+            completionBlock();
+        }
+    } else {
+        [alert beginSheetModalForWindow:window completionHandler:^(NSModalResponse returnCode) {
+            if (completionBlock != NULL) {
+                completionBlock();
+            }
+        }];
+    }
+}
+#endif
 
 @end

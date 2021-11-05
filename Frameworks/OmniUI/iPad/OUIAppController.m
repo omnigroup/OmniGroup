@@ -1,4 +1,4 @@
-// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -141,7 +141,6 @@ static void TrackBackgroundTasks(void)
 @property (nonatomic, copy, nullable) void (^presentationCompletionHandler)(void);
 @end
 
-NSNotificationName const OUISystemIsSnapshottingNotification = @"OUISystemIsSnapshottingNotification";
 static OFPreference *NeedToShowURLPreference;
 static OFPreference *PreviouslyShownURLsPreference;
 
@@ -1559,32 +1558,6 @@ static UIImage *menuImage(NSString *name)
             }
         }];
     }];
-}
-
-#pragma mark - Snapshots
-
-- (void)willWaitForSnapshots
-{
-    [self destroyCurrentSnapshotTimer];
-    [self startNewSnapshotTimer];
-}
-
-- (void)startNewSnapshotTimer
-{
-    NSTimeInterval secondsToWaitForSnapshots = 5.0;
-    NSTimer *newTimerForSnapshots = [NSTimer scheduledTimerWithTimeInterval:secondsToWaitForSnapshots target:self selector: @selector(didFinishWaitingForSnapshots) userInfo: nil repeats: NO];
-    [self setTimerForSnapshots:newTimerForSnapshots];
-}
-
-- (void)destroyCurrentSnapshotTimer
-{
-    [[self timerForSnapshots] invalidate];
-    [self setTimerForSnapshots:nil];
-}
-
-- (void)didFinishWaitingForSnapshots
-{
-    //Whatever work you want done after the app finishes waiting for Apple's snapshots, implement it inside this method in your subclasses.
 }
 
 #pragma mark - Scene API

@@ -1,4 +1,4 @@
-// Copyright 2004-2020 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -49,6 +49,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)applicationDidFinishLaunching:(NSNotification *)notification NS_REQUIRES_SUPER;
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender NS_REQUIRES_SUPER;
 - (void)applicationWillTerminate:(NSNotification *)notification NS_REQUIRES_SUPER;
+
+#if MAC_APP_STORE_RETAIL_DEMO
++ (void)runFeatureNotEnabledAlertForWindow:(nullable NSWindow *)window completion:(void (^ _Nullable)(void))completion;
+#endif
 
 @end
 

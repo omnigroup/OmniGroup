@@ -1,4 +1,4 @@
-// Copyright 2007-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -342,9 +342,10 @@ const OFCompletionMatchComparator OFDefaultCompletionMatchComparator = ^(OFCompl
     
     NSMutableString *resultString = [NSMutableString string];
     NSUInteger stringIndex = 0, stringLength = [_string length];
-    
-    for (stringIndex = 0; stringIndex < stringLength; stringIndex++) {
-        NSString *currentCharacterString = [_string substringWithRange:NSMakeRange(stringIndex, 1)];
+
+    while (stringIndex < stringLength) {
+        NSRange currentCharacterRange = [_string rangeOfComposedCharacterSequenceAtIndex:stringIndex];
+        NSString *currentCharacterString = [_string substringWithRange:currentCharacterRange];
         if (stringIndex == nextHighlightIndex) {
             nextHighlightIndex = indexes[indexIndex++];
             if (!inHighlight) {
@@ -358,6 +359,7 @@ const OFCompletionMatchComparator OFDefaultCompletionMatchComparator = ^(OFCompl
             }
         }
         [resultString appendString:transformSubstrings(currentCharacterString)];
+        stringIndex = NSMaxRange(currentCharacterRange);
     }
 
     if (inHighlight) {

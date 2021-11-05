@@ -1,4 +1,4 @@
-// Copyright 2013-2020 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,6 +13,7 @@
 #import "OSUInstallerPrivilegedHelperProtocol.h"
 #import "OSUInstallerPrivilegedHelperRights.h"
 #import "OSUInstallerScript.h"
+#import "OSUConnectionAudit.h"
 
 static NSString * OSUInstallerPrivilegedHelperFileNameAndNumberErrorKey = @"com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.ErrorFileLineAndNumber";
 
@@ -178,6 +179,10 @@ static NSString * OSUInstallerPrivilegedHelperFileNameAndNumberErrorKey = @"com.
 
 - (BOOL)listener:(NSXPCListener *)listener shouldAcceptNewConnection:(NSXPCConnection *)connection
 {
+    if (!OSUCheckConnectionAuditToken(connection)) {
+        return NO;
+    }
+
     connection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(OSUInstallerPrivilegedHelper)];
     connection.exportedObject = self;
 
@@ -193,6 +198,11 @@ static NSString * OSUInstallerPrivilegedHelperFileNameAndNumberErrorKey = @"com.
 int main(int argc, const char * argv[])
 {
     @autoreleasepool {
+        // Remove old versions which didn't check the code signing of the remote side of the connection
+        unlink("/Library/PrivilegedHelperTools/com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.7");
+        unlink("/Library/PrivilegedHelperTools/com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.6");
+        unlink("/Library/PrivilegedHelperTools/com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper"); // versions before 6 didn't have the version in the name
+
         OSUInstallerPrivilegedHelper *helper = [[OSUInstallerPrivilegedHelper alloc] init];
         NSXPCListener *listener = [[NSXPCListener alloc] initWithMachServiceName:OSUInstallerPrivilegedHelperJobLabel];
 

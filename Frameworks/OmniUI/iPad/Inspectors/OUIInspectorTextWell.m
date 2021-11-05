@@ -1,4 +1,4 @@
-// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -39,7 +39,8 @@
     
     // Used to show that we are the editing field when we have a custom keyboard and don't use _textField.
     UIView *_focusIndicatorView;
-    
+
+    id _objectValue;
     BOOL _textChangedWhileEditingOnCustomKeyboard;
 }
 
@@ -277,11 +278,21 @@ static NSString *_getText(OUIInspectorTextWell *self, NSString *text, TextType *
     [self setNeedsLayout];
 }
 
+- (id)objectValue;
+{
+    if (!_customKeyboard) {
+        id objectValue;
+        [_formatter getObjectValue:&objectValue forString:self.text errorDescription:NULL];
+        _objectValue = objectValue;
+    }
+    return _objectValue;
+}
+
 - (void)setObjectValue:(id)objectValue;
 {
     if (_objectValue == objectValue || (_objectValue && [objectValue isEqual:_objectValue]))
         return;
-    
+
     _objectValue = objectValue;
     self.text = [_formatter stringForObjectValue:_objectValue];
 }

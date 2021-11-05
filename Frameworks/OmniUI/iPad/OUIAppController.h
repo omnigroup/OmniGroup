@@ -1,4 +1,4 @@
-// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -221,12 +221,6 @@ extern NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey; // @"
 @property(nonatomic,readonly) BOOL useCompactBarButtonItemsIfApplicable; // will allow for possible compact versions of navbar items
 
 - (UIImage *)exportBarButtonItemImageInViewController:(UIViewController *)viewController;
-
-- (void)willWaitForSnapshots;
-- (void)didFinishWaitingForSnapshots;
-- (void)startNewSnapshotTimer;
-- (void)destroyCurrentSnapshotTimer;
-extern NSNotificationName const OUISystemIsSnapshottingNotification;
 
 @property (readonly) BOOL canCreateNewDocument;
 @property (readonly) BOOL shouldEnableCreateNewDocument;

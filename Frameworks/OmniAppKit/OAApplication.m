@@ -1,4 +1,4 @@
-// Copyright 1997-2020 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -1369,5 +1369,13 @@ static BOOL _overridesNSObjectCategoryMethod(id self, SEL validateSelector)
 {
     return [self _invokeValidatorForType:OAUserInterfaceItemValidatorType item:(NSObject <NSValidatedUserInterfaceItem> *)item];
 }
+
+#if MAC_APP_STORE_RETAIL_DEMO
+- (BOOL)restoreWindowWithIdentifier:(NSUserInterfaceItemIdentifier)identifier state:(NSCoder *)state completionHandler:(void (^)(NSWindow *, NSError *))completionHandler;
+{
+    completionHandler(nil, nil);
+    return NO;
+}
+#endif
 
 @end

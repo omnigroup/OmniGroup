@@ -1,11 +1,9 @@
-// Copyright 2016-2020 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
-//
-// $Id$
 
 import Foundation
 
@@ -462,7 +460,7 @@ private func getFolderURLContainerDisplayName(_ folderURL: URL) -> String? {
             // Logged as FB7631137: URL.promisedItemResourceValues(forKeys:) does not return correct values for iCloud placeholders
             if let isUbiquitousItem = values.isUbiquitousItem, let downloaded = values.ubiquitousItemDownloadRequested, isUbiquitousItem && !downloaded {
                 // Because of the above, we'll take a hacky undocumented approach. The xattr "com.apple.icloud.itemName" looks like it also has the actual name.
-                assert(fileURL.pathExtension == "icloud")
+                assert((isDirectory?.boolValue ?? false) || fileURL.pathExtension == "icloud") // Might be a regular subdirectory (which we won't request download for unless it is one of the known resource types)
                 pathExtension = fileURL.deletingPathExtension().pathExtension
                 needsDownloading = true
             } else {

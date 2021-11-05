@@ -5,6 +5,10 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-// Getting the preprocessor to concat the version onto the base identifier is more trouble than it's worth, given that we check this all in a shell script afterward.
-#define OSUInstallerPrivilegedHelperVersion 8
-#define OSUInstallerPrivilegedHelperIdentifier com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.8
+#import <Foundation/Foundation.h>
+
+NS_ASSUME_NONNULL_BEGIN
+
+extern BOOL OSUCheckConnectionAuditToken(NSXPCConnection *connection);
+
+NS_ASSUME_NONNULL_END

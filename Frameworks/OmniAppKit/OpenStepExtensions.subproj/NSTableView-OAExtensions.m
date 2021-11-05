@@ -1,4 +1,4 @@
-// Copyright 1997-2020 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,8 +15,6 @@
 #import <OmniAppKit/NSOutlineView-OAExtensions.h>
 #import <OmniAppKit/NSView-OAExtensions.h>
 
-RCS_ID("$Id$")
-
 OBDEPRECATED_METHOD(-tableView:deleteRows:); // Use -tableView:deleteRowsAtIndexes:
 OBDEPRECATED_METHOD(-tableView:writeRows:toPasteboard:); // deprecated by the OS, but let's warn if anyone implements it.  Use the indexes version.
 OBDEPRECATED_METHOD(-tableViewTypeAheadSelectionColumn:); // NSTableView automagically has this is 10.5 and later (see any number of type select delegate methods in the NSTableView header)
@@ -25,11 +23,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 void OATableViewSetFullWidthStyle(NSTableView *tableView)
 {
-#ifdef MAC_OS_X_VERSION_10_16
-    if (@available(macOS 10.16, *)) {
+    if (@available(macOS 11.0, *)) {
         tableView.style = NSTableViewStyleFullWidth;
     }
-#endif
 }
 
 @interface NSTableView (OAExtensionsPrivate)

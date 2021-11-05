@@ -24,7 +24,7 @@
 <!---
 #ifdef DEBUG
 -->
-        <string>identifier OSUInstallerPrivilegedHelperIdentifier and anchor apple generic and certificate leaf[subject.CN] = "Mac Developer:"*</string>
+        <string>identifier OSUInstallerPrivilegedHelperIdentifier and anchor apple generic and certificate leaf[subject.CN] = "Apple Development:"*</string>
 <!--
 #else
 -->

@@ -16,7 +16,7 @@
 <!--
 #ifdef DEBUG
   -->
-        <string>identifier com.omnigroup.OmniSoftwareUpdate.OSUInstallerService and anchor apple generic and certificate leaf[subject.CN] = "Mac Developer:"*</string>
+        <string>identifier com.omnigroup.OmniSoftwareUpdate.OSUInstallerService and anchor apple generic and certificate leaf[subject.CN] = "Apple Development:"*</string>
 <!--
 #endif
   -->
