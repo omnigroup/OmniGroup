@@ -1,4 +1,4 @@
-// Copyright 1997-2019 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -175,6 +175,9 @@
 #import <OmniFoundation/NSDictionary-OFExtensions.h>
 #import <OmniFoundation/NSError-OFExtensions.h>
 #import <OmniFoundation/NSFileCoordinator-OFExtensions.h>
+#import <OmniFoundation/NSFileManager-OFExtendedAttributes.h>
+#import <OmniFoundation/NSFileManager-OFSimpleExtensions.h>
+#import <OmniFoundation/NSFileManager-OFTemporaryPath.h>
 #import <OmniFoundation/NSIndexSet-OFExtensions.h>
 #import <OmniFoundation/NSInvocation-OFExtensions.h>
 #import <OmniFoundation/NSMutableArray-OFExtensions.h>
@@ -182,20 +185,18 @@
 #import <OmniFoundation/NSMutableDictionary-OFExtensions.h>
 #import <OmniFoundation/NSMutableSet-OFExtensions.h>
 #import <OmniFoundation/NSMutableString-OFExtensions.h>
-#import <OmniFoundation/NSNumber-OFExtensions.h>
 #import <OmniFoundation/NSNumber-OFExtensions-CGTypes.h>
+#import <OmniFoundation/NSNumber-OFExtensions.h>
 #import <OmniFoundation/NSObject-OFExtensions.h>
+#import <OmniFoundation/NSProcessInfo-OFExtensions.h>
 #import <OmniFoundation/NSRange-OFExtensions.h>
 #import <OmniFoundation/NSRegularExpression-OFExtensions.h>
 #import <OmniFoundation/NSSet-OFExtensions.h>
 #import <OmniFoundation/NSString-OFExtensions.h>
 #import <OmniFoundation/NSString-OFPathExtensions.h>
+#import <OmniFoundation/NSURL-OFExtensions.h>
 #import <OmniFoundation/NSUndoManager-OFExtensions.h>
 #import <OmniFoundation/NSUserDefaults-OFExtensions.h>
-#import <OmniFoundation/NSURL-OFExtensions.h>
-#import <OmniFoundation/NSFileManager-OFExtendedAttributes.h>
-#import <OmniFoundation/NSFileManager-OFSimpleExtensions.h>
-#import <OmniFoundation/NSFileManager-OFTemporaryPath.h>
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
     #import <OmniFoundation/NSCalendarDate-OFExtensions.h>
@@ -208,7 +209,6 @@
     #import <OmniFoundation/NSNotificationCenter-OFExtensions.h>
     #import <OmniFoundation/NSNotificationQueue-OFExtensions.h>
     #import <OmniFoundation/NSObject-OFAppleScriptExtensions.h>
-    #import <OmniFoundation/NSProcessInfo-OFExtensions.h>
     #import <OmniFoundation/NSScanner-OFExtensions.h>
     #import <OmniFoundation/NSScriptCommand-OFExtensions.h>
     #import <OmniFoundation/NSScriptObjectSpecifier-OFExtensions.h>

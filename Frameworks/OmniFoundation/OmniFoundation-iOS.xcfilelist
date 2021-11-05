@@ -126,6 +126,7 @@ OpenStepExtensions.subproj/NSMutableString-OFExtensions.m
 OpenStepExtensions.subproj/NSNumber-OFExtensions-CGTypes.m
 OpenStepExtensions.subproj/NSNumber-OFExtensions.m
 OpenStepExtensions.subproj/NSObject-OFExtensions.m
+OpenStepExtensions.subproj/NSProcessInfo-OFExtensions.m
 OpenStepExtensions.subproj/NSProcessInfo-OFExtensions.swift
 OpenStepExtensions.subproj/NSRange-OFExtensions.m
 OpenStepExtensions.subproj/NSRegularExpression-OFExtensions.m

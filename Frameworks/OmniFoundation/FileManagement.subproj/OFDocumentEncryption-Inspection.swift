@@ -1,4 +1,4 @@
-// Copyright 2016-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -38,15 +38,8 @@ extension OFDocumentEncryptionSettings {
         var passwords = false;
         var pki = false;
         var emails = [String]();
-        var dns = [String]();
         
         func addCertInfo(_ cert: SecCertificate) {
-            #if os(OSX)
-            if let description = SecCertificateCopyLongDescription(kCFAllocatorDefault, cert, nil) {
-                dns.append(description as String);
-            }
-            #endif
-            
             var certEmails : CFArray? = nil;
             if SecCertificateCopyEmailAddresses(cert, &certEmails) == 0 {
                 emails.append(contentsOf: certEmails as! [String]);

@@ -1,4 +1,4 @@
-// Copyright 2017-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2017-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -275,6 +275,16 @@ class DiscloseGroupHeaderSlice: OUIInspectorSlice {
 // MARK: - DiscloseGroupSeparatorSlice
 
 class DiscloseGroupSeparatorSlice: OUIInspectorSlice {
+    override public init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
+        super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
+        self.wantsAutoConfiguredBottomSeparator = false
+    }
+        
+    required public init?(coder: NSCoder) {
+        super.init(coder: coder)
+        self.wantsAutoConfiguredBottomSeparator = false
+    }
+    
     weak var delegate: DiscloseGroupSeparatorSliceDelegate?
     @objc /**REVIEW**/ public var separatorHeight: CGFloat = 16.0
 
@@ -292,12 +302,6 @@ class DiscloseGroupSeparatorSlice: OUIInspectorSlice {
 
     override func sliceBackgroundColor() -> UIColor! {
         return UIColor.clear
-    }
-
-    override var wantsAutoConfiguredBottomSeparator: Bool {
-        get {
-            return false
-        }
     }
 }
 

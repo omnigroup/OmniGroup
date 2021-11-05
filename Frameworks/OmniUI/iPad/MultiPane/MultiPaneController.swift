@@ -1,4 +1,4 @@
-// Copyright 2016-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -72,6 +72,9 @@
     @objc optional func userWillExplicitlyToggleVisibility(_ paneWillBeShown: Bool, at location: MultiPaneLocation, multiPaneController: MultiPaneController)
     
     @objc optional func responderPreservationStyle(for responder: UIResponder & UITextInput, transitioningFrom oldTraitCollection: UITraitCollection, to newTraitCollection: UITraitCollection, multiPaneController: MultiPaneController) -> MultiPaneResponderPreservationStyle
+    
+    /// Called when the MPC transitions from compact with a presentation atop a modally presented pane to a multipane environment. This gives the caller a chance to anchor the popover to a new bar button item after that transition. If this is not implemented or returns nil, the popover is anchored to the bar button its popoverPresentationController was supplied with when it was originally presented. If your app recalculates and regenerates bar button items during this transition, implement this method and return newly created bar button item that fulfills the same function as the old item. Otherwise, the popover will be presented without an anchor, at the top left corner of the screen.
+    @objc optional func barButtonItemForRetargetingPopoverOnTransitionToMultiMode(_ popover: UIViewController, presentingOn controller: UIViewController, originalSourceBarButtonItem: UIBarButtonItem) -> UIBarButtonItem?
 }
 
 @objc (OUIMultiPaneAppearanceDelegate) public protocol MultiPaneAppearanceDelegate {
@@ -691,11 +694,11 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
             
             let savedFirstResponder = UIResponder.firstResponder
             
-            var presentedControllerQueue: [UIViewController] = []
+            var presentedControllerQueue: [(controller: UIViewController, item: UIBarButtonItem?)] = []
             var loopController = presentedController
             while let anotherPresentation = loopController.presentedViewController {
                 // We treat the end as the head of the queue
-                presentedControllerQueue.insert(anotherPresentation, at: 0)
+                presentedControllerQueue.insert((anotherPresentation, anotherPresentation.popoverPresentationController?.barButtonItem), at: 0)
                 loopController = anotherPresentation
             }
             
@@ -726,19 +729,33 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
                 DispatchQueue.main.asyncAfter(deadline: DispatchTime.now()+0.1, execute: {
                     // Recursively presents previously presented view controllers
                     func representPresentations(on controller: UIViewController, completion: @escaping ()->Void) {
-                        guard let presentation = presentedControllerQueue.popLast() else { completion(); return }
-                        controller.present(presentation, animated: false) {
-                            representPresentations(on: presentation, completion: completion)
+                        guard let presentationAndItem = presentedControllerQueue.popLast() else { completion(); return }
+                        if presentationAndItem.controller.modalPresentationStyle == .popover {
+                            let popoverPresentationController = presentationAndItem.controller.popoverPresentationController
+                            if let presentingBarButtonItem = presentationAndItem.item {
+                                popoverPresentationController?.barButtonItem = self.navigationDelegate?.barButtonItemForRetargetingPopoverOnTransitionToMultiMode?(presentationAndItem.controller, presentingOn: controller, originalSourceBarButtonItem: presentingBarButtonItem) ?? presentingBarButtonItem
+                            } else {
+                                assertionFailure("We need to add an additional delegate method similar to barButtonItemForRetargetingPopoverOnTransitionToMultiMode for the source view and rect case")
+                                popoverPresentationController?.sourceView = self.view
+                                popoverPresentationController?.sourceRect = CGRect.zero
+                            }
+                        }
+                        
+                        controller.present(presentationAndItem.controller, animated: false) {
+                            representPresentations(on: presentationAndItem.controller, completion: completion)
                         }
                     }
                     
+                    let completion = {
+                        representPresentations(on: self.viewController(atLocation: pane.location)!) {
+                            savedFirstResponder?.becomeFirstResponder()
+                        }
+                    }
                     if !pane.isVisible {
-                        self.showPane(at: pane.location, animated: false)
-                    }
-                    
-                    representPresentations(on: self.viewController(atLocation: pane.location)!) {
-                        savedFirstResponder?.becomeFirstResponder()
-                    }
+                        self.showPane(at: pane.location, animated: false, completion: completion)
+                    } else {
+                        completion()
+                    }                    
                 })
             })
         } else {

@@ -31,6 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) NSString *applicationName;
 @property (nonatomic, readonly) NSString *fullReleaseString;
 @property (nullable, nonatomic, readonly) NSString *majorVersionNumberString;
+@property (nonatomic, readonly) NSString *applicationBundleURLScheme;
 
 - (void)getFeedbackAddress:(NSString * _Nullable * _Nonnull)feedbackAddress andSubject:(NSString * _Nullable * _Nonnull)subjectLine;
 - (void)sendFeedbackEmailTo:(nullable NSString *)feedbackAddress subject:(nullable NSString *)subjectLine body:(nullable NSString *)body;

@@ -1,4 +1,4 @@
-// Copyright 2015-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,7 +20,11 @@ import Foundation
 // Not conforming to CustomStringConvertible before checking that this wouldn't allow naive conversion to a string
 
 public struct UTI {
-    public let rawFileType:String
+    private let lowercaseRawFileType: String
+
+    // This struct ends up getting used for legacy NSPasteboard types too on macOS. This should return false for those types.
+    public let isUTI: Bool
+    public let rawFileType: String
 
     // Common UTIs
     public static let Directory = UTI(kUTTypeDirectory as String) // "file system directory (includes packages AND folders)"
@@ -73,8 +77,9 @@ public struct UTI {
     }
 
     public init(_ fileType:String) {
-        // See our Equatable conformance
-        self.rawFileType = fileType.lowercased()
+        self.rawFileType = fileType
+        self.lowercaseRawFileType = fileType.lowercased() // See our Equatable conformance
+        self.isUTI = UTTypeIsDeclared(fileType as CFString) || UTTypeIsDynamic(fileType as CFString) // `dyn.*`. This should be false for things like "NeXT Rich Text Format v1.0 pasteboard type"
     }
 
     public static func fileTypePreferringNative(_ fileExtension: String) -> String? {
@@ -148,11 +153,22 @@ extension UTI: ExpressibleByStringLiteral {
 }
 
 extension UTI: Equatable, Hashable {
-    public static func ==(type1:UTI, type2:UTI) -> Bool {
-        // We should have lowercased these when initialized. Otherwise we may violate hashing invariants.
-        assert(type1.rawFileType == type1.rawFileType.lowercased())
-        assert(type2.rawFileType == type2.rawFileType.lowercased())
-
-        return UTTypeEqual(type1.rawFileType as CFString, type2.rawFileType as CFString)
+    public static func ==(type1: UTI, type2: UTI) -> Bool {
+        if type1.isUTI != type2.isUTI {
+            return false
+        }
+        if type1.isUTI {
+            return UTTypeEqual(type1.rawFileType as CFString, type2.rawFileType as CFString)
+        } else {
+            return type1.rawFileType == type2.rawFileType
+        }
+    }
+    public func hash(into hasher: inout Hasher) {
+        // UTTypeEqual which is used in `==` above, but only for actual UTI types, compares with case-insensitivity. Avoid breaking hashing invariants.
+        if isUTI {
+            hasher.combine(lowercaseRawFileType)
+        } else {
+            hasher.combine(rawFileType)
+        }
     }
 }

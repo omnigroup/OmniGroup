@@ -1,4 +1,4 @@
-// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,6 +18,11 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation OUIEditableLabeledValueCell
 {
     UITextField *_valueField;
+}
+
++ (Class)valueTextFieldClass;
+{
+    return [UITextField class];
 }
 
 - (id)initWithFrame:(CGRect)frame;
@@ -58,7 +63,10 @@ NS_ASSUME_NONNULL_BEGIN
     [super labelChanged];
     
     if (!_valueField) {
-        _valueField = [[UITextField alloc] initWithFrame:CGRectZero];
+        Class cls = [[self class] valueTextFieldClass];
+        OBASSERT(OBClassIsSubclassOfClass(cls, [UITextField class]));
+
+        _valueField = [[cls alloc] initWithFrame:CGRectZero];
         _valueField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         _valueField.font = [[self class] valueFont];
         _valueField.adjustsFontSizeToFitWidth = YES;

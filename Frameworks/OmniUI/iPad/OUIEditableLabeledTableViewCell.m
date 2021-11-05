@@ -1,4 +1,4 @@
-// Copyright 2010-2019 The Omni Group. All rights reserved.
+// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,12 +18,20 @@ NS_ASSUME_NONNULL_BEGIN
     OUIEditableLabeledValueCell *_editableValueCell;
 }
 
++ (Class)editableValueCellClass;
+{
+    return [OUIEditableLabeledValueCell class];
+}
+
 - (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(nullable NSString *)reuseIdentifier;
 {
     if (!(self = [super initWithStyle:style reuseIdentifier:reuseIdentifier]))
         return nil;
-    
-    _editableValueCell = [[OUIEditableLabeledValueCell alloc] initWithFrame:self.contentView.bounds];
+
+    Class cls = [[self class] editableValueCellClass];
+    OBASSERT(OBClassIsSubclassOfClass(cls, [OUIEditableLabeledValueCell class]));
+
+    _editableValueCell = [[cls alloc] initWithFrame:self.contentView.bounds];
     _editableValueCell.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 
     [self.contentView addSubview:_editableValueCell];

@@ -1,4 +1,4 @@
-// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -41,7 +41,7 @@ typedef NS_ENUM(NSInteger, OUIInspectorSliceGroupPosition) {
 @property(nonatomic,copy) UIColor *separatorColor;
 @property(nonatomic,readonly) BOOL includesInspectorSliceGroupSpacerOnTop;
 @property(nonatomic,readonly) BOOL includesInspectorSliceGroupSpacerOnBottom;
-@property(nonatomic,readonly) BOOL wantsAutoConfiguredBottomSeparator;
+@property(nonatomic,assign) BOOL wantsAutoConfiguredBottomSeparator;
 
 + (UIColor *)sliceBackgroundColor;
 - (UIColor *)sliceBackgroundColor; // Default color for the slice background

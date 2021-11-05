@@ -1,4 +1,4 @@
-// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,6 +12,7 @@ RCS_ID("$Id$");
 
 #import <OmniFoundation/OFXMLCursor.h>
 #import <OmniFoundation/OFXMLDocument.h>
+#import <OmniFoundation/OFXMLElement.h>
 #import <OmniFoundation/NSNumber-OFExtensions-CGTypes.h>
 #import <OmniFoundation/NSData-OFEncoding.h>
 #import <OmniFoundation/NSString-OFSimpleMatching.h>
@@ -209,7 +210,7 @@ static NSData *_dictionaryDataGetter(void *container, NSString *key)
 #ifdef DEBUG
     NSLog(@"Unable to unarchive color from container %@.  Falling back to white.", container);
 #endif
-    return [OAColor whiteColor];
+    return nil;
 }
 
 + (OAColor *)colorFromPropertyListRepresentation:(NSDictionary *)dict;
@@ -219,7 +220,10 @@ static NSData *_dictionaryDataGetter(void *container, NSString *key)
         .string = _dictionaryStringGetter,
         .data = _dictionaryDataGetter,
     };
-    return [self _colorFromContainer:dict getters:getters];
+    OAColor *result = [self _colorFromContainer:dict getters:getters];
+    if (!result)
+        result = [OAColor whiteColor];
+    return result;
 }
 
 
@@ -514,7 +518,10 @@ static NSData *_xmlCursorDataGetter(void *container, NSString *key)
         .string = _xmlCursorStringGetter,
         .data = _xmlCursorDataGetter
     };
-    return [OAColor _colorFromContainer:cursor getters:getters];
+    OAColor *result = [OAColor _colorFromContainer:cursor getters:getters];
+    if (!result)
+        return [OAColor colorWithUnknownXML:cursor.currentElement];
+    return result;
 }
 
 @end

@@ -93,8 +93,9 @@ static NSMutableDictionary *helpersByExtension = nil;
 - (void)showWindow:(id)sender;
 {
     // Since we clear the toolbar below for <rdar://problem/28832571>, if the window is re-displayed, it will have no toolbar.
+    // If the window is not currently loaded, -windowDidLoad will do this.
 
-    if (_toolbar == nil) {
+    if (_toolbar == nil && [self isWindowLoaded]) {
         [self createToolbar];
     }
     [super showWindow:sender];

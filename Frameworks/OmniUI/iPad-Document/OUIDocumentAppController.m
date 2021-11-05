@@ -231,6 +231,14 @@ static NSString *_customLocalDocumentsDisplayName;
             // We used to set the "skip backup" attribute on these files, but doesn't that mean that a customer who edited one of these files wouldn't get their edited copy backed up?
             OBASSERT([nameToURL objectForKey:sampleName] == nil);
             [nameToURL setObject:targetFileURL forKey:sampleName];
+            
+            // <bug:///108952> (iOS-OmniGraffle Bug: flag sample documents/templates/stencils with NSURLIsExcludedFromBackupKey)
+            NSError *excludedFromBackupResetError = nil;
+            BOOL skipBackupAttributeSuccess = [[NSFileManager defaultManager] removeExcludedFromBackupAttributeToItemAtURL:targetFileURL error:&excludedFromBackupResetError];
+            if (!skipBackupAttributeSuccess) {
+                NSLog(@"Problem reseting NSURLIsExcludedFromBackupKey on %@: %@", targetFileURL, excludedFromBackupResetError);
+            }
+            OBPOSTCONDITION(skipBackupAttributeSuccess);
         };
 
         if ([fileManager fileExistsAtPath:[targetFileURL path]]) {

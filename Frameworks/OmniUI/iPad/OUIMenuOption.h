@@ -1,4 +1,4 @@
-// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -46,6 +46,11 @@ typedef BOOL (^OUIMenuOptionValidatorAction)(OUIMenuOption *option);
 @property(nonatomic, readonly, nullable) OUIMenuOptionAction action;
 @property(nonatomic, readonly, nullable) OUIMenuOptionValidatorAction validator;
 @property(nonatomic, strong) UIView *attentionDotView;
+
+/*!
+@discussion This flag is ignored if the receiver has a non-eempty options array, as that requires a navigation arrow accessory item.
+*/
+@property(nonatomic) BOOL wantsCheckmark;
 
 /*!
  @discussion An option is considered enabled if it does not have a validator or if it's validator action returns YES. If a validator action is set, it will be called each time isEnabled is called.

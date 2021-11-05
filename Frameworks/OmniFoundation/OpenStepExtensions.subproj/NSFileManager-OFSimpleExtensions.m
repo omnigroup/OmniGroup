@@ -1,4 +1,4 @@
-// Copyright 1997-2019 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -291,7 +291,11 @@ static void _appendPropertiesOfTreeAtURL(NSFileManager *self, NSMutableString *s
 
 - (BOOL)removeExcludedFromBackupAttributeToItemAtURL:(NSURL *)url error:(NSError **)error;
 {
-    BOOL result = [url setResourceValue:[NSNumber numberWithBool:NO] forKey:NSURLIsExcludedFromBackupKey error:error];
+    NSDictionary *currentValues = [url resourceValuesForKeys:[NSArray arrayWithObject:NSURLIsExcludedFromBackupKey] error:NULL];
+    BOOL result = YES;
+    if ([((NSNumber *)currentValues[NSURLIsExcludedFromBackupKey]) boolValue] == YES) { // lets only attempt to unset this if it's actually set.
+        result = [url setResourceValue:[NSNumber numberWithBool:NO] forKey:NSURLIsExcludedFromBackupKey error:error];
+    }
     return result;
 }
 

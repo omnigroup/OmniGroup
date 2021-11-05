@@ -1,4 +1,4 @@
-// Copyright 2008-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -53,10 +53,10 @@ struct sqlite3;
 extern NSError *_ODOSQLiteError(NSError *underlyingError, int code, struct sqlite3 *sqlite);
 
 #define ODOSQLiteError(outError, code, sqlite) do { \
-    NSError **_outErorr = (outError); \
+    NSError **_outError = (outError); \
     OBASSERT(outError); \
-    if (_outErorr) \
-        *_outErorr = _ODOSQLiteError(*_outErorr, code, sqlite); \
+    if (_outError) \
+        *_outError = _ODOSQLiteError(*_outError, code, sqlite); \
 } while(0)
 
 

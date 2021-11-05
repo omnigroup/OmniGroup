@@ -8,7 +8,7 @@
 import Foundation
 
 /// A class that wraps a UTI struct and caches some other values computable from the underlying UTI.
-@objc(OFTypeIdentifier) public class TypeIdentifier : NSObject {
+@objc(OFTypeIdentifier) open class TypeIdentifier : NSObject {
 
     public let typeIdentifier: UTI
 
@@ -21,7 +21,7 @@ import Foundation
         self.displayName = OFUTIDescription(typeIdentifier.rawFileType) ?? typeIdentifier.rawFileType
     }
 
-    public convenience init(rawType: String) {
+    @objc public convenience init(rawType: String) {
         self.init(UTI(rawType))
     }
     

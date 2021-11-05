@@ -77,7 +77,6 @@
 		3458F10E1B5D7539000011A6 /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3458F1031B5D74D0000011A6 /* OmniFoundation.framework */; };
 		3458F10F1B5D7539000011A6 /* OmniUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3458F0FD1B5D7456000011A6 /* OmniUI.framework */; };
 		3458F1111B5D756D000011A6 /* OmniDAV.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3458F1101B5D756D000011A6 /* OmniDAV.framework */; };
-		3458F1131B5D7578000011A6 /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3458F1121B5D7578000011A6 /* MobileCoreServices.framework */; };
 		3458F1171B5D75A0000011A6 /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3458F1161B5D75A0000011A6 /* OmniBase.framework */; };
 		3458F1191B5D75AC000011A6 /* Photos.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3458F1181B5D75AC000011A6 /* Photos.framework */; };
 		3458F11B1B5D75B3000011A6 /* OmniUnzip.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3458F11A1B5D75B3000011A6 /* OmniUnzip.framework */; };
@@ -119,6 +118,7 @@
 		50A4B2322405DDCC0074AD6B /* OUILinkedFolderPreferenceView.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 50A4B2312405DDCC0074AD6B /* OUILinkedFolderPreferenceView.storyboard */; };
 		50C5059B23EE18410074DCB6 /* OUIApplicationResourceBookmarks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50C5059A23EE18410074DCB6 /* OUIApplicationResourceBookmarks.swift */; };
 		6C34CDC81B73DB1200692269 /* CoreSpotlight.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6C34CDC71B73DB1200692269 /* CoreSpotlight.framework */; };
+		E267281E2475D8A10017D844 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E26728132475D8A10017D844 /* CoreServices.framework */; };
 		FB847DAF1BED5C65004E6BD7 /* OUIDocumentExporter.h in Headers */ = {isa = PBXBuildFile; fileRef = FB847DAD1BED5C65004E6BD7 /* OUIDocumentExporter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FB847DB01BED5C65004E6BD7 /* OUIDocumentExporter.m in Sources */ = {isa = PBXBuildFile; fileRef = FB847DAE1BED5C65004E6BD7 /* OUIDocumentExporter.m */; };
 		FBFCD1F61C56E76E00C25B33 /* OUIReplaceRenameDocumentAlertController.h in Headers */ = {isa = PBXBuildFile; fileRef = FBFCD1F41C56E76E00C25B33 /* OUIReplaceRenameDocumentAlertController.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -346,6 +346,7 @@
 		6C34CDC71B73DB1200692269 /* CoreSpotlight.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreSpotlight.framework; path = System/Library/Frameworks/CoreSpotlight.framework; sourceTree = SDKROOT; };
 		6C660BAD17BD321500950C60 /* OUIDocumentOpenAnimator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIDocumentOpenAnimator.h; sourceTree = SOURCE_ROOT; };
 		6C660BAE17BD321500950C60 /* OUIDocumentOpenAnimator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIDocumentOpenAnimator.m; sourceTree = SOURCE_ROOT; };
+		E26728132475D8A10017D844 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		FB847DAD1BED5C65004E6BD7 /* OUIDocumentExporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIDocumentExporter.h; sourceTree = SOURCE_ROOT; };
 		FB847DAE1BED5C65004E6BD7 /* OUIDocumentExporter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIDocumentExporter.m; sourceTree = SOURCE_ROOT; };
 		FBFCD1F41C56E76E00C25B33 /* OUIReplaceRenameDocumentAlertController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIReplaceRenameDocumentAlertController.h; sourceTree = SOURCE_ROOT; };
@@ -366,7 +367,7 @@
 				3458F11B1B5D75B3000011A6 /* OmniUnzip.framework in Frameworks */,
 				3458F1191B5D75AC000011A6 /* Photos.framework in Frameworks */,
 				3458F1171B5D75A0000011A6 /* OmniBase.framework in Frameworks */,
-				3458F1131B5D7578000011A6 /* MobileCoreServices.framework in Frameworks */,
+				E267281E2475D8A10017D844 /* CoreServices.framework in Frameworks */,
 				3458F1111B5D756D000011A6 /* OmniDAV.framework in Frameworks */,
 				3458F10A1B5D7512000011A6 /* UIKit.framework in Frameworks */,
 				3458F1091B5D750E000011A6 /* CoreGraphics.framework in Frameworks */,
@@ -428,6 +429,7 @@
 		342F48C3167799AC007C5FFB /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				E26728132475D8A10017D844 /* CoreServices.framework */,
 				6C34CDC71B73DB1200692269 /* CoreSpotlight.framework */,
 				3458F1261B5D760A000011A6 /* Apple */,
 				3458F1271B5D7610000011A6 /* Omni */,
@@ -779,7 +781,7 @@
 		342F48B8167799AC007C5FFB /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1140;
+				LastUpgradeCheck = 1150;
 				ORGANIZATIONNAME = "The Omni Group";
 				TargetAttributes = {
 					3458EF301B5D6ED0000011A6 = {
@@ -1026,6 +1028,8 @@
 				MODULEMAP_FILE = OmniUIDocument.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniUIDocument;
 				PRODUCT_NAME = OmniUIDocument;
+				SUPPORTS_MACCATALYST = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
@@ -1038,6 +1042,8 @@
 				MODULEMAP_FILE = OmniUIDocument.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniUIDocument;
 				PRODUCT_NAME = OmniUIDocument;
+				SUPPORTS_MACCATALYST = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};

@@ -1,4 +1,4 @@
-// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,7 +7,6 @@
 
 #import "TextDocument.h"
 
-#import <OmniDocumentStore/ODSFileItem.h> // For -fileURL
 #import <OmniQuartz/OQDrawing.h> // For OQCreateImageWithSize()
 #import <OmniUI/OmniUI.h>
 #import <OmniAppKit/NSAttributedString-OAExtensions.h>
@@ -23,10 +22,14 @@ RCS_ID("$Id$");
     UINavigationController *_viewControllerToPresent;
 }
 
++ (NSURL *)builtInBlankTemplateURL;
+{
+    NSURL *templateURL = [[NSBundle mainBundle] URLForResource:@"Hello" withExtension:@"rtf" subdirectory:@"Samples"];
+    return templateURL;
+}
+
 - initWithContentsOfTemplateAtURL:(NSURL *)templateURLOrNil toBeSavedToURL:(NSURL *)saveURL activityViewController:(UIViewController *)activityViewController error:(NSError **)outError;
 {
-    OBPRECONDITION(templateURLOrNil == nil, "We don't have template support");
-
     if (!(self = [super initWithContentsOfTemplateAtURL:templateURLOrNil toBeSavedToURL:saveURL activityViewController:activityViewController error:outError]))
         return nil;
     

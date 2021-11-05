@@ -345,7 +345,6 @@
 		348A7BAC1B584D570082D55D /* zh-Hans.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 154E96C51863DE080097E5B3 /* zh-Hans.lproj */; };
 		348A7C081B584E460082D55D /* OmniUI_Prefix.h in Headers */ = {isa = PBXBuildFile; fileRef = AA747D9E0F9514B9006C5449 /* OmniUI_Prefix.h */; };
 		348A7C0A1B584F140082D55D /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 348A7C091B584F140082D55D /* UIKit.framework */; };
-		348A7C0C1B584F2F0082D55D /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 348A7C0B1B584F2F0082D55D /* MobileCoreServices.framework */; };
 		348A7C0E1B584F4E0082D55D /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 348A7C0D1B584F4E0082D55D /* OmniFoundation.framework */; };
 		348A7C121B584F6F0082D55D /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 348A7C111B584F6F0082D55D /* CoreGraphics.framework */; };
 		348A7C131B584F7C0082D55D /* OmniQuartz.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 234940C119D49FFF00F73FC2 /* OmniQuartz.framework */; };
@@ -412,6 +411,7 @@
 		E27879721BD1C0C200B38C43 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E27879711BD1C0C200B38C43 /* WebKit.framework */; };
 		E28342021EB988C200FDB90F /* OUIThemedTableViewCell.h in Headers */ = {isa = PBXBuildFile; fileRef = E28342001EB988C200FDB90F /* OUIThemedTableViewCell.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E28342031EB988C200FDB90F /* OUIThemedTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = E28342011EB988C200FDB90F /* OUIThemedTableViewCell.m */; };
+		E2A9EA202475D2F2005ACB0A /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E2A9EA112475D2F2005ACB0A /* CoreServices.framework */; };
 		FB0C63911F59BB44000FF76C /* GearMenuIcons.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FB0C63901F59BB44000FF76C /* GearMenuIcons.xcassets */; };
 		FB11AB3B1C51A7930050F4EF /* OUIAttentionSeekingButton.h in Headers */ = {isa = PBXBuildFile; fileRef = FB11AB391C51A7930050F4EF /* OUIAttentionSeekingButton.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FB11AB3C1C51A7930050F4EF /* OUIAttentionSeekingButton.m in Sources */ = {isa = PBXBuildFile; fileRef = FB11AB3A1C51A7930050F4EF /* OUIAttentionSeekingButton.m */; };
@@ -1034,6 +1034,7 @@
 		E2A0014A1835913F00B13EB7 /* OUIFullScreenNoteTextViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIFullScreenNoteTextViewController.m; sourceTree = "<group>"; };
 		E2A0014B1835913F00B13EB7 /* OUIFullScreenNoteTransition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIFullScreenNoteTransition.h; sourceTree = "<group>"; };
 		E2A0014C1835913F00B13EB7 /* OUIFullScreenNoteTransition.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIFullScreenNoteTransition.m; sourceTree = "<group>"; };
+		E2A9EA112475D2F2005ACB0A /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		FB0C63901F59BB44000FF76C /* GearMenuIcons.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = GearMenuIcons.xcassets; sourceTree = "<group>"; };
 		FB11AB391C51A7930050F4EF /* OUIAttentionSeekingButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIAttentionSeekingButton.h; sourceTree = "<group>"; };
 		FB11AB3A1C51A7930050F4EF /* OUIAttentionSeekingButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIAttentionSeekingButton.m; sourceTree = "<group>"; };
@@ -1058,7 +1059,7 @@
 				348A7C171B584F9D0082D55D /* CoreText.framework in Frameworks */,
 				348A7C151B584F850082D55D /* StoreKit.framework in Frameworks */,
 				348A7C121B584F6F0082D55D /* CoreGraphics.framework in Frameworks */,
-				348A7C0C1B584F2F0082D55D /* MobileCoreServices.framework in Frameworks */,
+				E2A9EA202475D2F2005ACB0A /* CoreServices.framework in Frameworks */,
 				348A7C0A1B584F140082D55D /* UIKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1118,6 +1119,7 @@
 		0867D69AFE84028FC02AAC07 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				E2A9EA112475D2F2005ACB0A /* CoreServices.framework */,
 				E27879711BD1C0C200B38C43 /* WebKit.framework */,
 				348A7C0F1B584F550082D55D /* Omni */,
 				348A7C101B584F5B0082D55D /* Apple */,
@@ -2115,7 +2117,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0920;
-				LastUpgradeCheck = 1140;
+				LastUpgradeCheck = 1150;
 				TargetAttributes = {
 					348A79BA1B5849C70082D55D = {
 						CreatedOnToolsVersion = 7.0;

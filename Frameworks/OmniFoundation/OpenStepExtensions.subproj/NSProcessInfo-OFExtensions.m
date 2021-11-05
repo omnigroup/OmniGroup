@@ -1,4 +1,4 @@
-// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -6,10 +6,7 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniFoundation/NSProcessInfo-OFExtensions.h>
-#import <Security/SecCode.h> // For SecCodeCopySelf()
-#import <Security/SecRequirement.h> // For SecRequirementCreateWithString()
 
-#import <libproc.h>
 #import <sys/sysctl.h>
 
 // This is not included in OmniBase.h since system.h shouldn't be used except when covering OS specific behaviour
@@ -18,7 +15,11 @@
 #import <OmniFoundation/NSFileManager-OFExtensions.h>
 #import <OmniFoundation/OFVersionNumber.h>
 
-RCS_ID("$Id$")
+#if !defined(TARGET_OS_IOS) || !TARGET_OS_IOS
+#import <Security/SecCode.h> // For SecCodeCopySelf()
+#import <Security/SecRequirement.h> // For SecRequirementCreateWithString()
+#import <libproc.h>
+#endif
 
 @implementation NSProcessInfo (OFExtensions)
 
@@ -42,26 +43,11 @@ OBPerformPosing(^{
     return [NSNumber numberWithInt:getpid()];
 }
 
-- (NSURL *)_processBundleOrMainExecutableURL;
-{
-    // If this looks like a traditional bundle, return the main bundle's URL, otherwise return the main executable URL so that SecStaticCodeCreateWithPath does the right thing for command line tools
-    static NSURL *url = nil;
-    static dispatch_once_t once;
-    dispatch_once(&once, ^{
-        NSURL *mainExecutableURL = [[NSBundle mainBundle] executableURL];
-        NSURL *executableContainer = [mainExecutableURL URLByDeletingLastPathComponent];
-        if ([[executableContainer lastPathComponent] isEqualToString:@"MacOS"] && [[[executableContainer URLByDeletingLastPathComponent] lastPathComponent] isEqualToString:@"Contents"]) {
-            url = [[[NSBundle mainBundle] bundleURL] copy];
-        } else {
-            url = [mainExecutableURL copy];
-        }
-    });
-
-    return url;
-}
-
 - (BOOL)isSandboxed;
 {
+#if TARGET_OS_IOS
+    return YES;
+#else
     // N.B. Using the method in our NSFileManager extensions could possibly return a different answer than using the SecCodeCopySelf that was previously here, but we likely don't care about those cases.
     static BOOL isSandboxed;
     static dispatch_once_t once;
@@ -81,7 +67,10 @@ OBPerformPosing(^{
     });
 
     return isSandboxed;
+#endif
 }
+
+#if !defined(TARGET_OS_IOS) || !TARGET_OS_IOS
 
 - (NSDictionary *)codeSigningInfoDictionary;
 {
@@ -117,6 +106,24 @@ OBPerformPosing(^{
     });
     
     return codeSigningEntitlements;
+}
+
+- (NSURL *)_processBundleOrMainExecutableURL;
+{
+    // If this looks like a traditional bundle, return the main bundle's URL, otherwise return the main executable URL so that SecStaticCodeCreateWithPath does the right thing for command line tools
+    static NSURL *url = nil;
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+        NSURL *mainExecutableURL = [[NSBundle mainBundle] executableURL];
+        NSURL *executableContainer = [mainExecutableURL URLByDeletingLastPathComponent];
+        if ([[executableContainer lastPathComponent] isEqualToString:@"MacOS"] && [[[executableContainer URLByDeletingLastPathComponent] lastPathComponent] isEqualToString:@"Contents"]) {
+            url = [[[NSBundle mainBundle] bundleURL] copy];
+        } else {
+            url = [mainExecutableURL copy];
+        }
+    });
+
+    return url;
 }
 
 static pid_t _GetParentProcessIdentifierForProcessIdentifier(pid_t pid, NSError **error)
@@ -238,5 +245,7 @@ static BOOL _IsInheritedSandbox(NSDictionary *entitlements)
 {
     return [self codeSigningInfoDictionary][(NSString *)kSecCodeInfoTeamIdentifier];
 }
+
+#endif
 
 @end

@@ -250,6 +250,7 @@ NS_ASSUME_NONNULL_BEGIN
             
             __autoreleasing NSError *writeError = nil;
             NSURL *outputURL = [self _tempURLForExportedFileWrapper:fileWrapper shouldZipDirectories:NO error:&writeError];
+//            outputURL = [outputURL URLByAppendingPathComponent:document.fileURL.lastPathComponent];
             if (!outputURL) {
                 _exportError = writeError;
                 [self _foreground_finishedProcessing];
@@ -338,7 +339,10 @@ NS_ASSUME_NONNULL_BEGIN
                 NSString *fileUTI = OFUTIForFileExtensionPreferringNative(fileURL.pathExtension, nil);
                 iconImage = [_exporter exportIconForUTI:fileUTI];
                 
-                label = [_exporter exportLabelForUTI:fileUTI];
+                label = [_exporter exportLabelForUTI:fileType];
+                if (label == nil) {
+                    label = [_exporter exportLabelForUTI:fileUTI];
+                }
                 if (label == nil) {
                     label = [fileURL pathExtension];
                 }

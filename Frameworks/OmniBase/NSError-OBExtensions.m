@@ -1,4 +1,4 @@
-// Copyright 2005-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -63,7 +63,7 @@ static id _replacement_initWithDomain_code_userInfo(NSError *self, SEL _cmd, NSS
     if (!(self = original_initWithDomainCodeUserInfo(self, _cmd, domain, code, dict)))
         return nil;
     
-    OBRecordBacktraceWithContext("Error created", OBBacktraceBuffer_Generic, (__bridge const void *)self);
+    OBRecordBacktraceWithContext("Error created", OBBacktraceBuffer_Generic, (const void *)((uintptr_t)code));
 
     if (OBLogErrorCreations)
         NSLog(@"Error created: %@", [self toPropertyList]);

@@ -1,4 +1,4 @@
-// Copyright 2003-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -134,6 +134,8 @@ typedef struct {
 extern OAHSV OARGBToHSV(OALinearRGBA c);
 extern OALinearRGBA OAHSVToRGB(OAHSV c);
 
+@class OFXMLElement;
+
 @interface OAColor : NSObject <NSCopying>
 
 #if OMNI_BUILDING_FOR_MAC || OMNI_BUILDING_FOR_IOS
@@ -157,6 +159,7 @@ extern OALinearRGBA OAHSVToRGB(OAHSV c);
 + (OAColor *)colorWithRed:(CGFloat)red green:(CGFloat)green blue:(CGFloat)blue alpha:(CGFloat)alpha;
 + (OAColor *)colorWithHue:(CGFloat)hue saturation:(CGFloat)saturation brightness:(CGFloat)brightness alpha:(CGFloat)alpha;
 + (OAColor *)colorWithWhite:(CGFloat)white alpha:(CGFloat)alpha;
++ (OAColor *)colorWithUnknownXML:(OFXMLElement *)element;
 
 @property(class,readonly,nonatomic) OAColor *blackColor;
 @property(class,readonly,nonatomic) OAColor *darkGrayColor;

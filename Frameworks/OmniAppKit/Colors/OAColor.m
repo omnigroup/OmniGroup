@@ -1,4 +1,4 @@
-// Copyright 2003-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,6 +13,9 @@
 #import <OmniFoundation/NSNumber-OFExtensions-CGTypes.h>
 #import <OmniFoundation/NSString-OFSimpleMatching.h>
 #import <OmniFoundation/OFPreference.h>
+
+#import <OmniFoundation/OFXMLDocument.h>
+#import <OmniFoundation/OFXMLElement.h>
 
 #if OMNI_BUILDING_FOR_IOS
 #import <UIKit/UIColor.h>
@@ -971,6 +974,29 @@ static OAColor *OAWhiteColorCreate(CGFloat white, CGFloat alpha)
 
 @end
 
+@interface OAUnkownXMLColor : OAWhiteColor
+@property (nonatomic, strong) OFXMLElement *element;
+@end
+
+@implementation OAUnkownXMLColor
+
+static OAColor *OAUnknownXMLColorCreate(OFXMLElement *element)
+{
+    OAUnkownXMLColor *color = [[OAUnkownXMLColor alloc] init];
+    color->_white = 1.0;
+    color->_alpha = 1.0;
+    color.element = element;
+    OAColorInitPlatformColor(color);
+    return color;
+}
+
+- (void)appendXML:(OFXMLDocument *)doc;
+{
+    [doc.topElement appendChild:self.element];
+}
+
+@end
+
 #if OA_SUPPORT_PATTERN_COLOR
 @interface OAPatternColor : OAColor <OAColor>
 {
@@ -1255,6 +1281,11 @@ static void OAColorInitPlatformColor(OAColor *self)
 {
     // Use +blackColor or +whiteColor for 0/1?
     return OAWhiteColorCreate(white, alpha);
+}
+
++ (OAColor *)colorWithUnknownXML:(OFXMLElement *)element;
+{
+    return OAUnknownXMLColorCreate(element);
 }
 
 + (OAColor *)blackColor;

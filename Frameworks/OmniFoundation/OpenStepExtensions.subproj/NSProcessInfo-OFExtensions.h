@@ -1,4 +1,4 @@
-// Copyright 1997-2019 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,6 +17,8 @@
 - (BOOL)isSandboxed;
     // Indicates whether the current process is sandboxed (either directly, or via a sandbox inherited from a parent process).
 
+#if !defined(TARGET_OS_IOS) || !TARGET_OS_IOS
+
 - (NSDictionary *)codeSigningInfoDictionary;
     // Various pieces of information extraced from the code signature for this process's main bundle.
     // See Security/SecCode.h for the dictionary keys
@@ -32,5 +34,7 @@
     // rdar://problem/13255969 requests a direct way to inspect the effective signing entitlements for the current process.
 
 @property(nonatomic,readonly) NSString *codeSigningTeamIdentifier;
+
+#endif
 
 @end

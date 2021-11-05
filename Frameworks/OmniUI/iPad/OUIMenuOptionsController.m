@@ -440,7 +440,11 @@ NS_ASSUME_NONNULL_BEGIN
             cell.accessoryView = button;
         }
     } else {
-        cell.accessoryView = nil;
+        if (option.wantsCheckmark) {
+            cell.accessoryType = UITableViewCellAccessoryCheckmark;
+        } else {
+            cell.accessoryView = nil;
+        }
     }
     
     [cell sizeToFit];

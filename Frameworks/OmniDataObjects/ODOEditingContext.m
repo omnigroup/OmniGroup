@@ -350,7 +350,10 @@ static void ODOEditingContextInternalInsertObject(ODOEditingContext *self, ODOOb
 {
     ODOEditingContextAssertOwnership(self);
     OBINVARIANT([self _checkInvariants]);
-    
+
+    // Record the pointers of objects being inserted in case save validation fails and we need to know where it came from.
+    OBRecordBacktraceWithContext(class_getName(object_getClass(object)), OBBacktraceBuffer_Generic, (const void *)object);
+
     // If we want an undeletable object, we need to make sure it can't be deleted via undo of this insert
     BOOL undeletable = _ODOObjectIsUndeletable(object);
     if (undeletable) {

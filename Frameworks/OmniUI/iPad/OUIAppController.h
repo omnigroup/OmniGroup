@@ -105,7 +105,8 @@ extern NSString *const OUIHelpBookNameKey; // @"OUIHelpBookName" is the Info.pli
 + (nullable UIWindow *)windowForScene:(nullable UIScene *)scene options:(OUIWindowForSceneOptions)options NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based approach.");
 
 // If some scene is foreground and active, the controller will be presented immediately on that scene. If there is no foreground active scene, the controller will be displayed upon the next scene that enters the foreground.
-+ (void)enqueueInteractionControllerPresentationForAnyForegroundScene:(UIViewController<ExtendedInteractionDefining> *)controller NS_SWIFT_NAME(enqueueAlertPresentationForForegroundScene(_:));
++ (void)enqueueInteractionControllerPresentationForAnyForegroundScene:(UIViewController<ExtendedInteractionDefining> *)controller NS_SWIFT_NAME(enqueueInteractionControllerPresentationForAnyForegroundScene(_:));
++ (void)enqueueInteractionControllerPresentationForAnyForegroundScene:(UIViewController<ExtendedInteractionDefining> *)controller presentationCompletionHandler:(void (^ __nullable)(void))presentationCompletionHandler NS_SWIFT_NAME(enqueueInteractionControllerPresentationForAnyForegroundScene(_:presentationCompletionHandler:));
 
 /* If the specified scene is foregrounded and active, then the controller is presented immediately. If the scene is not foreground active but some other scene is, then we will immediately present an alert on that active scene with the following format:
  
@@ -119,6 +120,7 @@ extern NSString *const OUIHelpBookNameKey; // @"OUIHelpBookName" is the Info.pli
     Enqueuing your controller in this manner will prompt the user each time they open a non-desired scene, so be sure to use this method carefully. Only prompt for app-critical functionality, like OmniFocus syncing, or Omni Account setup. If you have a more local interaction, like showing a photo picker availability error or something else that doesn't need immediate consideration, instead just present that error on the backgrounded scene, leaving the user to find it when they foreground that scene again.
  */
 + (void)enqueueInteractionController:(UIViewController<ExtendedInteractionDefining> *)controller forPresentationInScene:(UIScene *)scene withActivityContextTitle:(NSString *)activityContextTitle activityContinuationButtonTitle:(NSString *)activityContinuationButtonTitle postponeActivityButtonTitle:(NSString *)postponeActivityButtonTitle;
++ (void)enqueueInteractionController:(UIViewController<ExtendedInteractionDefining> *)controller forPresentationInScene:(UIScene *)scene withActivityContextTitle:(NSString *)activityContextTitle activityContinuationButtonTitle:(NSString *)activityContinuationButtonTitle postponeActivityButtonTitle:(NSString *)postponeActivityButtonTitle presentationCompletionHandler:(void (^ __nullable)(void))presentationCompletionHandler;
 
 @property (readonly, class) BOOL hasEnqueuedInteractionControllers;
 
@@ -235,6 +237,9 @@ extern NSNotificationName const OUISystemIsSnapshottingNotification;
 
 // Defaults to YES, can be overridden by apps to allow only one crash report, and subsequent scenes will show an alert pointing the user to the lone crash report scene.
 @property (nonatomic, readonly) BOOL canHaveMultipleCrashReportScenes;
+
+// Defaults to YES. Setting this to NO will prevent interactions enqueued via enqueueInteractionControllerPresentationForAnyForegroundScene and it's scene-specific counterpart from being dequeued. Setting this from NO back to YES will immediately dequeue and present any queued interaction if some scene is in the foreground.
+@property (nonatomic) BOOL canDequeueQueuedInteractions;
 
 @end
 

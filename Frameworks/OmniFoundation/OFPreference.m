@@ -428,13 +428,12 @@ static void _setValue(OFPreference *self, OB_STRONG id *_value, NSString *key, _
     return defaultValue;
 }
 
-- (BOOL) hasNonDefaultValue;
+- (BOOL)hasNonDefaultValue;
 {
-    id value, defaultValue;
-
-    value = [self objectValue];
-    defaultValue = [self defaultObjectValue];
-    
+    id defaultValue = [self defaultObjectValue];
+    if (defaultValue == nil)
+        return NO;
+    id value = [self objectValue];
     return !OFISEQUAL(value, defaultValue);
 }
 

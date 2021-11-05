@@ -10,6 +10,7 @@
 #import <OmniFoundation/NSBundle-OFExtensions.h>
 #import <OmniFoundation/NSFileManager-OFSimpleExtensions.h> // For group container identifier utility
 #import <OmniFoundation/OFPreference.h>
+#import <OmniFoundation/NSProcessInfo-OFExtensions.h> // For .isSandboxed
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -35,8 +36,13 @@ NSString * const OFUserDefaultsMigrationKeysKey = @"keys";
         // Useful for isolated sharing (e.g. per store variant) of user defaults between an application and its app extensions.
         // Application and app extensions need to declare the group to participate.
         // This will be prefixed appropriately for the platform (e.g. `WithGroupIdentifier`).
-        NSString *containingApplicationBundleIdentifier = NSBundle.containingApplicationBundleIdentifier;
-        wrapper = [OFPreferenceWrapper preferenceWrapperWithGroupIdentifier:containingApplicationBundleIdentifier];
+        if (NSProcessInfo.processInfo.isSandboxed) {
+            NSString *containingApplicationBundleIdentifier = NSBundle.containingApplicationBundleIdentifier;
+            wrapper = [OFPreferenceWrapper preferenceWrapperWithGroupIdentifier:containingApplicationBundleIdentifier];
+        } else {
+            // Apps which aren't sandboxed don't have a group identifier, so we'll just leave this in the app's default preferences
+            wrapper = [OFPreferenceWrapper sharedPreferenceWrapper];
+        }
     } else {
         // Registration to a preference wrapper for an app group named for the shared container.
         // Useful for non-isolated sharing (e.g. any store variant) of user defaults between any variant application and any variant app extensions.
@@ -63,13 +69,18 @@ static NSUserDefaults *_sourceUserDefault(NSString *sourceMarker)
     }
 }
 
-static OFPreferenceWrapper *_destinationPreferenceWrapper(NSString *destinationMarker)
+static OFPreferenceWrapper * _Nullable _destinationPreferenceWrapper(NSString *destinationMarker)
 {
     if ([destinationMarker isEqualToString:OFUserDefaultsRegistrationItemName]) {
         return [OFPreferenceWrapper sharedPreferenceWrapper];
     } else if ([destinationMarker isEqualToString:OFContainingApplicationBundleIdentifierRegistrationItemName]) {
-        NSString *containingApplicationBundleIdentifier = NSBundle.containingApplicationBundleIdentifier;
-        return [OFPreferenceWrapper preferenceWrapperWithGroupIdentifier:containingApplicationBundleIdentifier];
+        if (NSProcessInfo.processInfo.isSandboxed) {
+            NSString *containingApplicationBundleIdentifier = NSBundle.containingApplicationBundleIdentifier;
+            return [OFPreferenceWrapper preferenceWrapperWithGroupIdentifier:containingApplicationBundleIdentifier];
+        } else {
+            // Apps which aren't sandboxed don't have a group identifier, so we'll just leave this where it is
+            return nil;
+        }
     } else {
         return [OFPreferenceWrapper preferenceWrapperWithGroupIdentifier:destinationMarker];
     }
@@ -98,6 +109,9 @@ static OFPreferenceWrapper *_destinationPreferenceWrapper(NSString *destinationM
 
         NSUserDefaults *sourceUserDefaults = _sourceUserDefault(sourceMarker);
         OFPreferenceWrapper *destinationWrapper = _destinationPreferenceWrapper(destinationMarker);
+        if (destinationWrapper == nil) {
+            continue;
+        }
         
         for (NSString *key in migrationKeys) {
             // Be sure to clear out a migration object if found in the source domain.

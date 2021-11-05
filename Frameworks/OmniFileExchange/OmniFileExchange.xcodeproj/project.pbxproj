@@ -126,7 +126,6 @@
 		343683511B582C6B00BC25E6 /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1E9FA5991ED511BE00CC2AB8 /* OmniFoundation.framework */; };
 		343683521B582C6B00BC25E6 /* OmniDAV.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 347A67B21B38B5F900354BDD /* OmniDAV.framework */; };
 		343683541B582C8700BC25E6 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 343683531B582C8700BC25E6 /* UIKit.framework */; };
-		343683561B582C9D00BC25E6 /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 343683551B582C9D00BC25E6 /* MobileCoreServices.framework */; };
 		343BE00516E7BAEF0060AFD5 /* OFXContainerScan.h in Headers */ = {isa = PBXBuildFile; fileRef = 343BE00316E7BAEE0060AFD5 /* OFXContainerScan.h */; };
 		343BE00716E7BAEF0060AFD5 /* OFXContainerScan.m in Sources */ = {isa = PBXBuildFile; fileRef = 343BE00416E7BAEF0060AFD5 /* OFXContainerScan.m */; };
 		3441607316B07DBF00E917F5 /* OFXServerAccountValidator.h in Headers */ = {isa = PBXBuildFile; fileRef = 3441607116B07DBF00E917F5 /* OFXServerAccountValidator.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -242,6 +241,7 @@
 		34FF8D1116A86FDB0089ED25 /* OFXDownloadFileSnapshot.m in Sources */ = {isa = PBXBuildFile; fileRef = 34FF8D0E16A86FDB0089ED25 /* OFXDownloadFileSnapshot.m */; };
 		6CBD70541701FE6F0035A9EC /* OFXAccountActivity.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CBD70521701FE6F0035A9EC /* OFXAccountActivity.m */; };
 		6CBD70561701FE6F0035A9EC /* OFXAccountActivity.h in Headers */ = {isa = PBXBuildFile; fileRef = 6CBD70531701FE6F0035A9EC /* OFXAccountActivity.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		E2897A4224771A8300008707 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E2897A4124771A8300008707 /* CoreServices.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -733,6 +733,7 @@
 		34FF8D0E16A86FDB0089ED25 /* OFXDownloadFileSnapshot.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXDownloadFileSnapshot.m; sourceTree = SOURCE_ROOT; };
 		6CBD70521701FE6F0035A9EC /* OFXAccountActivity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXAccountActivity.m; sourceTree = SOURCE_ROOT; };
 		6CBD70531701FE6F0035A9EC /* OFXAccountActivity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFXAccountActivity.h; sourceTree = SOURCE_ROOT; };
+		E2897A4124771A8300008707 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -740,8 +741,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				343683561B582C9D00BC25E6 /* MobileCoreServices.framework in Frameworks */,
 				343683541B582C8700BC25E6 /* UIKit.framework in Frameworks */,
+				E2897A4224771A8300008707 /* CoreServices.framework in Frameworks */,
 				3436834F1B582C5200BC25E6 /* Foundation.framework in Frameworks */,
 				343683501B582C6B00BC25E6 /* OmniBase.framework in Frameworks */,
 				343683511B582C6B00BC25E6 /* OmniFoundation.framework in Frameworks */,
@@ -1005,6 +1006,7 @@
 		34AFACE4164B0E70009E39AB /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				E2897A4124771A8300008707 /* CoreServices.framework */,
 				343683571B582CA100BC25E6 /* Apple */,
 				343683581B582CB000BC25E6 /* Omni */,
 			);
@@ -1455,7 +1457,7 @@
 		34AFACD8164B0E70009E39AB /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1140;
+				LastUpgradeCheck = 1150;
 				ORGANIZATIONNAME = "The Omni Group";
 				TargetAttributes = {
 					343682781B58284500BC25E6 = {

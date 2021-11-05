@@ -129,14 +129,15 @@ static void TrackBackgroundTasks(void)
 
 // Private storage class used to manage enqueued controllers
 @interface OUIEnqueueableInteractionControllerContext: NSObject
-- (instancetype)initWithInteractionController:(UIViewController<ExtendedInteractionDefining> *)controller parentExtendedAction:(nullable OUIExtendedAlertAction *)parentAction requiredScene:(nullable UIScene *)scene activityContextTitle:(NSString *)activityContextTitle activityContinuationButtonTitle:(NSString *)activityContinuationButtonTitle postponeActivityButtonTitle:(NSString *)postponeActivityButtonTitle;
-+ (OUIEnqueueableInteractionControllerContext *)contextWithInteractionController:(UIViewController<ExtendedInteractionDefining> *)alert parentExtendedAction:(nullable OUIExtendedAlertAction *)parentAction; // Calls the above initializer with nil for the other arguments
+- (instancetype)initWithInteractionController:(UIViewController<ExtendedInteractionDefining> *)controller parentExtendedAction:(nullable OUIExtendedAlertAction *)parentAction requiredScene:(nullable UIScene *)scene activityContextTitle:(NSString *)activityContextTitle activityContinuationButtonTitle:(NSString *)activityContinuationButtonTitle postponeActivityButtonTitle:(NSString *)postponeActivityButtonTitle presentationCompletionHandler:(void (^ __nullable)(void))presentationCompletionHandler;;
++ (OUIEnqueueableInteractionControllerContext *)contextWithInteractionController:(UIViewController<ExtendedInteractionDefining> *)alert parentExtendedAction:(nullable OUIExtendedAlertAction *)parentAction presentationCompletionHandler:(void (^ __nullable)(void))presentationCompletionHandler; // Calls the above initializer with nil for the other arguments
 @property (nonatomic, strong, nonnull) UIViewController<ExtendedInteractionDefining> *controller;
 @property (nonatomic, strong, nullable) OUIExtendedAlertAction *parentExtendedAction;
 @property (nonatomic, strong, nullable) UIScene *requiredScene;
 @property (nonatomic, strong, nullable) NSString *activityContextTitle;
 @property (nonatomic, strong, nullable) NSString *activityContinuationButtonTitle;
 @property (nonatomic, strong, nullable) NSString *postponeActivityButtonTitle;
+@property (nonatomic, copy, nullable) void (^presentationCompletionHandler)(void);
 @end
 
 NSNotificationName const OUISystemIsSnapshottingNotification = @"OUISystemIsSnapshottingNotification";
@@ -152,6 +153,7 @@ NSString * const OUIAttentionSeekingForNewsKey = @"OUIAttentionSeekingForNewsKey
 @property (strong, nonatomic) OFPointerStack<UIScene *> *connectedSceneStack;
 
 @property (strong, nonatomic) NSMutableArray<OUIEnqueueableInteractionControllerContext *> *enqueuedInteractionControllerContexts;
+@property (strong, nonatomic) NSMutableArray<UIViewController<ExtendedInteractionDefining> *> *currentlyPresentedInteractionControllers;
 
 @property (nonatomic, strong, nonnull) NSMapTable<UIScene *, void (^)(void)> *mailInteractionCompletionHandlersByScene;
 @end
@@ -160,6 +162,7 @@ NSString * const OUIAttentionSeekingForNewsKey = @"OUIAttentionSeekingForNewsKey
 {
     NSMutableArray *_launchActions;
     NSOperationQueue *_backgroundPromptQueue;
+    BOOL _canDequeueQueuedInteractions;
 }
 
 static NSString *_defaultReportErrorActionTitle;
@@ -516,15 +519,9 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
     for (OUIExtendedAlertAction *optionalAction in optionalActions) {
         [alertController addExtendedAction:optionalAction];
     }
-//    if (optionalActionTitle != nil && optionalActionHandler != nil) {
-//        OUIExtendedAlertAction *optionalAction = [OUIExtendedAlertAction extendedActionWithTitle:optionalActionTitle style:UIAlertActionStyleDefault handler:optionalActionHandler];
-//        [alertController addExtendedAction:optionalAction];
-//    }
-    if (handler != nil) {
-        [alertController addInteractionCompletion:handler];
-    }
 
-    if (viewController != nil && viewController.containingScene.activationState == UISceneActivationStateForegroundActive) {
+    UIScene *scene = viewController.containingScene;
+    if (viewController != nil && scene.activationState == UISceneActivationStateForegroundActive) {
         // This delayed presentation avoids the "wait_fences: failed to receive reply: 10004003" lag/timeout which can happen depending on the context we start the reporting from.
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
             UIViewController *topViewController = viewController;
@@ -536,12 +533,17 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
                 }
                 topViewController = vc;
             }
+            
+            [self _prepareInteraction:alertController forImmediatePresentationOnScene:scene parentAction:parentExtendedAction interactionCompletionHandler:handler];
 
             [topViewController presentViewController:alertController animated:YES completion:nil];
         }];
     } else {
+        if (handler != nil) {
+            [alertController addInteractionCompletion:handler];
+        }
         // We'll present this when a scene becomes active
-        [self _enqueueInteractionControllerPresentationForAnyForegroundScene:alertController parentExtendedAction:parentExtendedAction];
+        [self _enqueueInteractionControllerPresentationForAnyForegroundScene:alertController parentExtendedAction:parentExtendedAction presentationCompletionHandler:nil];
     }
 }
 
@@ -634,6 +636,9 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
     [center addObserver:self selector:@selector(_sceneDidBecomeActive:) name:UISceneDidActivateNotification object:nil];
     [center addObserver:self selector:@selector(_windowDidBecomeKey:) name:UIWindowDidBecomeKeyNotification object:nil];
 
+    _currentlyPresentedInteractionControllers = [NSMutableArray array];
+    _canDequeueQueuedInteractions = YES;
+    
     return self;
 }
 
@@ -721,42 +726,58 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
     return controller;
 }
 
-+ (void)_enqueueInteractionControllerPresentationForAnyForegroundScene:(UIViewController<ExtendedInteractionDefining> *)alert parentExtendedAction:(nullable OUIExtendedAlertAction *)parentAction;
++ (void)_enqueueInteractionControllerPresentationForAnyForegroundScene:(UIViewController<ExtendedInteractionDefining> *)alert parentExtendedAction:(nullable OUIExtendedAlertAction *)parentAction presentationCompletionHandler:(void (^ __nullable)(void))presentationCompletionHandler NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based solutions where available instead.");
 {
     OBPRECONDITION([NSThread isMainThread]);
 
     // Check for an active scene, and present on it if there is one.
     UIScene *mostRecentlyActiveScene = [[self controller] mostRecentlyActiveScene];
-    if (mostRecentlyActiveScene.activationState == UISceneActivationStateForegroundActive) {
-        if (parentAction != nil) {
-            [alert addInteractionCompletion:^{
-                [parentAction extendedActionComplete];
-            }];
-        }
+    BOOL hasInteractionUpAlready = [[[self controller] currentlyPresentedInteractionControllers] anyObjectSatisfiesPredicate:^BOOL(UIViewController<ExtendedInteractionDefining> * _Nonnull controller) {
+        return [controller containingScene] == mostRecentlyActiveScene;
+    }];
+    if (mostRecentlyActiveScene.activationState == UISceneActivationStateForegroundActive && !hasInteractionUpAlready && [self.controller canDequeueQueuedInteractions]) {
+        [OUIAppController _prepareInteraction:alert forImmediatePresentationOnScene:mostRecentlyActiveScene parentAction:parentAction interactionCompletionHandler:nil];
 
         UIWindow *window = [self windowForScene:mostRecentlyActiveScene options:OUIWindowForSceneOptionsNone];
         UIViewController *controller = [self _viewControllerForPresentationInWindow:window];
-        [controller presentViewController:alert animated:YES completion:nil];
+        [controller presentViewController:alert animated:YES completion:presentationCompletionHandler];
     } else {
         if ([self.controller enqueuedInteractionControllerContexts] == nil) {
             [self.controller setEnqueuedInteractionControllerContexts:[NSMutableArray array]];
         }
         
-        [[self.controller enqueuedInteractionControllerContexts] addObject:[OUIEnqueueableInteractionControllerContext contextWithInteractionController:alert parentExtendedAction:parentAction]];
+        [[self.controller enqueuedInteractionControllerContexts] addObject:[OUIEnqueueableInteractionControllerContext contextWithInteractionController:alert parentExtendedAction:parentAction presentationCompletionHandler:presentationCompletionHandler]];
     }
 }
 
-+ (void)enqueueInteractionControllerPresentationForAnyForegroundScene:(UIViewController<ExtendedInteractionDefining> *)alert;
++ (void)enqueueInteractionControllerPresentationForAnyForegroundScene:(UIViewController<ExtendedInteractionDefining> *)alert NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based solutions where available instead.");
 {
-    [self _enqueueInteractionControllerPresentationForAnyForegroundScene:alert parentExtendedAction:nil];
+    [self enqueueInteractionControllerPresentationForAnyForegroundScene:alert presentationCompletionHandler:nil];
 }
 
-+ (void)enqueueInteractionController:(UIViewController<ExtendedInteractionDefining> *)alert forPresentationInScene:(UIScene *)scene withActivityContextTitle:(NSString *)activityContextTitle activityContinuationButtonTitle:(NSString *)activityContinuationButtonTitle postponeActivityButtonTitle:(NSString *)postponeActivityButtonTitle;
++ (void)enqueueInteractionControllerPresentationForAnyForegroundScene:(UIViewController<ExtendedInteractionDefining> *)alert presentationCompletionHandler:(void (^ __nullable)(void))presentationCompletionHandler NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based solutions where available instead.");
 {
-    if (scene.activationState == UISceneActivationStateForegroundActive) {
+    [self _enqueueInteractionControllerPresentationForAnyForegroundScene:alert parentExtendedAction:nil presentationCompletionHandler:presentationCompletionHandler];
+}
+
++ (void)enqueueInteractionController:(UIViewController<ExtendedInteractionDefining> *)alert forPresentationInScene:(UIScene *)scene withActivityContextTitle:(NSString *)activityContextTitle activityContinuationButtonTitle:(NSString *)activityContinuationButtonTitle postponeActivityButtonTitle:(NSString *)postponeActivityButtonTitle NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based solutions where available instead.");
+{
+    [self enqueueInteractionController:alert forPresentationInScene:scene withActivityContextTitle:activityContextTitle activityContinuationButtonTitle:activityContinuationButtonTitle postponeActivityButtonTitle:postponeActivityButtonTitle presentationCompletionHandler:nil];
+}
+
++ (void)enqueueInteractionController:(UIViewController<ExtendedInteractionDefining> *)alert forPresentationInScene:(UIScene *)scene withActivityContextTitle:(NSString *)activityContextTitle activityContinuationButtonTitle:(NSString *)activityContinuationButtonTitle postponeActivityButtonTitle:(NSString *)postponeActivityButtonTitle presentationCompletionHandler:(void (^ __nullable)(void))presentationCompletionHandler NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based solutions where available instead.");
+{
+    BOOL desiredSceneIsActive = scene.activationState == UISceneActivationStateForegroundActive;
+    BOOL hasInteractionUpAlready = [[[self controller] currentlyPresentedInteractionControllers] anyObjectSatisfiesPredicate:^BOOL(UIViewController<ExtendedInteractionDefining> * _Nonnull controller) {
+        return [controller containingScene] == scene;
+    }];
+    
+    if (desiredSceneIsActive && !hasInteractionUpAlready && [self.controller canDequeueQueuedInteractions]) {
+        [self _prepareInteraction:alert forImmediatePresentationOnScene:scene parentAction:nil interactionCompletionHandler:nil];
+        
         UIWindow *window = [self windowForScene:scene options:OUIWindowForSceneOptionsNone];
         UIViewController *controller = [self _viewControllerForPresentationInWindow:window];
-        [controller presentViewController:alert animated:YES completion:nil];
+        [controller presentViewController:alert animated:YES completion:presentationCompletionHandler];
     } else {
         
         if ([self.controller enqueuedInteractionControllerContexts] == nil) {
@@ -764,19 +785,40 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
         }
         
         // We're only explicitly passing nil for the parentExtendedAction because we don't need the parent action mechanism for anything but reporting errors that occur during app-level-defined extended actions. Those errors are reported via -presentError:fromViewController:completingExtendedAction: and that code path ends up calling the _enqueueInteractionControllerPresentationForAnyForegroundScene method of queuing its alerts. There is no explicit reason we can't have a parent action for interactions enqueued by this method, we just haven't needed it yet.
-        OUIEnqueueableInteractionControllerContext *context = [[OUIEnqueueableInteractionControllerContext alloc] initWithInteractionController:alert parentExtendedAction:nil requiredScene:scene activityContextTitle:activityContextTitle activityContinuationButtonTitle:activityContinuationButtonTitle postponeActivityButtonTitle:postponeActivityButtonTitle];
+        OUIEnqueueableInteractionControllerContext *context = [[OUIEnqueueableInteractionControllerContext alloc] initWithInteractionController:alert parentExtendedAction:nil requiredScene:scene activityContextTitle:activityContextTitle activityContinuationButtonTitle:activityContinuationButtonTitle postponeActivityButtonTitle:postponeActivityButtonTitle presentationCompletionHandler:presentationCompletionHandler];
         
         UIScene *mostRecentlyActiveScene = [self.controller mostRecentlyActiveScene];
-        if (mostRecentlyActiveScene.activationState == UISceneActivationStateForegroundActive) {
+        if (mostRecentlyActiveScene.activationState == UISceneActivationStateForegroundActive && !hasInteractionUpAlready && [self.controller canDequeueQueuedInteractions]) {
             // Bump this context to the front of the queue and try to present it. We won't *actually* present it since the requiredScene is backgrounded. Instead, we will prompt the user with an alert saying that "<activityContextTitle> is active in another window" and give them the option to view whatever this is.
             // Scene-specific queued alerts are generally high-priority interactions, so we should prompt the user that something has happened immediately.
             [[self.controller enqueuedInteractionControllerContexts] insertObject:context atIndex:0];
             [self.controller _presentNextEnqueuedInteractionControllerOnScene:mostRecentlyActiveScene];
         } else {
-            // Every scene is backgrounded, just add this to the queue.
+            // Every scene is backgrounded, or an interaction is already up. Just add this to the queue.
             [[self.controller enqueuedInteractionControllerContexts] addObject:context];
         }
     }
+}
+
++ (void)_prepareInteraction:(UIViewController<ExtendedInteractionDefining> *)alert forImmediatePresentationOnScene:(UIScene *)scene parentAction:(OUIExtendedAlertAction *)parentAction interactionCompletionHandler:(void (^ _Nullable)(void))interactionCompletionHandler;
+{
+    [[[self controller] currentlyPresentedInteractionControllers] addObject:alert];
+    __weak UIViewController<ExtendedInteractionDefining> *weakAlert = alert;
+    __weak UIScene *weakScene = scene;
+    [alert addInteractionCompletion:^{
+        [[[self controller] currentlyPresentedInteractionControllers] removeObject:weakAlert];
+        if (interactionCompletionHandler != nil) {
+            interactionCompletionHandler();
+        }
+        if (parentAction != nil) {
+            [parentAction extendedActionComplete];
+        } else {
+            __strong UIScene *strongScene = weakScene;
+            if (strongScene != nil) {
+                [[self controller] _presentNextEnqueuedInteractionControllerOnScene:strongScene];
+            }
+        }
+    }];
 }
 
 + (BOOL)hasEnqueuedInteractionControllers;
@@ -896,6 +938,23 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
     
     launchAction = [launchAction copy];
     [_launchActions addObject:launchAction];
+}
+
+- (void)setCanDequeueQueuedInteractions:(BOOL)canDequeueQueuedInteractions
+{
+    BOOL shouldDequeueInteractionImmediatelyIfPossible = !_canDequeueQueuedInteractions && canDequeueQueuedInteractions;
+    UIScene *mostRecentlyActiveScene = [self mostRecentlyActiveScene];
+    BOOL hasSomeForegroundScene = [mostRecentlyActiveScene activationState] == UISceneActivationStateForegroundActive;
+    _canDequeueQueuedInteractions = canDequeueQueuedInteractions;
+    // If we don't have a foreground scene, we'll dequeue this alert when some scene hits the foreground.
+    if (shouldDequeueInteractionImmediatelyIfPossible && hasSomeForegroundScene) {
+        [self _presentNextEnqueuedInteractionControllerOnScene:mostRecentlyActiveScene];
+    }
+}
+
+- (BOOL)canDequeueQueuedInteractions
+{
+    return _canDequeueQueuedInteractions;
 }
 
 #pragma mark - UIApplication lifecycle subclassing points
@@ -1548,7 +1607,18 @@ static UIImage *menuImage(NSString *name)
 {
     OBPRECONDITION(anActiveScene.activationState == UISceneActivationStateForegroundActive);
     
+    if (!_canDequeueQueuedInteractions) {
+        return;
+    }
+    
     if (![[self class] hasEnqueuedInteractionControllers]) {
+        return;
+    }
+    
+    BOOL hasInteractionUpAlready = [[self currentlyPresentedInteractionControllers] anyObjectSatisfiesPredicate:^BOOL(UIViewController<ExtendedInteractionDefining> * _Nonnull controller) {
+        return [controller containingScene] == anActiveScene;
+    }];
+    if (hasInteractionUpAlready) {
         return;
     }
     
@@ -1563,18 +1633,8 @@ static UIImage *menuImage(NSString *name)
         controller = context.controller;
         
         // If there is a parent interaction, complete it instead of dequeuing
-        __weak UIScene *weakScene = sceneForPresentation;
         OUIExtendedAlertAction *parentAction = context.parentExtendedAction;
-        [controller addInteractionCompletion:^{
-            if (parentAction != nil) {
-                [parentAction extendedActionComplete];
-            } else {
-                __strong UIScene *strongScene = weakScene;
-                if (strongScene != nil) {
-                    [self _presentNextEnqueuedInteractionControllerOnScene:strongScene];
-                }
-            }
-        }];
+        [OUIAppController _prepareInteraction:controller forImmediatePresentationOnScene:sceneForPresentation parentAction:parentAction interactionCompletionHandler:nil];
     } else if (context.requiredScene.activationState == UISceneActivationStateForegroundActive) {
         // This alert's required scene is foreground active. Dequeue it and present on the scene. (This can happen if multiple scenes are reactivated at once)
         sceneForPresentation = context.requiredScene;
@@ -1582,17 +1642,7 @@ static UIImage *menuImage(NSString *name)
         
         // If there is a parent interaction, complete it instead of dequeuing
         OUIExtendedAlertAction *parentAction = context.parentExtendedAction;
-        __weak UIScene *weakScene = sceneForPresentation;
-        [controller addInteractionCompletion:^{
-            if (parentAction != nil) {
-                [parentAction extendedActionComplete];
-            } else {
-                __strong UIScene *strongScene = weakScene;
-                if (strongScene != nil) {
-                    [self _presentNextEnqueuedInteractionControllerOnScene:strongScene];
-                }
-            }
-        }];
+        [OUIAppController _prepareInteraction:controller forImmediatePresentationOnScene:sceneForPresentation parentAction:parentAction interactionCompletionHandler:nil];
     } else {
         // This alert's required scene is not on screen. Present an alert on the active scene offering to take the user to the alert. Be sure to not dequeue the alert.
         shouldDequeue = NO;
@@ -1619,6 +1669,7 @@ static UIImage *menuImage(NSString *name)
         alert.preferredAction = continueAction;
         
         controller = alert;
+        [OUIAppController _prepareInteraction:controller forImmediatePresentationOnScene:sceneForPresentation parentAction:nil interactionCompletionHandler:nil];
     }
     
     UIWindow *window = [[self class] windowForScene:sceneForPresentation options:OUIWindowForSceneOptionsNone];
@@ -1684,12 +1735,13 @@ static UIImage *menuImage(NSString *name)
 
 @implementation OUIEnqueueableInteractionControllerContext
 
-+ (OUIEnqueueableInteractionControllerContext *)contextWithInteractionController:(UIViewController<ExtendedInteractionDefining> *)controller parentExtendedAction:(nullable OUIExtendedAlertAction *)parentAction
+
++ (OUIEnqueueableInteractionControllerContext *)contextWithInteractionController:(UIViewController<ExtendedInteractionDefining> *)alert parentExtendedAction:(nullable OUIExtendedAlertAction *)parentAction presentationCompletionHandler:(void (^ __nullable)(void))presentationCompletionHandler;
 {
-    return [[OUIEnqueueableInteractionControllerContext alloc] initWithInteractionController:controller parentExtendedAction:parentAction requiredScene:nil activityContextTitle:nil activityContinuationButtonTitle:nil postponeActivityButtonTitle:nil];
+    return [[OUIEnqueueableInteractionControllerContext alloc] initWithInteractionController:alert parentExtendedAction:parentAction requiredScene:nil activityContextTitle:nil activityContinuationButtonTitle:nil postponeActivityButtonTitle:nil presentationCompletionHandler: presentationCompletionHandler];
 }
 
-- (instancetype)initWithInteractionController:(UIViewController<ExtendedInteractionDefining> *)controller parentExtendedAction:(nullable OUIExtendedAlertAction *)parentAction requiredScene:(UIScene *)scene activityContextTitle:(NSString *)activityContextTitle activityContinuationButtonTitle:(NSString *)activityContinuationButtonTitle postponeActivityButtonTitle:(NSString *)postponeActivityButtonTitle
+- (instancetype)initWithInteractionController:(UIViewController<ExtendedInteractionDefining> *)controller parentExtendedAction:(nullable OUIExtendedAlertAction *)parentAction requiredScene:(nullable UIScene *)scene activityContextTitle:(NSString *)activityContextTitle activityContinuationButtonTitle:(NSString *)activityContinuationButtonTitle postponeActivityButtonTitle:(NSString *)postponeActivityButtonTitle presentationCompletionHandler:(void (^ __nullable)(void))presentationCompletionHandler;
 {
     if (self = [super init]) {
         _controller = controller;
@@ -1698,6 +1750,7 @@ static UIImage *menuImage(NSString *name)
         _activityContextTitle = activityContextTitle;
         _activityContinuationButtonTitle = activityContinuationButtonTitle;
         _postponeActivityButtonTitle = postponeActivityButtonTitle;
+        _presentationCompletionHandler = [presentationCompletionHandler copy];
     }
     return self;
 }

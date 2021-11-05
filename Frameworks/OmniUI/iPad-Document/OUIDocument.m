@@ -250,6 +250,8 @@ static NSString * const OUIDocumentUndoManagerRunLoopPrivateMode = @"com.omnigro
         [center removeObserver:self name:NSUndoManagerWillCloseUndoGroupNotification object:oldUndoManager];
         [center removeObserver:self name:NSUndoManagerDidCloseUndoGroupNotification object:oldUndoManager];
 
+        [center removeObserver:self name:NSUndoManagerCheckpointNotification object:oldUndoManager];
+
         self.observedUndoManager = nil;
     }
 
@@ -264,6 +266,8 @@ static NSString * const OUIDocumentUndoManagerRunLoopPrivateMode = @"com.omnigro
         [center addObserver:self selector:@selector(_undoManagerDidOpenGroup:) name:NSUndoManagerDidOpenUndoGroupNotification object:undoManager];
         [center addObserver:self selector:@selector(_undoManagerWillCloseGroup:) name:NSUndoManagerWillCloseUndoGroupNotification object:undoManager];
         [center addObserver:self selector:@selector(_undoManagerDidCloseGroup:) name:NSUndoManagerDidCloseUndoGroupNotification object:undoManager];
+
+        [center addObserver:self selector:@selector(_undoManagerCheckpoint:) name:NSUndoManagerCheckpointNotification object:undoManager];
 
         // Add a private runloop mode so that we can force the undo manager to close its undo group w/o letting other runloop observers fire. In particular, we don't want to let the CoreAnimation run loop observer fire when it shouldn't.
         // <bug:///121879> (Crasher: Using Share menu on unsaved text - unexpected start state)
@@ -282,8 +286,11 @@ static NSString * const OUIDocumentUndoManagerRunLoopPrivateMode = @"com.omnigro
 {
     if (!_hasUndoGroupOpen)
         return; // Nothing to do!
-    
+
+    NSUndoManager *undoManager = self.undoManager;
+
     DEBUG_UNDO(@"finishUndoGroup");
+    OBRecordBacktraceWithContext("Finish undo group", OBBacktraceBuffer_Generic, (__bridge const void *)undoManager);
 
     if ([_documentViewController respondsToSelector:@selector(documentWillCloseUndoGroup)])
         [_documentViewController documentWillCloseUndoGroup];
@@ -291,22 +298,22 @@ static NSString * const OUIDocumentUndoManagerRunLoopPrivateMode = @"com.omnigro
     [self willFinishUndoGroup];
     
     // Our group might be the only one open, but the auto-created group might be open still too (for example, with a single-event action like -delete:)
-    OBASSERT([self.undoManager groupingLevel] >= 1);
+    OBASSERT([undoManager groupingLevel] >= 1);
     _hasUndoGroupOpen = NO;
     
     // This should drop the count to zero, provoking an -updateChangeCount:UIDocumentChangeDone
-    [self.undoManager endUndoGrouping];
+    [undoManager endUndoGrouping];
     
     // If the edit started in this cycle of the runloop, the automatic group opened by the system may not have closed and any following edits will get grouped with it.
-    if ([self.undoManager groupingLevel] > 0) {
-        OBASSERT([self.undoManager groupingLevel] == 1);
+    if ([undoManager groupingLevel] > 0) {
+        OBASSERT([undoManager groupingLevel] == 1);
 
         // Terrible hack to let the by-event undo group close, plus a check that the hack worked...
-        OBASSERT([self.undoManager.runLoopModes containsObject:OUIDocumentUndoManagerRunLoopPrivateMode]);
+        OBASSERT([undoManager.runLoopModes containsObject:OUIDocumentUndoManagerRunLoopPrivateMode]);
         [[NSRunLoop currentRunLoop] runMode:OUIDocumentUndoManagerRunLoopPrivateMode beforeDate:[NSDate distantPast]];
     }
 
-    OBPOSTCONDITION([self.undoManager groupingLevel] == 0);
+    OBPOSTCONDITION([undoManager groupingLevel] == 0);
     OBPOSTCONDITION(!_hasUndoGroupOpen);
 }
 
@@ -747,9 +754,6 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
                 // NSURL caches resource values that it has retrieved and OFUTIForFileURLPreferringNative() uses the resource values to determine the UTI. If we're going to change the file from flat to package (most likely case this is happening) then we need to clear the cache for the 'is directory' flag so that OFUTIForFileURLPreferringNative() returns the correct UTI next time we try to open the document. By the way, the NSURL documentation states that it's resource value cache is cleared at the turn of each runloop, but clearly it's not. Will try to repro and file a radar.
                 [url removeCachedResourceValueForKey:NSURLIsDirectoryKey];
             }
-            BOOL skipBackupAttributeSuccess = [[NSFileManager defaultManager] removeExcludedFromBackupAttributeToItemAtURL:url error:NULL];
-            OBPOSTCONDITION(skipBackupAttributeSuccess);
-            OB_UNUSED_VALUE(skipBackupAttributeSuccess);
         }
 
         if (completionHandler)
@@ -1265,13 +1269,19 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
 
 - (void)_undoManagerDidUndo:(NSNotification *)note;
 {
-    DEBUG_UNDO(@"%@ level:%ld", [note name], [self.undoManager groupingLevel]);
+    NSUndoManager *undoManager = self.undoManager;
+
+    OBRecordBacktraceWithContext("Undo group did undo", OBBacktraceBuffer_Generic, (__bridge const void *)undoManager);
+    DEBUG_UNDO(@"%@ level:%ld", [note name], [undoManager groupingLevel]);
     [self _updateUndoIndicator];
 }
 
 - (void)_undoManagerDidRedo:(NSNotification *)note;
 {
-    DEBUG_UNDO(@"%@ level:%ld", [note name], [self.undoManager groupingLevel]);
+    NSUndoManager *undoManager = self.undoManager;
+
+    OBRecordBacktraceWithContext("Undo group did redo", OBBacktraceBuffer_Generic, (__bridge const void *)undoManager);
+    DEBUG_UNDO(@"%@ level:%ld", [note name], [undoManager groupingLevel]);
     [self _updateUndoIndicator];
 }
 
@@ -1279,13 +1289,16 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
 {
     OBASSERT(self.forPreviewGeneration == NO); // Make sure we don't provoke a save due to just opening a document to make a preview!
 
-    DEBUG_UNDO(@"%@ level:%ld", [note name], [self.undoManager groupingLevel]);
+    NSUndoManager *undoManager = self.undoManager;
+
+    OBRecordBacktraceWithContext("did open", OBBacktraceBuffer_Generic, (__bridge const void *)undoManager);
+    DEBUG_UNDO(@"%@ level:%ld", [note name], [undoManager groupingLevel]);
     
     // Immediately open a nested group. This will allows NSUndoManager to automatically open groups for us on the first undo operation, but prevents it from closing the whole group.
-    if ([self.undoManager groupingLevel] == 1) {
+    if ([undoManager groupingLevel] == 1) {
         DEBUG_UNDO(@"  ... nesting");
         _hasUndoGroupOpen = YES;
-        [self.undoManager beginUndoGrouping];
+        [undoManager beginUndoGrouping];
         
         // Let our view controller know, if it cares (may be able to delete this now, graffle no longer uses it)
         if ([_documentViewController respondsToSelector:@selector(documentDidOpenUndoGroup)])
@@ -1300,14 +1313,28 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
 
 - (void)_undoManagerWillCloseGroup:(NSNotification *)note;
 {
-    DEBUG_UNDO(@"%@ level:%ld", [note name], [self.undoManager groupingLevel]);
+    NSUndoManager *undoManager = self.undoManager;
+
+    OBRecordBacktraceWithContext("will close", OBBacktraceBuffer_Generic, (__bridge const void *)undoManager);
+    DEBUG_UNDO(@"%@ level:%ld", [note name], [undoManager groupingLevel]);
     [self _updateUndoIndicator];
 }
 
 - (void)_undoManagerDidCloseGroup:(NSNotification *)note;
 {
-    DEBUG_UNDO(@"%@ level:%ld", [note name], [self.undoManager groupingLevel]);
+    NSUndoManager *undoManager = self.undoManager;
+
+    OBRecordBacktraceWithContext("did close", OBBacktraceBuffer_Generic, (__bridge const void *)undoManager);
+    DEBUG_UNDO(@"%@ level:%ld", [note name], [undoManager groupingLevel]);
     [self _updateUndoIndicator];
+}
+
+- (void)_undoManagerCheckpoint:(NSNotification *)note;
+{
+    NSUndoManager *undoManager = self.undoManager;
+
+    OBRecordBacktraceWithContext("checkpoint", OBBacktraceBuffer_Generic, (__bridge const void *)undoManager);
+    DEBUG_UNDO(@"%@ level:%ld", [note name], [undoManager groupingLevel]);
 }
 
 - (void)_inspectorDidEndChangingInspectedObjects:(NSNotification *)note;

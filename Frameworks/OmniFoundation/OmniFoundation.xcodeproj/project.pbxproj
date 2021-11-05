@@ -877,7 +877,6 @@
 		34DAC7F0194F898100499116 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34DAC7EF194F898100499116 /* CoreGraphics.framework */; };
 		34DAC7F6194F89E500499116 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34DAC7F5194F89E500499116 /* SystemConfiguration.framework */; };
 		34DAC7F8194F89ED00499116 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34DAC7F7194F89ED00499116 /* Security.framework */; };
-		34DAC7F9194F8A0000499116 /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34DAC7F3194F89CB00499116 /* MobileCoreServices.framework */; };
 		34DAC7FB194F8A1300499116 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 34DAC7FA194F8A1300499116 /* libz.dylib */; };
 		34DC24AD1E9D41CB001F7A57 /* OFXMLElementParser.h in Headers */ = {isa = PBXBuildFile; fileRef = 34DC24AB1E9D41CB001F7A57 /* OFXMLElementParser.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34DC24AE1E9D41CB001F7A57 /* OFXMLElementParser.h in Headers */ = {isa = PBXBuildFile; fileRef = 34DC24AB1E9D41CB001F7A57 /* OFXMLElementParser.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -1189,6 +1188,8 @@
 		42F109771F704375003D3BDD /* OFDocumentEncryption-Inspection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E3184A81DADE35D0022430C /* OFDocumentEncryption-Inspection.swift */; };
 		49C39BFE18109E8A005B4248 /* OFNumberFormatter.h in Headers */ = {isa = PBXBuildFile; fileRef = 49C39BFC18109E8A005B4248 /* OFNumberFormatter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		49C39BFF18109E8A005B4248 /* OFNumberFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 49C39BFD18109E8A005B4248 /* OFNumberFormatter.m */; };
+		4A0D20A924743EFC004C0EF7 /* NSProcessInfo-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51D1FFE8AAEA611C9CC38 /* NSProcessInfo-OFExtensions.m */; };
+		4A0D20AE24744287004C0EF7 /* NSProcessInfo-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51D3CFE8AAEA611C9CC38 /* NSProcessInfo-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A45FF630CA489E600752880 /* NSConditionLock-OFFixes.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A45FF610CA489E600752880 /* NSConditionLock-OFFixes.m */; };
 		4A4E060008AA72B10098FF0F /* OFAddScriptCommand.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A71C400663D4F40097A113 /* OFAddScriptCommand.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A4E060108AA72B10098FF0F /* OFRemoveScriptCommand.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A71C420663D4F40097A113 /* OFRemoveScriptCommand.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -1575,6 +1576,7 @@
 		E27C01321EB2512F007FD6AF /* NSCalendar-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = E27C012F1EB2512F007FD6AF /* NSCalendar-OFExtensions.m */; };
 		E27C01331EB2512F007FD6AF /* NSCalendar-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = E27C012F1EB2512F007FD6AF /* NSCalendar-OFExtensions.m */; };
 		E290847C1CC735450029DC85 /* OFMutableStringExtensionsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = E290847B1CC735450029DC85 /* OFMutableStringExtensionsTest.m */; };
+		E2A9EA0C2475D2D9005ACB0A /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 036D1EE2FFE45E797F000001 /* CoreServices.framework */; };
 		F220577108CF6059004B6007 /* OFTimeSpanFormatterTest.m in Sources */ = {isa = PBXBuildFile; fileRef = F220577008CF6059004B6007 /* OFTimeSpanFormatterTest.m */; };
 /* End PBXBuildFile section */
 
@@ -2709,7 +2711,7 @@
 			files = (
 				34E45BD71EC5238400DDF69F /* OmniBase.framework in Frameworks */,
 				34DAC7FB194F8A1300499116 /* libz.dylib in Frameworks */,
-				34DAC7F9194F8A0000499116 /* MobileCoreServices.framework in Frameworks */,
+				E2A9EA0C2475D2D9005ACB0A /* CoreServices.framework in Frameworks */,
 				34DAC7F8194F89ED00499116 /* Security.framework in Frameworks */,
 				34DAC7F6194F89E500499116 /* SystemConfiguration.framework in Frameworks */,
 				34DAC7F0194F898100499116 /* CoreGraphics.framework in Frameworks */,
@@ -4401,6 +4403,7 @@
 				34F16BD9194F76AB00AD9C4D /* NSData-OFSignature.h in Headers */,
 				34F16B75194F6EC500AD9C4D /* OFGeometry.h in Headers */,
 				34F16C25194F77CF00AD9C4D /* OFXMLCursor.h in Headers */,
+				4A0D20AE24744287004C0EF7 /* NSProcessInfo-OFExtensions.h in Headers */,
 				34F16B7C194F6EDC00AD9C4D /* OFSyncClient.h in Headers */,
 				34F16BAF194F752700AD9C4D /* OFUTI.h in Headers */,
 				34F16C27194F795F00AD9C4D /* OFXMLWhitespaceBehavior.h in Headers */,
@@ -5004,7 +5007,7 @@
 			attributes = {
 				LastSwiftUpdateCheck = 0730;
 				LastTestingUpgradeCheck = 0510;
-				LastUpgradeCheck = 1140;
+				LastUpgradeCheck = 1150;
 				TargetAttributes = {
 					34F16B19194F6C3200AD9C4D = {
 						CreatedOnToolsVersion = 6.0;
@@ -5755,6 +5758,7 @@
 				5F49123E1AC3285000254CCC /* OFResultHolder.m in Sources */,
 				42DB7D751C8F8BCB008100E4 /* OFBundledClass.m in Sources */,
 				34F16BF2194F770100AD9C4D /* NSMutableString-OFExtensions.m in Sources */,
+				4A0D20A924743EFC004C0EF7 /* NSProcessInfo-OFExtensions.m in Sources */,
 				34F16BC8194F758000AD9C4D /* OFCFCallbacks.m in Sources */,
 				4D9E12391ED8B6DA00E04E34 /* Collection-OFExtensions.swift in Sources */,
 				34F16BA4194F74EF00AD9C4D /* OFPoint.m in Sources */,

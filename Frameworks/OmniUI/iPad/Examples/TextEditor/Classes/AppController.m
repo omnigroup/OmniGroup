@@ -1,4 +1,4 @@
-// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -78,6 +78,25 @@ RCS_ID("$Id$")
     return [NSURL URLWithString:@"data:"];
 }
 
+- (nullable OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(nullable NSString *)title modalPresentationStyle:(UIModalPresentationStyle)presentationStyle modalTransitionStyle:(UIModalTransitionStyle)transitionStyle animated:(BOOL)animated navigationBarHidden:(BOOL)navigationBarHidden;
+{
+    return nil;
+}
+
+- (void)showNewsInWindow:(nullable id)sender;
+{
+    // no op
+}
+
++ (NSString *)openDocumentUserActivityType;
+{
+    return @"com.OmniGroup.TexEditor.OpenDocumentURLActivity";
+}
++ (NSString *)createDocumentFromTemplateUserActivityType;
+{
+    return @"com.OmniGroup.TexEditor.CreateDocumentFromTemplateActivity";
+}
+
 #pragma mark - OUIAppController (InAppStore)
 
 - (NSArray *)inAppPurchaseIdentifiers;
@@ -85,12 +104,27 @@ RCS_ID("$Id$")
     return @[];
 }
 
-#pragma mark - ODSStoreDelegate
+//#pragma mark - ODSStoreDelegate
+//
+//- (NSString *)documentStoreDocumentTypeForNewFiles:(ODSStore *)store;
+//{
+//    return (NSString *)kUTTypeRTF;
+//}
 
-- (NSString *)documentStoreDocumentTypeForNewFiles:(ODSStore *)store;
+#pragma mark - OUIDocumentCreationRequestDelegate
+- (NSString *)documentCreationRequestDocumentTypeForNewFiles:(nullable OUINewDocumentCreationRequest *)request;
 {
     return (NSString *)kUTTypeRTF;
 }
 
+- (NSArray *)documentCreationRequestEditableDocumentTypes:(nullable OUINewDocumentCreationRequest *)request;
+{
+    return @[(NSString *)kUTTypeRTF];
+}
+
+- (NSArray<NSString *> *)templateUTIs;
+{
+    return @[(NSString *)kUTTypeRTF];
+}
 
 @end

@@ -136,6 +136,41 @@ RCS_ID("$Id$")
     return fullVersionString;
 }
 
+- (NSString *)_deriveApplicationBundleURLScheme;
+{
+    // Grab the bundle identifier; if this is also a supported scheme it's preferred.
+    NSString *applicationIdentifier = [[[NSBundle mainBundle] infoDictionary] objectForKey:(id)kCFBundleIdentifierKey];
+
+    NSString *fallbackURLScheme = nil;
+    NSArray *urlTypes = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleURLTypes"];
+    for (NSDictionary *urlType in urlTypes) {
+        NSArray *urlSchemes = [urlType objectForKey:@"CFBundleURLSchemes"];
+        for (NSString *supportedScheme in urlSchemes) {
+            if ([supportedScheme isEqualToString:applicationIdentifier]) {
+                // Can bail immediately if the applicationIdentifier is supported.
+                return supportedScheme;
+            } else if (fallbackURLScheme == nil) {
+                fallbackURLScheme = supportedScheme;
+            }
+        }
+    }
+
+    // Falling back to something that's hopefully handled though is less precise; assert and fall all the way back to the application name if necessary.
+    OBASSERT(fallbackURLScheme != nil, "Expected linking application to include CFBundleURLTypes with a CFBundleURLSchemes entry");
+    return fallbackURLScheme ?: [[self applicationName] lowercaseString];
+}
+
+- (NSString *)applicationBundleURLScheme;
+{
+    static NSString *applicationBundleURLScheme = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        applicationBundleURLScheme = [self _deriveApplicationBundleURLScheme];
+    });
+
+    return applicationBundleURLScheme;
+}
+
 - (nullable NSString *)majorVersionNumberString;
 {
     NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
