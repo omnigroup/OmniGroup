@@ -40,6 +40,21 @@ OFDeclareDebugLogLevel(OUIApplicationLaunchDebug);
         NSLog(@"APP: " format, ## __VA_ARGS__); \
     } while (0)
 
+
+// This can be rmoved when the bugs noted below (where it is used) are fixed.
+@interface _OUIiCloudDriveTemplatesResourceLocationDelegate : NSObject <OFResourceLocationDelegate>
+@end
+
+@implementation _OUIiCloudDriveTemplatesResourceLocationDelegate
+- (void)resourceLocationDidMove:(OFResourceLocation *)location;
+{
+}
+- (void)resourceLocationDidUpdateResourceURLs:(OFResourceLocation *)location
+{
+}
+@end
+
+
 @interface OUIDocumentAppController () <OUIWebViewControllerDelegate, OUIDocumentCreationRequestDelegate>
 
 @property (nonatomic, weak) OUIWebViewController *webViewController;
@@ -59,6 +74,9 @@ OFDeclareDebugLogLevel(OUIApplicationLaunchDebug);
     OFBackgroundActivity *_backgroundFlushActivity;
 
     NSString *_agentStatusImageName;
+
+    _OUIiCloudDriveTemplatesResourceLocationDelegate *_iCloudTemplatesResourceLocationDelegate;
+    OFResourceLocation *_iCloudTemplatesResourceLocation;
 }
 
 + (void)initialize;
@@ -120,7 +138,10 @@ static NSString *_customLocalDocumentsDisplayName;
     [queue addOperationWithBlock:^{
         NSURL *containerURL = [NSFileManager.defaultManager URLForUbiquityContainerIdentifier:nil];
         NSURL *documentsURL = [containerURL.URLByStandardizingPath URLByAppendingPathComponent:@"Documents"];
-        self.iCloudDocumentsURL = documentsURL;
+
+        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+            self.iCloudDocumentsURL = documentsURL;
+        }];
     }];
 
     return self;
@@ -463,6 +484,44 @@ static NSSet *ViewableFileTypes()
     navigationController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
     
     [window.rootViewController presentViewController:navigationController animated:YES completion:nil];
+}
+
+@synthesize iCloudDocumentsURL = _iCloudDocumentsURL;
+- (NSURL *)iCloudDocumentsURL;
+{
+    NSURL *result;
+    @synchronized (self) {
+        result = _iCloudDocumentsURL;
+    }
+    return result;
+}
+
+- (void)setICloudDocumentsURL:(NSURL *)iCloudDocumentsURL;
+{
+    OBPRECONDITION([NSThread mainThread]);
+
+    @synchronized (self) {
+        _iCloudDocumentsURL = iCloudDocumentsURL;
+
+        // This is a bit of a hack since OUITemplatePicker isn't using a ResourceLocation for templates found in iCloud drive. See <bug:///187370> (Frameworks-iOS Feature: OUITemplatePicker should use ResourceLocation for iCloud drive files) and <bug:///187369> (Frameworks-iOS Unassigned: OUIDocumentAppController's iCloudDocumentsURL property doesn't update when the user logs into/out of iCloud)
+        // We'll hack around this by making one here, but this means that we'll download templates from iCloud drive when we aren't actually in need of them, instead of only doing it when the template picker is displayed.
+        if (_iCloudDocumentsURL) {
+            _iCloudTemplatesResourceLocationDelegate = [[_OUIiCloudDriveTemplatesResourceLocationDelegate alloc] init];
+
+            OFUTIResourceTypePredicate *predicate = [[OFUTIResourceTypePredicate alloc] initWithFileTypes:self.templateFileTypes];
+            NSDictionary <NSString *, OFUTIResourceTypePredicate *> *resourceTypes = @{@"ignored": predicate};
+
+            __autoreleasing NSError *error;
+            _iCloudTemplatesResourceLocation = [[OFResourceLocation alloc] initWithBuiltInFolderURL:_iCloudDocumentsURL resourceTypes:resourceTypes delegate:_iCloudTemplatesResourceLocationDelegate synchronousInitialScan:NO error:&error];
+            if (!_iCloudTemplatesResourceLocation) {
+                [error log:@"Error creating iCloud Drive templates resource location"];
+            }
+        } else {
+            [_iCloudTemplatesResourceLocation invalidate];
+            _iCloudTemplatesResourceLocation = nil;
+            _iCloudTemplatesResourceLocationDelegate = nil;
+        }
+    }
 }
 
 #pragma mark Sync support

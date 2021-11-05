@@ -1024,6 +1024,17 @@ static OFPreference *showFileExtensionsPreference;
 
 - (void)sceneDidBecomeActive:(UIScene *)scene;
 {
+    // When command-tabbing, our window loses first responder status. Unfortunately, if we do this right now, it gets overridden by some private class becoming first responder. Doing this via NSOperationQueue doesn't work when there are two scenes being restored -- our fixup would fire between the two scenes and then UIKit would clobber one of the scenes's first responder.
+
+    __weak OUIDocumentSceneDelegate *weakSelf = self;
+    OFAfterDelayPerformBlock(0.15, ^{
+        OUIDocumentSceneDelegate *strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+        [strongSelf.defaultFirstResponder becomeFirstResponder];
+    });
+
     [self.userActivity becomeCurrent];
 }
 

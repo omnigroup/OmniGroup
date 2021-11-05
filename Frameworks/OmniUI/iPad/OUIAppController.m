@@ -38,6 +38,7 @@
 #import <OmniUI/OUISendFeedbackURLCommand.h>
 #import <OmniUI/UIView-OUIExtensions.h>
 #import <OmniUI/UIViewController-OUIExtensions.h>
+#import <OmniAppKit/NSString-OAExtensions.h>
 #import <sys/sysctl.h>
 
 #import "OUIChangeAppIconURLCommand.h"
@@ -1112,9 +1113,46 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
 
     MFMailComposeViewController *controller = [self newMailComposeController];
     if (controller == nil) {
-        NSError *error = nil;
-        OUIErrorWithInfo(&error, OUISendFeedbackError, NSLocalizedStringFromTableInBundle(@"Unable to send feedback.", @"OmniUI", OMNI_BUNDLE, @"Feedback error description"), NSLocalizedStringFromTableInBundle(@"This device hasn't been configured to send email.", @"OmniUI", OMNI_BUNDLE, @"Feedback error reason"), OUIShouldOfferToReportErrorUserInfoKey, @(NO), nil);
-        OUI_PRESENT_ALERT_IN_SCENE(error, scene);
+        
+        NSMutableString *mailtoURLString = [NSMutableString stringWithString:@"mailto:"];
+        BOOL hasAppendedDelimeter = NO;
+        
+        #define APPEND_DELIMITER() do { \
+            [mailtoURLString appendString:(hasAppendedDelimeter ? @"&" : @"?")]; \
+            hasAppendedDelimeter = YES; \
+        } while (NO)
+        
+        
+        if (![NSString isEmptyString:feedbackAddress]) {
+            NSArray *emailComponents = [feedbackAddress componentsSeparatedByString:@"@"];
+            OBASSERT(emailComponents.count == 2); // No processing of email address performed. Will be up to the user to correct any issues from malformed mailto user/host.
+            if (emailComponents.count == 2) {
+                NSString *user = emailComponents.firstObject;
+                user = [user stringByAddingPercentEncodingWithAllowedCharacters:NSCharacterSet.URLUserAllowedCharacterSet];
+
+                NSString *host = emailComponents.lastObject;
+                host = [host stringByAddingPercentEncodingWithAllowedCharacters:NSCharacterSet.URLHostAllowedCharacterSet];
+
+                [mailtoURLString appendFormat:@"%@@%@", user, host];
+            } else {
+                [mailtoURLString appendString:feedbackAddress];
+            }
+            
+        }
+        
+        if (![NSString isEmptyString:subject]) {
+            APPEND_DELIMITER();
+            [mailtoURLString appendFormat:@"subject=%@", [subject stringByAddingPercentEncodingWithURLQueryAllowedCharactersForQueryArgumentAssumingAmpersandDelimiter]];
+        }
+        
+        if (![NSString isEmptyString:body]) {
+            APPEND_DELIMITER();
+            [mailtoURLString appendFormat:@"body=%@", [body stringByAddingPercentEncodingWithURLQueryAllowedCharactersForQueryArgumentAssumingAmpersandDelimiter]];
+        }
+        
+        NSURL *mailtoURL = [NSURL URLWithString:mailtoURLString];
+        [UIApplication.sharedApplication openURL:mailtoURL options:@{} completionHandler:nil];
+        
         if (mailInteractionCompletionHandler != nil) {
             mailInteractionCompletionHandler();
         }
@@ -1515,9 +1553,10 @@ static UIImage *menuImage(NSString *name)
                 completion();
                 [self.mailInteractionCompletionHandlersByScene setObject:nil forKey:scene];
             }
+            if (result == MFMailComposeResultFailed) {
+                OUI_PRESENT_ALERT_IN_SCENE(error, scene);
+            }
         }];
-        
-
     }];
 }
 

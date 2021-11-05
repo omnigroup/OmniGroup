@@ -19,6 +19,7 @@
 #import <OmniAppKit/OATextAttachment.h>
 #import <OmniAppKit/OATextAttributes.h>
 #import <OmniAppKit/OATextStorage.h>
+#import <OmniAppKit/NSString-OAExtensions.h>
 
 #if OMNI_BUILDING_FOR_MAC || OMNI_BUILDING_FOR_IOS
 #import <OmniAppKit/NSFileWrapper-OAExtensions.h>
@@ -67,7 +68,6 @@
 #import <OmniAppKit/NSSliderCell-OAExtensions.h>
 #import <OmniAppKit/NSSplitView-OAExtensions.h>
 #import <OmniAppKit/NSStackView-OAExtensions.h>
-#import <OmniAppKit/NSString-OAExtensions.h>
 #import <OmniAppKit/NSTableView-OAColumnConfigurationExtensions.h>
 #import <OmniAppKit/NSTableView-OAExtensions.h>
 #import <OmniAppKit/NSText-OAExtensions.h>

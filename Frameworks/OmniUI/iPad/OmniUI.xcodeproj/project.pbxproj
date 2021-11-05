@@ -34,7 +34,9 @@
 		235D67421EB00E06007FCF56 /* OUIMultiPaneNotifications.m in Sources */ = {isa = PBXBuildFile; fileRef = 235D67401EB00E06007FCF56 /* OUIMultiPaneNotifications.m */; };
 		236CA7741B5D690B00D66AFA /* UIVisualEffectView-OUIExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 236CA7721B5D690B00D66AFA /* UIVisualEffectView-OUIExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		236CA7751B5D690B00D66AFA /* UIVisualEffectView-OUIExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 236CA7731B5D690B00D66AFA /* UIVisualEffectView-OUIExtensions.m */; };
+		2BAF3C65250994EE003606FC /* ImageSwappingButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BAF3C64250994ED003606FC /* ImageSwappingButton.swift */; };
 		2BD092BE23E8F56E0087AECD /* OUILicensingAuthenticationCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BD092BD23E8F56E0087AECD /* OUILicensingAuthenticationCommand.swift */; };
+		2BEA0072252BD89500AA82FD /* ViewModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BEA0071252BD89500AA82FD /* ViewModifiers.swift */; };
 		342C5F7B1B5D935400B5A80D /* UIImage-OUIExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 342C5F791B5D935400B5A80D /* UIImage-OUIExtensions.h */; };
 		342C5F7C1B5D935400B5A80D /* UIImage-OUIExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 342C5F7A1B5D935400B5A80D /* UIImage-OUIExtensions.m */; };
 		348A79D91B584A830082D55D /* OUIFeatures.h in Headers */ = {isa = PBXBuildFile; fileRef = 34EA43E41267A32200BAC7FD /* OUIFeatures.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -646,7 +648,9 @@
 		2787A6541991F4E0008D3495 /* OmniAppKit.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniAppKit.xcodeproj; path = ../../OmniAppKit/OmniAppKit.xcodeproj; sourceTree = "<group>"; };
 		27D1BBCD1991F78A00976618 /* OmniQuartz.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniQuartz.xcodeproj; path = ../../OmniQuartz/OmniQuartz.xcodeproj; sourceTree = "<group>"; };
 		27D1BBDE1991F7D800976618 /* OmniUnzip.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniUnzip.xcodeproj; path = ../../OmniUnzip/OmniUnzip.xcodeproj; sourceTree = "<group>"; };
+		2BAF3C64250994ED003606FC /* ImageSwappingButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageSwappingButton.swift; sourceTree = "<group>"; };
 		2BD092BD23E8F56E0087AECD /* OUILicensingAuthenticationCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OUILicensingAuthenticationCommand.swift; sourceTree = "<group>"; };
+		2BEA0071252BD89500AA82FD /* ViewModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModifiers.swift; sourceTree = "<group>"; };
 		3407448B12A5E83F00EFDA68 /* OUIInspectorBackgroundView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIInspectorBackgroundView.h; sourceTree = "<group>"; };
 		3407448C12A5E83F00EFDA68 /* OUIInspectorBackgroundView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIInspectorBackgroundView.m; sourceTree = "<group>"; };
 		340B1E2C12B17C00004823B3 /* OmniUI.defaults */ = {isa = PBXFileReference; explicitFileType = text.xml; fileEncoding = 4; indentWidth = 8; name = OmniUI.defaults; path = Inspectors/OmniUI.defaults; sourceTree = "<group>"; usesTabs = 1; };
@@ -1148,6 +1152,7 @@
 				346C4BA61193274A00BE8C49 /* Text */,
 				3EC4402017C540D800715DD9 /* Transitions */,
 				346C4BA81193276C00BE8C49 /* Scaling View */,
+				2BAF3C552509948D003606FC /* SwiftUI */,
 				94BD524B125E302E0048530E /* Sync */,
 				346C4BA9119327A100BE8C49 /* Extensions & Utilities */,
 				346C4C0C1193297600BE8C49 /* en.lproj */,
@@ -1304,6 +1309,15 @@
 				108AA8791D9AE4AB006A7B09 /* OUUnitTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		2BAF3C552509948D003606FC /* SwiftUI */ = {
+			isa = PBXGroup;
+			children = (
+				2BAF3C64250994ED003606FC /* ImageSwappingButton.swift */,
+				2BEA0071252BD89500AA82FD /* ViewModifiers.swift */,
+			);
+			name = SwiftUI;
 			sourceTree = "<group>";
 		};
 		343B4A1A176F915C00F3C725 /* Loupe */ = {
@@ -2372,6 +2386,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2BAF3C65250994EE003606FC /* ImageSwappingButton.swift in Sources */,
 				348A7B451B584D130082D55D /* UIFont-OUIExtensions.m in Sources */,
 				348A7AF91B584CB90082D55D /* NSUndoManager-OUIExtensions.m in Sources */,
 				5F31A2621F968A9B00F409CE /* UIApplication-OUIExtensions.m in Sources */,
@@ -2454,6 +2469,7 @@
 				23105FDD1EAFD9AE008E0647 /* MultiPanePresenter.swift in Sources */,
 				348A7A811B584BAE0082D55D /* OUIInspectorButton.m in Sources */,
 				348A7B101B584CC30082D55D /* OUICompletionMatchCell.m in Sources */,
+				2BEA0072252BD89500AA82FD /* ViewModifiers.swift in Sources */,
 				6C1709211C2372BA00350F40 /* OUISliceSeparatorView.m in Sources */,
 				348A7A631B584B590082D55D /* OUINumericFieldInspectorSlice.m in Sources */,
 				348A7AC21B584C3B0082D55D /* OUITextSelectionSpan.m in Sources */,

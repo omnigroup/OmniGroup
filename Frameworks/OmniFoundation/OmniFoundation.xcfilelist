@@ -34,6 +34,7 @@ Crypto/OFCMSUtilities.swift
 Crypto/OFRFC3211Wrap.m
 Crypto/OFSymmetricKeywrap.m
 Crypto/OF_CTR_CBCMAC_Util.c
+DataStructures.subproj/Heap.swift
 DataStructures.subproj/OFBTree.m
 DataStructures.subproj/OFBijection.m
 DataStructures.subproj/OFBulkBlockPool.m

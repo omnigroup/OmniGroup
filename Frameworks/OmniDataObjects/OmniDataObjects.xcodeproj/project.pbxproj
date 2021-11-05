@@ -10,6 +10,8 @@
 		22F25C0B203DDF38003B0ED8 /* ODOEditingContext-Subclass.h in Headers */ = {isa = PBXBuildFile; fileRef = 22F25C0A203DDF38003B0ED8 /* ODOEditingContext-Subclass.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		22F25C0C203DDF38003B0ED8 /* ODOEditingContext-Subclass.h in Headers */ = {isa = PBXBuildFile; fileRef = 22F25C0A203DDF38003B0ED8 /* ODOEditingContext-Subclass.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		22F25C0D203DDF38003B0ED8 /* ODOEditingContext-Subclass.h in Headers */ = {isa = PBXBuildFile; fileRef = 22F25C0A203DDF38003B0ED8 /* ODOEditingContext-Subclass.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		2B747280250C3DEB00B6FA18 /* ODOObject-ObservableObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B74727F250C3DEB00B6FA18 /* ODOObject-ObservableObject.swift */; };
+		2B747281250C3DEB00B6FA18 /* ODOObject-ObservableObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B74727F250C3DEB00B6FA18 /* ODOObject-ObservableObject.swift */; };
 		3400B7E30D8C7CED00390D08 /* ODOEditingContext-Internal.m in Sources */ = {isa = PBXBuildFile; fileRef = 3400B7D70D8C7BD800390D08 /* ODOEditingContext-Internal.m */; };
 		3400BAA20D8E23CE00390D08 /* ODOSQLStatement.h in Headers */ = {isa = PBXBuildFile; fileRef = 3400BAA00D8E23CE00390D08 /* ODOSQLStatement.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		3400BAA30D8E23CE00390D08 /* ODOSQLStatement.m in Sources */ = {isa = PBXBuildFile; fileRef = 3400BAA10D8E23CE00390D08 /* ODOSQLStatement.m */; };
@@ -461,6 +463,7 @@
 /* Begin PBXFileReference section */
 		0867D69BFE84028FC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		22F25C0A203DDF38003B0ED8 /* ODOEditingContext-Subclass.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ODOEditingContext-Subclass.h"; sourceTree = "<group>"; };
+		2B74727F250C3DEB00B6FA18 /* ODOObject-ObservableObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ODOObject-ObservableObject.swift"; sourceTree = "<group>"; };
 		32DBCF5E0370ADEE00C91783 /* OmniDataObjects_Prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniDataObjects_Prefix.h; sourceTree = "<group>"; };
 		3400B6880D8C625700390D08 /* ODOObject-Internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = "ODOObject-Internal.h"; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		3400B7D30D8C7BA300390D08 /* ODOEditingContext-Internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = "ODOEditingContext-Internal.h"; sourceTree = "<group>"; };
@@ -799,6 +802,7 @@
 				3481A9B30D899C210050FC54 /* OmniDataObjects.h */,
 				34BC306C1BDEF55F00F7E2DF /* OmniDataObjects.modulemap */,
 				32DBCF5E0370ADEE00C91783 /* OmniDataObjects_Prefix.h */,
+				2B74727F250C3DEB00B6FA18 /* ODOObject-ObservableObject.swift */,
 			);
 			name = Misc;
 			sourceTree = "<group>";
@@ -1773,6 +1777,7 @@
 				34019FA11B62ED9B003A5BE4 /* ODOObjectID.m in Sources */,
 				3EA806D01EA7B58C008DE258 /* ODOSQLConnection.m in Sources */,
 				34019F891B62ED96003A5BE4 /* ODOEntity-SQL.m in Sources */,
+				2B747281250C3DEB00B6FA18 /* ODOObject-ObservableObject.swift in Sources */,
 				34019FA31B62ED9F003A5BE4 /* NSPredicate-ODOExtensions.m in Sources */,
 				4A9354FA23DB7E9300C8A37B /* ODOFloatingDate.m in Sources */,
 				34019F821B62ED90003A5BE4 /* ODOVersion.m in Sources */,
@@ -1887,6 +1892,7 @@
 				344FB1CA0D89979200AA63FE /* ODORelationship.m in Sources */,
 				3EA806CF1EA7B58C008DE258 /* ODOSQLConnection.m in Sources */,
 				340DD2ED0D89A3090049D65E /* ODOObjectID.m in Sources */,
+				2B747280250C3DEB00B6FA18 /* ODOObject-ObservableObject.swift in Sources */,
 				348409540D89F5EF00E74C9D /* ODOVersion.m in Sources */,
 				4A9354F923DB7E9300C8A37B /* ODOFloatingDate.m in Sources */,
 				34B9CCF30D8B065C001A5AB1 /* Errors.m in Sources */,

@@ -15,6 +15,7 @@ ODOModel-SQL.m
 ODOModel.m
 ODOObject-Accessors.m
 ODOObject-Internal.m
+ODOObject-ObservableObject.swift
 ODOObject.m
 ODOObjectID.m
 ODOObjectSnapshot.m

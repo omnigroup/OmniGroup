@@ -40,6 +40,10 @@
 		2779DDBE16BB338400A2BC8F /* OAViewPicker.m in Sources */ = {isa = PBXBuildFile; fileRef = 2779DDBD16BB338400A2BC8F /* OAViewPicker.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		27AC122D15BA295400B726A7 /* NSView-OALayerBackedFix.h in Headers */ = {isa = PBXBuildFile; fileRef = 27AC122B15BA295400B726A7 /* NSView-OALayerBackedFix.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		27AC122E15BA295400B726A7 /* NSView-OALayerBackedFix.m in Sources */ = {isa = PBXBuildFile; fileRef = 27AC122C15BA295400B726A7 /* NSView-OALayerBackedFix.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		2BF68C5B25269F3D0066CF28 /* NSString-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F44FE8AB2E911C9CC38 /* NSString-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		2BF68C8F25269F4B0066CF28 /* NSString-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F2EFE8AB2E911C9CC38 /* NSString-OAExtensions.m */; };
+		2BF68C9625269F520066CF28 /* NSString-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F2EFE8AB2E911C9CC38 /* NSString-OAExtensions.m */; };
+		2BF68C9D25269FD60066CF28 /* NSString-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F44FE8AB2E911C9CC38 /* NSString-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3401161811E516C10016ADB3 /* OATextStorage.h in Headers */ = {isa = PBXBuildFile; fileRef = 3401161411E516C10016ADB3 /* OATextStorage.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3401162111E516EC0016ADB3 /* OATextStorageEditTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3401161F11E516EC0016ADB3 /* OATextStorageEditTests.m */; };
 		3401162211E516EC0016ADB3 /* OATextStorageMergedEditTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3401162011E516EC0016ADB3 /* OATextStorageMergedEditTests.m */; };
@@ -264,6 +268,7 @@
 		4980AFE21BBC9DF1002B43FE /* OAConstraintBasedStackView.m in Sources */ = {isa = PBXBuildFile; fileRef = 4980AFE01BBC9DF1002B43FE /* OAConstraintBasedStackView.m */; };
 		49EF503D15F6EAD000254849 /* OALabelField.h in Headers */ = {isa = PBXBuildFile; fileRef = 49EF503B15F6EAD000254849 /* OALabelField.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		49EF503E15F6EAD000254849 /* OALabelField.m in Sources */ = {isa = PBXBuildFile; fileRef = 49EF503C15F6EAD000254849 /* OALabelField.m */; };
+		4A18C7AE2526897500FF8DD3 /* Classic Crayons.clr in Resources */ = {isa = PBXBuildFile; fileRef = 4A18C7862526897400FF8DD3 /* Classic Crayons.clr */; };
 		4A2ED86E1F454152000F2513 /* OAColorPalette.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51EF6FE8AB2E911C9CC38 /* OAColorPalette.m */; };
 		4A2ED8981F454160000F2513 /* namedColors.plist in Resources */ = {isa = PBXBuildFile; fileRef = 00E51F0DFE8AB2E911C9CC38 /* namedColors.plist */; };
 		4A2ED8991F454F9D000F2513 /* OAColorPalette.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F00FE8AB2E911C9CC38 /* OAColorPalette.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -385,7 +390,6 @@
 		4AA1E70508AA764600E2FF6B /* OAWindowCascade.h in Headers */ = {isa = PBXBuildFile; fileRef = 0CF02C24FF1319B8C697A12F /* OAWindowCascade.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E70608AA764600E2FF6B /* OAZoomableViewProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F99FE8AB2E911C9CC38 /* OAZoomableViewProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E70808AA764600E2FF6B /* OAAutosizingHorizontalRule.h in Headers */ = {isa = PBXBuildFile; fileRef = 3412B1D2089EE7E10046872B /* OAAutosizingHorizontalRule.h */; };
-		4AA1E72308AA764600E2FF6B /* Classic Crayons.clr in Resources */ = {isa = PBXBuildFile; fileRef = 7F549877041FECFE0097A14E /* Classic Crayons.clr */; };
 		4AA1E72908AA764600E2FF6B /* OACautionIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = 1D0E8F7703FBA2F90097A138 /* OACautionIcon.png */; };
 		4AA1E72A08AA764600E2FF6B /* OAChasingArrows.png in Resources */ = {isa = PBXBuildFile; fileRef = 6389AAF8FFFFE828C697A14E /* OAChasingArrows.png */; };
 		4AA1E75808AA764600E2FF6B /* namedColors.plist in Resources */ = {isa = PBXBuildFile; fileRef = 00E51F0DFE8AB2E911C9CC38 /* namedColors.plist */; };
@@ -1336,6 +1340,7 @@
 		4A0277F608959F0400594E5E /* OAUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAUtilities.h; sourceTree = "<group>"; };
 		4A0AC9D005F529440097A149 /* NSObject-NSDraggingInfo-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSObject-NSDraggingInfo-OAExtensions.h"; sourceTree = "<group>"; };
 		4A0AC9D105F529440097A149 /* NSObject-NSDraggingInfo-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSObject-NSDraggingInfo-OAExtensions.m"; sourceTree = "<group>"; };
+		4A18C7862526897400FF8DD3 /* Classic Crayons.clr */ = {isa = PBXFileReference; lastKnownFileType = file.bplist; path = "Classic Crayons.clr"; sourceTree = "<group>"; };
 		4A4BAB5A1E64C1780007DCE3 /* NSAppearance-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSAppearance-OAExtensions.h"; sourceTree = "<group>"; };
 		4A4BAB5B1E64C1780007DCE3 /* NSAppearance-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSAppearance-OAExtensions.m"; sourceTree = "<group>"; };
 		4A5714CD08B0436100B772DA /* Info-OAUnitTests.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Info-OAUnitTests.plist"; sourceTree = SOURCE_ROOT; };
@@ -1423,7 +1428,6 @@
 		6CBB57EB0416D8B200E7FE1C /* NSImage-ColorSyncExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSImage-ColorSyncExtensions.m"; sourceTree = "<group>"; };
 		70BA5ED6FF72DDC0C697A146 /* OAHierarchicalPopUpController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAHierarchicalPopUpController.h; sourceTree = "<group>"; };
 		70BA5ED7FF72DDC0C697A146 /* OAHierarchicalPopUpController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAHierarchicalPopUpController.m; sourceTree = "<group>"; };
-		7F54986F041FDCAE0097A14E /* en */ = {isa = PBXFileReference; lastKnownFileType = file.bplist; name = en; path = "en.lproj/Classic Crayons.clr"; sourceTree = "<group>"; };
 		8438786F1AB20BD80069E467 /* OADefaultSettingIndicatorOff.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OADefaultSettingIndicatorOff.png; sourceTree = "<group>"; };
 		843878701AB20BD80069E467 /* OADefaultSettingIndicatorOff@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OADefaultSettingIndicatorOff@2x.png"; sourceTree = "<group>"; };
 		843878711AB20BD80069E467 /* OADefaultSettingIndicatorOn.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OADefaultSettingIndicatorOn.png; sourceTree = "<group>"; };
@@ -2083,7 +2087,7 @@
 			children = (
 				0145F2A9FFAFE867C697A15C /* NSColor-OAExtensions.h */,
 				0145F2A8FFAFE867C697A15C /* NSColor-OAExtensions.m */,
-				7F549877041FECFE0097A14E /* Classic Crayons.clr */,
+				4A18C7862526897400FF8DD3 /* Classic Crayons.clr */,
 				425CC9E11A37BDC000A6760B /* OACrayonNames.strings */,
 			);
 			name = NSColor;
@@ -3026,6 +3030,7 @@
 			files = (
 				3E06092F221C5FAA00C1612A /* OAMoreInfoErrorRecovery.h in Headers */,
 				34BF52CA1EC135E70028AE7E /* OAFontDescriptor.h in Headers */,
+				2BF68C9D25269FD60066CF28 /* NSString-OAExtensions.h in Headers */,
 				1063B24322862018000C95C2 /* OASignificantTimeChangeObserver.h in Headers */,
 				340D87031EC1303100261434 /* OAColor.h in Headers */,
 				5F7F1C4322963DBB007B8B29 /* OAColorCatalog.h in Headers */,
@@ -3047,6 +3052,7 @@
 			files = (
 				3E06092E221C5FAA00C1612A /* OAMoreInfoErrorRecovery.h in Headers */,
 				3484DD8B194FFC3500D83731 /* NSAttributedString-OAExtensions.h in Headers */,
+				2BF68C5B25269F3D0066CF28 /* NSString-OAExtensions.h in Headers */,
 				4D46F8541C5842C600FB8A91 /* OAAppearancePropertyListCoder-Internal.h in Headers */,
 				3484DD8F194FFC5500D83731 /* OAFeatures.h in Headers */,
 				3484DD90194FFC6000D83731 /* OAFindPattern.h in Headers */,
@@ -3848,10 +3854,10 @@
 				843878741AB20BD80069E467 /* OADefaultSettingIndicatorOff@2x.png in Resources */,
 				348DC7511A0835D2002C2CD8 /* OAChangeConfigurationValues.xib in Resources */,
 				349BED68212E250C00C7CE1E /* ScriptIcons.xcassets in Resources */,
-				4AA1E72308AA764600E2FF6B /* Classic Crayons.clr in Resources */,
 				4AA1E72908AA764600E2FF6B /* OACautionIcon.png in Resources */,
 				4AA1E72A08AA764600E2FF6B /* OAChasingArrows.png in Resources */,
 				94B962CA20E42F1900F1E3CE /* OmniAppKit.xcassets in Resources */,
+				4A18C7AE2526897500FF8DD3 /* Classic Crayons.clr in Resources */,
 				425CC9E31A37BDC000A6760B /* OACrayonNames.strings in Resources */,
 				843878761AB20BD80069E467 /* OADefaultSettingIndicatorOn@2x.png in Resources */,
 				4AA1E75808AA764600E2FF6B /* namedColors.plist in Resources */,
@@ -4004,6 +4010,7 @@
 				3450E6CB221CD55000D888E3 /* OAStrings.m in Sources */,
 				3E060932221C5FAA00C1612A /* OAMoreInfoErrorRecovery.m in Sources */,
 				341876E51EC24F8700954EF3 /* OATextStorage.m in Sources */,
+				2BF68C9625269F520066CF28 /* NSString-OAExtensions.m in Sources */,
 				340D87021EC1303100261434 /* OAColor-Archiving.m in Sources */,
 				34BF52CB1EC135E70028AE7E /* OAFontDescriptor.m in Sources */,
 				340D87041EC1303100261434 /* OAColor.m in Sources */,
@@ -4023,6 +4030,7 @@
 				4A2ED86E1F454152000F2513 /* OAColorPalette.m in Sources */,
 				3459EE3C1B694A8400D4F085 /* OAColor.m in Sources */,
 				341F021B21BEE55700C78CF9 /* OADocumentFileTypes.swift in Sources */,
+				2BF68C8F25269F4B0066CF28 /* NSString-OAExtensions.m in Sources */,
 				3484DD91194FFC6400D83731 /* OAFindPattern.m in Sources */,
 				3459EE381B694A8400D4F085 /* OAColor-Archiving.m in Sources */,
 				3484DD94194FFC7C00D83731 /* OATextAttributes.m in Sources */,
@@ -4363,14 +4371,6 @@
 				426C40561A40AB9700DEC1F2 /* Base */,
 			);
 			name = OAPopupDatePicker.xib;
-			sourceTree = "<group>";
-		};
-		7F549877041FECFE0097A14E /* Classic Crayons.clr */ = {
-			isa = PBXVariantGroup;
-			children = (
-				7F54986F041FDCAE0097A14E /* en */,
-			);
-			name = "Classic Crayons.clr";
 			sourceTree = "<group>";
 		};
 		E2B8A8D615BE016E00B5F26B /* OAPreferences.xib */ = {

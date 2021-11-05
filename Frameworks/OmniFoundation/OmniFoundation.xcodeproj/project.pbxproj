@@ -1496,6 +1496,9 @@
 		5FD243A61D12189F009AB347 /* NSCache-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 5FD243A31D12189F009AB347 /* NSCache-OFExtensions.m */; };
 		5FD243A71D12189F009AB347 /* NSCache-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 5FD243A31D12189F009AB347 /* NSCache-OFExtensions.m */; };
 		5FE978E91912CED5003029CA /* OFRelativeDateParser-Internal.m in Sources */ = {isa = PBXBuildFile; fileRef = 5FE978E81912CED5003029CA /* OFRelativeDateParser-Internal.m */; };
+		6C206212251271320045C231 /* Heap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C206211251271320045C231 /* Heap.swift */; };
+		6C206213251271320045C231 /* Heap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C206211251271320045C231 /* Heap.swift */; };
+		6C206260251409FF0045C231 /* Heap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C206211251271320045C231 /* Heap.swift */; };
 		6C391FA4114C1B4E0049E917 /* OFNetChangeNotifier.h in Headers */ = {isa = PBXBuildFile; fileRef = 6C391FA2114C1B4E0049E917 /* OFNetChangeNotifier.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		6C391FA5114C1B4E0049E917 /* OFNetChangeNotifier.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C391FA3114C1B4E0049E917 /* OFNetChangeNotifier.m */; };
 		6C4635F90B38956800635C03 /* OFScriptHelpers.h in Headers */ = {isa = PBXBuildFile; fileRef = 6C4635F70B38956800635C03 /* OFScriptHelpers.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -2506,6 +2509,7 @@
 		5FE978E81912CED5003029CA /* OFRelativeDateParser-Internal.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "OFRelativeDateParser-Internal.m"; sourceTree = "<group>"; };
 		62BFF5D70079062E7F000001 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		6737D836FF0496C4C697A12F /* OFDataBuffer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFDataBuffer.m; sourceTree = "<group>"; };
+		6C206211251271320045C231 /* Heap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Heap.swift; sourceTree = "<group>"; };
 		6C391FA2114C1B4E0049E917 /* OFNetChangeNotifier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFNetChangeNotifier.h; sourceTree = "<group>"; };
 		6C391FA3114C1B4E0049E917 /* OFNetChangeNotifier.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFNetChangeNotifier.m; sourceTree = "<group>"; };
 		6C4635F70B38956800635C03 /* OFScriptHelpers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFScriptHelpers.h; sourceTree = "<group>"; };
@@ -2838,6 +2842,7 @@
 				34F8271A107E904600458A71 /* OFExtent.m */,
 				00E51CA9FE8AAEA611C9CC38 /* OFHeap.h */,
 				00E51C8EFE8AAEA611C9CC38 /* OFHeap.m */,
+				6C206211251271320045C231 /* Heap.swift */,
 				E2182735145604D60097BBFE /* OFIndexPath.h */,
 				E218272F1456049B0097BBFE /* OFIndexPath.m */,
 				00E51CAAFE8AAEA611C9CC38 /* OFKnownKeyDictionaryTemplate.h */,
@@ -5561,6 +5566,7 @@
 				34A062AF1EC110A60099028D /* OFXMLString.m in Sources */,
 				34A062B01EC110A60099028D /* OFXMLWhitespaceBehavior.m in Sources */,
 				34A062B11EC110A60099028D /* OFVersionNumber.m in Sources */,
+				6C206260251409FF0045C231 /* Heap.swift in Sources */,
 				34A062B21EC110A60099028D /* NSComparisonPredicate-OFExtensions.m in Sources */,
 				34A062B31EC110A60099028D /* OFSelectionSet.swift in Sources */,
 				34A062B41EC110A60099028D /* NSBundle-OFExtensions.m in Sources */,
@@ -5702,6 +5708,7 @@
 				34F16BCE194F767100AD9C4D /* OFTimeSpan.m in Sources */,
 				347F090E1A9D2C8100B05908 /* OFFileEdit.m in Sources */,
 				34F16B76194F6EC900AD9C4D /* OFGeometry.m in Sources */,
+				6C206213251271320045C231 /* Heap.swift in Sources */,
 				34F16BA8194F74FA00AD9C4D /* OFRationalNumber.m in Sources */,
 				3470616F1BF656C1009BC3AB /* OFSelectionSet.m in Sources */,
 				34F16C28194F796300AD9C4D /* OFXMLWhitespaceBehavior.m in Sources */,
@@ -6019,6 +6026,7 @@
 				4A4E072C08AA72B10098FF0F /* OFIObjectSelectorInt.m in Sources */,
 				4A4E072D08AA72B10098FF0F /* OFIObjectSelectorIntInt.m in Sources */,
 				4A4E072E08AA72B10098FF0F /* OFIObjectSelectorObject.m in Sources */,
+				6C206212251271320045C231 /* Heap.swift in Sources */,
 				4A4E072F08AA72B10098FF0F /* OFIObjectSelectorObjectInt.m in Sources */,
 				34D79A1B1805AABF008B7173 /* NSScripting-OFDebugging.m in Sources */,
 				4A4E073008AA72B10098FF0F /* OFIObjectSelectorObjectObject.m in Sources */,

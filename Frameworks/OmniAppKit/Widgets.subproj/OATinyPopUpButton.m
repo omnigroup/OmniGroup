@@ -56,6 +56,20 @@ RCS_ID("$Id$");
     if ([self isEnabled]) {
         // Draw image near top center of its view
         NSImage *dropDownImage = OAImageNamed(@"OADropDownTriangle", OMNI_BUNDLE);
+        if ([self.effectiveAppearance OA_isDarkAppearance]) {
+            static NSImage *whiteImage = nil;
+            static dispatch_once_t onceToken;
+            dispatch_once(&onceToken, ^{
+                NSRect imageRect = NSMakeRect(0, 0, dropDownImage.size.width, dropDownImage.size.height);
+                whiteImage = [NSImage imageWithSize:imageRect.size flipped:NO drawingHandler:^(NSRect dst) {
+                    [[NSColor whiteColor] set];
+                    NSRectFill(dst);
+                    [dropDownImage drawInRect:imageRect fromRect:imageRect operation:NSCompositingOperationDestinationIn fraction:1.0];
+                    return YES;
+                }];
+            });
+            dropDownImage = whiteImage;
+        }
         NSSize imageSize = [dropDownImage size];
         CGRect bounds = [self bounds];
         CGRect imageRect;

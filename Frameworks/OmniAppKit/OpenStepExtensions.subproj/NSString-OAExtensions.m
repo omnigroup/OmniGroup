@@ -1,4 +1,4 @@
-// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2020 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -6,18 +6,25 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniAppKit/NSString-OAExtensions.h>
-
 #import <Foundation/Foundation.h>
+
+#if OMNI_BUILDING_FOR_MAC
 #import <AppKit/AppKit.h>
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
 #import <OmniAppKit/NSAttributedString-OAExtensions.h>
 #import <OmniAppKit/OAApplication.h>
-#import <OmniAppKit/OAFindPattern.h>
+#endif
 
-RCS_ID("$Id$")
+#if !OMNI_BUILDING_FOR_SERVER
+#import <OmniAppKit/OAFindPattern.h>
+#endif
+
+//RCS_ID("$Id$")
 
 @implementation NSString (OAExtensions)
+
+#if OMNI_BUILDING_FOR_MAC
 
 + (NSString *)stringForKeyEquivalent:(NSString *)equivalent andModifierMask:(NSUInteger)mask;
 {
@@ -98,10 +105,29 @@ RCS_ID("$Id$")
     return self;
 }
 
+#endif // OMNI_BUILDING_FOR_MAC
+
+- (nullable NSString *)stringByAddingPercentEncodingWithURLQueryAllowedCharactersForQueryArgumentAssumingAmpersandDelimiter;
+{
+    NSCharacterSet *queryCharacterSet = [NSCharacterSet URLQueryAllowedCharacterSet];
+    
+    // & handled directly per http://stackoverflow.com/questions/8088473/how-do-i-url-encode-a-string/22388417#22388417
+    // & is allowed in the URLQueryAllowedCharacterSet
+    NSString *result = [self stringByReplacingOccurrencesOfString:@"&" withString:@"%26"];
+    return [result stringByAddingPercentEncodingWithAllowedCharacters:queryCharacterSet];
+}
+
+- (NSString *)stringByRemovingPercentEncodingFromURLQueryAssumingAmpersandDelimiter;
+{
+    NSString *result = [self stringByReplacingOccurrencesOfString:@"%26" withString:@"&"];
+    return [result stringByRemovingPercentEncoding];
+}
+
 @end
 
 #pragma mark -
 
+#if !OMNI_BUILDING_FOR_SERVER
 @implementation NSMutableString (OAExtensions)
 
 - (BOOL)replaceAllOfPattern:(id <OAFindPattern>)pattern;
@@ -128,3 +154,4 @@ RCS_ID("$Id$")
 }
 
 @end
+#endif // !OMNI_BUILDING_FOR_SERVER

@@ -437,7 +437,7 @@ private func getFolderURLContainerDisplayName(_ folderURL: URL) -> String? {
             let fileURL = (item as! NSURL) as URL
 
             #if os(iOS)
-            guard !fileURL.path.contains("/.Trash/") else { continue }
+            guard !fileURL.path.contains("/.Trash/") && !fileURL.path.hasSuffix("/.Trash") else { continue }
 
             if OFIsInboxFolder(fileURL) {
                 topLevelEnumerator.skipDescendants()

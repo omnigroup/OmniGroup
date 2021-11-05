@@ -11,6 +11,7 @@
 #import <OmniDataObjects/ODORelationship.h>
 #import <OmniDataObjects/ODOAttribute.h>
 #import <OmniDataObjects/ODOModel.h>
+#import <OmniDataObjects/OmniDataObjects-Swift.h>
 
 #import <OmniBase/objc.h>
 
@@ -380,6 +381,9 @@ static void ODOObjectDidChangeValueForKey(ODOObject *object, NSString *key)
 // Analog for -{will,did}ChangeValueForKey: when you already have the property (since these can't be subclassed on ODOObject).
 void ODOObjectWillChangeValueForProperty(ODOObject *object, ODOProperty *property)
 {
+#if !OMNI_BUILDING_FOR_SERVER
+    [object sendWillChange];
+#endif
     for (ODOObjectPropertyChangeAction action in ODOPropertyWillChangeActions(property)) {
         action(object, property);
     }

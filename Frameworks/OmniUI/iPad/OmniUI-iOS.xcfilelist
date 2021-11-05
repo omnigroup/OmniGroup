@@ -2,6 +2,7 @@ $(SRCROOT)/OmniUI.xcodeproj/project.pbxproj
 ../iOS/DifferenceEngine.swift
 ../iOS/UINavigationController-OUIExtensions.m
 Bundle.swift
+ImageSwappingButton.swift
 Inspectors/DisclosableInspectorPane.swift
 Inspectors/DisclosableMultiSegmentInspectorPane.swift
 Inspectors/DisclosableSliceGroup.swift
@@ -192,3 +193,4 @@ UIView-OUIExtensions.swift
 UIViewController-OUIExtensions.m
 UIVisualEffectView-OUIExtensions.m
 UIWindow-OUIExtensions.m
+ViewModifiers.swift

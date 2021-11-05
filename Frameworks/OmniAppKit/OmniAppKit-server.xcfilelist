@@ -5,6 +5,7 @@ Colors/OAColor.m
 OAMoreInfoErrorRecovery.m
 OAStrings.m
 OpenStepExtensions.subproj/NSAttributedString-OAExtensions.m
+OpenStepExtensions.subproj/NSString-OAExtensions.m
 OpenStepExtensions.subproj/OAFontDescriptor.m
 OpenStepExtensions.subproj/OAParagraphStyle.m
 OpenStepExtensions.subproj/OATextAttachment.m
