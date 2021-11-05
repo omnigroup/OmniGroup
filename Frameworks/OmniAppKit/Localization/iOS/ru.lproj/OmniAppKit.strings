@@ -5,6 +5,9 @@
 "Expected value of type “%@”" = "Ожидаемое значение типа «%@»";
 
 /* button title */
+"Feature not enabled for this demo" = "В демо-версии эта функция не работает";
+
+/* button title */
 "Learn More" = "Дополнительные сведения";
 
 /* error recovery option */

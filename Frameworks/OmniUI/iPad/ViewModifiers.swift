@@ -1,4 +1,4 @@
-// Copyright 2020 Omni Development, Inc. All rights reserved.
+// Copyright 2020-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -67,6 +67,26 @@ extension View {
             ifTransform(instance, self)
         } else {
             elseTransform(self)
+        }
+    }
+}
+
+/*
+
+ UIViewRepresentable views do not receive taps via .onTapGesture (presumably since the UIView can just add its own gestures.
+
+ BUT! if the containing View has an .onTapGesture, it will be invoked on the container view. This seems like a bug, but we can work around this here.
+
+ */
+
+extension UIViewRepresentable {
+
+    @ViewBuilder
+    public var captureTapGesture: some View {
+        Group {
+            self
+        }.onTapGesture {
+            // Tap captured by the Group, being the closest container
         }
     }
 }

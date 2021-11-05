@@ -1,4 +1,4 @@
-// Copyright 2008-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -187,7 +187,7 @@ static void replacement_addAnimation(CALayer *self, SEL _cmd, CAAnimation *anima
 static void (*original_drawInContext)(CALayer *self, SEL _cmd, CGContextRef ctx) = NULL;
 static void replacement_drawInContext(CALayer *self, SEL _cmd, CGContextRef ctx)
 {
-    NSLog(@"%@=%@ drawInContext:%p delegate:%@", self.name, [self shortDescription], ctx, [[self delegate] shortDescription]);
+    NSLog(@"%@=%@ drawInContext:%p delegate:%@", self.name, [self shortDescription], ctx, [(id)[self delegate] shortDescription]);
     original_drawInContext(self, _cmd, ctx);
 }
 #endif
@@ -200,7 +200,7 @@ static void replacement_renderInContext(CALayer *self, SEL _cmd, CGContextRef ct
     original_renderInContext(self, _cmd, ctx);
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
 
-    NSLog(@"%@=%@ renderInContext:%p delegate:%@ %f", self.name, [self shortDescription], ctx, [[self delegate] shortDescription], end - start);
+    NSLog(@"%@=%@ renderInContext:%p delegate:%@ %f", self.name, [self shortDescription], ctx, [(id)[self delegate] shortDescription], end - start);
 }
 #endif
 
@@ -212,7 +212,7 @@ static void replacement_drawInContext(CALayer *self, SEL _cmd, CGContextRef ctx)
     original_drawInContext(self, _cmd, ctx);
     CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
     
-    NSLog(@"%@=%@ drawInContext:%p delegate:%@ %f", self.name, [self shortDescription], ctx, [[self delegate] shortDescription], end - start);
+    NSLog(@"%@=%@ drawInContext:%p delegate:%@ %f", self.name, [self shortDescription], ctx, [(id)[self delegate] shortDescription], end - start);
 }
 #endif
 

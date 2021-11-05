@@ -5,6 +5,9 @@
 "Expected value of type “%@”" = "Valore previsto di tipo \"%@\"";
 
 /* button title */
+"Feature not enabled for this demo" = "Funzione non abilitata in questa demo";
+
+/* button title */
 "Learn More" = "Ulteriori informazioni";
 
 /* error recovery option */

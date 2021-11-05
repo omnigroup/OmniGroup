@@ -32,6 +32,12 @@ public struct BaselineSizeCategoryModifier: ViewModifier {
     }
 }
 
+extension View {
+    public func baselineSizeCategory(_ sizeCategory: ContentSizeCategory) -> some View {
+        modifier(BaselineSizeCategoryModifier(baselineSizeCategory: sizeCategory))
+    }
+}
+
 public extension ContentSizeCategory {
     
     func adjustedSize(for baselineSize: ContentSizeCategory) -> ContentSizeCategory {

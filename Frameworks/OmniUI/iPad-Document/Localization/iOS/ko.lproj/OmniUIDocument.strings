@@ -22,12 +22,8 @@
 /* home screen button label */
 "Add OmniPresence Account" = "OmniPresence  계정 추가";
 
-/* button title
-   cancel button title
-   delete confirmation cancel button
-   Discard unsynced edits dialog: cancel button label
-   Server account setup confirmation cancellation label
-   title for alert option cancel */
+/* cancel button title
+   Discard unsynced edits dialog: cancel button label */
 
 "Cancel" = "취소";
 
@@ -58,7 +54,7 @@
 /* Update news: button title */
 "Continue" = "계속";
 
-/* Menu option in the document picker view */
+/* Share option title */
 "Copy as Image" = "이미지로 복사";
 
 /* moved aside custom sample document name */
@@ -88,9 +84,7 @@
 /* webdav help */
 "Enter the location of your WebDAV space." = "WebDAV 공간 위치를 입력하십시오.";
 
-/* export button title
-   export options title
-   Export toolbar item accessibility label. */
+/* Export toolbar item accessibility label. */
 "Export" = "내보내기";
 
 /* export to description */
@@ -98,6 +92,9 @@
 
 /* OmniPresence file list: sort order option */
 "folder and name" = "폴더 및 이름";
+
+/* iCloud stencils folder name */
+"iCloud Drive" = "iCloud Drive";
 
 /* Info item accessibility label */
 "Info" = "정보";
@@ -117,14 +114,13 @@
 /* OmniPresence file list: sort order option */
 "modification date" = "수정 날짜";
 
-/* Base name for newly created documents. This will have an number appended to it to make it unique. */
+/* Default base name for a new document */
 "My Document" = "내 도큐멘트";
 
 /* OmniPresence file list: sort order option */
 "name" = "이름";
 
-/* New Document toolbar item accessibility label.
-   New Template button title */
+/* New Template button title */
 "New Document" = "새 도큐멘트";
 
 /* Update news: title */
@@ -133,8 +129,7 @@
 /* Server Account Setup label: nickname */
 "Nickname" = "별명";
 
-/* button title
-   When displaying a sync error, this is the option to ignore the error. */
+/* When displaying a sync error, this is the option to ignore the error. */
 "OK" = "양호";
 
 /* demo disabled message */
@@ -146,10 +141,14 @@
 /* demo disabled title */
 "OmniPresence is disabled in this demo version." = "이 데모 버전에서는 OmniPresence가 비활성화되어 있습니다.";
 
-/* Local Documents device-specific display name (should match the name of the On My iPad location in the Files app on an iPad) */
+/* Local Documents device-specific display name (should match the name of the On My iPad location in the Files app on an iPad)
+   local stencils folder name */
+
 "On My iPad" = "나의 iPad";
 
-/* Local Documents device-specific display name (should match the name of the On My iPhone location in the Files app on an iPhone) */
+/* Local Documents device-specific display name (should match the name of the On My iPhone location in the Files app on an iPhone)
+   local stencils folder name */
+
 "On My iPhone" = "나의 iPhone";
 
 /* Open Document Shortcut Title */
@@ -157,9 +156,6 @@
 
 /* Language section title */
 "ouiLanguagePicker.language" = "언어";
-
-/* Custom templates header title */
-"ouiTemplatePicker.customTemplatesHeader" = "사용자 정의";
 
 /* Navigation bar title: Choose a Template */
 "ouiTemplatePicker.navigationTitle" = "템플릿 선택";
@@ -170,7 +166,7 @@
 /* Photo Library permisssions error description. */
 "Photo Library permission denied." = "사진 라이브러리 권한이 거부되었습니다.";
 
-/* Menu option in the document picker view */
+/* Share option title */
 "Print" = "프린트";
 
 /* purchase now button title */
@@ -200,11 +196,10 @@
 /* send to app description */
 "Send \"%@\" to app as:" = "“%@”을(를) 앱에 다음으로 전송:";
 
-/* Menu option in the document picker view */
+/* Share option title */
 "Send to Photos" = "사진으로 전송";
 
-/* export options title
-   Menu option in the document picker view */
+/* export options title */
 "Send via Mail" = "Mail을 통해 전송";
 
 /* Label format when setting up an OmniPresence or WebDAV server account */
@@ -242,6 +237,9 @@
 
 /* Error description for a document operation failing due to a missing file. */
 "The operation couldn't be completed." = "작업을 완료할 수 없습니다.";
+
+/* linked folder preference view: header label */
+"The template picker will include any templates found in these locations." = "The template picker will include any templates found in these locations.";
 
 /* Photo Library permisssions error suggestion. */
 "This app does not have access to your Photo Library." = "이 앱은 사용자의 사진 라이브러리에 액세스할 수 없습니다.";

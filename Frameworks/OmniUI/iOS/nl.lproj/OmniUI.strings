@@ -160,17 +160,11 @@
 /* Strike Through button accessibility label */
 "Strike Through" = "Doorhalen";
 
-/* Feedback error reason */
-"This device hasn't been configured to send email." = "Dit apparaat is niet geconfigureerd om e-mail te verzenden.";
-
 /* Certificate trust alert button title */
 "Trust Always" = "Vertrouw altijd";
 
 /* Feedback error description */
 "Unable to send feedback" = "Kan geen feedback verzenden";
-
-/* Feedback error description */
-"Unable to send feedback." = "Kan geen feedback verzenden.";
 
 /* Underline button accessibility label */
 "Underline" = "Onderstreping";

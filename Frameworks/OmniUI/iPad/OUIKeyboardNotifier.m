@@ -88,6 +88,8 @@ static OUIKeyboardNotifier *sharedNotifier = nil;
     [defaultCenter addObserver:self selector:@selector(_keyboardWillChangeFrame:) name:UIKeyboardWillChangeFrameNotification object:nil];
     [defaultCenter addObserver:self selector:@selector(_keyboardDidChangeFrame:) name:UIKeyboardDidChangeFrameNotification object:nil];
 
+    [defaultCenter addObserver:self selector:@selector(_sceneWillDeactivate:) name:UISceneWillDeactivateNotification object:nil];
+
     // We can't depend on the keyboard change notification happening before events like UIControlEventEditingDidBegin firing. So, we have a default value here that might be wrong on the first animation.
     _lastAnimationDuration = 0.25;
     _lastAnimationCurve = 7; // Doesn't match any entry in UIViewAnimationCurve ... ><
@@ -146,6 +148,13 @@ static OUIKeyboardNotifier *sharedNotifier = nil;
 }
 
 #pragma mark - Private
+
+- (void)_sceneWillDeactivate:(NSNotification *)note;
+{
+    self.keyboardState = OUIKeyboardStateHidden;
+    _lastKnownKeyboardHeight = 0;
+    _lastKnownKeyboardInfo = nil;
+}
 
 - (void)_keyboardWillShow:(NSNotification *)note;
 {

@@ -195,4 +195,5 @@ UIView-OUIExtensions.swift
 UIViewController-OUIExtensions.m
 UIVisualEffectView-OUIExtensions.m
 UIWindow-OUIExtensions.m
+ViewDebugging.swift
 ViewModifiers.swift

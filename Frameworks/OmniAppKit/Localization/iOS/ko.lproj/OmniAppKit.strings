@@ -5,6 +5,9 @@
 "Expected value of type “%@”" = "“%@” 유형의 예상 값";
 
 /* button title */
+"Feature not enabled for this demo" = "이 데모에 대해 활성회되지 않은 기능";
+
+/* button title */
 "Learn More" = "자세히 알아보기";
 
 /* error recovery option */

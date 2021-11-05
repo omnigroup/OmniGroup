@@ -1,4 +1,4 @@
-// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -360,7 +360,8 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
     BOOL multiRow = [slices.lastObject isKindOfClass:[OUIAbstractTableViewInspectorSlice class]] && [((OUIAbstractTableViewInspectorSlice *)slices.lastObject).tableView numberOfRowsInSection:0] > 1;
     BOOL instructions = [slices.lastObject isKindOfClass:[OUIInstructionTextInspectorSlice class]];
     BOOL emptyPadding = [slices.lastObject isKindOfClass:[OUIEmptyPaddingInspectorSlice class]];
-    if (addImplicitSeparators && slices.count && !multiRow && !emptyPadding && !instructions) {
+    BOOL optOut = [slices.lastObject suppressesTrailingImplicitSeparator];
+    if (addImplicitSeparators && !optOut && slices.count && !multiRow && !emptyPadding && !instructions) {
         UIView *separator = [[UIView alloc] initWithFrame:separatorRect];
         separator.backgroundColor = [self sliceSeparatorColor] ?: [OUIInspectorSlice sliceSeparatorColor];
         [self.sliceStackView insertArrangedSubview:separator atIndex:(slices.count + addedSeparators)];

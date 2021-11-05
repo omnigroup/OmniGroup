@@ -160,17 +160,11 @@
 /* Strike Through button accessibility label */
 "Strike Through" = "취소선";
 
-/* Feedback error reason */
-"This device hasn't been configured to send email." = "이 장치는 이메일을 전송하도록 구성되지 않았습니다.";
-
 /* Certificate trust alert button title */
 "Trust Always" = "항상 신뢰";
 
 /* Feedback error description */
 "Unable to send feedback" = "피드백을 전송할 수 없습니다.";
-
-/* Feedback error description */
-"Unable to send feedback." = "피드백을 전송할 수 없습니다.";
 
 /* Underline button accessibility label */
 "Underline" = "밑줄";

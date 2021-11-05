@@ -22,12 +22,8 @@
 /* home screen button label */
 "Add OmniPresence Account" = "Añadir cuenta de OmniPresence";
 
-/* button title
-   cancel button title
-   delete confirmation cancel button
-   Discard unsynced edits dialog: cancel button label
-   Server account setup confirmation cancellation label
-   title for alert option cancel */
+/* cancel button title
+   Discard unsynced edits dialog: cancel button label */
 
 "Cancel" = "Cancelar";
 
@@ -58,7 +54,7 @@
 /* Update news: button title */
 "Continue" = "Continuar";
 
-/* Menu option in the document picker view */
+/* Share option title */
 "Copy as Image" = "Copiar como imagen";
 
 /* moved aside custom sample document name */
@@ -88,9 +84,7 @@
 /* webdav help */
 "Enter the location of your WebDAV space." = "Introduce la ubicación de tu espacio WebDAV.";
 
-/* export button title
-   export options title
-   Export toolbar item accessibility label. */
+/* Export toolbar item accessibility label. */
 "Export" = "Exportar";
 
 /* export to description */
@@ -98,6 +92,9 @@
 
 /* OmniPresence file list: sort order option */
 "folder and name" = "carpeta y nombre";
+
+/* iCloud stencils folder name */
+"iCloud Drive" = "iCloud Drive";
 
 /* Info item accessibility label */
 "Info" = "Información";
@@ -117,14 +114,13 @@
 /* OmniPresence file list: sort order option */
 "modification date" = "fecha de modificación";
 
-/* Base name for newly created documents. This will have an number appended to it to make it unique. */
+/* Default base name for a new document */
 "My Document" = "Mi documento";
 
 /* OmniPresence file list: sort order option */
 "name" = "nombre";
 
-/* New Document toolbar item accessibility label.
-   New Template button title */
+/* New Template button title */
 "New Document" = "Nuevo documento";
 
 /* Update news: title */
@@ -133,8 +129,7 @@
 /* Server Account Setup label: nickname */
 "Nickname" = "Alias";
 
-/* button title
-   When displaying a sync error, this is the option to ignore the error. */
+/* When displaying a sync error, this is the option to ignore the error. */
 "OK" = "Aceptar";
 
 /* demo disabled message */
@@ -146,10 +141,14 @@
 /* demo disabled title */
 "OmniPresence is disabled in this demo version." = "OmniPresence está desactivado en esta versión demo.";
 
-/* Local Documents device-specific display name (should match the name of the On My iPad location in the Files app on an iPad) */
+/* Local Documents device-specific display name (should match the name of the On My iPad location in the Files app on an iPad)
+   local stencils folder name */
+
 "On My iPad" = "iPad";
 
-/* Local Documents device-specific display name (should match the name of the On My iPhone location in the Files app on an iPhone) */
+/* Local Documents device-specific display name (should match the name of the On My iPhone location in the Files app on an iPhone)
+   local stencils folder name */
+
 "On My iPhone" = "iPhone";
 
 /* Open Document Shortcut Title */
@@ -157,9 +156,6 @@
 
 /* Language section title */
 "ouiLanguagePicker.language" = "Idioma";
-
-/* Custom templates header title */
-"ouiTemplatePicker.customTemplatesHeader" = "Personalizado";
 
 /* Navigation bar title: Choose a Template */
 "ouiTemplatePicker.navigationTitle" = "Elegir una plantilla";
@@ -170,7 +166,7 @@
 /* Photo Library permisssions error description. */
 "Photo Library permission denied." = "Permiso denegado a la fototeca.";
 
-/* Menu option in the document picker view */
+/* Share option title */
 "Print" = "Imprimir";
 
 /* purchase now button title */
@@ -200,11 +196,10 @@
 /* send to app description */
 "Send \"%@\" to app as:" = "Enviar “%@” a una aplicación como:";
 
-/* Menu option in the document picker view */
+/* Share option title */
 "Send to Photos" = "Enviar a Fotos";
 
-/* export options title
-   Menu option in the document picker view */
+/* export options title */
 "Send via Mail" = "Enviar por correo";
 
 /* Label format when setting up an OmniPresence or WebDAV server account */
@@ -242,6 +237,9 @@
 
 /* Error description for a document operation failing due to a missing file. */
 "The operation couldn't be completed." = "La operación no se ha podido completar.";
+
+/* linked folder preference view: header label */
+"The template picker will include any templates found in these locations." = "The template picker will include any templates found in these locations.";
 
 /* Photo Library permisssions error suggestion. */
 "This app does not have access to your Photo Library." = "Esta aplicación no tiene acceso a tu fototeca.";

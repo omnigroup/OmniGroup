@@ -160,17 +160,11 @@
 /* Strike Through button accessibility label */
 "Strike Through" = "取り消し線";
 
-/* Feedback error reason */
-"This device hasn't been configured to send email." = "このデバイスはメールを送信できるように設定されていません。";
-
 /* Certificate trust alert button title */
 "Trust Always" = "常に信頼する";
 
 /* Feedback error description */
 "Unable to send feedback" = "フィードバックを送信できません";
-
-/* Feedback error description */
-"Unable to send feedback." = "フィードバックを送信できません。";
 
 /* Underline button accessibility label */
 "Underline" = "アンダーライン";

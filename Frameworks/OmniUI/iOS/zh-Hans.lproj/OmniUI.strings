@@ -160,17 +160,11 @@
 /* Strike Through button accessibility label */
 "Strike Through" = "删去";
 
-/* Feedback error reason */
-"This device hasn't been configured to send email." = "该设备未配置为发送电邮。";
-
 /* Certificate trust alert button title */
 "Trust Always" = "总是信任";
 
 /* Feedback error description */
 "Unable to send feedback" = "无法发送反馈";
-
-/* Feedback error description */
-"Unable to send feedback." = "无法发送反馈。";
 
 /* Underline button accessibility label */
 "Underline" = "底线";

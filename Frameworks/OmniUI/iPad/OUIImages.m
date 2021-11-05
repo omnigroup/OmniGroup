@@ -1,4 +1,4 @@
-// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -65,12 +65,20 @@ UIImage *OUIToolbarUndoImage(void)
 
 UIImage *OUIToolbarForwardImage(void)
 {
-    return [UIImage imageNamed:@"OUIToolbarForward" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
+    UIImage *image = [UIImage systemImageNamed:@"chevron.forward"];
+    if (image != nil)
+        return image;
+    else
+        return [UIImage imageNamed:@"OUIToolbarForward" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
 }
 
 UIImage *OUIToolbarBackImage(void)
 {
-    return [UIImage imageNamed:@"OUIToolbarBack" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
+    UIImage *image = [UIImage systemImageNamed:@"chevron.backward"];
+    if (image != nil)
+        return image;
+    else
+        return [UIImage imageNamed:@"OUIToolbarBack" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
 }
 
 extern UIImage *OUIContextMenuCopyIcon(void)

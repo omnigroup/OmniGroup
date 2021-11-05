@@ -22,12 +22,8 @@
 /* home screen button label */
 "Add OmniPresence Account" = "添加 OmniPresence 帐户";
 
-/* button title
-   cancel button title
-   delete confirmation cancel button
-   Discard unsynced edits dialog: cancel button label
-   Server account setup confirmation cancellation label
-   title for alert option cancel */
+/* cancel button title
+   Discard unsynced edits dialog: cancel button label */
 
 "Cancel" = "取消";
 
@@ -58,7 +54,7 @@
 /* Update news: button title */
 "Continue" = "继续";
 
-/* Menu option in the document picker view */
+/* Share option title */
 "Copy as Image" = "复制为图像";
 
 /* moved aside custom sample document name */
@@ -88,9 +84,7 @@
 /* webdav help */
 "Enter the location of your WebDAV space." = "输入 WebDAV 空间的位置。";
 
-/* export button title
-   export options title
-   Export toolbar item accessibility label. */
+/* Export toolbar item accessibility label. */
 "Export" = "输出";
 
 /* export to description */
@@ -98,6 +92,9 @@
 
 /* OmniPresence file list: sort order option */
 "folder and name" = "文件夹和名称";
+
+/* iCloud stencils folder name */
+"iCloud Drive" = "iCloud Drive";
 
 /* Info item accessibility label */
 "Info" = "信息";
@@ -117,14 +114,13 @@
 /* OmniPresence file list: sort order option */
 "modification date" = "修改日期";
 
-/* Base name for newly created documents. This will have an number appended to it to make it unique. */
+/* Default base name for a new document */
 "My Document" = "我的文稿";
 
 /* OmniPresence file list: sort order option */
 "name" = "名称";
 
-/* New Document toolbar item accessibility label.
-   New Template button title */
+/* New Template button title */
 "New Document" = "新建文稿";
 
 /* Update news: title */
@@ -133,8 +129,7 @@
 /* Server Account Setup label: nickname */
 "Nickname" = "昵称";
 
-/* button title
-   When displaying a sync error, this is the option to ignore the error. */
+/* When displaying a sync error, this is the option to ignore the error. */
 "OK" = "好";
 
 /* demo disabled message */
@@ -146,10 +141,14 @@
 /* demo disabled title */
 "OmniPresence is disabled in this demo version." = "OmniPresence 已在此演示版本中禁用。";
 
-/* Local Documents device-specific display name (should match the name of the On My iPad location in the Files app on an iPad) */
+/* Local Documents device-specific display name (should match the name of the On My iPad location in the Files app on an iPad)
+   local stencils folder name */
+
 "On My iPad" = "我的 iPad";
 
-/* Local Documents device-specific display name (should match the name of the On My iPhone location in the Files app on an iPhone) */
+/* Local Documents device-specific display name (should match the name of the On My iPhone location in the Files app on an iPhone)
+   local stencils folder name */
+
 "On My iPhone" = "我的 iPhone";
 
 /* Open Document Shortcut Title */
@@ -157,9 +156,6 @@
 
 /* Language section title */
 "ouiLanguagePicker.language" = "语言";
-
-/* Custom templates header title */
-"ouiTemplatePicker.customTemplatesHeader" = "自定";
 
 /* Navigation bar title: Choose a Template */
 "ouiTemplatePicker.navigationTitle" = "选择模板";
@@ -170,7 +166,7 @@
 /* Photo Library permisssions error description. */
 "Photo Library permission denied." = "图片库许可被拒绝。";
 
-/* Menu option in the document picker view */
+/* Share option title */
 "Print" = "打印";
 
 /* purchase now button title */
@@ -200,11 +196,10 @@
 /* send to app description */
 "Send \"%@\" to app as:" = "发送“%@”至应用程序作为：";
 
-/* Menu option in the document picker view */
+/* Share option title */
 "Send to Photos" = "发送至“照片”";
 
-/* export options title
-   Menu option in the document picker view */
+/* export options title */
 "Send via Mail" = "通过邮件发送";
 
 /* Label format when setting up an OmniPresence or WebDAV server account */
@@ -242,6 +237,9 @@
 
 /* Error description for a document operation failing due to a missing file. */
 "The operation couldn't be completed." = "此操作无法完成。";
+
+/* linked folder preference view: header label */
+"The template picker will include any templates found in these locations." = "The template picker will include any templates found in these locations.";
 
 /* Photo Library permisssions error suggestion. */
 "This app does not have access to your Photo Library." = "该应用程序不能访问您的图片库。";

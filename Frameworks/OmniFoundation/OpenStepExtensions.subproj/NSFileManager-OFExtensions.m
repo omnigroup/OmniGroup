@@ -1,4 +1,4 @@
-// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -654,7 +654,7 @@ OBDidLoad(^{
     return NO;
 #endif
     
-    OSStatus sandboxStatus = SecStaticCodeCheckValidity(applicationCode, kSecCSDefaultFlags, sandboxRequirement);
+    OSStatus sandboxStatus = SecStaticCodeCheckValidity(applicationCode, kSecCSNoNetworkAccess, sandboxRequirement);
     switch (sandboxStatus) {
         case errSecSuccess: {
             *outSandboxed = YES;

@@ -1,4 +1,4 @@
-// Copyright 2016-2020 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -51,7 +51,10 @@
     
     /// default transition style is MultiPaneTransitionStyle.modal
     @objc (compactTransitioningStyleForLocation:) optional func compactTransitioningStyle(for location: MultiPaneLocation) -> MultiPaneCompactTransitionStyle
-    
+
+    /// If a responder in the right pane resigns, the search for a new first responder will go through the multi-pane controller and possibly end up in the window's root view controller. This allows the delegate to supply a better default (likely in the center pane). If the delegate is the OUIDocument subclass, this will map to the method of the name name on that class.
+    @objc optional func defaultFirstResponder() -> UIResponder?
+
     /// called before a transition to left/center. (currently only called for transistions in compact) and only for the transition style is MultiPaneTransitionStyle.navigate
     @objc optional func willNavigate(toPane location: MultiPaneLocation, with multiPaneController: MultiPaneController)
 
@@ -247,13 +250,13 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
     }
     
     @objc open lazy var leftPaneDisplayButton: UIBarButtonItem = {
-        let image = UIImage(named: "OUIMultiPaneLeftSidebarButton", in: OmniUIBundle, compatibleWith: self.traitCollection)
+        let image = UIImage(systemName: "sidebar.left") ?? UIImage(named: "OUIMultiPaneLeftSidebarButton", in: OmniUIBundle, compatibleWith: self.traitCollection)
         let button = UIBarButtonItem(image: image, style: .plain, target: self, action: #selector(handleLeftPaneDisplayButton))
         return button
     }()
     
     @objc open lazy var rightPaneDisplayButton: UIBarButtonItem = {
-        let image = UIImage(named: "OUIMultiPaneRightSidebarButton", in: OmniUIBundle, compatibleWith: self.traitCollection)
+        let image = UIImage(systemName: "sidebar.right") ?? UIImage(named: "OUIMultiPaneRightSidebarButton", in: OmniUIBundle, compatibleWith: self.traitCollection)
         let button = UIBarButtonItem(image: image, style: .plain, target: self, action: #selector(handleRightPaneDisplayButton))
         return button
     }()
@@ -401,7 +404,23 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
         
         return nil
     }
-    
+
+    // MARK:- UIResponder
+
+    open override var canBecomeFirstResponder: Bool {
+        if let defaultResponder = navigationDelegate?.defaultFirstResponder?() {
+            return defaultResponder.canBecomeFirstResponder
+        }
+        return super.canBecomeFirstResponder
+    }
+
+    open override func becomeFirstResponder() -> Bool {
+        if let defaultResponder = navigationDelegate?.defaultFirstResponder?() {
+            return defaultResponder.becomeFirstResponder()
+        }
+        return super.becomeFirstResponder()
+    }
+
 // MARK: - Other View Controller overrides
     
     override open var shouldAutorotate: Bool {
@@ -983,7 +1002,7 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
 
     private func updateDisplayButtonItems(forMode displayMode: MultiPaneDisplayMode) {
         // sidebar representation
-        let image = UIImage(named: "OUIMultiPaneLeftSidebarButton", in: OmniUIBundle, compatibleWith: traitCollection)
+        let image = UIImage(systemName: "sidebar.left") ?? UIImage(named: "OUIMultiPaneLeftSidebarButton", in: OmniUIBundle, compatibleWith: traitCollection)
         leftPaneDisplayButton.image = image
         leftPaneDisplayButton.title = nil
         layoutDelegate?.didUpdateDisplayButtonItems?(self)

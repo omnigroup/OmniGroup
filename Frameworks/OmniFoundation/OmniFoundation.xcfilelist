@@ -75,6 +75,8 @@ DataStructures.subproj/OFTrieBucket.m
 DataStructures.subproj/OFTrieEnumerator.m
 DataStructures.subproj/OFTrieNode.m
 DataStructures.subproj/OFVersionNumber.m
+DataStructures.subproj/PropertyBox.swift
+DataStructures.subproj/WeakObjectTable.swift
 ExactlyEquatable.swift
 FileManagement.subproj/OFAlias.m
 FileManagement.subproj/OFCacheFile.m

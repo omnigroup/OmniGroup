@@ -160,17 +160,11 @@
 /* Strike Through button accessibility label */
 "Strike Through" = "Barrato";
 
-/* Feedback error reason */
-"This device hasn't been configured to send email." = "Questo dispositivo non è stato configurato per l'invio di e-mail.";
-
 /* Certificate trust alert button title */
 "Trust Always" = "Ritieni sempre attendibile";
 
 /* Feedback error description */
 "Unable to send feedback" = "Impossibile inviare feedback";
-
-/* Feedback error description */
-"Unable to send feedback." = "Impossibile inviare feedback.";
 
 /* Underline button accessibility label */
 "Underline" = "Sottolineato";

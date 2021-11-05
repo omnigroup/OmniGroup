@@ -1,4 +1,4 @@
-// Copyright 2002-2020 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -329,14 +329,27 @@ static void copyProperty(NSToolbarItem *anItem,
     OAToolbarItem *newItem;
     NSDictionary *itemInfo;
     NSArray *sizes;
-    NSObject <OAToolbarHelper> *helper = nil;
     NSString *extension, *value;
     NSImage *itemImage = nil;
     NSToolbarItemIdentifier effectiveItemIdentifier;
     NSString *nameWithoutExtension;
     
+    NSObject <OAToolbarHelper> *helper = nil;
+    if ((extension = [itemIdentifier pathExtension])) {
+        helper = [helpersByExtension objectForKey:extension];
+    }
+
     // Always use OAToolbarItem since we can't know up front whether we'll need a delegate or not.
-    newItem = [[[[self class] toolbarItemClass] alloc] initWithItemIdentifier:itemIdentifier];
+    Class toolbarItemClass = Nil;
+    if ([helper respondsToSelector:@selector(toolbarItemClass)]) {
+        toolbarItemClass = [helper toolbarItemClass];
+    }
+    if (!toolbarItemClass) {
+        toolbarItemClass = [[self class] toolbarItemClass];
+    }
+    OBASSERT(OBClassIsSubclassOfClass(toolbarItemClass, [OAToolbarItem class]));
+
+    newItem = [[toolbarItemClass alloc] initWithItemIdentifier:itemIdentifier];
     
     NSBundle *bundle = [[self class] toolbarBundle];
     NSString *stringsFileName;
@@ -345,9 +358,6 @@ static void copyProperty(NSToolbarItem *anItem,
     if (!stringsFileName)
         stringsFileName = [NSString stringWithFormat:@"%@Toolbar", [self toolbarConfigurationName]];
     
-    if ((extension = [itemIdentifier pathExtension])) 
-        helper = [helpersByExtension objectForKey:extension];
-
     if (helper) {
         effectiveItemIdentifier = [helper templateItemIdentifier];
         nameWithoutExtension = [[itemIdentifier lastPathComponent] stringByDeletingPathExtension];

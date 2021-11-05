@@ -1,4 +1,4 @@
-// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,6 +7,8 @@
 
 #import <OmniUI/OUIUndoBarButtonItem.h>
 
+@import OmniAppKit.OAStrings; // For OACancel()
+
 #import <OmniUI/NSUndoManager-OUIExtensions.h>
 #import <OmniUI/OUIAppController.h>
 #import <OmniUI/OUIUndoButton.h>
@@ -14,8 +16,6 @@
 #import <OmniUI/UIView-OUIExtensions.h>
 #import <OmniUI/OUIMenuController.h>
 #import "OUIParameters.h"
-
-RCS_ID("$Id$");
 
 // OUIUndoBarButtonItemTarget
 OBDEPRECATED_METHOD(-undoBarButtonItemWillShowPopover); // Use the OUIAppController single-popover helper instead.
@@ -185,7 +185,7 @@ static id _commonInit(OUIUndoBarButtonItem *self)
             [_undoButton setTitle:nil forState:UIControlStateNormal];
         } else {
             [_undoButton setImage:nil forState:UIControlStateNormal];
-            [_undoButton setTitle:NSLocalizedStringFromTableInBundle(@"Undo", @"OmniUI", OMNI_BUNDLE, @"Undo button title") forState:UIControlStateNormal];
+            [_undoButton setTitle:OUILocalizedStringUndo() forState:UIControlStateNormal];
         }
     }
     
@@ -195,7 +195,7 @@ static id _commonInit(OUIUndoBarButtonItem *self)
 #pragma mark - Accessibility
 - (NSString *)accessibilityLabel
 {
-    return NSLocalizedStringFromTableInBundle(@"Undo", @"OmniUI", OMNI_BUNDLE, @"Undo button title");
+    return OUILocalizedStringUndo();
 }
 
 #pragma mark -
@@ -268,7 +268,7 @@ static id _commonInit(OUIUndoBarButtonItem *self)
     id <OUIUndoBarButtonItemTarget> target = _weak_undoBarButtonItemTarget;
     
     // Build Options
-    OUIMenuOption *undoOption = [OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Undo", @"OmniUI", OMNI_BUNDLE, @"Undo button title")
+    OUIMenuOption *undoOption = [OUIMenuOption optionWithTitle:OUILocalizedStringUndo()
                                                         action:^(OUIMenuInvocation *invocation){
                                                             if (target) {
                                                                 [target undo:nil];
@@ -278,7 +278,7 @@ static id _commonInit(OUIUndoBarButtonItem *self)
                                                         }];
     
     
-    OUIMenuOption *redoOption = [OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Redo", @"OmniUI", OMNI_BUNDLE, @"Redo button title")
+    OUIMenuOption *redoOption = [OUIMenuOption optionWithTitle:OUILocalizedStringRedo()
                                                         action:^(OUIMenuInvocation *invocation){
                                                             if (target) {
                                                                 [target redo:nil];
@@ -317,8 +317,8 @@ static id _commonInit(OUIUndoBarButtonItem *self)
                                                                      preferredStyle:UIAlertControllerStyleActionSheet];
     
     
-    if ([target canPerformAction:@selector(undo:) withSender:nil]){
-        [undoController addAction:[UIAlertAction actionWithTitle:NSLocalizedStringFromTableInBundle(@"Undo", @"OmniUI", OMNI_BUNDLE, @"Undo button title")
+    if ([target canPerformAction:@selector(undo:) withSender:nil]) {
+        [undoController addAction:[UIAlertAction actionWithTitle:OUILocalizedStringUndo()
                                                            style:UIAlertActionStyleDefault
                                                          handler:^(UIAlertAction *action) {
                                                              if (target) {
@@ -326,8 +326,8 @@ static id _commonInit(OUIUndoBarButtonItem *self)
                                                              }
                                                          }]];
     }
-    if ([target canPerformAction:@selector(redo:) withSender:nil]){
-        [undoController addAction:[UIAlertAction actionWithTitle:NSLocalizedStringFromTableInBundle(@"Redo", @"OmniUI", OMNI_BUNDLE, @"Redo button title")
+    if ([target canPerformAction:@selector(redo:) withSender:nil]) {
+        [undoController addAction:[UIAlertAction actionWithTitle:OUILocalizedStringRedo()
                                                            style:UIAlertActionStyleDefault
                                                          handler:^(UIAlertAction *action) {
                                                              if (target) {
@@ -335,7 +335,7 @@ static id _commonInit(OUIUndoBarButtonItem *self)
                                                              }
                                                          }]];
     }
-    [undoController addAction:[UIAlertAction actionWithTitle:NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniUI", OMNI_BUNDLE, @"Cancel button title")
+    [undoController addAction:[UIAlertAction actionWithTitle:OACancel()
                                                        style:UIAlertActionStyleCancel
                                                      handler:nil]];
     
@@ -419,3 +419,23 @@ static BOOL DidDismissAnyMenus;
 }
 
 @end
+
+NSString *OUILocalizedStringUndo(void)
+{
+    static NSString *string;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        string = NSLocalizedStringFromTableInBundle(@"Undo", @"OmniUI", OMNI_BUNDLE, @"Undo button title");
+    });
+    return string;
+}
+
+NSString *OUILocalizedStringRedo(void)
+{
+    static NSString *string;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        string = NSLocalizedStringFromTableInBundle(@"Redo", @"OmniUI", OMNI_BUNDLE, @"Redo button title");
+    });
+    return string;
+}

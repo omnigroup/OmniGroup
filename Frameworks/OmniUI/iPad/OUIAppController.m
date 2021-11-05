@@ -14,6 +14,7 @@
 #import <MobileCoreServices/UTCoreTypes.h>
 #import <MobileCoreServices/UTType.h>
 #import <OmniAppKit/OAFontDescriptor.h>
+#import <OmniAppKit/OAStrings.h>
 #import <OmniBase/OBRuntimeCheck.h>
 #import <OmniBase/system.h>
 #import <OmniFoundation/NSString-OFURLEncoding.h>
@@ -295,7 +296,8 @@ static void __iOS7B5CleanConsoleOutput(void)
 {
     _defaultReportErrorActionTitle = NSLocalizedStringFromTableInBundle(@"Contact Omni", @"OmniUI", OMNI_BUNDLE, @"When displaying a generic error, this is the option to report the error.");
     _defaultReportErrorActionBlock = ^(UIViewController *viewController, NSError *error, void (^interactionCompletion)(void)) {
-        NSString *body = [NSString stringWithFormat:@"\n%@\n\n%@\n", [OUIAppController.controller fullReleaseString], [error toPropertyList]];
+        UIDevice *currentDevice = UIDevice.currentDevice;
+        NSString *body = [NSString stringWithFormat:@"\n%@ — %@ %@\n\n%@\n", [OUIAppController.controller fullReleaseString], currentDevice.systemName, currentDevice.systemVersion, [error toPropertyList]];
         [OUIAppController.sharedController sendFeedbackWithSubject:[NSString stringWithFormat:@"Error encountered: %@", [error localizedDescription]] body:body inScene:viewController.view.window.windowScene completion:interactionCompletion];
     };
 }
@@ -462,21 +464,26 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
 
 + (void)presentError:(NSError *)error fromViewController:(UIViewController *)viewController cancelButtonTitle:(nullable NSString *)cancelButtonTitle optionalActionTitle:(nullable NSString *)optionalActionTitle optionalAction:(void (^ __nullable)(OUIExtendedAlertAction *action))optionalActionHandler;
 {
-    NSArray <OUIExtendedAlertAction *> *optionalActions;
-    if (optionalActionTitle != nil && optionalActionHandler != nil) {
-        OUIExtendedAlertAction *optionalAction = [OUIExtendedAlertAction extendedActionWithTitle:optionalActionTitle style:UIAlertActionStyleDefault handler:optionalActionHandler];
-        optionalActions = @[optionalAction];
-    }
-
-    [self _presentError:error fromViewController:viewController file:nil line:0 cancelButtonTitle:cancelButtonTitle optionalActions:optionalActions parentExtendedAction:nil completionHandler:nil];
+    [self presentError:error fromViewController:viewController cancelButtonTitle:cancelButtonTitle optionalActionTitle:optionalActionTitle isDestructive:NO optionalAction:optionalActionHandler];
 }
 
 + (void)presentError:(NSError *)error fromViewController:(nullable UIViewController *)viewController cancelButtonTitle:(nullable NSString *)cancelButtonTitle optionalActionTitle:(nullable NSString *)optionalActionTitle optionalAction:(void (^ __nullable)(OUIExtendedAlertAction *action))optionalActionHandler completionHandler:(void (^ _Nullable)(void))handler;
 {
+    [self presentError:error fromViewController:viewController cancelButtonTitle:cancelButtonTitle optionalActionTitle:optionalActionTitle isDestructive:NO optionalAction:optionalActionHandler completionHandler:handler];
+}
+
++ (void)presentError:(NSError *)error fromViewController:(nullable UIViewController *)viewController cancelButtonTitle:(nullable NSString *)cancelButtonTitle optionalActionTitle:(nullable NSString *)optionalActionTitle isDestructive:(BOOL)isDestructive optionalAction:(void (^ __nullable)(OUIExtendedAlertAction *action))optionalAction;
+{
+    [self presentError:error fromViewController:viewController cancelButtonTitle:cancelButtonTitle optionalActionTitle:optionalActionTitle isDestructive:isDestructive optionalAction:optionalAction completionHandler:nil];
+}
+
++ (void)presentError:(NSError *)error fromViewController:(nullable UIViewController *)viewController cancelButtonTitle:(nullable NSString *)cancelButtonTitle optionalActionTitle:(nullable NSString *)optionalActionTitle isDestructive:(BOOL)isDestructive optionalAction:(void (^ __nullable)(OUIExtendedAlertAction *action))optionalAction completionHandler:(void (^ _Nullable)(void))handler;
+{
     NSArray <OUIExtendedAlertAction *> *optionalActions;
-    if (optionalActionTitle != nil && optionalActionHandler != nil) {
-        OUIExtendedAlertAction *optionalAction = [OUIExtendedAlertAction extendedActionWithTitle:optionalActionTitle style:UIAlertActionStyleDefault handler:optionalActionHandler];
-        optionalActions = @[optionalAction];
+    if (optionalActionTitle != nil && optionalAction != nil) {
+        UIAlertActionStyle style = isDestructive ? UIAlertActionStyleDestructive : UIAlertActionStyleDefault;
+        OUIExtendedAlertAction *action = [OUIExtendedAlertAction extendedActionWithTitle:optionalActionTitle style:style handler:optionalAction];
+        optionalActions = @[action];
     }
 
     [self _presentError:error fromViewController:viewController file:nil line:0 cancelButtonTitle:cancelButtonTitle optionalActions:optionalActions parentExtendedAction:nil completionHandler:handler];
@@ -498,7 +505,7 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
     NSLog(@"%@", [error toPropertyList]);
 
     if (cancelButtonTitle == nil) {
-        cancelButtonTitle = NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniUI", OMNI_BUNDLE, @"button title");
+        cancelButtonTitle = OACancel();
     }
 
     NSMutableArray *messages = [NSMutableArray array];
@@ -867,11 +874,17 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
     path = [path stringByAppendingPathComponent:[versionNumber cleanVersionString]];
 
     components.path = path;
+
+    NSMutableArray <NSURLQueryItem *> *queryItems = [[NSMutableArray alloc] init];
     NSString *helpEdition = [[self class] helpEdition];
     if (helpEdition != nil) {
-        components.queryItems = @[
-            [NSURLQueryItem queryItemWithName:@"edition" value:helpEdition],
-        ];
+        [queryItems addObject:[NSURLQueryItem queryItemWithName:@"edition" value:helpEdition]];
+    }
+#if TARGET_OS_IOS
+    [queryItems addObject:[NSURLQueryItem queryItemWithName:@"platform" value:@"iOS"]];
+#endif
+    if (queryItems.count > 0) {
+        components.queryItems = queryItems;
     }
     return [components URL];
 }
@@ -1088,7 +1101,8 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
 
 - (NSString *)_defaultFeedbackSubject;
 {
-    return [NSString stringWithFormat:@"%@ Feedback", self.fullReleaseString];
+    UIDevice *currentDevice = UIDevice.currentDevice;
+    return [NSString stringWithFormat:@"%@ Feedback (%@ %@)", self.fullReleaseString, currentDevice.systemName, currentDevice.systemVersion];
 }
 
 - (NSURL *)_defaultFeedbackURL;
@@ -1225,8 +1239,13 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
 - (UIImage *)appMenuImage;
 {
     NSString *imageName = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"OUIAppMenuImage"];
-    if ([NSString isEmptyString:imageName])
+    if ([NSString isEmptyString:imageName]) {
+        UIImage *gearImage = [UIImage systemImageNamed:@"gear"];
+        if (gearImage != nil)
+            return gearImage;
+
         imageName = @"OUIAppMenu.png";
+    }
     return menuImage(imageName);
 }
 
@@ -1314,6 +1333,10 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
 
 - (UIImage *)exportBarButtonItemImageInViewController:(UIViewController *)viewController;
 {
+    UIImage *image = [UIImage systemImageNamed:@"square.and.arrow.up"];
+    if (image != nil)
+        return image;
+    
     NSString *imageName = @"OUIExport";
 
     if (self.useCompactBarButtonItemsIfApplicable) {

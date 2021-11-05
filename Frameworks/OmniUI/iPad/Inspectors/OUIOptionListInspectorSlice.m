@@ -1,4 +1,4 @@
-// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -53,6 +53,19 @@ RCS_ID("$Id$");
     return result;
 }
 
+- (instancetype)init
+{
+    self = [super init];
+    
+    if (self == nil) {
+        return nil;
+    }
+    
+    _dismissesSelf = YES;
+
+    return self;
+}
+
 @synthesize optionChangedBlock = _optionChangedBlock;
 
 #pragma mark - OUIInspectorSlice subclass
@@ -101,7 +114,11 @@ RCS_ID("$Id$");
 {
     [self _changeValue:indexPath.row];
     [aTableView deselectRowAtIndexPath:indexPath animated:YES];
-    [self.navigationController popViewControllerAnimated:YES];
+}
+
+- (nullable NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section;
+{
+    return [self groupTitle];
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section;
@@ -126,7 +143,8 @@ RCS_ID("$Id$");
     }
     [inspector didEndChangingInspectedObjects];
     
-    [self.navigationController popViewControllerAnimated:YES]; 
+    if (self.dismissesSelf)
+        [self.navigationController popViewControllerAnimated:YES];
 }
 
 @end

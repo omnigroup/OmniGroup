@@ -160,17 +160,11 @@
 /* Strike Through button accessibility label */
 "Strike Through" = "Зачеркивание";
 
-/* Feedback error reason */
-"This device hasn't been configured to send email." = "Это устройство не настроено для отправки эл. почты.";
-
 /* Certificate trust alert button title */
 "Trust Always" = "Всегда доверять";
 
 /* Feedback error description */
 "Unable to send feedback" = "Не удалось отправить отзыв";
-
-/* Feedback error description */
-"Unable to send feedback." = "Не удалось отправить отзыв.";
 
 /* Underline button accessibility label */
 "Underline" = "Подчеркивание";

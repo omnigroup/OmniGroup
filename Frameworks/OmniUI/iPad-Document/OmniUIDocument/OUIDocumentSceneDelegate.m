@@ -1,4 +1,4 @@
-// Copyright 2019-2020 Omni Development, Inc. All rights reserved.
+// Copyright 2019-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -888,6 +888,10 @@ static OFPreference *showFileExtensionsPreference;
 - (UIBarButtonItem *)compactCloseDocumentBarButtonItem;
 {
     if (!_compactCloseDocumentBarButtonItem) {
+        UIImage *image = [UIImage systemImageNamed:@"folder"];
+        if (image == nil) {
+            image = [UIImage imageNamed:@"OUIToolbarDocuments" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
+        }
         _compactCloseDocumentBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"OUIToolbarDocuments" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] style:UIBarButtonItemStylePlain target:self action:@selector(closeDocument:)];
         _compactCloseDocumentBarButtonItem.accessibilityIdentifier = @"BackToDocuments";
     }
@@ -911,8 +915,12 @@ static OFPreference *showFileExtensionsPreference;
     if (OUIAppController.sharedController.useCompactBarButtonItemsIfApplicable) {
         BOOL isHorizontallyCompact = self.document.documentViewController.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassCompact;
         BOOL isVerticallyCompact = self.document.documentViewController.traitCollection.verticalSizeClass == UIUserInterfaceSizeClassCompact;
-        NSString *imageName = (isHorizontallyCompact || isVerticallyCompact) ? @"OUIToolbarInfo-Compact" : @"OUIToolbarInfo";
-        infoBarButtonItem.image = [UIImage imageNamed:imageName inBundle:[OUIInspector bundle] compatibleWithTraitCollection:NULL];
+        UIImage *image = [UIImage systemImageNamed:@"info.circle"];
+        if (image == nil) {
+            NSString *imageName = (isHorizontallyCompact || isVerticallyCompact) ? @"OUIToolbarInfo-Compact" : @"OUIToolbarInfo";
+            image = [UIImage imageNamed:imageName inBundle:[OUIInspector bundle] compatibleWithTraitCollection:NULL];
+        }
+        infoBarButtonItem.image = image;
     }
 
     return infoBarButtonItem;

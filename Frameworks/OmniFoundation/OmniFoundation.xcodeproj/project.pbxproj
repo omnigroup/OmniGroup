@@ -117,6 +117,10 @@
 		3410D5B82440C84E00702DFD /* ExactlyEquatable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3410D5B72440C84E00702DFD /* ExactlyEquatable.swift */; };
 		3410D5B92440C84E00702DFD /* ExactlyEquatable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3410D5B72440C84E00702DFD /* ExactlyEquatable.swift */; };
 		3410D5BA2440C84E00702DFD /* ExactlyEquatable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3410D5B72440C84E00702DFD /* ExactlyEquatable.swift */; };
+		341119412614DE650072145B /* WeakObjectTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 341119402614DE650072145B /* WeakObjectTable.swift */; };
+		341119422614DE650072145B /* WeakObjectTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 341119402614DE650072145B /* WeakObjectTable.swift */; };
+		341119482614DF4E0072145B /* PropertyBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 341119472614DF4E0072145B /* PropertyBox.swift */; };
+		341119492614DF4E0072145B /* PropertyBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 341119472614DF4E0072145B /* PropertyBox.swift */; };
 		341657550FEB31CD00F4CED4 /* CFData-OFCompression.h in Headers */ = {isa = PBXBuildFile; fileRef = 341657510FEB31CD00F4CED4 /* CFData-OFCompression.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		341657560FEB31CD00F4CED4 /* CFData-OFCompression.m in Sources */ = {isa = PBXBuildFile; fileRef = 341657520FEB31CD00F4CED4 /* CFData-OFCompression.m */; };
 		341657570FEB31CD00F4CED4 /* CFData-OFFileIO.h in Headers */ = {isa = PBXBuildFile; fileRef = 341657530FEB31CD00F4CED4 /* CFData-OFFileIO.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -2064,6 +2068,8 @@
 		340E075723849CB900AB303D /* OFASCIIPropertyListSerializationTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = OFASCIIPropertyListSerializationTests.m; sourceTree = "<group>"; };
 		340E075E23849D4A00AB303D /* OFASCIIPropertyListSerializationTests */ = {isa = PBXFileReference; lastKnownFileType = folder; name = OFASCIIPropertyListSerializationTests; path = Inputs/OFASCIIPropertyListSerializationTests; sourceTree = "<group>"; };
 		3410D5B72440C84E00702DFD /* ExactlyEquatable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExactlyEquatable.swift; sourceTree = "<group>"; };
+		341119402614DE650072145B /* WeakObjectTable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeakObjectTable.swift; sourceTree = "<group>"; };
+		341119472614DF4E0072145B /* PropertyBox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PropertyBox.swift; sourceTree = "<group>"; };
 		341657510FEB31CD00F4CED4 /* CFData-OFCompression.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CFData-OFCompression.h"; sourceTree = "<group>"; };
 		341657520FEB31CD00F4CED4 /* CFData-OFCompression.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "CFData-OFCompression.m"; sourceTree = "<group>"; };
 		341657530FEB31CD00F4CED4 /* CFData-OFFileIO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CFData-OFFileIO.h"; sourceTree = "<group>"; };
@@ -2865,6 +2871,7 @@
 				347CA784192FC7BA00693624 /* OFPerformanceMeasurement.m */,
 				348A50860571490C0097A113 /* OFPoint.h */,
 				348A50870571490C0097A113 /* OFPoint.m */,
+				341119472614DF4E0072145B /* PropertyBox.swift */,
 				00E51CB1FE8AAEA611C9CC38 /* OFRandom.h */,
 				00E51CBDFE8AAEA611C9CC38 /* OFRandom.m */,
 				A20055D108F49ACC007E98E2 /* OFRationalNumber.h */,
@@ -2882,6 +2889,7 @@
 				4D18FA9F1700C1E10087C230 /* OFThreeValuedMask.m */,
 				34F4C0EB078F062000E8899E /* OFVersionNumber.h */,
 				34F4C0EC078F062000E8899E /* OFVersionNumber.m */,
+				341119402614DE650072145B /* WeakObjectTable.swift */,
 				3F95F9D3002B743AC697A14E /* Trie */,
 				10455AB6230751120046AD5E /* OFPointerStack.h */,
 				10455AB7230751120046AD5E /* OFPointerStack.m */,
@@ -5731,6 +5739,7 @@
 				34F16B59194F6E4900AD9C4D /* OFErrorRecovery.m in Sources */,
 				42F109771F704375003D3BDD /* OFDocumentEncryption-Inspection.swift in Sources */,
 				34D07D491C90B6FB009438F9 /* OFSelectionSet.swift in Sources */,
+				341119422614DE650072145B /* WeakObjectTable.swift in Sources */,
 				3409DFAE2243FAED006C6019 /* ResourceTypePredicate.swift in Sources */,
 				34F16B61194F6E6B00AD9C4D /* OFRelativeDateParser-Internal.m in Sources */,
 				34F16B55194F6E3700AD9C4D /* OFNetStateNotifier.m in Sources */,
@@ -5840,6 +5849,7 @@
 				34F16BC0194F756800AD9C4D /* CFDictionary-OFExtensions.m in Sources */,
 				34F16BAC194F750D00AD9C4D /* OFVersionNumber.m in Sources */,
 				34F16C2E194F797500AD9C4D /* OFXMLUnparsedElement.m in Sources */,
+				341119492614DF4E0072145B /* PropertyBox.swift in Sources */,
 				34F16B65194F6E7800AD9C4D /* OFBindingPoint.m in Sources */,
 				1E51D9BB1D638C42004A6DED /* OFASN1Utilities-Construction.m in Sources */,
 				34F16BF4194F770A00AD9C4D /* NSNumber-OFExtensions-CGTypes.m in Sources */,
@@ -6055,6 +6065,7 @@
 				4AA353BA08AA7FFB002BAE3E /* OFVersionNumber.m in Sources */,
 				342A9EC908C89683006AA532 /* NSComparisonPredicate-OFExtensions.m in Sources */,
 				34D07D481C90B6FB009438F9 /* OFSelectionSet.swift in Sources */,
+				341119412614DE650072145B /* WeakObjectTable.swift in Sources */,
 				342877B408EC788400D89442 /* NSBundle-OFExtensions.m in Sources */,
 				347811A7245CBC6400BB0B7A /* TypeIdentifier.swift in Sources */,
 				3410D5B82440C84E00702DFD /* ExactlyEquatable.swift in Sources */,
@@ -6078,6 +6089,7 @@
 				3431F4F50CD24BBE000D6E70 /* NSScriptObjectSpecifier-OFExtensions.m in Sources */,
 				1EBFA4211D344A3500771F02 /* OFAEADCryptor.c in Sources */,
 				A2C67D840D91A4BB00BD7911 /* NSIndexSet-OFExtensions.m in Sources */,
+				341119482614DF4E0072145B /* PropertyBox.swift in Sources */,
 				343301950D85ED6100C82A0B /* NSString-OFUnicodeCharacters.m in Sources */,
 				343301A60D85EEBF00C82A0B /* NSString-OFSimpleMatching.m in Sources */,
 				343301CD0D85F09000C82A0B /* NSString-OFReplacement.m in Sources */,

@@ -47,6 +47,8 @@ DataStructures.subproj/OFSelectionSet.m
 DataStructures.subproj/OFSelectionSet.swift
 DataStructures.subproj/OFTransientObjectsTracker.m
 DataStructures.subproj/OFVersionNumber.m
+DataStructures.subproj/PropertyBox.swift
+DataStructures.subproj/WeakObjectTable.swift
 ExactlyEquatable.swift
 FileManagement.subproj/OFAlias.m
 FileManagement.subproj/OFDocumentEncryption-Inspection.swift

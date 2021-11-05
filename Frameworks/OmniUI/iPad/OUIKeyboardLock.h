@@ -1,4 +1,4 @@
-// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,6 +16,8 @@
 + (OUIKeyboardLock *)keyboardLockForView:(UIView *)parentView keyboardType:(UIKeyboardType)keyboardType NS_EXTENSION_UNAVAILABLE_IOS("Keyboard lock is not available in extensions");
 
 - (id)initWithParentView:(UIView *)parentView keyboardType:(UIKeyboardType)keyboardType NS_EXTENSION_UNAVAILABLE_IOS("Keyboard lock is not available in extensions");
+
+@property (nonatomic, readonly) BOOL isFirstResponder;
 
 - (void)unlock NS_EXTENSION_UNAVAILABLE_IOS("Keyboard lock is not available in extensions");
 
