@@ -404,7 +404,7 @@ static void _validateRelationshipDestination(const void *value, void *context)
 #endif
 
 // -awakeFromFetch support functions.  When awaking objects, we need to first prepare them, awake them and finally finalize the awake.  The awake function is *also* called in -valueForKey: if _flags.needsAwakeFromFetch is still set.  If a bunch of objects are fetched at the same time (say, all the assignable contexts in OmniFocus) and awoken, one object might try to reference another when it awakes (say, children trying to compute their transient rank path or hierarchical name properties).
-void ODOObjectPrepareForAwakeFromFetch(ODOObject *self)
+static void ODOObjectPrepareForAwakeFromFetch(ODOObject *self)
 {
     OBPRECONDITION([self isKindOfClass:[ODOObject class]]);
     OBPRECONDITION(self->_flags.changeProcessingDisabled == NO);
@@ -453,31 +453,40 @@ void ODOObjectFinalizeAwakeFromFetch(ODOObject *self)
     [self didAwakeFromFetch];
 }
 
-void ODOObjectAwakeSingleObjectFromFetch(ODOObject *object)
+void ODOObjectPrepareObjectsForAwakeFromFetch(ODOEntity *entity, NSArray <ODOObject *> *objects, NSMapTable<ODOEntity *, NSMutableArray <ODOObject *> *> *entityToPrefetchObjects)
 {
-    ODOObjectPrepareForAwakeFromFetch(object);
-    ODOObjectPerformAwakeFromFetchWithoutRegisteringEdits(object);
-    ODOObjectFinalizeAwakeFromFetch(object);
-}
+    for (ODOObject *object in objects) {
+        OBASSERT(object.entity == entity);
+        ODOObjectPrepareForAwakeFromFetch(object);
+    }
 
-void ODOObjectAwakeObjectsFromFetch(NSArray *objects)
-{
-    NSUInteger fetchedObjectIndex, fetchedObjectCount = [objects count];
-    
-    // Let all the objects know that they still need awaking.
-    for (fetchedObjectIndex = 0; fetchedObjectIndex < fetchedObjectCount; fetchedObjectIndex++) {
-        ODOObjectPrepareForAwakeFromFetch([objects objectAtIndex:fetchedObjectIndex]);
-    }
-    
-    // TODO: If we get an exception here, we could leave an object fetched w/o having ever gotten -awakeFromFetch.
-    // Wake up each objects.  Some objects might wake peers.
-    for (fetchedObjectIndex = 0; fetchedObjectIndex < fetchedObjectCount; fetchedObjectIndex++) {
-        ODOObjectPerformAwakeFromFetchWithoutRegisteringEdits([objects objectAtIndex:fetchedObjectIndex]);
-    }
-    
-    // Finally, let them all know they are done.
-    for (fetchedObjectIndex = 0; fetchedObjectIndex < fetchedObjectCount; fetchedObjectIndex++) {
-        ODOObjectFinalizeAwakeFromFetch([objects objectAtIndex:fetchedObjectIndex]);
+    // Unclear how to most efficiently to write this bit, so guessing it will be faster to loop over the objects multiple times if there are multiple prefetch relationships (should be rare) rather than doing a map table lookup for each object.
+    NSArray <ODORelationship *> *prefetchRelationships = entity.prefetchRelationships;
+    if (prefetchRelationships) {
+        for (ODORelationship *relationship in prefetchRelationships) {
+            ODOEntity *destinationEntity = relationship.destinationEntity;
+            NSMutableArray <ODOObject *> *prefetchObjects = [entityToPrefetchObjects objectForKey:destinationEntity];
+
+            for (ODOObject *object in objects) {
+                ODOObject *destinationObject = ODOObjectPrimitiveValueForProperty(object, relationship);
+                if (!destinationObject || !destinationObject->_flags.isFault) {
+                    continue;
+                }
+                if (destinationObject->_flags.isScheduledForBatchFetch) {
+                    // Some other object had a reference to this that we've already collected
+                    continue;
+                }
+
+                destinationObject->_flags.isScheduledForBatchFetch = YES;
+
+                if (prefetchObjects == nil) {
+                    prefetchObjects = [[NSMutableArray alloc] init];
+                    [entityToPrefetchObjects setObject:prefetchObjects forKey:destinationEntity];
+                    [prefetchObjects release];
+                }
+                [prefetchObjects addObject:destinationObject];
+            }
+        }
     }
 }
 

@@ -1,4 +1,4 @@
-// Copyright 2007-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -215,6 +215,7 @@ static void _FillOutDownloadInProgressError(NSError **outError)
     OBASSERT([self.installViewInstallButton superview] == self.installButtonsView);
     OBASSERT([self.installViewMessageText superview] == self.installBasicView);
     
+    self.window.level = NSFloatingWindowLevel + 1;
     self.window.collectionBehavior = NSWindowCollectionBehaviorFullScreenAuxiliary;
     self.contentView.translatesAutoresizingMaskIntoConstraints = NO;
     

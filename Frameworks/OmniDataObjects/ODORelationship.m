@@ -1,4 +1,4 @@
-// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -76,7 +76,7 @@ RCS_ID("$Id$")
 #pragma mark Creation
 
 ODORelationship *ODORelationshipCreate(NSString *name, BOOL optional, BOOL transient, SEL get, SEL set,
-                                       BOOL toMany, ODORelationshipDeleteRule deleteRule, NSString *queryByForeignKeyStatementKey)
+                                       BOOL toMany, BOOL shouldPrefetch, ODORelationshipDeleteRule deleteRule, NSString *queryByForeignKeyStatementKey)
 {
     OBPRECONDITION(deleteRule > ODORelationshipDeleteRuleInvalid);
     OBPRECONDITION(deleteRule < ODORelationshipDeleteRuleCount);
@@ -91,8 +91,11 @@ ODORelationship *ODORelationshipCreate(NSString *name, BOOL optional, BOOL trans
     baseFlags.toMany = toMany;
     
     ODOPropertyInit(rel, name, baseFlags, optional, transient, get, set);
-    
+
+    OBASSERT_IF(shouldPrefetch, !toMany, "Currently only supported for to-one relationships");
+
     rel->_deleteRule = deleteRule;
+    rel->_shouldPrefetch = shouldPrefetch;
     rel->_queryByForeignKeyStatementKey = [queryByForeignKeyStatementKey copy];
     
     return rel;

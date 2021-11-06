@@ -2,9 +2,19 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>a</key>
+	<real>1</real>
+	<key>b</key>
+	<real>1</real>
 	<key>catalog</key>
 	<string>System</string>
+	<key>g</key>
+	<real>1</real>
 	<key>name</key>
 	<string>textColor</string>
+	<key>r</key>
+	<real>1</real>
+	<key>space</key>
+	<string>srgb</string>
 </dict>
 </plist>

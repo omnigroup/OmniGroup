@@ -191,6 +191,7 @@ extern NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey; // @"
 - (nullable NSString *)currentSKU;
 - (NSString *)purchaseDateString;
 - (NSString *)appSpecificDebugInfo;
+- (void)addFilesToAppDebugInfoWithHandler:(void (^ _Nonnull)(NSURL * _Nonnull))handler;
 
 @property (nonatomic, readonly) BOOL newsWantsAttention;
 

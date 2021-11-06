@@ -100,6 +100,12 @@
 		1EEA8E2C1D35C93D002EF965 /* GeneratedOIDs.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EEA8E281D35C93D002EF965 /* GeneratedOIDs.m */; };
 		273257D61448B56000A26568 /* OFUTI.h in Headers */ = {isa = PBXBuildFile; fileRef = 273257D51448B56000A26568 /* OFUTI.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		273257D91448B98B00A26568 /* OFUTI.m in Sources */ = {isa = PBXBuildFile; fileRef = 273257D81448B98B00A26568 /* OFUTI.m */; };
+		2BC577B82719FE0100FB2A72 /* ObservablePropertyCollator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BC577B72719FE0100FB2A72 /* ObservablePropertyCollator.swift */; };
+		2BC577B92719FE0100FB2A72 /* ObservablePropertyCollator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BC577B72719FE0100FB2A72 /* ObservablePropertyCollator.swift */; };
+		2BC577BF271DF00200FB2A72 /* ObservableValueTransform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BC577BE271DF00200FB2A72 /* ObservableValueTransform.swift */; };
+		2BC577C0271DF00200FB2A72 /* ObservableValueTransform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BC577BE271DF00200FB2A72 /* ObservableValueTransform.swift */; };
+		2BC577C2271DF68300FB2A72 /* AnyObservableValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BC577C1271DF68300FB2A72 /* AnyObservableValue.swift */; };
+		2BC577C3271DF68300FB2A72 /* AnyObservableValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BC577C1271DF68300FB2A72 /* AnyObservableValue.swift */; };
 		3402C55715C3209000AA7DAF /* OFFeatures.h in Headers */ = {isa = PBXBuildFile; fileRef = 3402C55615C3209000AA7DAF /* OFFeatures.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3402C56115C3225500AA7DAF /* OFSecurityUtilities.h in Headers */ = {isa = PBXBuildFile; fileRef = 3402C55F15C3225500AA7DAF /* OFSecurityUtilities.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3402C56315C3225500AA7DAF /* OFSecurityUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 3402C56015C3225500AA7DAF /* OFSecurityUtilities.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
@@ -2047,6 +2053,9 @@
 		273257D81448B98B00A26568 /* OFUTI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFUTI.m; sourceTree = "<group>"; };
 		28C3E2D1FEF0F1AAC697A12D /* OFTimeSpanFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFTimeSpanFormatter.m; sourceTree = "<group>"; };
 		28C3E2D2FEF0F1AAC697A12D /* OFTimeSpanFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFTimeSpanFormatter.h; sourceTree = "<group>"; };
+		2BC577B72719FE0100FB2A72 /* ObservablePropertyCollator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservablePropertyCollator.swift; sourceTree = "<group>"; };
+		2BC577BE271DF00200FB2A72 /* ObservableValueTransform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservableValueTransform.swift; sourceTree = "<group>"; };
+		2BC577C1271DF68300FB2A72 /* AnyObservableValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyObservableValue.swift; sourceTree = "<group>"; };
 		3402C55615C3209000AA7DAF /* OFFeatures.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFFeatures.h; sourceTree = "<group>"; };
 		3402C55F15C3225500AA7DAF /* OFSecurityUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFSecurityUtilities.h; sourceTree = "<group>"; };
 		3402C56015C3225500AA7DAF /* OFSecurityUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFSecurityUtilities.m; sourceTree = "<group>"; };
@@ -2878,6 +2887,9 @@
 				348A50860571490C0097A113 /* OFPoint.h */,
 				348A50870571490C0097A113 /* OFPoint.m */,
 				341119472614DF4E0072145B /* PropertyBox.swift */,
+				2BC577B72719FE0100FB2A72 /* ObservablePropertyCollator.swift */,
+				2BC577BE271DF00200FB2A72 /* ObservableValueTransform.swift */,
+				2BC577C1271DF68300FB2A72 /* AnyObservableValue.swift */,
 				343373D526C6D5F100098144 /* KeyPathBox.swift */,
 				34F325B62694D34B00B5A3F8 /* Publisher-Extensions.swift */,
 				00E51CB1FE8AAEA611C9CC38 /* OFRandom.h */,
@@ -5036,7 +5048,7 @@
 			attributes = {
 				LastSwiftUpdateCheck = 0730;
 				LastTestingUpgradeCheck = 0510;
-				LastUpgradeCheck = 1300;
+				LastUpgradeCheck = 1310;
 				TargetAttributes = {
 					34F16B19194F6C3200AD9C4D = {
 						CreatedOnToolsVersion = 6.0;
@@ -5712,6 +5724,7 @@
 				34FA59931BE99DD900B0FD64 /* OFObservation.m in Sources */,
 				34F16C3B194F79A200AD9C4D /* OFXMLInternedStringTable.m in Sources */,
 				34F16BD8194F76A600AD9C4D /* NSData-OFEncoding.m in Sources */,
+				2BC577B92719FE0100FB2A72 /* ObservablePropertyCollator.swift in Sources */,
 				34F16C30194F797C00AD9C4D /* OFXMLString.m in Sources */,
 				34249B6F2242A4F800C1A988 /* ResourceLocation.swift in Sources */,
 				34F16BBC194F755C00AD9C4D /* CFData-OFExtensions.m in Sources */,
@@ -5774,6 +5787,7 @@
 				34F16BD0194F767700AD9C4D /* OFTimeSpanFormatter.m in Sources */,
 				34F16B83194F6F0600AD9C4D /* OFTransientObjectsTracker.m in Sources */,
 				34F16BE8194F76E400AD9C4D /* NSInvocation-OFExtensions.m in Sources */,
+				2BC577C3271DF68300FB2A72 /* AnyObservableValue.swift in Sources */,
 				1E3274CF1D500E2800F0827C /* OFDocumentEncryption.swift in Sources */,
 				34F16C05194F774000AD9C4D /* NSString-OFPathExtensions.m in Sources */,
 				34F16B8B194F6F2D00AD9C4D /* OFDataBuffer.m in Sources */,
@@ -5873,6 +5887,7 @@
 				34F16BF8194F771500AD9C4D /* NSObject-OFExtensions.m in Sources */,
 				34A6BB7F1BFD3B9E00817661 /* NSBundle-OFExtensions.swift in Sources */,
 				1E498AA11D6BC77900996D7D /* OFAEADCryptorUtil.m in Sources */,
+				2BC577C0271DF00200FB2A72 /* ObservableValueTransform.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5969,6 +5984,7 @@
 				4A4E06DA08AA72B10098FF0F /* OFTrieNode.m in Sources */,
 				4A4E06DF08AA72B10098FF0F /* OFAlias.m in Sources */,
 				34D2DA9324F703AF009AB454 /* NSUndoManager-OFExtensions.swift in Sources */,
+				2BC577C2271DF68300FB2A72 /* AnyObservableValue.swift in Sources */,
 				34FA59921BE99DD900B0FD64 /* OFObservation.m in Sources */,
 				4A4E06E008AA72B10098FF0F /* OFCacheFile.m in Sources */,
 				4A4E06E308AA72B10098FF0F /* OFScratchFile.m in Sources */,
@@ -5998,6 +6014,7 @@
 				4A4E070708AA72B10098FF0F /* NSAttributedString-OFExtensions.m in Sources */,
 				4A4E070808AA72B10098FF0F /* NSBundle-OFFixes.m in Sources */,
 				4A4E070908AA72B10098FF0F /* NSCalendarDate-OFExtensions.m in Sources */,
+				2BC577B82719FE0100FB2A72 /* ObservablePropertyCollator.swift in Sources */,
 				34EE1AB21BFC04C80067E993 /* OFUTI.swift in Sources */,
 				4A4E070A08AA72B10098FF0F /* NSData-OFExtensions.m in Sources */,
 				4A4E070B08AA72B10098FF0F /* NSDate-OFExtensions.m in Sources */,
@@ -6157,6 +6174,7 @@
 				5F24DAD9146B09CA00A43E30 /* OFDynamicStoreListenerPrivate.m in Sources */,
 				345272C814F092EF003151CA /* OFBindingPoint.m in Sources */,
 				5FD243A61D12189F009AB347 /* NSCache-OFExtensions.m in Sources */,
+				2BC577BF271DF00200FB2A72 /* ObservableValueTransform.swift in Sources */,
 				3E4CB295162CA5D900908CF7 /* OFOffsetMutableArray.m in Sources */,
 				348C22DB162F28DD00EBFCB9 /* OFNetStateNotifier.m in Sources */,
 				348C22DF162F28DD00EBFCB9 /* OFNetStateRegistration.m in Sources */,

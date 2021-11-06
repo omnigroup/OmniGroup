@@ -1,4 +1,4 @@
-// Copyright 2008-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,6 +11,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class ODOEntity;
+
 extern NSPredicate *ODOCompareSelfToValuePredicate(NSPredicateOperatorType op, id value);
 
 extern NSPredicate *ODOKeyPathEqualToValuePredicate(NSString *keyPath, id _Nullable value);
@@ -19,10 +21,23 @@ extern NSPredicate *ODOKeyPathCompareToValuePredicate(NSString *keyPath, NSPredi
 extern NSPredicate *ODOKeyPathTruePredicate(NSString *keyPath);
 extern NSPredicate *ODOKeyPathFalsePredicate(NSString *keyPath);
 
-extern NSPredicate *ODOMakeCompoundPredicate(NSCompoundPredicateType type, NSPredicate *firstPredicate, va_list args);
 extern NSPredicate *ODOAndPredicates(NSPredicate *firstPredicate, ...) NS_REQUIRES_NIL_TERMINATION;
 extern NSPredicate *ODOOrPredicates(NSPredicate *firstPredicate, ...) NS_REQUIRES_NIL_TERMINATION;
 
+// Helpers that will build the predicate if needed, or return the single predicate if the array only has one object
+extern NSPredicate *ODOAndPredicateFromPredicates(NSArray <NSPredicate *> *predicates);
+extern NSPredicate *ODOOrPredicateFromPredicates(NSArray <NSPredicate *> *predicates);
+
 extern BOOL ODOIsTruePredicate(NSPredicate *predicate);
+extern BOOL ODOIsFalsePredicate(NSPredicate *predicate);
+
+@interface NSPredicate (ODOExtensions)
+
+typedef BOOL (^ODOCompiledPredicate)(id object);
+
+/// Returns a block that can be used to evaluate the predicate, but only accepts instances of the instanceClass of the specified entity.
+- (ODOCompiledPredicate)copyCompiledPredicateWithEntity:(ODOEntity *)entity NS_RETURNS_RETAINED;
+
+@end
 
 NS_ASSUME_NONNULL_END

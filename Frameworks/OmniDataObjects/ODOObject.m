@@ -1486,6 +1486,11 @@ static BOOL _changedPropertyNotInSet(ODOObject *self, NSSet *ignoredPropertySet,
     return [NSString stringWithFormat:@"<%@:%p %@ %@>", NSStringFromClass([self class]), self, [[_objectID entity] name], [_objectID primaryKey]];
 }
 
+- (NSString *)description;
+{
+    return [self shortDescription];
+}
+
 - (NSMutableDictionary *)debugDictionary;
 {
     NSMutableDictionary *dict = [super debugDictionary];

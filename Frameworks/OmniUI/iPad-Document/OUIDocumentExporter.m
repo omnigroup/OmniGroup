@@ -13,6 +13,7 @@
 @import OmniFoundation;
 @import OmniUI;
 @import Photos;
+@import UniformTypeIdentifiers.UTCoreTypes;
 
 #import <OmniUIDocument/OUIDocument.h>
 #import <OmniUIDocument/OUIDocumentAppController.h>

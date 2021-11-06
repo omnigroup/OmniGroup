@@ -5,8 +5,8 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-import Foundation
+#import <OmniDataObjects/ODOModel.h>
 
-// There are currently no unit tests, but Xcode hates targets with no source files.
-
-class Placeholder {}
+@interface ODOModel ()
+@property(nonatomic,readonly) NSArray <ODOEntity *> *prefetchEntities;
+@end

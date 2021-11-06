@@ -11,6 +11,7 @@
 #import <OmniUIDocument/OUIDocumentSceneDelegate.h>
 #import <OmniUIDocument/OmniUIDocument-Swift.h>
 
+@import UniformTypeIdentifiers.UTCoreTypes;
 @import OmniFoundation;
 
 NS_ASSUME_NONNULL_BEGIN

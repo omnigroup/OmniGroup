@@ -1,7 +1,7 @@
 module OmniDataObjects
   # TODO: Validate the name doesn't start with "ODO".  Make sure metadata table does.
   class Entity < Base
-    attr_reader :model, :name, :instance_class, :properties, :abstract, :header_file
+    attr_reader :model, :name, :instance_class, :properties, :abstract, :header_file, :prefetch_order
 
     def initialize(model, name, options = {})
       @model = model
@@ -9,6 +9,7 @@ module OmniDataObjects
       @instance_class = options[:instance_class] || "#{model.name}#{name}"
       @properties = []
       @abstract = options[:abstract] || false
+      @prefetch_order = options[:prefetch_order]
     end
 
     def property_named(name)
@@ -118,8 +119,11 @@ module OmniDataObjects
       # All properties
       f << "    [NSArray arrayWithObjects:"
       properties.each {|p| f << "#{p.varName}, " }
-      f << "nil]);\n"
+      f << "nil],"
 
+      f << "#{prefetch_order || "NSNotFound"}"
+
+      f << ");\n"
     end
     
     def emitBinding(f)

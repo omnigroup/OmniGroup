@@ -34,6 +34,7 @@ Crypto/OFCMSUtilities.swift
 Crypto/OFRFC3211Wrap.m
 Crypto/OFSymmetricKeywrap.m
 Crypto/OF_CTR_CBCMAC_Util.c
+DataStructures.subproj/AnyObservableValue.swift
 DataStructures.subproj/Heap.swift
 DataStructures.subproj/KeyPathBox.swift
 DataStructures.subproj/OFBTree.m
@@ -76,6 +77,8 @@ DataStructures.subproj/OFTrieBucket.m
 DataStructures.subproj/OFTrieEnumerator.m
 DataStructures.subproj/OFTrieNode.m
 DataStructures.subproj/OFVersionNumber.m
+DataStructures.subproj/ObservablePropertyCollator.swift
+DataStructures.subproj/ObservableValueTransform.swift
 DataStructures.subproj/PropertyBox.swift
 DataStructures.subproj/Publisher-Extensions.swift
 DataStructures.subproj/WeakObjectTable.swift

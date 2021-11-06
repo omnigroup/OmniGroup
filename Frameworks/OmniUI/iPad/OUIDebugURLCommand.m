@@ -1,4 +1,4 @@
-// Copyright 2014-2020 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,7 @@
 #import <OmniUI/UIDevice-OUIExtensions.h>
 #import <OmniUI/UIViewController-OUIExtensions.h>
 #import <OmniFoundation/NSObject-OFExtensions.h>
+#import <UniformTypeIdentifiers/UTCoreTypes.h>
 @import OmniUnzip
 
 RCS_ID("$Id$");
@@ -178,6 +179,12 @@ RCS_ID("$Id$");
     
     [mailController setSubject:subject];
     [mailController setMessageBody:body isHTML:NO];
+    
+    [[OUIAppController controller] addFilesToAppDebugInfoWithHandler:^(NSURL * _Nonnull url) {
+            NSData *data = [NSData dataWithContentsOfURL:url];
+            NSString *mimeType = [UTTypePlainText preferredMIMEType];
+            [mailController addAttachmentData:data mimeType:mimeType fileName:url.path.lastPathComponent];
+    }];
     
     [[OUIAppController controller] sendMailTo:@[address] withComposeController:mailController inScene:self.viewControllerForPresentation.containingScene];
 }

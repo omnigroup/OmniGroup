@@ -567,6 +567,9 @@ void OFUTIEnumerateKnownTypesForTagPreferringNative(NSString *tagClass, NSString
 // This hides a bunch of __bridge usages and shortens up code checking for multiple types. We could explicitly list the first type to start and use it as the va_start() argument, but then we'd need to check it specifically.
 BOOL _OFTypeConformsToOneOfTypes(NSString *type, ...)
 {
+    if (type == nil) {
+        return NO;
+    }
     va_list args;
     va_start(args, type);
 

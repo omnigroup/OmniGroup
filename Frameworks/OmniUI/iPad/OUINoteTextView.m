@@ -1,4 +1,4 @@
-// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -566,13 +566,18 @@ static NSParagraphStyle *_placeholderParagraphStyle(void)
         return;
     }
     
-    if (currentFirstResponder != nil && ![currentFirstResponder resignFirstResponder]) {
+    if (currentFirstResponder != nil && ![currentFirstResponder canResignFirstResponder]) {
         // Current first responder can't give up responder status, so we can't become first responder. Don't enable editing if we can't actually begin editing.
         return;
     }
     
     [self _forceEnableTextEditing];
-    [self becomeFirstResponder];
+    BOOL becameFirstResponder = [self becomeFirstResponder];
+    OBPOSTCONDITION(becameFirstResponder, "currentFirstResponder claimed it could resign but did not.");
+    if (!becameFirstResponder) {
+        self.editable = NO;
+        self.dataDetectorTypes = typesToDetectWithUITextView;
+    }
 }
 
 - (void)_forceEnableTextEditing

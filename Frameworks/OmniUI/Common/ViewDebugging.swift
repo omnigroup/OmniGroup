@@ -8,6 +8,7 @@
 
 import Foundation
 import SwiftUI
+import Combine
 
 // Debugging helper that can be used in @ViewBuilders. The repeated interface with @inlinable attribute is a bit more wordy, but it should mean that in Debug builds we can turn logging on/off w/o rebuilding the world.
 
@@ -60,6 +61,7 @@ extension View {
             .background(
                 Text(verbatim: strings.joined(separator: ","))
                     .foregroundColor(.clear)
+                    .accessibility(hidden: true)
             )
     }
 #else
@@ -133,7 +135,7 @@ extension View {
     public static func printChanges(_ item: Self, _ description: @autoclosure () -> String = "") {
         guard OUIViewDebugging.loggingEnabled else { return }
 #if true
-        if #available(iOS 15, *) {
+        if #available(iOS 15, macOS 12, *) {
             let itemDescription: String
             if let item = item as? OUIViewDebuggingDescription {
                 itemDescription = "\(type(of: self)) \(item.viewDebuggingDescription)"
@@ -201,7 +203,7 @@ extension ViewModifier {
     public static func printChanges(_ item: Self, _ description: @autoclosure () -> String = "") {
         guard OUIViewDebugging.loggingEnabled else { return }
 #if true
-        if #available(iOS 15, *) {
+        if #available(iOS 15, macOS 12, *) {
             let itemDescription: String
             if let item = item as? OUIViewDebuggingDescription {
                 itemDescription = "\(type(of: self)) \(item.viewDebuggingDescription)"
@@ -261,4 +263,82 @@ extension OUIViewModifier where Body == _OUIBody {
         Self.printChanges(self)
         return oui_body(content: content)
     }
+}
+
+extension View {
+    #if DEBUG
+    public func loggingOnReceive<PublisherType: Publisher>(_ publisher: PublisherType, function: String = #function, file: String = #file, line: Int = #line, perform: @escaping (PublisherType.Output)-> Void) -> some View where PublisherType.Failure == Never {
+        onReceive(publisher, perform: { output in
+            if OUIViewDebugging.loggingEnabled {
+                print("🟪⬜️ \(function) \((file as NSString).lastPathComponent):\(line) received value: \(output)")
+            }
+            perform(output)
+        })
+    }
+    
+    public func loggingOnChange<Value: Equatable>(of value: Value, function: String = #function, file: String = #file, line: Int = #line, perform: @escaping (Value)-> Void) -> some View {
+        onChange(of: value, perform: { newValue in
+            if OUIViewDebugging.loggingEnabled {
+                print("🟪⬜️ \(function) \((file as NSString).lastPathComponent):\(line) saw changed value: \(newValue)")
+            }
+            perform(newValue)
+        })
+    }
+    
+    #else
+    @inlinable
+    public func loggingOnReceive<PublisherType: Publisher>(_ publisher: PublisherType, perform handler: @escaping (PublisherType.Output)-> Void) -> some View where PublisherType.Failure == Never {
+        onReceive(publisher, perform: handler)
+    }
+    
+    @inlinable
+    public func loggingOnChange<Value: Equatable>(of value: Value, perform handler: @escaping (Value)-> Void) -> some View {
+        onChange(of: value, perform: handler)
+    }
+    
+    #endif
+}
+
+public struct BorderDebuggingLevel: OptionSet {
+    public let rawValue: UInt
+    
+    public init(rawValue: UInt) {
+        self.rawValue = rawValue
+    }
+    
+    public static let topLevelContainer = BorderDebuggingLevel(rawValue: 1 << 0)
+    public static let row               = BorderDebuggingLevel(rawValue: 1 << 1)
+    public static let intraRowContainer = BorderDebuggingLevel(rawValue: 1 << 2)
+    public static let tapTarget         = BorderDebuggingLevel(rawValue: 1 << 3)
+    public static let text              = BorderDebuggingLevel(rawValue: 1 << 4)
+    public static let icon              = BorderDebuggingLevel(rawValue: 1 << 5)
+}
+
+#if DEBUG
+public var SwiftUIBorderDebuggingLevel: BorderDebuggingLevel = []
+
+// So you can pause in the debugger and update the border debugging level if desired.
+@objc(OUICommandLineBorderDebuggingLevelHelper)
+public class CommandLineBorderDebuggingLevelHelper: NSObject {
+    @objc public static func setSwiftUIBorderDebuggingLevel(_ rawValue: UInt) {
+        SwiftUIBorderDebuggingLevel = BorderDebuggingLevel(rawValue: rawValue)
+    }
+}
+
+#endif
+extension View {
+#if DEBUG
+    @ViewBuilder public func debugBorder<T: ShapeStyle>(_ shapeStyle: T, debuggingLevel: BorderDebuggingLevel) -> some View {
+        if SwiftUIBorderDebuggingLevel.contains(debuggingLevel) {
+            border(shapeStyle)
+        } else {
+            self
+        }
+    }
+#else
+    @inlinable
+    public func debugBorder<T: ShapeStyle>(_ shapeStyle: T, debuggingLevel: BorderDebuggingLevel) -> some View {
+        self
+    }
+#endif
 }

@@ -18,6 +18,17 @@ public class WeakObjectTable<KeyType : Hashable, ValueType : AnyObject> {
 
     private var map = [KeyType : Item]()
 
+#if DEBUG
+    public var debugHeading: String? = nil
+#endif
+    fileprivate func debugLog(_ message: @autoclosure () -> String) {
+#if DEBUG
+        if let debugHeading = debugHeading {
+            print(debugHeading + " " + message())
+        }
+#endif
+    }
+
     public init() {}
 
     /// Copy the keys in the table with non-nil object values. As a side-effect, any entries where the object value has been deallocated will be removed.
@@ -34,10 +45,24 @@ public class WeakObjectTable<KeyType : Hashable, ValueType : AnyObject> {
         }
 
         remove.forEach { k in
+            debugLog("Removing value for \(k)")
             map.removeValue(forKey: k)
         }
 
         return result
+    }
+
+    /// Look up the value for a given key and return it if present.
+    public func fetch(key: KeyType) -> ValueType? {
+        if let existing = map[key] {
+            if let value = existing.value {
+                return value
+            } else {
+                debugLog("Removing value for \(key)")
+                map.removeValue(forKey: key)
+            }
+        }
+        return nil
     }
 
     /// Look up the value for a given key. If absent, it will be created with the given block.
@@ -46,10 +71,12 @@ public class WeakObjectTable<KeyType : Hashable, ValueType : AnyObject> {
             if let value = existing.value {
                 return value
             } else {
+                debugLog("Removing value for \(key)")
                 map.removeValue(forKey: key)
             }
         }
         let value = transform(key)
+        debugLog("Adding value \(value) for \(key)")
         map[key] = Item(value: value)
         return value
     }
@@ -72,8 +99,9 @@ extension WeakObjectTable {
             guard let item = map[k], let box = item.value else { assertionFailure(); continue } // We just prune the table in keys()
 
             let newValue = transform(k)
-            if box.value != newValue {
-                box.value = newValue
+            
+            if box.update(newValue) {
+                debugLog("Updating value to \(newValue) for \(k)")
             }
         }
     }

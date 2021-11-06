@@ -9,36 +9,24 @@ import Foundation
 import Combine
 
 @available(OSX 10.15, *)
-public class PropertyBox<ValueType> : ObservableObject {
-
-    public let objectWillChange = ObservableObjectPublisher()
+public class PropertyBox<ValueType> : AnyObservableValue<ValueType> {
 
     // Since this is sometimes used to lift a property out of a parent object to make it individually observable, the owner can no longer use willSet/didSet on the property itself.
     private let willSet: ((PropertyBox, ValueType) -> Void)?
     private let didSet: ((PropertyBox, ValueType) -> Void)?
 
-    @Published public var value: ValueType {
-        willSet {
-            objectWillChange.loggingSend()
-            willSet?(self, newValue)
-        }
-        didSet {
-            didSet?(self, oldValue)
-        }
+    override func willSetValue(newValue: ValueType) {
+        willSet?(self, newValue)
     }
-
-    public init(value: ValueType, willSet: ((PropertyBox, ValueType) -> Void)? = nil, didSet: ((PropertyBox, ValueType) -> Void)? = nil) {
-        self.value = value
+    
+    override func didSetValue(value: ValueType) {
+        didSet?(self, value)
+    }
+    
+    public required init(value: ValueType, willSet: ((PropertyBox, ValueType) -> Void)? = nil, didSet: ((PropertyBox, ValueType) -> Void)? = nil) {
         self.willSet = willSet
         self.didSet = didSet
-    }
-
-    @discardableResult
-    public func update(_ newValue: ValueType) -> Bool where ValueType : Equatable {
-        if value != newValue {
-            value = newValue
-            return true
-        }
-        return false
+        
+        super.init(initialValue: value)        
     }
 }

@@ -231,7 +231,7 @@
 		34DBCD0E190709E100968086 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1300;
+				LastUpgradeCheck = 1310;
 				TargetAttributes = {
 					3440203D19072DAD0002120F = {
 						LastSwiftMigration = "";
@@ -296,6 +296,7 @@
 			files = (
 			);
 			inputPaths = (
+				"$(SRCROOT)/../../Omni-Version-Info.xcconfig",
 			);
 			name = "Build SVNVersion.h";
 			outputPaths = (

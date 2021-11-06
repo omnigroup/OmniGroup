@@ -1005,6 +1005,11 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
     return @"";
 }
 
+- (void)addFilesToAppDebugInfoWithHandler:(void (^ _Nonnull)(NSURL * _Nonnull))handler;
+{
+
+}
+
 - (NSArray <OUIMenuOption *> *)additionalAppMenuOptionsAtPosition:(OUIAppMenuOptionPosition)position;
 {
     return @[];

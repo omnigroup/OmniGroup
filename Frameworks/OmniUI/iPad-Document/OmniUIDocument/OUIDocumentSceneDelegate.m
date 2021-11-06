@@ -24,6 +24,38 @@
 #import "OUIDocumentSyncActivityObserver.h"
 #import "OUINewDocumentCreationRequest.h"
 
+@interface OUIDocumentBrowserViewController : UIDocumentBrowserViewController
+@end
+
+@implementation OUIDocumentBrowserViewController
+
+- (BOOL)canPerformAction:(SEL)action withSender:(id)sender;
+{
+    BOOL rc = [super canPerformAction:action withSender:sender];
+    if (!rc) {
+        return NO;
+    }
+
+    // If we have an open document, reject all key commands for the document browser itself. Otherwise, they call get merged together.
+    UIScene *scene = self.containingScene;
+    if ([scene.delegate isKindOfClass:[OUIDocumentSceneDelegate class]]) {
+        OUIDocumentSceneDelegate *delegate = (OUIDocumentSceneDelegate *)scene.delegate;
+        if (delegate.document != nil) {
+            return NO;
+        }
+    }
+
+    // We used to check shouldBlockDocumentBrowserActions here, but there are many things that can be presented, and often the main view controller being presented is something general like a UINavigationController.
+    UIViewController *presentedViewController = self.presentedViewController;
+    if (presentedViewController) {
+        return NO;
+    }
+
+    return rc;
+}
+
+@end
+
 @interface OUIDocumentSceneDelegate ()
 @property (nonatomic, strong) OUIAppControllerSceneHelper *sceneHelper;
 @end
@@ -34,7 +66,7 @@
     OUIDocumentExporter *_exporter;
     BOOL _isOpeningURL; // TODO: Evaluate whether we can get rid of this
     UIView *_snapshotForDocumentRebuilding;
-    
+
     UIOpenURLContext *_specialURLContextToHandle;
 }
 
@@ -147,7 +179,7 @@ static OFPreference *showFileExtensionsPreference;
 {
     void (^finish)(OUIDocument *document) = [^(OUIDocument *document) {
         OBASSERT([NSThread isMainThread], "We need to be on the main thread to hide the activity indicator");
-        
+
         if (!document) {
             return;
         }
@@ -158,11 +190,11 @@ static OFPreference *showFileExtensionsPreference;
             [[NSOperationQueue mainQueue] addOperationWithBlock:^{
                 [document closeWithCompletionHandler:^(BOOL closeSuccess){
                     [document didClose];
-                    
+
                     if (!saveSuccess) {
                         return;
                     }
-                    
+
                     [self.documentBrowser importDocumentAtURL:document.fileURL nextToDocumentAtURL:fileURL mode:UIDocumentBrowserImportModeMove completionHandler:^(NSURL *importedURL, NSError *errorOrNil) {
                         if (importedURL) {
                             [self openDocumentInPlace:importedURL];
@@ -174,25 +206,25 @@ static OFPreference *showFileExtensionsPreference;
             }];
         }];
     } copy];
-    
+
     OUIDocumentAppController *controller = [OUIDocumentAppController controller];
     OUINewDocumentCreationRequest *request = [[OUINewDocumentCreationRequest alloc] initWithDelegate:OB_CHECKED_CONFORM(OUIDocumentCreationRequestDelegate, controller) viewController:_documentBrowser creationHandler:^(NSURL *urlToImport, UIDocumentBrowserImportMode importMode){
         OBASSERT_NOT_REACHED("Not actually going to run this creation request");
     }];
-    
+
     NSURL *temporaryURL = [request temporaryURLForCreatingNewDocumentNamed:[[fileURL lastPathComponent] stringByDeletingPathExtension]];
-                           
+
     OUIInteractionLock *lock = [OUIInteractionLock applicationLock];
     NSOperationQueue *queue = [[NSOperationQueue alloc] init];
     [queue addOperationWithBlock:^{
         Class cls = [controller documentClassForURL:fileURL];
         OBASSERT(OBClassIsSubclassOfClass(cls, [OUIDocument class]));
-        
+
         // This reads the document immediately, which is why we dispatch to a background queue before calling it. We do file coordination on behalf of the document here since we don't get the benefit of UIDocument's efforts during our synchronous read.
-        
+
         __autoreleasing NSError *readError;
         __block OUIDocument *document;
-        
+
         NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:nil];
         BOOL securedURL = [fileURL startAccessingSecurityScopedResource];
         [coordinator readItemAtURL:fileURL withChanges:YES error:&readError byAccessor:^BOOL(NSURL *newURL, NSError **outError) {
@@ -202,14 +234,14 @@ static OFPreference *showFileExtensionsPreference;
         if (securedURL) {
             [fileURL stopAccessingSecurityScopedResource];
         }
-        
+
         if (document == nil) {
             __block NSError *reportableError = readError;
             OFMainThreadPerformBlock(^(void) {
                 [OUIAppController presentError:reportableError fromViewController:self.documentBrowser];
             });
         }
-        
+
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
             [lock unlock];
             finish(document);
@@ -680,13 +712,13 @@ static OFPreference *showFileExtensionsPreference;
     [viewToSave bringSubviewToFront:closingDocumentIndicatorView];
     [closingDocumentIndicatorView startAnimating];
 
-    
+
     UIDocumentBrowserTransitionController *transitionController = [_documentBrowser transitionControllerForDocumentAtURL:_document.fileURL];
     OUIDocumentOpenAnimator *animator = [[OUIDocumentOpenAnimator alloc] initWithTransitionController:transitionController];
 
     UIViewController <OUIDocumentViewController> *viewController = _document.documentViewController;
     UIViewController *toPresent = _document.viewControllerToPresent;
-    
+
     transitionController.targetView = viewController.documentOpenCloseTransitionView;
     toPresent.transitioningDelegate = animator;
 
@@ -768,7 +800,7 @@ static OFPreference *showFileExtensionsPreference;
             break;
         }
     }
-    
+
     BOOL shouldCreateTemporaryChild = childFolder == nil;
 #ifdef DEBUG_kc
     NSLog(@"DEBUG: Should create temporary child: %@", @(shouldCreateTemporaryChild));
@@ -797,14 +829,14 @@ static OFPreference *showFileExtensionsPreference;
     if (options & OUIDocumentPerformOpenURLOptionsImport) {
         [self importDocumentFromURL:url];
     } else if (OFIsInInbox(url)) { // move file for sure
-        
+
         [OUIDocumentInbox takeInboxItem:url completionHandler:^(NSURL *newFileURL, NSError *errorOrNil) {
             main_async(^{
                 if (!newFileURL) {
                     OUI_PRESENT_ERROR_IN_SCENE(errorOrNil, self.windowScene);
                     return;
                 }
-                
+
                 // We might be getting a plug-in or other type that we can't actually open but know about as a valid type in our CFBundleDocumentTypes.
                 BOOL canView = NO;
                 __autoreleasing NSError *fileTypeError;
@@ -815,7 +847,7 @@ static OFPreference *showFileExtensionsPreference;
                     OUIDocumentAppController *controller = [OUIDocumentAppController controller];
                     canView = [controller canViewFileTypeWithIdentifier:fileType];
                 }
-                
+
                 if (!canView || (options & OUIDocumentPerformOpenURLOptionsRevealInBrowser)) {
                     [self closeDocumentWithCompletionHandler:^{
                         [_documentBrowser revealDocumentAtURL:newFileURL importIfNeeded:NO completion:^(NSURL * _Nullable revealedDocumentURL, NSError * _Nullable revealErrorOrNil){}];
@@ -990,14 +1022,14 @@ static OFPreference *showFileExtensionsPreference;
         [window setFrame:[[UIScreen mainScreen] bounds]];
     }
 
-    _documentBrowser = [[UIDocumentBrowserViewController alloc] initForOpeningFilesWithContentTypes:appController.viewableFileTypes];
+    _documentBrowser = [[OUIDocumentBrowserViewController alloc] initForOpeningFilesWithContentTypes:appController.viewableFileTypes];
     _documentBrowser.delegate = self;
     _documentBrowser.shouldShowFileExtensions = showFileExtensionsPreference.boolValue;
 
     [self updateBrowserToolbarItems];
 
     _exporter = [OUIDocumentExporter exporter];
-    
+
     window.rootViewController = _documentBrowser;
 
     NSUserActivity *userActivity = session.stateRestorationActivity;
@@ -1193,7 +1225,7 @@ static OFPreference *showFileExtensionsPreference;
 
     setup.finished = ^(OUIServerAccountSetupViewController *vc, NSError *errorOrNil) {
         OBPRECONDITION([NSThread isMainThread]);
-        
+
 #ifdef OMNI_ASSERTIONS_ON
         OFXServerAccount *account = errorOrNil ? nil : vc.account;
 #endif
@@ -1205,7 +1237,7 @@ static OFPreference *showFileExtensionsPreference;
     UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:setup];
     navigationController.modalPresentationStyle = UIModalPresentationFormSheet;
     navigationController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
-    
+
     [presentFromViewController presentViewController:navigationController animated:YES completion:nil];
 
     return YES;
@@ -1220,10 +1252,10 @@ static OFPreference *showFileExtensionsPreference;
 - (void)_openURLContexts:(NSSet <UIOpenURLContext *> *)URLContexts;
 {
     OUIDocumentAppController *controller = [OUIDocumentAppController controller];
-    
+
     for (UIOpenURLContext *openContext in URLContexts) {
         // NOTE: If we are suspending launch actions (possibly due to handling a crash), _didFinishLaunching will be NO and we'd drop this on the ground. So, we add this as launch action as well. We could try to preflight the URL to see if it is certain we can't open it, but we'd have a hard time getting an accurate answer (many of the actions are async anyway).
-        
+
         // If this is NO, we must copy the document to maintain access to it
         OUIDocumentPerformOpenURLOptions options = openContext.options.openInPlace ? OUIDocumentPerformOpenURLOptionsOpenInPlaceAllowed : 0;
         NSURL *url = openContext.URL;
@@ -1239,8 +1271,8 @@ static OFPreference *showFileExtensionsPreference;
                 options |= OUIDocumentPerformOpenURLOptionsImport;
             }
         }
-        
-        
+
+
         if ([controller isSpecialURL:url]) {
             _specialURLContextToHandle = openContext;
             if (self.window.rootViewController == _documentBrowser) {
@@ -1248,17 +1280,17 @@ static OFPreference *showFileExtensionsPreference;
             }
             return;
         }
-        
+
         // Only attempt to open handle as an Inbox item if the URL is a file URL.
         if (url.isFileURL) {
             _isOpeningURL = YES;
             // Have to wait for the document store to awake again (if we were backgrounded), initiated by -applicationWillEnterForeground:. <bug:///79297> (Bad animation closing file opened from another app)
-            
+
             // If we got multiple URLs in one pass, we are most likely getting multiple files shared and don't want to try to open them all.
             if ([URLContexts count] > 1) {
                 options |= OUIDocumentPerformOpenURLOptionsRevealInBrowser;
             }
-            
+
             [self performOpenURL:url options:options];
         }
     }
@@ -1301,7 +1333,7 @@ static OFPreference *showFileExtensionsPreference;
         while ((presentedViewController = viewController.presentedViewController)) {
             viewController = presentedViewController;
         }
-        
+
         [[OUIDocumentAppController controller] handleSpecialURL:_specialURLContextToHandle.URL senderBundleIdentifier:_specialURLContextToHandle.options.sourceApplication presentingFromViewController:viewController];
         _specialURLContextToHandle = nil;
     }

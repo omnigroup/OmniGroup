@@ -762,6 +762,7 @@ static void _writeString(NSString *str)
         if (didVectorDrawing) {
             DEBUG_RENDER(@"  rendered %@ directly to vector", [self shortDescription]);
         } else {
+            CGContextSaveGState(ctx);
             if (delegate && [delegate respondsToSelector:@selector(drawLayer:inContext:)]) {
                 DEBUG_RENDER(@"  rendering %@ via bitmap delegate %@", [self shortDescription], [delegate shortDescription]);
                 [delegate drawLayer:self inContext:ctx];
@@ -769,6 +770,7 @@ static void _writeString(NSString *str)
                 DEBUG_RENDER(@"  rendering %@ directly to bitmap", [self shortDescription]);
                 [self drawInContext:ctx];
             }
+            CGContextRestoreGState(ctx);
         }
         
         if (![self isKindOfClass:[CAShapeLayer class]]) {

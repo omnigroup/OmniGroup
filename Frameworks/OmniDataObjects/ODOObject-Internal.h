@@ -35,8 +35,11 @@ NS_ASSUME_NONNULL_BEGIN
         unsigned int changeProcessingDisabled : 1;
         unsigned int invalid : 1;
         unsigned int isAwakingFromInsert : 1;
+
+        unsigned int isScheduledForBatchFetch : 1;
         unsigned int needsAwakeFromFetch : 1;
         unsigned int isAwakingFromFetch : 1;
+
         unsigned int isAwakingFromReinsertionAfterUndoneDeletion : 1;
         unsigned int isAwakingFromUnarchive : 1;
         unsigned int hasChangedModifyingToManyRelationshipSinceLastSave : 1;
@@ -208,13 +211,12 @@ static inline BOOL _ODOIsEqual(_Nullable id value1, _Nullable id value2)
 }
 
 @class ODORelationship;
+@class NSMapTable<KeyType, ObjectType>;
 
-void ODOObjectPrepareForAwakeFromFetch(ODOObject *self) OB_HIDDEN;
+void ODOObjectPrepareObjectsForAwakeFromFetch(ODOEntity *entity, NSArray <ODOObject *> *objects, NSMapTable<ODOEntity *, NSMutableArray <ODOObject *> *> *entityToPrefetchObjects) OB_HIDDEN;
+
 void ODOObjectPerformAwakeFromFetchWithoutRegisteringEdits(ODOObject *self) OB_HIDDEN;
 void ODOObjectFinalizeAwakeFromFetch(ODOObject *self) OB_HIDDEN;
-
-void ODOObjectAwakeSingleObjectFromFetch(ODOObject *object) OB_HIDDEN;
-void ODOObjectAwakeObjectsFromFetch(NSArray *objects) OB_HIDDEN;
 
 BOOL ODOObjectToManyRelationshipIsFault(ODOObject *self, ODORelationship *rel) OB_HIDDEN;
 NSMutableSet * _Nullable ODOObjectToManyRelationshipIfNotFault(ODOObject *self, ODORelationship *rel) OB_HIDDEN;

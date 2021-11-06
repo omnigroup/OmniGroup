@@ -1,4 +1,4 @@
-// Copyright 1997-2019 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -496,6 +496,7 @@ RCS_ID("$Id$")
         case kCFNumberCharType:
             return [NSAppleEventDescriptor descriptorWithBoolean:self.boolValue];
         case kCFNumberFloat64Type:
+        case kCFNumberDoubleType:
             return [NSAppleEventDescriptor descriptorWithDouble:self.doubleValue];
         default: {
             NSString *reason = [NSString stringWithFormat:@"Cannot convert \"%@\", type %" PRIdNS " to an NSAppleEventDescriptor.", [self shortDescription], type];

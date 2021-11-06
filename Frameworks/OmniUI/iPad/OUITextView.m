@@ -1544,12 +1544,18 @@ static void _readAttributedStrings(UIPasteboard *pasteboard, NSArray *types, voi
     }
 }
 
-- (void)paste:(nullable id)sender;
+- (BOOL)shouldPreserveStylesWhenPastingWithSender:(id)sender;
 {
-    BOOL preserveStyles = YES;
+    BOOL defaultValue = YES;
     id <OUITextViewDelegate> delegate = self.delegate;
     if ([delegate respondsToSelector:@selector(textViewShouldPreserveStylesWhenPasting:defaultValue:sender:)])
-        preserveStyles = [delegate textViewShouldPreserveStylesWhenPasting:self defaultValue:preserveStyles sender:sender];
+        return [delegate textViewShouldPreserveStylesWhenPasting:self defaultValue:defaultValue sender:sender];
+    return defaultValue;
+}
+
+- (void)paste:(nullable id)sender;
+{
+    BOOL preserveStyles = [self shouldPreserveStylesWhenPastingWithSender:sender];
     [self _pastePreservingStyles:preserveStyles];
 }
 

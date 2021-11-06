@@ -327,7 +327,7 @@ static CFComparisonResult _compareByName(const void *val1, const void *val2, voi
 #endif
 
 extern ODOEntity *ODOEntityCreate(NSString *entityName, NSString *insertKey, NSString *updateKey, NSString *deleteKey, NSString *pkQueryKey,
-                                  NSString *instanceClassName, NSArray *properties)
+                                  NSString *instanceClassName, NSArray *properties, NSUInteger prefetchOrder)
 {
     // We don't support inheritance, so require at least some properties for now. This may need revisiting in the future if we come up with a good use case for a zero-property entity, like an abstract parent.
     OBPRECONDITION([properties count] > 0, "ODO expects every entity to have at least one property");
@@ -381,6 +381,8 @@ extern ODOEntity *ODOEntityCreate(NSString *entityName, NSString *insertKey, NSS
     // TODO: Could do more of this building in the Ruby script-generated code, if it is worth the effort.
     OBPRECONDITION(properties);
     entity->_properties = [properties copy];
+
+    entity->_prefetchOrder = prefetchOrder;
     
     NSMutableDictionary *propertiesByName = [NSMutableDictionary dictionary];
     NSMutableDictionary *attributesByName = [NSMutableDictionary dictionary];
@@ -614,7 +616,17 @@ static void ODOEntityAssignSnapshotStorageKeys(ODOEntity *self, NSArray <__kindo
 - (void)finalizeModelLoading;
 {
     [self _buildSchemaProperties];
-    
+
+    _prefetchRelationships = [[_relationships select:^BOOL(ODORelationship *relationship) {
+        return relationship.shouldPrefetch;
+    }] copy];
+
+    if ([_prefetchRelationships count] == 0) {
+        [_prefetchRelationships release];
+        _prefetchRelationships = nil;
+    }
+    OBASSERT(([_prefetchRelationships count] == 0) == (_prefetchOrder == NSNotFound), "Must specify a prefetch order if the entity has any prefetched relationships");
+
     // Build a list of snapshot properties.  These are all the properties that the ODOObject stores internally; everything but the primary key.  CoreData doesn't seem to snapshot the transient properties.  Also, it is unclear whether relationships are supported for CoreData actual snapshots, but they do need to be stored by ODOObject, so this is easy for now.
     NSMutableArray <__kindof ODOProperty *> *snapshotProperties = [[NSMutableArray alloc] initWithArray:_properties];
     [snapshotProperties removeObject:_primaryKeyAttribute];
@@ -687,6 +699,16 @@ static void ODOEntityAssignSnapshotStorageKeys(ODOEntity *self, NSArray <__kindo
 
     // Ensure the property didn't find a setter for the primary key attribute
     OBASSERT(ODOPropertySetterImpl(_primaryKeyAttribute) == NULL);
+}
+
+- (NSArray<ODORelationship *> *)prefetchRelationships;
+{
+    return _prefetchRelationships;
+}
+
+- (NSUInteger)prefetchOrder;
+{
+    return _prefetchOrder;
 }
 
 - (size_t)snapshotSize;

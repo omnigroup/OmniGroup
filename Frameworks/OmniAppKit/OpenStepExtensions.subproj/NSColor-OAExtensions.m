@@ -424,7 +424,7 @@ static void _dictionaryDataAdder(id container, NSString *key, NSData *data)
     }
     
     if (archiveConvertedColor) {
-        NSColor *rgbColor = [self colorUsingColorSpace:[NSColorSpace extendedSRGBColorSpace]];
+        NSColor *rgbColor = [self colorUsingColorSpace:[NSColorSpace sRGBColorSpace]];
         if (!rgbColor)
             rgbColor = [NSColor colorWithRed:1 green:1 blue:1 alpha:1];
         [rgbColor _addComponentsToContainer:container adders:adders omittingDefaultValues:omittingDefaultValues withColorSpaceManager:manager];

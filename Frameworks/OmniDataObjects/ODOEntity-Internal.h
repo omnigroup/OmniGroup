@@ -1,4 +1,4 @@
-// Copyright 2008-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -30,10 +30,12 @@
 
     NSDictionary *_propertiesByName;
     NSDictionary *_relationshipsByName;
-    NSArray *_relationships;
-    NSArray *_toOneRelationships;
-    NSArray *_toManyRelationships;
-    
+    NSArray <ODORelationship *> *_relationships;
+    NSArray <ODORelationship *> *_toOneRelationships;
+    NSArray <ODORelationship *> *_toManyRelationships;
+    NSArray <ODORelationship *> *_prefetchRelationships;
+    NSUInteger _prefetchOrder;
+
     NSArray *_attributes;
     NSDictionary *_attributesByName;
     ODOAttribute *_primaryKeyAttribute;
@@ -72,6 +74,9 @@ static inline ODOStorageKey ODOEntityStorageKeyForSnapshotIndex(ODOEntity *self,
 @interface ODOEntity (Internal)
 
 - (void)finalizeModelLoading;
+
+@property(nonatomic,readonly) NSArray <ODORelationship *> *prefetchRelationships;
+@property(nonatomic,readonly) NSUInteger prefetchOrder;
 
 @property(readonly) size_t snapshotSize;
 

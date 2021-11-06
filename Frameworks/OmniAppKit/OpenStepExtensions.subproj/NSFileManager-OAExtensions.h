@@ -1,4 +1,4 @@
-// Copyright 2002-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,7 +9,7 @@
 
 @interface NSFileManager (OAExtensions)
 
-- (NSArray *)directoryContentsAtPath:(NSString *)path ofTypes:(NSArray *)someUTIs deep:(BOOL)recurse fullPath:(BOOL)fullPath error:(NSError **)errOut;
+- (NSArray *)directoryContentsAtPath:(NSString *)path ofTypes:(NSArray <UTType *> *)someUTIs deep:(BOOL)recurse fullPath:(BOOL)fullPath error:(NSError **)errOut;
     // This method is dependent on NSWorkspace, which is an AppKit class
 
 @end

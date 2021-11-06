@@ -57,6 +57,9 @@ extern NSString * const OUITextViewInsertionPointDidChangeNotification;
 @property (nonatomic) IBInspectable BOOL shouldAutomaticallyUpdateColorsForCurrentTheme;
 @property(nonatomic) BOOL keepContextualMenuHidden;
 
+// This only applies to a plain -paste:.
+- (BOOL)shouldPreserveStylesWhenPastingWithSender:(id)sender;
+
 - (NSDictionary *)typingAttributesWithAllAttributes; // allow subclasses to ensure that the typing attributes contain the extra attributes which are sometimes stripped out by the runtime.
 - (void)ensureLayout;
 

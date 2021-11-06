@@ -1,4 +1,4 @@
-// Copyright 2008-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,11 +25,13 @@ enum {
     ODOEntity *_destinationEntity;
     ODORelationshipDeleteRule _deleteRule;
     ODORelationship *_inverseRelationship;
+    BOOL _shouldPrefetch;
 @package
     NSString *_queryByForeignKeyStatementKey;
 }
 
 @property (nonatomic, readonly, getter=isToMany) BOOL toMany;
+@property (nonatomic, readonly) BOOL shouldPrefetch;
 @property (nonatomic, readonly) ODOEntity *destinationEntity;
 @property (nonatomic, readonly) ODORelationship *inverseRelationship;
 

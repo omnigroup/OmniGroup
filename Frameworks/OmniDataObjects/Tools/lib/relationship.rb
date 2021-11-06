@@ -2,7 +2,7 @@ module OmniDataObjects
   # TODO: Validate :to => :one or :many
   # TODO: Require & validate delete rule name
   class Relationship < Property
-    attr_reader :target, :inverse, :many, :delete
+    attr_reader :target, :inverse, :many, :delete, :prefetch
 
     def initialize(entity, name, target, inverse, options = {})
       super(entity, name, options)
@@ -10,6 +10,7 @@ module OmniDataObjects
       @inverse = inverse
       @many = options[:many]
       @delete = options[:delete].to_s
+      @prefetch = options[:prefetch] || false
     end
 
     def process
@@ -107,7 +108,7 @@ module OmniDataObjects
             statementKey = "@\"FK:#{entity.name}.#{name}\""
         end
 
-        f << "    #{objcClassName} *#{varName} = ODORelationshipCreate(#{property_init_args}, #{objcBool(many)}/*toMany*/, #{objcDeleteRuleEnum}, #{statementKey});\n"
+        f << "    #{objcClassName} *#{varName} = ODORelationshipCreate(#{property_init_args}, #{objcBool(many)}/*toMany*/, #{objcBool(prefetch)}/*shouldPrefetch*/, #{objcDeleteRuleEnum}, #{statementKey});\n"
     end
 
     def emitBinding(f)

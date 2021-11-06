@@ -17,6 +17,7 @@
 #import "ODOEntity-SQL.h"
 #import "ODOObject-Internal.h"
 #import "ODOSQLStatement.h"
+#import "ODOModel-Internal.h"
 
 #import <Foundation/NSUndoManager.h>
 
@@ -454,7 +455,7 @@ static BOOL PrepareQueryByKey(ODOSQLStatement *query, sqlite3 *sqlite, id key, N
 
 // Fetching
 typedef struct {
-    BOOL isFetchingObjectFault; // YES if we are fulfilling a single object fault
+    BOOL isFetchingObjectFaults; // YES if we are fulfilling a single object fault or a batch of prefetching faults
     ODOEntity *entity;
     Class instanceClass;
     NSArray *schemaProperties;
@@ -490,7 +491,7 @@ static BOOL _fetchObjectCallback(struct sqlite3 *sqlite, ODOSQLStatement *statem
         ODOEditingContext *editingContext = ctx->editingContext;
 
         ODOObject *object;
-        if (ctx->isFetchingObjectFault) {
+        if (ctx->isFetchingObjectFaults) {
             // The object should be registered already.
             object = [editingContext objectRegisteredForID:objectID];
             if (!object) {
@@ -516,10 +517,10 @@ static BOOL _fetchObjectCallback(struct sqlite3 *sqlite, ODOSQLStatement *statem
             }
             [object _setIsFault:NO];
 
-            // The single object path calls ODOObjectAwakeSingleObjectFromFetch
-            OBASSERT(ctx->isFetchingObjectFault == (ctx->fetched == nil));
+            // When fetching faults, we already know what objects are being fetched.
+            OBASSERT(ctx->isFetchingObjectFaults == (ctx->fetched == nil));
             [ctx->fetched addObject:object];
-        } else if (ctx->isFetchingObjectFault) {
+        } else if (ctx->isFetchingObjectFaults) {
             NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Fetch for fault returned object with ID '%@', but that object has already had its fault cleared.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), objectID];
             NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to fulfill fault.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
             ODOError(outError, ODOUnableToFetchFault, description, reason);
@@ -583,7 +584,7 @@ static BOOL FetchObjectFaultWithContext(ODOEditingContext *self, ODOObject *obje
 
     // Wait until the fetch is done and reset before awaking the object, in case it causes further fetching/faulting in its subclass method.
     OBASSERT([object isFault] == NO);
-    ODOObjectAwakeSingleObjectFromFetch(object);
+    PrefetchRelationshipsAndAwakeObjects(self, ctx->entity, @[object]);
 
     return YES;
 }
@@ -605,7 +606,7 @@ void ODOFetchObjectFault(ODOEditingContext *self, ODOObject *object)
 
     ODORowFetchContext ctx;
     memset(&ctx, 0, sizeof(ctx));
-    ctx.isFetchingObjectFault = YES;
+    ctx.isFetchingObjectFaults = YES;
     ctx.entity = [object entity];
     ctx.instanceClass = [ctx.entity instanceClass];
     ctx.schemaProperties = [ctx.entity _schemaProperties];
@@ -722,7 +723,7 @@ NSMutableSet * ODOFetchSetFault(ODOEditingContext *self, ODOObject *owner, ODORe
         }
     }
 
-    ODOObjectAwakeObjectsFromFetch(ctx.fetched);
+    PrefetchRelationshipsAndAwakeObjects(self, ctx.entity, ctx.fetched);
 
     // TODO: Since we lazily clear the fault, we might need to treat undo specially.  For example, A->>B.  Fetch an A and a B w/o clearing the fault.  Delete the B.  Process changes.  Clear the fault (A->>Bs won't contain the B we deleted).  Undo.  If we clear the reverse fault when doing delete propagation, then this should just work if we snapshot the to-many.  But, if we snapshot the nil (lazy fault not yet created) and then undo after clearing, then the cleared set will be incorrect.
     
@@ -803,7 +804,7 @@ NSMutableArray <__kindof ODOObject *> * _Nullable ODOFetchObjects(ODOEditingCont
         }
 
         // Inform all the newly fetched objects that they have been fetched.  Do this *outside* running the fetch so that if they cause further fetching/faulting, they won't screw up our fetch in progress.
-        ODOObjectAwakeObjectsFromFetch(ctx.fetched);
+        PrefetchRelationshipsAndAwakeObjects(self, entity, ctx.fetched);
     }
 
     if ([self hasChanges]) {
@@ -831,6 +832,137 @@ NSMutableArray <__kindof ODOObject *> * _Nullable ODOFetchObjects(ODOEditingCont
     OBINVARIANT([self _checkInvariants]);
     return ctx.results;
 }
+
+static void PrefetchRelationshipsAndAwakeObjects(ODOEditingContext *self, ODOEntity *entity, NSArray <ODOObject *> *fetched)
+{
+    NSMapTable<ODOEntity *, NSMutableArray <ODOObject *> *> *entityToPrefetchObjects;
+
+    // Might want to go further in avoiding allocating the map table by passing in a NSMapTable** to ODOObjectPrepareObjectsForAwakeFromFetch for it to fill out if it finds any objects needing to be prefetched.
+    // TODO: Since we know the possible entities up front that might be prefetched, the model generation could assign an index to each prefetchable entity and we could use an array or the like. Also, we may want to let the model decide what order entities are prefetched to get the best batching.
+    if (entity.prefetchRelationships != nil) {
+        entityToPrefetchObjects = [[NSMapTable alloc] initWithKeyOptions:NSMapTableObjectPointerPersonality valueOptions:NSMapTableStrongMemory capacity:0];
+    } else {
+        entityToPrefetchObjects = nil;
+    }
+
+    ODOObjectPrepareObjectsForAwakeFromFetch(entity, fetched, entityToPrefetchObjects);
+
+    NSArray *combinedFetched;
+
+    if ([entityToPrefetchObjects count] > 0) {
+        // TODO: Instead maybe make this an array of arrays, avoiding extra copying.
+        NSMutableArray <ODOObject *> *fetchedSoFar = [NSMutableArray arrayWithArray:fetched];
+        NSArray <ODOEntity *> *prefetchEntities = entity.model.prefetchEntities;
+
+        while ([entityToPrefetchObjects count] > 0) {
+            ODOEntity *destinationEntity = nil;
+            NSMutableArray <ODOObject *> *destinationObjects;
+
+            // Get the higest rank entity to prefetch.
+            for (ODOEntity *candidate in prefetchEntities) {
+                destinationObjects = [entityToPrefetchObjects objectForKey:candidate];
+                if (destinationObjects) {
+                    destinationEntity = candidate;
+                    break;
+                }
+            }
+            OBASSERT_NOTNULL(destinationEntity);
+
+            __autoreleasing NSError *error = nil;
+            if (!PerformPrefetch(self, destinationEntity, destinationObjects, &error)) {
+                // This isn't fatal for our *original* fetch, but worrisome still.
+                [error log:@"Prefetching failed"];
+            }
+
+            for (ODOObject *destinationObject in destinationObjects) {
+                OBASSERT(destinationObject->_flags.isFault == NO);
+                OBASSERT(destinationObject->_flags.isScheduledForBatchFetch);
+                destinationObject->_flags.isScheduledForBatchFetch = NO;
+            }
+
+            [destinationObjects retain]; // wouldn't need this if we record an array of batches
+            [fetchedSoFar addObjectsFromArray:destinationObjects];
+
+            // Clear this entry in the map table and collect prefetching information from this batch of objects
+            [entityToPrefetchObjects removeObjectForKey:destinationEntity];
+
+            ODOObjectPrepareObjectsForAwakeFromFetch(destinationEntity, destinationObjects, entityToPrefetchObjects);
+            [destinationObjects release];
+        }
+
+        combinedFetched = fetchedSoFar;
+    } else {
+        combinedFetched = fetched;
+    }
+
+    [entityToPrefetchObjects release];
+
+    for (ODOObject *object in combinedFetched) {
+        ODOObjectPerformAwakeFromFetchWithoutRegisteringEdits(object);
+    }
+    for (ODOObject *object in combinedFetched) {
+        ODOObjectFinalizeAwakeFromFetch(object);
+    }
+}
+
+static BOOL PerformPrefetch(ODOEditingContext *self, ODOEntity *entity, NSArray <ODOObject *> *objects, NSError **outError)
+{
+    OBINVARIANT([self _checkInvariants]);
+    OBPRECONDITION(!self->_isResetting, "This is a sub-fetch where the caller should have already checked this");
+
+    // TODO: Add a cached ODOSQLStatement that fetches a fixed number of objects (and if we have fewer, replicate one of the primary keys to fill the extra slots).
+    // TODO: Update this to send the list of objects to the background queue and invoke the batching there rather than dispatching to the background multiple times.
+
+    __block ODORowFetchContext ctx;
+    memset(&ctx, 0, sizeof(ctx));
+    ctx.isFetchingObjectFaults = YES;
+    ctx.entity = entity;
+    ctx.instanceClass = entity.instanceClass;
+    ctx.schemaProperties = [entity _schemaProperties];
+    ctx.primaryKeyAttribute = entity.primaryKeyAttribute;
+    ctx.primaryKeyColumnIndex = (int)[ctx.schemaProperties indexOfObjectIdenticalTo:ctx.primaryKeyAttribute];
+    ctx.editingContext = self;
+    // Not filling out the results or fetched arrays since we know what is getting fetched
+
+    OBASSERT(ctx.primaryKeyColumnIndex != NSNotFound);
+
+    ODODatabase *database = self->_database;
+    if (ODOSQLDebugLogLevel > 0) {
+        ODOSQLStatementLogSQL(@"/* SQL batch fault: %@ */ ", entity.name);
+    }
+
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"%K in %@", ctx.primaryKeyAttribute.name, objects];
+    ODOSQLStatement *query = [[ODOSQLStatement alloc] initSelectProperties:ctx.schemaProperties fromEntity:entity connection:database.connection predicate:predicate error:outError];
+    if (query == nil) {
+        OBASSERT_NOT_REACHED("Failed to build query: %@", outError != NULL ? (id)[*outError toPropertyList] : (id)@"Missing error");
+        OBINVARIANT([self _checkInvariants]);
+        return NO;
+    }
+
+    ODOSQLConnection *connection = database.connection;
+    BOOL success = ODOEditingContextExecuteWithOwnership(self, connection.queue, ^{
+        return [connection performSQLAndWaitWithError:outError block:^BOOL(struct sqlite3 *sqlite, NSError **blockError) {
+            ODOSQLStatementCallbacks callbacks;
+            memset(&callbacks, 0, sizeof(callbacks));
+            callbacks.row = _fetchObjectCallback;
+
+            return ODOSQLStatementRun(sqlite, query, callbacks, &ctx, blockError);
+        }];
+    });
+
+    [query invalidate];
+    [query release];
+
+    if (!success) {
+#ifdef DEBUG
+        NSLog(@"Failed to run query: %@", outError ? (id)[*outError toPropertyList] : (id)@"Missing error");
+#endif
+    }
+
+    OBINVARIANT([self _checkInvariants]);
+    return success;
+}
+
 
 @end
 

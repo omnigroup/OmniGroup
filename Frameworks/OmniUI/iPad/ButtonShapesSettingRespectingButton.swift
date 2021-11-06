@@ -56,6 +56,6 @@ private struct IsPressedUpdatingButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .onAppear(perform: { isPressed = configuration.isPressed })
-            .onChange(of: configuration.isPressed, perform: { newValue in isPressed = newValue })
+            .loggingOnChange(of: configuration.isPressed, perform: { newValue in isPressed = newValue })
     }
 }

@@ -84,3 +84,47 @@ public class ReadOnlyKeyPathBox<ObjectType : NSObject, ValueType : Equatable> : 
     }
 
 }
+
+// As above, but erases the object type, and supports constant values
+
+public class AnyReadOnlyKeyPathBox<ValueType : Equatable> : ObservableObject {
+
+    private let getter: () -> ValueType
+    public let objectWillChange = ObservableObjectPublisher()
+
+    private var observation: NSObjectProtocol?
+
+    public init<ObjectType: NSObject>(object: ObjectType, keyPath: KeyPath<ObjectType, ValueType>) {
+        self.getter = {
+            object[keyPath: keyPath]
+        }
+
+        self.observation = object.observe(keyPath, options: [.prior]) { [weak self] object, change in
+            self?.handleChange(change)
+        }
+    }
+
+    public init(value: ValueType) {
+        self.getter = {
+            value
+        }
+        self.observation = nil
+    }
+
+    // Not marked @Published since we handle sending to objectWillChange via the KVO callback
+    public var value: ValueType {
+        get {
+            getter()
+        }
+    }
+
+    // MARK:- Private
+
+    private func handleChange(_ change: NSKeyValueObservedChange<ValueType>) {
+        // Even if we add .new/.old to the options, the prior notification doesn't have the new value. So, we can't filter out redundant changes and rely on callers to avoid doing them. If we end up caching the latest value here, we could only update our published value on a non-prior callback and avoid redundant calls. But then we'd have some risk of observers that accidentally look at both us and the underlying object somehow and getting out-of-date results.
+        if change.isPrior {
+            objectWillChange.loggingSend()
+        }
+    }
+
+}

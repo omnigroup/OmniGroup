@@ -1505,6 +1505,48 @@ BOOL ODOEditingContextObjectIsInsertedNotConsideringDeletions(ODOEditingContext 
     return object;
 }
 
+- (nullable NSArray <__kindof ODOObject *> *)fetchToManyRelationship:(ODORelationship *)relationship forSourceObjects:(NSSet <ODOObject *> *)sourceObjects error:(NSError **)outError;
+{
+    OBPRECONDITION(relationship.isToMany);
+
+    NSSet <ODOObject *> *needingFetch = [sourceObjects select:^(ODOObject *object) {
+        OBASSERT(object.entity == relationship.entity);
+        return [object hasFaultForRelationship:relationship];
+    }];
+
+    if (needingFetch.count == 0) {
+        return @[];
+    }
+
+    ODORelationship *inverseRelationship = relationship.inverseRelationship;
+    ODOFetchRequest *fetch = [[ODOFetchRequest alloc] init];
+    fetch.entity = relationship.entity;
+    fetch.predicate = [NSPredicate predicateWithFormat:@"%K in %@", inverseRelationship.name, needingFetch];
+
+    NSArray *fetchedObjects = [self executeFetchRequest:fetch error:outError];
+    [fetch release];
+
+    if (fetchedObjects == nil) {
+        return nil;
+    }
+
+    // Now that we have the fetch completed successfully. Bucket the results into the source objects that need it.
+
+    for (ODOObject *object in needingFetch) {
+        _ODOObjectSetObjectValueForProperty(object, relationship, [NSMutableSet set]);
+    }
+
+    for (ODOObject *fetched in fetchedObjects) {
+        ODOObject *sourceObject = ODOObjectPrimitiveValueForProperty(fetched, inverseRelationship);
+        OBASSERT([needingFetch containsObject:sourceObject]);
+
+        NSMutableSet *toMany = ODOObjectPrimitiveValueForProperty(sourceObject, relationship);
+        [toMany addObject:fetched];
+    }
+
+    return fetchedObjects;
+}
+
 - (ODOEditingContextFaultErrorRecovery)handleFaultFulfillmentError:(NSError *)error;
 {
     ODOEditingContextAssertOwnership(self);

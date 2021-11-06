@@ -16,7 +16,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class NSDate, NSSet, NSUndoManager, NSMutableSet;
-@class ODODatabase, ODOObject, ODOFetchRequest, ODOObjectID;
+@class ODODatabase, ODOObject, ODOFetchRequest, ODOObjectID, ODORelationship;
 
 @interface ODOEditingContext : NSObject
 
@@ -61,6 +61,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (__kindof ODOObject *)insertObjectWithEntityName:(NSString *)entityName;
 - (nullable __kindof ODOObject *)fetchObjectWithObjectID:(ODOObjectID *)objectID error:(NSError **)outError NS_REFINED_FOR_SWIFT;
+
+/// Support for bulk fetching any uncleared to-many relationship faults in the source objects. All teh source objects must have the same entity as the source of the relationship. The fetched objects are returned (so, if a source object already had cleared its relationship, those objects will not be in the result).
+- (nullable NSArray <__kindof ODOObject *> *)fetchToManyRelationship:(ODORelationship *)relationship forSourceObjects:(NSSet <ODOObject *> *)sourceObjects error:(NSError **)outError;
 
 /// Debugging label for differentiating between multiple editing contexts.
 @property (nonatomic, copy) NSString *label;

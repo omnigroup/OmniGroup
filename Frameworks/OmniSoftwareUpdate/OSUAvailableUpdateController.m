@@ -1,4 +1,4 @@
-// Copyright 2007-2020 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -208,6 +208,7 @@ RCS_ID("$Id$");
 {
     [super windowDidLoad];
 
+    self.window.level = NSFloatingWindowLevel + 1;
     self.window.collectionBehavior = NSWindowCollectionBehaviorFullScreenAuxiliary;
     
     // Allow @media {...} in the release notes to display differently when we are showing the content

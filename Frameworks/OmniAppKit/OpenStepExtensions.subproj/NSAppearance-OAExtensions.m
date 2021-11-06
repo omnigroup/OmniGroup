@@ -29,7 +29,11 @@ OBDEPRECATED_METHOD(+withAppearance:performActions:); // use -performAsCurrentDr
 + (void)withAppearance:(NSAppearance *)overrideAppearance performActions:(void (^ NS_NOESCAPE)(void))actions;
 {
     if (@available(macOS 11, *)) {
-        [overrideAppearance performAsCurrentDrawingAppearance:actions];
+        if (overrideAppearance) {
+            [overrideAppearance performAsCurrentDrawingAppearance:actions];
+        } else {
+            actions();
+        }
     } else {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"

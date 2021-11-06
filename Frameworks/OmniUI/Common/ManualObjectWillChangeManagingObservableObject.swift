@@ -18,16 +18,29 @@ public protocol ManualObjectWillChangeManagingObservableObject: ObservableObject
 
 // Necessary to type erase the generic Combine.Published.Value attribute out so we can as? cast in the linkPublishedPropertiesToObjectWillChange
 public protocol PublishedProjectedValueLinking {
+    #if DEBUG
+    func linkProjectedValue<T: ManualObjectWillChangeManagingObservableObject>(to observableObject: T, function: String, file: String, line: Int)
+    #else
     func linkProjectedValue<T: ManualObjectWillChangeManagingObservableObject>(to observableObject: T)
+    #endif
 }
 
 extension Combine.Published.Publisher: PublishedProjectedValueLinking {
+    #if DEBUG
+    public func linkProjectedValue<T: ManualObjectWillChangeManagingObservableObject>(to observableObject: T, function: String = #function, file: String = #file, line: Int = #line) {
+        dropFirst().sink(receiveValue: { [weak observableObject] _ in
+            dispatchPrecondition(condition: .onQueue(.main))
+            observableObject?.objectWillChange.loggingSend(function: function, file: file, line: line)
+        }).store(in: &observableObject.cancellableSet)
+    }
+    #else
     public func linkProjectedValue<T: ManualObjectWillChangeManagingObservableObject>(to observableObject: T) {
-        sink(receiveValue: { [weak observableObject] _ in
+        dropFirst().sink(receiveValue: { [weak observableObject] _ in
             dispatchPrecondition(condition: .onQueue(.main))
             observableObject?.objectWillChange.loggingSend()
         }).store(in: &observableObject.cancellableSet)
     }
+    #endif
 }
 
 ///If `Mirror` ever gets the capability to modify the object it's reflecting, the code below will search a class for its `@Published` properties and automatically send out `objectWillChange` when any of those properties are set, instead of the burden of setting up that linking laying on each class' implementation. It doesn't compile right now because `Combine.Published.projectedValue` has a mutating getter, because that publisher is lazily initialized. 

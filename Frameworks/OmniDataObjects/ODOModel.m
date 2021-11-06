@@ -1,4 +1,4 @@
-// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,6 +13,7 @@
 #import "ODOEntity-Internal.h"
 #import "ODODatabase-Internal.h"
 #import "ODOObject-Accessors.h"
+#import "ODOModel-Internal.h"
 
 @import Foundation;
 
@@ -111,10 +112,31 @@ void ODOModelFinalize(ODOModel *model)
     }
 #endif
 
-    // Tell each model class that the model is loaded.
+    NSMutableArray <ODOEntity *> *prefetchEntities = [NSMutableArray array];
+
     [model->_entitiesByName enumerateKeysAndObjectsUsingBlock:^(NSString *entityName, ODOEntity *entity, BOOL *stop) {
+        // Tell each model class that the model is loaded.
         [entity.instanceClass entityLoaded:entity];
+
+        if (entity.prefetchOrder != NSNotFound) {
+            [prefetchEntities addObject:entity];
+        }
     }];
+
+    [prefetchEntities sortUsingComparator:^(ODOEntity *entity1, ODOEntity *entity2) {
+        NSUInteger order1 = entity1.prefetchOrder;
+        NSUInteger order2 = entity2.prefetchOrder;
+
+        if (order1 < order2) {
+            return NSOrderedAscending;
+        }
+        if (order1 > order2) {
+            return NSOrderedDescending;
+        }
+        return NSOrderedSame;
+    }];
+
+    model->_prefetchEntities = [prefetchEntities copy];
 }
 
 #pragma clang diagnostic push
