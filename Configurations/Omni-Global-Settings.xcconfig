@@ -1,4 +1,4 @@
-// Copyright 2006-2021 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2022 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the terms in the file OmniSourceLicense.html, which should be distributed with this project and can also be found at <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
@@ -74,7 +74,7 @@ ENABLE_STRICT_OBJC_MSGSEND = YES
 GCC_TREAT_WARNINGS_AS_ERRORS = YES
 
 // Mark these no-error to keep going despite intentdefinition compiler bug FB9335985
-WARNING_CFLAGS = $(value) -Wno-error=nullability-completeness -Wno-error=duplicate-method-match
+WARNING_CFLAGS = $(value) -Wno-error=nullability-completeness -Wno-duplicate-method-match
 
 // Apple LLVM compiler 4.2 - Warnings - All languages
 CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES

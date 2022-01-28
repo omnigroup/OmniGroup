@@ -1,4 +1,4 @@
-// Copyright 2010-2021 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2022 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -23,7 +23,12 @@ extern NSString * const OUITextViewInsertionPointDidChangeNotification;
 - (void)textViewDeleteBackwardsAtBeginning:(OUITextView *)textView;
 
 // Both of these should be implemented if either are
-- (NSArray *)textViewReadablePasteboardTypes:(OUITextView *)textView;
+- (NSArray<NSString *> *)textViewReadablePasteboardTypes:(OUITextView *)textView;
+
+/// Gives the delegate an opportunity to pull a representation from the pasteboard. Useful in cases where the OUITextView doesn't handle a given type or the delegate would like to handle seperately. A delegate can consult the OUITextView's canReadFromPasteboardTypesInPasteboard: to determine if the textView itself can already handle the pasteboard data itself.
+/// @param An OUITextView
+/// @param An index set for the pasteboardTypes
+/// @param The provided pasteboard
 - (nullable NSAttributedString *)textView:(OUITextView *)textView readTextFromItemSet:(NSIndexSet *)itemSet inPasteboard:(UIPasteboard *)pasteboard;
 
 - (BOOL)textViewShouldPreserveStylesWhenPasting:(OUITextView *)textView defaultValue:(BOOL)defaultValue sender:(id)sender;
@@ -56,6 +61,8 @@ extern NSString * const OUITextViewInsertionPointDidChangeNotification;
 
 @property (nonatomic) IBInspectable BOOL shouldAutomaticallyUpdateColorsForCurrentTheme;
 @property(nonatomic) BOOL keepContextualMenuHidden;
+
+- (BOOL)canReadFromPasteboardTypesInPasteboard:(UIPasteboard *)pasteboard;
 
 // This only applies to a plain -paste:.
 - (BOOL)shouldPreserveStylesWhenPastingWithSender:(id)sender;

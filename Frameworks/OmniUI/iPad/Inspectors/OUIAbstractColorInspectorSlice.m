@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,6 +14,18 @@
 #import <OmniUI/OUIStackedSlicesInspectorPane.h>
 
 RCS_ID("$Id$");
+
+@interface OUIAbstractColorInspectorSlice() <UIColorPickerViewControllerDelegate>
+@end
+
+@interface UIColorPickerViewController(OUIColorValue) <OUIColorValue>
+@end
+@implementation UIColorPickerViewController(OUIColorValue)
+- (OAColor *)color;
+{
+    return [OAColor colorWithPlatformColor:self.selectedColor];
+}
+@end
 
 @implementation OUIAbstractColorInspectorSlice
 
@@ -31,8 +43,17 @@ RCS_ID("$Id$");
 #pragma mark -
 #pragma mark OUIInspectorSlice subclass
 
+#define USE_UIKITCOLORPICKER 0
+
 - (IBAction)showDetails:(id)sender;
-{    
+{
+#if USE_UIKITCOLORPICKER
+    UIColorPickerViewController *picker = [[UIColorPickerViewController alloc] init];
+    picker.delegate = self;
+    picker.selectedColor = [_selectionValue.firstValue makePlatformColor];
+    picker.title = self.title;
+    [self.navigationController presentViewController:picker animated:YES completion:^{}];
+#else
     if (!self.detailPane) {
         OUIColorInspectorPane *pane = [[OUIColorInspectorPane alloc] init];
         if (self.title) {
@@ -40,8 +61,19 @@ RCS_ID("$Id$");
         }
         self.detailPane = pane;
     }
-    
+
     [super showDetails:sender];
+#endif
+}
+
+- (void)colorPickerViewController:(UIColorPickerViewController *)viewController didSelectColor:(UIColor *)color continuously:(BOOL)continuously
+{
+    [self changeColor:viewController];
+}
+
+- (void)colorPickerViewControllerDidFinish:(UIColorPickerViewController *)viewController;
+{
+
 }
 
 - (void)updateInterfaceFromInspectedObjects:(OUIInspectorUpdateReason)reason;

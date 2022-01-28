@@ -1,4 +1,4 @@
-// Copyright 2015-2020 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2022 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -161,3 +161,16 @@
 #import <OmniUI/UIViewController-OUIExtensions.h>
 #import <OmniUI/UIVisualEffectView-OUIExtensions.h>
 #import <OmniUI/OUIAppController+SpecialURLHandling.h>
+
+#import <OmniFoundation/OFErrorRecoveryType.h>
+
+static inline UIAlertActionStyle UIAlertActionStyleForRecoveryType(OFErrorRecoveryType recoveryType) {
+    switch (recoveryType) {
+        case OFErrorRecoveryTypeDefault: return UIAlertActionStyleDefault;
+        case OFErrorRecoveryTypeCancel: return UIAlertActionStyleCancel;
+        case OFErrorRecoveryTypeDestructive: return UIAlertActionStyleDestructive;
+        default:
+            OBASSERT_NOT_REACHED("Bad input");
+            return UIAlertActionStyleDefault;
+    }
+}

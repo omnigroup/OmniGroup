@@ -1,4 +1,4 @@
-// Copyright 2008-2020 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -153,6 +153,9 @@ static BOOL ODOVacuumOnDisconnect = NO;
     ODOAsynchronousWrites = [[NSUserDefaults standardUserDefaults] boolForKey:@"ODOAsynchronousWrites"];
     ODOKeepTemporaryStoreInMemory = [[NSUserDefaults standardUserDefaults] boolForKey:@"ODOKeepTemporaryStoreInMemory"];
     ODOVacuumOnDisconnect = [[NSUserDefaults standardUserDefaults] boolForKey:@"ODOVacuumOnDisconnect"];
+#ifdef DEBUG_toon
+    NSLog(@"sqlite version: %s", sqlite3_libversion());
+#endif
 }
 
 - (instancetype)initWithModel:(ODOModel *)model;

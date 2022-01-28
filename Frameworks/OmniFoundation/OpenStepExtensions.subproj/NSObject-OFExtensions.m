@@ -1,4 +1,4 @@
-// Copyright 1997-2020 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,6 +16,12 @@
 RCS_ID("$Id$")
 
 NS_ASSUME_NONNULL_BEGIN
+
+#if 0 && defined(DEBUG)
+#define OFEXTENSIONS_BLOCK_QUEUED_BACKTRACE 1
+#else
+#define OFEXTENSIONS_BLOCK_QUEUED_BACKTRACE 0
+#endif
 
 @implementation NSObject (OFExtensions)
 
@@ -155,7 +161,9 @@ void OFAfterDelayPerformBlock(NSTimeInterval delay, void (^block)(void))
      */
     OBPRECONDITION([NSThread isMainThread]);
 
+#if OFEXTENSIONS_BLOCK_QUEUED_BACKTRACE
     OBRecordBacktrace("Delayed block queued", OBBacktraceBuffer_Generic);
+#endif
     
     NSOperationQueue *operationQueue = [NSOperationQueue currentQueue];
     
@@ -172,11 +180,15 @@ void OFAfterDelayPerformBlock(NSTimeInterval delay, void (^block)(void))
 void OFPerformInBackground(void (^block)(dispatch_queue_t queue))
 {
     block = [block copy];
+#if OFEXTENSIONS_BLOCK_QUEUED_BACKTRACE
     OBRecordBacktraceWithContext("Background block queued", OBBacktraceBuffer_Generic, block);
+#endif
 
     dispatch_queue_t queue = dispatch_queue_create("com.omnigroup.frameworks.OmniFoundation.OneShot", DISPATCH_QUEUE_SERIAL);
     dispatch_async(queue, ^{
+#if OFEXTENSIONS_BLOCK_QUEUED_BACKTRACE
         OBRecordBacktraceWithContext("Background block invoke", OBBacktraceBuffer_Generic, block);
+#endif
         @autoreleasepool {
             block(queue);
             [block release];
@@ -191,9 +203,13 @@ void OFMainThreadPerformBlock(void (^block)(void))
         block();
     else {
         block = [block copy];
+#if OFEXTENSIONS_BLOCK_QUEUED_BACKTRACE
         OBRecordBacktraceWithContext("Main thread block enqueued", OBBacktraceBuffer_Generic, block);
+#endif
         dispatch_async(dispatch_get_main_queue(), ^{
+#if OFEXTENSIONS_BLOCK_QUEUED_BACKTRACE
             OBRecordBacktraceWithContext("Main thread block invoked", OBBacktraceBuffer_Generic, block);
+#endif
             block();
         });
         [block release];
@@ -206,9 +222,13 @@ void OFMainThreadPerformBlockSynchronously(void (^block)(void))
         block();
     } else {
         block = [block copy];
+#if OFEXTENSIONS_BLOCK_QUEUED_BACKTRACE
         OBRecordBacktraceWithContext("Main thread block enqueued", OBBacktraceBuffer_Generic, block);
+#endif
         dispatch_sync(dispatch_get_main_queue(), ^{
+#if OFEXTENSIONS_BLOCK_QUEUED_BACKTRACE
             OBRecordBacktraceWithContext("Main thread block invoked", OBBacktraceBuffer_Generic, block);
+#endif
             block();
         });
         [block release];

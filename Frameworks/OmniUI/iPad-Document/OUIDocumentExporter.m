@@ -153,11 +153,6 @@ static BOOL DocumentClassSubclasses(Class cls, SEL sel) {
     OBRequestConcreteImplementation(self, _cmd);
 }
 
-- (void)purchaseExportType:(NSString *)fileUTI navigationController:(UINavigationController *)navigationController;
-{
-    OBRequestConcreteImplementation(self, _cmd);
-}
-
 - (NSString *)purchaseDescriptionForExportType:(NSString *)fileUTI;
 {
     OBRequestConcreteImplementation(self, _cmd);

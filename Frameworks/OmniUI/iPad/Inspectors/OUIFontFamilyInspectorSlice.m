@@ -1,4 +1,4 @@
-// Copyright 2015-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -6,6 +6,10 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniUI/OUIFontFamilyInspectorSlice.h>
+
+@import OmniBase;
+@import OmniFoundation.OFPreference;
+@import OmniAppKit.OAFontDescriptor;
 
 #import <OmniUI/OUIAbstractFontInspectorSlice.h>
 #import <OmniUI/OUIImages.h>
@@ -16,10 +20,8 @@
 #import <OmniUI/OUIInspectorSliceView.h>
 #import <OmniUI/UIView-OUIExtensions.h>
 
-#import <OmniAppKit/OAFontDescriptor.h>
-#import <OmniBase/OmniBase.h>
-
-RCS_ID("$Id$");
+@interface OUIFontFamilyInspectorSlice () <UIFontPickerViewControllerDelegate>
+@end
 
 @implementation OUIFontFamilyInspectorSlice
 
@@ -110,12 +112,58 @@ static void _configureTextWellDisplay(OUIInspectorTextWell *textWell, OUIAbstrac
 
 - (IBAction)_showFontFamilies:(id)sender;
 {
-    OUIFontInspectorPane *familyPane = (OUIFontInspectorPane *)self.detailPane;
-    OBPRECONDITION(familyPane);
-    
-    familyPane.title = NSLocalizedStringFromTableInBundle(@"Font", @"OUIInspectors", OMNI_BUNDLE, @"Title for the font family list in the inspector");
-    familyPane.showFacesOfFont = nil; // shows families
-    [self.inspector pushPane:familyPane];
+    NSString *title = NSLocalizedStringFromTableInBundle(@"Font", @"OUIInspectors", OMNI_BUNDLE, @"Title for the font family list in the inspector");
+    if ([[OFPreference preferenceForKey:@"UseLegacyFontPicker" defaultValue:@NO] boolValue]) {
+        OUIFontInspectorPane *familyPane = (OUIFontInspectorPane *)self.detailPane;
+        OBPRECONDITION(familyPane);
+
+        familyPane.title = title;
+        familyPane.showFacesOfFont = nil; // shows families
+        [self.inspector pushPane:familyPane];
+    } else {
+        UIFontPickerViewControllerConfiguration *fontConfig = [[UIFontPickerViewControllerConfiguration alloc] init];
+        fontConfig.includeFaces = YES;
+        UIFontPickerViewController *fontPicker = [[UIFontPickerViewController alloc] initWithConfiguration:fontConfig];
+        fontPicker.title = title;
+        fontPicker.delegate = self;
+        OUIFontSelection *selection = OUICollectFontSelection(self, self.appropriateObjectsForInspection);
+        NSArray <OAFontDescriptor *> *fontDescriptors = selection.fontDescriptors;
+        fontPicker.selectedFontDescriptor = fontDescriptors.firstObject.font.fontDescriptor;
+        [self.navigationController pushViewController:fontPicker animated:YES];
+    }
+}
+
+#pragma mark - UIFontPickerViewControllerDelegate protocol
+
+- (void)fontPickerViewControllerDidPickFont:(UIFontPickerViewController *)viewController;
+{
+    UIFontDescriptor *uiFontDescriptor = viewController.selectedFontDescriptor;
+    UIFont *font = [UIFont fontWithDescriptor:uiFontDescriptor size:0.0];
+
+    OUIInspector *inspector = self.inspector;
+    [inspector willBeginChangingInspectedObjects];
+    {
+        for (id <OUIFontInspection> object in self.appropriateObjectsForInspection) {
+            // Grab any existing font size in order to preserve it
+            OAFontDescriptor *fontDescriptor = [object fontDescriptorForInspectorSlice:self];
+            CGFloat fontSize;
+            if (fontDescriptor)
+                fontSize = [fontDescriptor size];
+            else
+                fontSize = [UIFont labelFontSize];
+
+            // We're looking at font faces within a family; create a font descriptor for the newly-selected item (font face)
+            fontDescriptor = [[OAFontDescriptor alloc] initWithFont:font];
+            fontDescriptor = [fontDescriptor newFontDescriptorWithSize:fontSize];
+
+            if (fontDescriptor) {
+                [object setFontDescriptor:fontDescriptor fromInspectorSlice:self];
+            }
+        }
+    }
+//    FinishUndoGroup();  // I think this should be here for Graffle iOS, but our build dependencies won't allow it and testing shows this isn't currently a problem
+    [inspector didEndChangingInspectedObjects];
+
 }
 
 @end

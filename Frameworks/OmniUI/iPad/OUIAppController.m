@@ -1,4 +1,4 @@
-// Copyright 2010-2021 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2022 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -510,7 +510,40 @@ NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOff
 
     OUIEnqueueableAlertController *alertController = [OUIEnqueueableAlertController alertControllerWithTitle:[error localizedDescription] message:message preferredStyle:UIAlertControllerStyleAlert];
 
-    [alertController addActionWithTitle:cancelButtonTitle style:UIAlertActionStyleDefault handler:nil];
+    id recoveryAttempter = error.recoveryAttempter;
+    __block BOOL addedCancelRecovery = NO;
+
+    if (recoveryAttempter) {
+        NSArray *recoveryOptions = [error localizedRecoveryOptions];
+        NSIndexSet *recoveryOptionIndexes = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, [recoveryOptions count])];
+        NSArray<NSNumber *> *recoveryTypes = error.userInfo[OFErrorRecoveryTypesErrorKey];
+
+        [recoveryOptionIndexes enumerateIndexesWithOptions:NSEnumerationReverse usingBlock:^(NSUInteger recoveryOptionIndex, BOOL * _Nonnull stop) {
+            NSString *recoveryOption = recoveryOptions[recoveryOptionIndex];
+
+            UIAlertActionStyle alertStyle = UIAlertActionStyleDefault;
+            if (recoveryOptionIndex < [recoveryTypes count]) {
+                alertStyle = UIAlertActionStyleForRecoveryType([recoveryTypes[recoveryOptionIndex] unsignedLongValue]);
+            }
+
+            if ([recoveryOption isEqualToString:cancelButtonTitle] || alertStyle == UIAlertActionStyleCancel) {
+                alertStyle = UIAlertActionStyleCancel;
+            }
+
+            if (alertStyle == UIAlertActionStyleCancel) {
+                addedCancelRecovery = YES;
+            }
+
+            [alertController addActionWithTitle:recoveryOption style:alertStyle handler:^(UIAlertAction *action) {
+                NSInteger index = [recoveryOptions indexOfObject:recoveryOption];
+                [recoveryAttempter attemptRecoveryFromError:error optionIndex:index delegate:nil didRecoverSelector:NULL contextInfo:NULL];
+            }];
+        }];
+    }
+
+    if (!addedCancelRecovery) {
+        [alertController addActionWithTitle:cancelButtonTitle style:UIAlertActionStyleCancel handler:nil];
+    }
     for (OUIExtendedAlertAction *optionalAction in optionalActions) {
         [alertController addExtendedAction:optionalAction];
     }

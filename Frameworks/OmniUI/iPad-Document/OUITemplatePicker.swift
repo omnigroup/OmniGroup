@@ -1,4 +1,4 @@
-// Copyright 2017-2021 Omni Development, Inc. All rights reserved.
+// Copyright 2017-2022 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -108,6 +108,8 @@ public class OUITemplatePicker: UIViewController, UIDocumentPickerDelegate {
             var templateFileTypes: [UTI] = []
             if let templateDelegate = templateDelegate, let templateUTIs = templateDelegate.templateUTIs?() {
                 templateFileTypes = templateUTIs.map { UTI($0) }
+            } else if let fileTypes = internalTemplateDelegate?.templatePickerCustomTemplateFileTypes {
+                templateFileTypes =  fileTypes.map { UTI($0) }
             }
             let templateUTIPredicate = UTIResourceTypePredicate(fileTypes: templateFileTypes)
 
@@ -215,8 +217,8 @@ public class OUITemplatePicker: UIViewController, UIDocumentPickerDelegate {
         var templates = [OUITemplateItem]()
 
         func scanFile(url: URL) {
-            let fileType = UTI.fileTypePreferringNative(url.pathExtension) ?? ""
-            if fileTypes.contains(fileType) {
+            let pathExtension = url.pathExtension
+            if let fileType = pathExtension.isEmpty ? nil : UTI.fileTypePreferringNative(url.pathExtension), fileTypes.contains(fileType) {
                 let pathComponent = url.lastPathComponent as NSString
                 let displayName = pathComponent.deletingPathExtension
                 let item = OUITemplateItem(fileURL: url, displayName: displayName, fileType: fileType)

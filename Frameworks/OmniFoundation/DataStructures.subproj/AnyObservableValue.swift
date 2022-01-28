@@ -26,16 +26,21 @@ public final class ConstantObservableValue<Output> : AnyObservableValue<Output> 
 @available(OSX 10.15, *)
 public class AnyObservableValue<Value>: ObservableObject {
     public let objectWillChange: ObservableObjectPublisher
+    
     @Published final public private(set) var value: Value {
         willSet {
+            isSettingValue = true
+            
             if wantsObjectWillChangeSendOnValueSet {
-                objectWillChange.loggingSend()
+                OFPublisherDebugLog("\(type(of: self)).value set to \(value) \((#file as NSString).lastPathComponent):\(#line)")
+                objectWillChange.send()
             }
             
-            willSetValue(newValue: newValue)
+            willSetValue(newValue: newValue)            
         }
         didSet {
             didSetValue(value: value)
+            isSettingValue = false
         }
     }
     
@@ -44,8 +49,19 @@ public class AnyObservableValue<Value>: ObservableObject {
     public var valuePublisher: Published<Value>.Publisher { return $value }
     
     var wantsObjectWillChangeSendOnValueSet: Bool { return true }
+    var acceptsReentrantValueSets: Bool { return false }
     func willSetValue(newValue: Value) {}
     func didSetValue(value: Value) {}
+    
+    private var reentrantValueToSet: Value? = nil
+    private var isSettingValue = false {
+        didSet {
+            if let reentrantValueToSet = reentrantValueToSet {
+                self.reentrantValueToSet = nil
+                value = reentrantValueToSet
+            }
+        }
+    }
     
     init(objectWillChange: ObservableObjectPublisher = ObservableObjectPublisher(), initialValue: Value) {
         self.objectWillChange = objectWillChange
@@ -54,6 +70,17 @@ public class AnyObservableValue<Value>: ObservableObject {
     
     @discardableResult
     public func update(_ newValue: Value) -> Bool where Value : Equatable {
+        guard !isSettingValue else {
+            if acceptsReentrantValueSets {
+                assert(reentrantValueToSet == nil, "Attempted multiple reentrant value sets- intermediate update to \(String(describing: reentrantValueToSet)) will be dropped on the floor in favor of new value \(newValue).")
+                reentrantValueToSet = newValue
+                return true
+            } else {
+                assertionFailure("Attempted reentrant value set- update to \(newValue) will be dropped on the floor.")
+                return false
+            }
+        }
+        
         if value != newValue {
             value = newValue
             return true
@@ -65,6 +92,37 @@ public class AnyObservableValue<Value>: ObservableObject {
 extension AnyObservableValue where Value == Bool {
     public func toggle() {
         update(!value)
+    }
+    
+    public func ternary<Output: Equatable>(trueCase: AnyObservableValue<Output>, falseCase: AnyObservableValue<Output>, canSetValue: Bool = false) -> AnyObservableValue<Output> {
+        if let constant = self as? ConstantObservableValue<Bool> {
+            return constant.value ? trueCase : falseCase
+        } else {
+            if canSetValue {
+                return ObservablePropertyCollator(source1: self, source2: trueCase, source3: falseCase, collation: { condition, trueCase, falseCase in
+                    return condition ? trueCase : falseCase
+                }) { output in
+                    if output == trueCase.value {
+                        assert(falseCase.value != output)
+                        self.update(true)
+                    } else if output == falseCase.value {
+                        self.update(false)
+                    } else {
+                        assertionFailure("Unclear update value")
+                    }
+                }
+            } else {
+                return ObservablePropertyCollator(source1: self, source2: trueCase, source3: falseCase, collation: { condition, trueCase, falseCase in
+                    return condition ? trueCase : falseCase
+                })
+            }
+        }
+    }
+}
+
+extension AnyObservableValue {
+    static public func constant(_ value: Value) -> ConstantObservableValue<Value> {
+        return ConstantObservableValue(value: value)
     }
 }
 

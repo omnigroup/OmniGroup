@@ -1,4 +1,4 @@
-// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -250,8 +250,6 @@ static NSString * const OUIDocumentUndoManagerRunLoopPrivateMode = @"com.omnigro
         [center removeObserver:self name:NSUndoManagerWillCloseUndoGroupNotification object:oldUndoManager];
         [center removeObserver:self name:NSUndoManagerDidCloseUndoGroupNotification object:oldUndoManager];
 
-        [center removeObserver:self name:NSUndoManagerCheckpointNotification object:oldUndoManager];
-
         self.observedUndoManager = nil;
     }
 
@@ -266,8 +264,6 @@ static NSString * const OUIDocumentUndoManagerRunLoopPrivateMode = @"com.omnigro
         [center addObserver:self selector:@selector(_undoManagerDidOpenGroup:) name:NSUndoManagerDidOpenUndoGroupNotification object:undoManager];
         [center addObserver:self selector:@selector(_undoManagerWillCloseGroup:) name:NSUndoManagerWillCloseUndoGroupNotification object:undoManager];
         [center addObserver:self selector:@selector(_undoManagerDidCloseGroup:) name:NSUndoManagerDidCloseUndoGroupNotification object:undoManager];
-
-        [center addObserver:self selector:@selector(_undoManagerCheckpoint:) name:NSUndoManagerCheckpointNotification object:undoManager];
 
         // Add a private runloop mode so that we can force the undo manager to close its undo group w/o letting other runloop observers fire. In particular, we don't want to let the CoreAnimation run loop observer fire when it shouldn't.
         // <bug:///121879> (Crasher: Using Share menu on unsaved text - unexpected start state)

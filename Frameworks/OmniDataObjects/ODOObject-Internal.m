@@ -453,7 +453,7 @@ void ODOObjectFinalizeAwakeFromFetch(ODOObject *self)
     [self didAwakeFromFetch];
 }
 
-void ODOObjectPrepareObjectsForAwakeFromFetch(ODOEntity *entity, NSArray <ODOObject *> *objects, NSMapTable<ODOEntity *, NSMutableArray <ODOObject *> *> *entityToPrefetchObjects)
+void ODOObjectPrepareObjectsForAwakeFromFetch(ODOEntity *entity, NSArray <ODOObject *> *objects, NSMapTable<ODOEntity *, NSMutableArray <ODOObject *> *> * _Nullable entityToPrefetchObjects)
 {
     for (ODOObject *object in objects) {
         OBASSERT(object.entity == entity);

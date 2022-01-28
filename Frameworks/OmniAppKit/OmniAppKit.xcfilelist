@@ -137,6 +137,7 @@ Widgets.subproj/OAGradientTableView.m
 Widgets.subproj/OAGridView.m
 Widgets.subproj/OAHierarchicalPopUpController.m
 Widgets.subproj/OALabelField.m
+Widgets.subproj/OALinkTextField.swift
 Widgets.subproj/OAMouseTipView.m
 Widgets.subproj/OAMouseTipWindow.m
 Widgets.subproj/OAOutlineViewEnumerator.m

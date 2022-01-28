@@ -10,6 +10,7 @@ import SwiftUI
 // FB9589088: Enabling the Accessibility "Button Shapes" setting causes buttons with custom labels to grow larger than their content
 // Enabling this setting causes a button with a label specified by a closure to grow larger than the size of the content specified by the closure. This view mimics the behavior and visual style of a button both with and without that setting enabled, but prevents the button from growing larger when the accessibility setting becomes enabled.
 // The drawback here is that the ButtonShapesSettingRespectingButton becomes entirely hidden from all other accessibility features. This is not a problem in OF, where these buttons are used in a hierarchy that requires custom labels and actions anyway, but should be noted in case this proves useful in another context.
+
 public struct ButtonShapesSettingRespectingButton<Label: View>: OUIView {
     
     @State private var isPressed: Bool = false
@@ -22,7 +23,6 @@ public struct ButtonShapesSettingRespectingButton<Label: View>: OUIView {
         self.action = action
     }
     
-    @Environment(\.colorScheme) var colorScheme
     @Environment(\.accessibilityShowButtonShapes) var showingButtonShapes
     
     public var oui_body: some View {
@@ -33,7 +33,7 @@ public struct ButtonShapesSettingRespectingButton<Label: View>: OUIView {
                 // This overlay button is the thing that actually intercepts the taps. Its custom button style prevents it from drawing a Button Shape.
                 Button(action: action) {
                     Rectangle()
-                        .foregroundColor(colorScheme == .dark ? Color(.sRGB, white: 0, opacity: 0.01) : Color(.sRGB, white: 1, opacity: 0.01))
+                        .foregroundColor(almostClearColor)
                 }
                     .buttonStyle(IsPressedUpdatingButtonStyle(isPressed: $isPressed))
             )
@@ -59,3 +59,5 @@ private struct IsPressedUpdatingButtonStyle: ButtonStyle {
             .loggingOnChange(of: configuration.isPressed, perform: { newValue in isPressed = newValue })
     }
 }
+
+fileprivate let almostClearColor = Color("OUIAlmostClearColor", bundle: OmniUIBundle)

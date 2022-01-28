@@ -1,4 +1,4 @@
-// Copyright 2013-2020 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -45,7 +45,7 @@ void _OBLoggerInitializeLogLevel(OBLogger * __strong *outLogger, NSString *name,
         *outLogger = logger;
 }
 
-static NSURL * _DocumentsDirectoryURL()
+static NSURL *_LogFileFolderForLoggerName(NSString *loggerName)
 {
     NSArray *documentsDirectories = [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask];
     if (documentsDirectories == nil || documentsDirectories.count != 1) {
@@ -53,7 +53,19 @@ static NSURL * _DocumentsDirectoryURL()
         return nil;
     }
     NSURL *documentsDirectoryURL = documentsDirectories[0];
-    return  documentsDirectoryURL;
+    
+    NSString *logFileFolderName = [NSString stringWithFormat:@".%@", loggerName];
+    
+    NSURL *logFileFolder = [documentsDirectoryURL URLByAppendingPathComponent:logFileFolderName];
+    
+    BOOL isDirectory;
+    if (![[NSFileManager defaultManager] fileExistsAtPath:logFileFolder.path isDirectory:&isDirectory]) {
+        if (![[NSFileManager defaultManager] createDirectoryAtURL:logFileFolder withIntermediateDirectories:NO attributes:nil error:nil]) {
+            return nil;
+        }
+    }
+    
+    return logFileFolder;
 }
 
 static NSString *_logFileSuffix = @".log";
@@ -69,7 +81,7 @@ static void _ProcessLogFiles(NSString *loggerName, NSDate *olderThanDate, OBLogF
     OBPRECONDITION(loggerName != nil);
     OBPRECONDITION(![loggerName isEqualToString:@""]);
     
-    NSURL *documentsDirectoryURL = _DocumentsDirectoryURL();
+    NSURL *documentsDirectoryURL = _LogFileFolderForLoggerName(loggerName);
     NSArray *subitems = [[NSFileManager defaultManager] contentsOfDirectoryAtURL:documentsDirectoryURL includingPropertiesForKeys:@[NSURLNameKey, NSURLCreationDateKey] options:0 error:NULL];
     
     for (NSURL *itemURL in subitems) {
@@ -274,10 +286,9 @@ static void _setPOSIXError(NSError **error, NSString *description)
 
 - (NSURL *)_currentLogFile;
 {
-    NSURL *documentsDirectory = _DocumentsDirectoryURL();
     NSString *dateString = [_fileNameDateFormatter stringFromDate:[NSDate date]];
     NSString *logFileName = [NSString stringWithFormat:@"%@ %@%@", self.key, dateString, _logFileSuffix];
-    NSURL *logFileURL = [documentsDirectory URLByAppendingPathComponent:logFileName isDirectory:NO];
+    NSURL *logFileURL = [_LogFileFolderForLoggerName(self.name) URLByAppendingPathComponent:logFileName isDirectory:NO];
     
     return logFileURL;
 }

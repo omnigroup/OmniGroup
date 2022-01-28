@@ -1,4 +1,4 @@
-// Copyright 2010-2021 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2022 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -1111,6 +1111,10 @@ static BOOL _rangeContainsPosition(id <UITextInput> input, UITextRange *range, U
     [self updatePlaceholderLabelVisibility];
 }
 
+- (BOOL)canReadFromPasteboardTypesInPasteboard:(UIPasteboard *)pasteboard;
+{
+    return _canReadFromTypes(pasteboard, _readableTypes());
+}
 
 #pragma mark - UITextView subclass
 
@@ -1592,8 +1596,10 @@ static void _copyAttribute(NSMutableDictionary *dest, NSDictionary *src, NSStrin
         [delegate respondsToSelector:@selector(textViewReadablePasteboardTypes:)]) {
         NSArray *types = [delegate textViewReadablePasteboardTypes:self];
         NSIndexSet *itemSet = [pasteboard itemSetWithPasteboardTypes:types];
-        if ([itemSet count] > 0)
+        if ([itemSet count] > 0) {
+            // Nullable and documention for the delegate promises OUITextView will fallback with attempt to read (handled below) from the pasteboard if a nil attributed string is returned.
             attributedString = [delegate textView:self readTextFromItemSet:itemSet inPasteboard:pasteboard];
+        }
     }
     
     if (!attributedString) {

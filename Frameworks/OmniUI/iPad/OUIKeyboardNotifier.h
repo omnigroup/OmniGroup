@@ -1,4 +1,4 @@
-// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,6 +26,7 @@ typedef NS_ENUM(NSInteger, OUIKeyboardState) {
 @property (nonatomic, readonly, getter=isKeyboardVisible) BOOL keyboardVisible;
 
 @property (nonatomic) OUIKeyboardState keyboardState;
+@property (nonatomic) BOOL shouldPreserveLastKeyboardStateWhenSceneDeactivates;
 
 @property(nonatomic,readonly) NSTimeInterval lastAnimationDuration;
 @property(nonatomic,readonly) UIViewAnimationCurve lastAnimationCurve;

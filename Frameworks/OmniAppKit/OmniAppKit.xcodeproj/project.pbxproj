@@ -622,6 +622,7 @@
 		E2A61BDF1D41574900416AB5 /* OAAutosizingSegmentedControl.h in Headers */ = {isa = PBXBuildFile; fileRef = E2A61BDD1D41574900416AB5 /* OAAutosizingSegmentedControl.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E2A61BE01D41574900416AB5 /* OAAutosizingSegmentedControl.m in Sources */ = {isa = PBXBuildFile; fileRef = E2A61BDE1D41574900416AB5 /* OAAutosizingSegmentedControl.m */; };
 		E2B8A8D815BE016E00B5F26B /* OAPreferences.xib in Resources */ = {isa = PBXBuildFile; fileRef = E2B8A8D615BE016E00B5F26B /* OAPreferences.xib */; };
+		E2BAB824275FE52B0077E71A /* OALinkTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2BAB823275FE52B0077E71A /* OALinkTextField.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1532,6 +1533,7 @@
 		E29B510B23FC93120052876C /* NSSegmentedControl-OAExtensions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSSegmentedControl-OAExtensions.m"; sourceTree = "<group>"; };
 		E2A61BDD1D41574900416AB5 /* OAAutosizingSegmentedControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAAutosizingSegmentedControl.h; sourceTree = "<group>"; };
 		E2A61BDE1D41574900416AB5 /* OAAutosizingSegmentedControl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAAutosizingSegmentedControl.m; sourceTree = "<group>"; };
+		E2BAB823275FE52B0077E71A /* OALinkTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OALinkTextField.swift; sourceTree = "<group>"; };
 		E2CBC36006EF77CE0097A11C /* OASpringLoadHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OASpringLoadHelper.h; sourceTree = "<group>"; };
 		E2CBC36106EF77CE0097A11C /* OASpringLoadHelper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OASpringLoadHelper.m; sourceTree = "<group>"; };
 		E2D7993506DD0F730097A11C /* CharsetCategories.plist */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.plist; name = CharsetCategories.plist; path = en.lproj/CharsetCategories.plist; sourceTree = SOURCE_ROOT; };
@@ -2343,6 +2345,7 @@
 				3F51348201C5B6D40297A14E /* OAShrinkyTextField.m */,
 				00E51F96FE8AB2E911C9CC38 /* OATextField.h */,
 				00E51F84FE8AB2E911C9CC38 /* OATextField.m */,
+				E2BAB823275FE52B0077E71A /* OALinkTextField.swift */,
 			);
 			name = NSTextField;
 			sourceTree = "<group>";
@@ -3418,7 +3421,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastTestingUpgradeCheck = 0510;
-				LastUpgradeCheck = 1310;
+				LastUpgradeCheck = 1320;
 				TargetAttributes = {
 					34C12AFB194FF90F005CB70B = {
 						CreatedOnToolsVersion = 6.0;
@@ -4130,6 +4133,7 @@
 				3459EE3B1B694A8400D4F085 /* OAColor.m in Sources */,
 				4AA1E7A608AA764600E2FF6B /* NSTextStorage-OAExtensions.m in Sources */,
 				4AA1E7A708AA764600E2FF6B /* NSToolbar-OAExtensions.m in Sources */,
+				E2BAB824275FE52B0077E71A /* OALinkTextField.swift in Sources */,
 				5FFF5172228C7FFE00D7BB28 /* OAStackedCardView.swift in Sources */,
 				493FE0D61C224F9E00C029B5 /* NSStackView-OAExtensions.m in Sources */,
 				4AA1E7A808AA764600E2FF6B /* NSToolbarItem-OAExtensions.m in Sources */,

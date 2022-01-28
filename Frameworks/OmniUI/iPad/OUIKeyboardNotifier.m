@@ -48,6 +48,7 @@ typedef OFWeakReference <UIView *> *ViewReference;
 @implementation OUIKeyboardNotifier
 {
     NSMutableArray <ViewReference> *_accessoryViews;
+    CGFloat _lastKnownKeyboardHeight;
 }
 
 static OUIKeyboardNotifier *sharedNotifier = nil;
@@ -118,6 +119,21 @@ static OUIKeyboardNotifier *sharedNotifier = nil;
     return NO;
 }
 
+- (OUIKeyboardState)keyboardState;
+{
+    return _keyboardState;
+}
+
+- (CGFloat)lastKnownKeyboardHeight;
+{
+    return _lastKnownKeyboardHeight;
+}
+
+- (nullable NSDictionary *)lastKnownKeyboardInfo;
+{
+    return _lastKnownKeyboardInfo;
+}
+
 - (void)addAccessoryToolbarView:(UIView *)view;
 {
     OBPRECONDITION(view);
@@ -151,6 +167,9 @@ static OUIKeyboardNotifier *sharedNotifier = nil;
 
 - (void)_sceneWillDeactivate:(NSNotification *)note;
 {
+    if (_shouldPreserveLastKeyboardStateWhenSceneDeactivates)
+        return;
+
     self.keyboardState = OUIKeyboardStateHidden;
     _lastKnownKeyboardHeight = 0;
     _lastKnownKeyboardInfo = nil;

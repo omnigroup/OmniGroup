@@ -1,15 +1,16 @@
 {
-    /*
-
-    $ = shift
-    ^ = control
-    ~ = option
-    @ = command
-
-    */
-
-    "document-controller" = (
-        ("@n","makeNewDocument:","makeNewDocument"),
-        ("@w","closeDocument:","closeDocument"),
-    );
+	"document-controller" = (
+		(
+			"@n",
+			false,
+			"makeNewDocument:",
+			makeNewDocument,
+		),
+		(
+			"@w",
+			false,
+			"closeDocument:",
+			closeDocument,
+		),
+	);
 }

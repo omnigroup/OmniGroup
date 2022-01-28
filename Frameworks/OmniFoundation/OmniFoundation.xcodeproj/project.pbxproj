@@ -100,6 +100,8 @@
 		1EEA8E2C1D35C93D002EF965 /* GeneratedOIDs.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EEA8E281D35C93D002EF965 /* GeneratedOIDs.m */; };
 		273257D61448B56000A26568 /* OFUTI.h in Headers */ = {isa = PBXBuildFile; fileRef = 273257D51448B56000A26568 /* OFUTI.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		273257D91448B98B00A26568 /* OFUTI.m in Sources */ = {isa = PBXBuildFile; fileRef = 273257D81448B98B00A26568 /* OFUTI.m */; };
+		2BADC1F82745B1A10047DE89 /* ComputedObservableValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BADC1F72745B1A10047DE89 /* ComputedObservableValue.swift */; };
+		2BADC1F92745B1A10047DE89 /* ComputedObservableValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BADC1F72745B1A10047DE89 /* ComputedObservableValue.swift */; };
 		2BC577B82719FE0100FB2A72 /* ObservablePropertyCollator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BC577B72719FE0100FB2A72 /* ObservablePropertyCollator.swift */; };
 		2BC577B92719FE0100FB2A72 /* ObservablePropertyCollator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BC577B72719FE0100FB2A72 /* ObservablePropertyCollator.swift */; };
 		2BC577BF271DF00200FB2A72 /* ObservableValueTransform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BC577BE271DF00200FB2A72 /* ObservableValueTransform.swift */; };
@@ -248,6 +250,12 @@
 		347811A7245CBC6400BB0B7A /* TypeIdentifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 347811A6245CBC6400BB0B7A /* TypeIdentifier.swift */; };
 		347811A8245CBC6400BB0B7A /* TypeIdentifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 347811A6245CBC6400BB0B7A /* TypeIdentifier.swift */; };
 		347811A9245CBC6400BB0B7A /* TypeIdentifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 347811A6245CBC6400BB0B7A /* TypeIdentifier.swift */; };
+		347A1B4F2784F26B00C0EDF7 /* OFErrorRecoveryType.h in Headers */ = {isa = PBXBuildFile; fileRef = 347A1B4E2784F26B00C0EDF7 /* OFErrorRecoveryType.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		347A1B502784F26B00C0EDF7 /* OFErrorRecoveryType.h in Headers */ = {isa = PBXBuildFile; fileRef = 347A1B4E2784F26B00C0EDF7 /* OFErrorRecoveryType.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		347A1B512784F26B00C0EDF7 /* OFErrorRecoveryType.h in Headers */ = {isa = PBXBuildFile; fileRef = 347A1B4E2784F26B00C0EDF7 /* OFErrorRecoveryType.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		347A1B572784F36C00C0EDF7 /* OFErrorRecoveryType.m in Sources */ = {isa = PBXBuildFile; fileRef = 347A1B562784F36C00C0EDF7 /* OFErrorRecoveryType.m */; };
+		347A1B582784F36C00C0EDF7 /* OFErrorRecoveryType.m in Sources */ = {isa = PBXBuildFile; fileRef = 347A1B562784F36C00C0EDF7 /* OFErrorRecoveryType.m */; };
+		347A1B592784F36C00C0EDF7 /* OFErrorRecoveryType.m in Sources */ = {isa = PBXBuildFile; fileRef = 347A1B562784F36C00C0EDF7 /* OFErrorRecoveryType.m */; };
 		347CA782192EB43000693624 /* OFXMLMakerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A2AC2EA70F784B72002D9BFB /* OFXMLMakerTests.m */; };
 		347CA785192FC7BA00693624 /* OFPerformanceMeasurement.h in Headers */ = {isa = PBXBuildFile; fileRef = 347CA783192FC7BA00693624 /* OFPerformanceMeasurement.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		347CA787192FC7BA00693624 /* OFPerformanceMeasurement.m in Sources */ = {isa = PBXBuildFile; fileRef = 347CA784192FC7BA00693624 /* OFPerformanceMeasurement.m */; };
@@ -2053,6 +2061,7 @@
 		273257D81448B98B00A26568 /* OFUTI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFUTI.m; sourceTree = "<group>"; };
 		28C3E2D1FEF0F1AAC697A12D /* OFTimeSpanFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFTimeSpanFormatter.m; sourceTree = "<group>"; };
 		28C3E2D2FEF0F1AAC697A12D /* OFTimeSpanFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFTimeSpanFormatter.h; sourceTree = "<group>"; };
+		2BADC1F72745B1A10047DE89 /* ComputedObservableValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComputedObservableValue.swift; sourceTree = "<group>"; };
 		2BC577B72719FE0100FB2A72 /* ObservablePropertyCollator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservablePropertyCollator.swift; sourceTree = "<group>"; };
 		2BC577BE271DF00200FB2A72 /* ObservableValueTransform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservableValueTransform.swift; sourceTree = "<group>"; };
 		2BC577C1271DF68300FB2A72 /* AnyObservableValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyObservableValue.swift; sourceTree = "<group>"; };
@@ -2295,6 +2304,8 @@
 		3476E4EF07C3BDBA0097A113 /* OFXMLBuffer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXMLBuffer.m; sourceTree = "<group>"; };
 		347811A6245CBC6400BB0B7A /* TypeIdentifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypeIdentifier.swift; sourceTree = "<group>"; };
 		3478682C223728A2001914C2 /* OmniFoundation-iOS.xcfilelist */ = {isa = PBXFileReference; lastKnownFileType = text.xcfilelist; path = "OmniFoundation-iOS.xcfilelist"; sourceTree = "<group>"; };
+		347A1B4E2784F26B00C0EDF7 /* OFErrorRecoveryType.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OFErrorRecoveryType.h; sourceTree = "<group>"; };
+		347A1B562784F36C00C0EDF7 /* OFErrorRecoveryType.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = OFErrorRecoveryType.m; sourceTree = "<group>"; };
 		347CA783192FC7BA00693624 /* OFPerformanceMeasurement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFPerformanceMeasurement.h; sourceTree = "<group>"; };
 		347CA784192FC7BA00693624 /* OFPerformanceMeasurement.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFPerformanceMeasurement.m; sourceTree = "<group>"; };
 		347DB7890D863F3B00338653 /* NSString-OFURLEncoding.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString-OFURLEncoding.h"; sourceTree = "<group>"; };
@@ -2889,6 +2900,7 @@
 				341119472614DF4E0072145B /* PropertyBox.swift */,
 				2BC577B72719FE0100FB2A72 /* ObservablePropertyCollator.swift */,
 				2BC577BE271DF00200FB2A72 /* ObservableValueTransform.swift */,
+				2BADC1F72745B1A10047DE89 /* ComputedObservableValue.swift */,
 				2BC577C1271DF68300FB2A72 /* AnyObservableValue.swift */,
 				343373D526C6D5F100098144 /* KeyPathBox.swift */,
 				34F325B62694D34B00B5A3F8 /* Publisher-Extensions.swift */,
@@ -3719,6 +3731,8 @@
 		34B435290C6D110100874D95 /* Error Recovery */ = {
 			isa = PBXGroup;
 			children = (
+				347A1B4E2784F26B00C0EDF7 /* OFErrorRecoveryType.h */,
+				347A1B562784F36C00C0EDF7 /* OFErrorRecoveryType.m */,
 				345E73E40C6D06630034A811 /* OFErrorRecovery.h */,
 				345E73E50C6D06630034A811 /* OFErrorRecovery.m */,
 				34B4352A0C6D111A00874D95 /* OFCancelErrorRecovery.h */,
@@ -4130,6 +4144,7 @@
 				34A0613D1EC110A60099028D /* OFDataCursor.h in Headers */,
 				34A0613E1EC110A60099028D /* OFDatedMutableDictionary.h in Headers */,
 				34A0613F1EC110A60099028D /* OFNumberFormatter.h in Headers */,
+				347A1B512784F26B00C0EDF7 /* OFErrorRecoveryType.h in Headers */,
 				34A061401EC110A60099028D /* OFEnumNameTable.h in Headers */,
 				34A061411EC110A60099028D /* OFHeap.h in Headers */,
 				34A061421EC110A60099028D /* GeneratedOIDs.h in Headers */,
@@ -4468,6 +4483,7 @@
 				34F16BE5194F76DA00AD9C4D /* NSIndexSet-OFExtensions.h in Headers */,
 				34F16C14194F778E00AD9C4D /* OFBackgroundActivity.h in Headers */,
 				1E2377931D765CE500CBDA3D /* OFRFC3211Wrap.h in Headers */,
+				347A1B502784F26B00C0EDF7 /* OFErrorRecoveryType.h in Headers */,
 				34DC24AE1E9D41CB001F7A57 /* OFXMLElementParser.h in Headers */,
 				34F16C36194F799100AD9C4D /* OFXMLReader.h in Headers */,
 				34F16C23194F77CA00AD9C4D /* OFXMLBuffer.h in Headers */,
@@ -4594,6 +4610,7 @@
 				1E1B93AA19D232A700693752 /* OFASN1Utilities.h in Headers */,
 				4A4E066708AA72B10098FF0F /* NSBundle-OFFixes.h in Headers */,
 				4A4E066808AA72B10098FF0F /* NSCalendarDate-OFExtensions.h in Headers */,
+				347A1B4F2784F26B00C0EDF7 /* OFErrorRecoveryType.h in Headers */,
 				4A4E066908AA72B10098FF0F /* NSData-OFExtensions.h in Headers */,
 				4A4E066A08AA72B10098FF0F /* NSDate-OFExtensions.h in Headers */,
 				4A4E066B08AA72B10098FF0F /* NSDecimalNumber-OFExtensions.h in Headers */,
@@ -5048,7 +5065,7 @@
 			attributes = {
 				LastSwiftUpdateCheck = 0730;
 				LastTestingUpgradeCheck = 0510;
-				LastUpgradeCheck = 1310;
+				LastUpgradeCheck = 1320;
 				TargetAttributes = {
 					34F16B19194F6C3200AD9C4D = {
 						CreatedOnToolsVersion = 6.0;
@@ -5664,6 +5681,7 @@
 				34A062F51EC110A60099028D /* NSData-OFSignature.m in Sources */,
 				34A062F61EC110A60099028D /* OFDigestUtilities.m in Sources */,
 				34A062F71EC110A60099028D /* OFBacktrace.m in Sources */,
+				347A1B592784F36C00C0EDF7 /* OFErrorRecoveryType.m in Sources */,
 				34A062F81EC110A60099028D /* OFSecSignTransform.m in Sources */,
 				34A062F91EC110A60099028D /* OFUTI.m in Sources */,
 				34A062FA1EC110A60099028D /* NSError-OFExtensions.m in Sources */,
@@ -5832,6 +5850,7 @@
 				3EAA8C781DAC4AA000F61578 /* NSBundle-OFExtensions.m in Sources */,
 				34F16C22194F77C800AD9C4D /* OFXMLDocument.m in Sources */,
 				34F16C37194F799400AD9C4D /* OFXMLReader.m in Sources */,
+				347A1B582784F36C00C0EDF7 /* OFErrorRecoveryType.m in Sources */,
 				34F16BFC194F772200AD9C4D /* NSRegularExpression-OFExtensions.m in Sources */,
 				420E8D021DF8BE7400F7F774 /* NSProcessInfo-OFExtensions.swift in Sources */,
 				34F16B63194F6E7100AD9C4D /* OFBinding.m in Sources */,
@@ -5856,6 +5875,7 @@
 				34F16C15194F779100AD9C4D /* OFBackgroundActivity.m in Sources */,
 				E27C01331EB2512F007FD6AF /* NSCalendar-OFExtensions.m in Sources */,
 				34F16B90194F6F4700AD9C4D /* OFEnumNameTable-OFXMLArchiving.m in Sources */,
+				2BADC1F92745B1A10047DE89 /* ComputedObservableValue.swift in Sources */,
 				34F16B7D194F6EE000AD9C4D /* OFSyncClient.m in Sources */,
 				34F16C17194F779F00AD9C4D /* OFCredentials.m in Sources */,
 				34236AB61D2C6EF800A079AE /* NSDecimalNumber-OFExtensions.m in Sources */,
@@ -6043,6 +6063,7 @@
 				4A8CA6FC2381D5CE0095A6A1 /* OFASCIIPropertyListSerialization.m in Sources */,
 				4A4E071B08AA72B10098FF0F /* NSObject-OFExtensions.m in Sources */,
 				4A4E071C08AA72B10098FF0F /* NSProcessInfo-OFExtensions.m in Sources */,
+				2BADC1F82745B1A10047DE89 /* ComputedObservableValue.swift in Sources */,
 				4A4E071D08AA72B10098FF0F /* NSScanner-OFExtensions.m in Sources */,
 				4A4E071E08AA72B10098FF0F /* NSString-OFExtensions.m in Sources */,
 				4A4E071F08AA72B10098FF0F /* NSString-OFPathExtensions.m in Sources */,
@@ -6110,6 +6131,7 @@
 				34DF039A0B05108D00D82DFC /* OFRelativeDateFormatter.m in Sources */,
 				6C4635FA0B38956800635C03 /* OFScriptHelpers.m in Sources */,
 				341897950B7C01650032C5FA /* NSSetCommand-OFFixes.m in Sources */,
+				347A1B572784F36C00C0EDF7 /* OFErrorRecoveryType.m in Sources */,
 				34AF16CB0C4FE9BE00ADC170 /* OFXMLComment.m in Sources */,
 				345E73E70C6D06630034A811 /* OFErrorRecovery.m in Sources */,
 				34B4352D0C6D111A00874D95 /* OFCancelErrorRecovery.m in Sources */,

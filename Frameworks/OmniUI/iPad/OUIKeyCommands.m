@@ -1,4 +1,4 @@
-// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -64,20 +64,23 @@ static void _parseKeyCommands(NSArray *commands, NSBundle *bundle, NSString *tab
 
     for (NSArray *commandComponents in commands) {
         NSUInteger componentCount = [commandComponents count];
-        OBASSERT(componentCount >= 2 && componentCount <= 3);
-        if (componentCount < 2 || componentCount > 3) {
+        OBASSERT(componentCount >= 3 && componentCount <= 4);
+        if (componentCount < 3 || componentCount > 4) {
 #ifdef DEBUG
             NSLog(@"Skipping command %@ due to incorrect formatting in keycommands document.", commandComponents);
 #endif
             continue;
         }
         
-        BOOL hasDiscoverabilityTitleIdentifier = componentCount == 3;
+        BOOL hasDiscoverabilityTitleIdentifier = componentCount == 4;
         NSString *shortcut = [commandComponents firstObject];
+
+        BOOL wantsPriorityOverSystemBehavior = [[commandComponents objectAtIndex:1] boolValue];
+
         NSString *selectorName = nil;
         NSString *discoverabilityTitle = nil;
         if (hasDiscoverabilityTitleIdentifier) {
-            selectorName = [commandComponents objectAtIndex:1];
+            selectorName = [commandComponents objectAtIndex:2];
             NSString *discoverabilityTitleIdentifier = [commandComponents lastObject];
             OBASSERT(![NSString isEmptyString:discoverabilityTitleIdentifier]);
             discoverabilityTitle = [bundle localizedStringForKey:discoverabilityTitleIdentifier value:@"" table:tableName];
@@ -126,6 +129,9 @@ static void _parseKeyCommands(NSArray *commands, NSBundle *bundle, NSString *tab
                 [dynamicInputIndexSet enumerateIndexesUsingBlock:^(NSUInteger idx, BOOL *stop) {
                     NSString *input = [[NSNumber numberWithUnsignedInteger:idx] stringValue];
                     UIKeyCommand *command = [UIKeyCommand keyCommandWithInput:input modifierFlags:flags action:NSSelectorFromString(selectorName)];
+                    if (@available(iOS 15.0, *)) {
+                        command.wantsPriorityOverSystemBehavior = wantsPriorityOverSystemBehavior;
+                    }
                     command.discoverabilityTitle = discoverabilityTitle;
                     
                     OBASSERT(command != nil);
@@ -151,9 +157,11 @@ static void _parseKeyCommands(NSArray *commands, NSBundle *bundle, NSString *tab
             } else {
                 OBASSERT([inputString length] == 1, "Input portion of key command string \"%@\" should be a single character", shortcut);
             }
-            
             UIKeyCommand *command = [UIKeyCommand keyCommandWithInput:inputString modifierFlags:flags action:NSSelectorFromString(selectorName)];
-            
+            if (@available(iOS 15.0, *)) {
+                command.wantsPriorityOverSystemBehavior = wantsPriorityOverSystemBehavior;
+            }
+
             if (discoverabilityTitle != nil && discoverabilityTitle.length > 0) {
                 command.discoverabilityTitle = discoverabilityTitle;
             }

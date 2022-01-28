@@ -1,4 +1,4 @@
-// Copyright 2007-2020 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2021 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -131,7 +131,25 @@ static void _checkColor(OAColorArchivingTests *self, NSColor *color, SEL sel)
 
 - (void)testCatalog;
 {
-    CHECK([NSColor textColor]);
+    /* This is for finding a catalog color to test with that doesn't vary between light and dark modes. Presently there are only two: selectedMenuItemTextColor and alternateSelectedControlTextColor.
+    for (NSColorList *list in [NSColorList availableColorLists]) {
+        for (NSString *name in [list allKeys]) {
+            NSColor *color = [list colorWithKey:name];
+            if ([color type] == NSColorTypeCatalog) {
+                __block NSDictionary *light = nil, *dark = nil;
+                [NSAppearance withAppearance:[NSAppearance appearanceNamed:NSAppearanceNameAqua] performActions:^{
+                    light = [color propertyListRepresentation];
+                }];
+                [NSAppearance withAppearance:[NSAppearance appearanceNamed:NSAppearanceNameDarkAqua] performActions:^{
+                    dark = [color propertyListRepresentation];
+                }];
+
+                NSLog(@"%@.%@ %@", [color catalogNameComponent], [color colorNameComponent], [light isEqual:dark] ? @"EQUAL" : @"");
+            }
+        }
+    }
+    */
+    CHECK([NSColor selectedMenuItemTextColor]);
 }
 
 - (void)testHSV;

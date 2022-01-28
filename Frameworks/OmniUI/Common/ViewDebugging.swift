@@ -279,7 +279,11 @@ extension View {
     public func loggingOnChange<Value: Equatable>(of value: Value, function: String = #function, file: String = #file, line: Int = #line, perform: @escaping (Value)-> Void) -> some View {
         onChange(of: value, perform: { newValue in
             if OUIViewDebugging.loggingEnabled {
-                print("🟪⬜️ \(function) \((file as NSString).lastPathComponent):\(line) saw changed value: \(newValue)")
+                if let debuggingDescription = self as? OUIViewDebuggingDescription {
+                    print("🟪⬜️ \(function) \((file as NSString).lastPathComponent):\(line) \(debuggingDescription.viewDebuggingDescription) saw changed value: \(newValue)")
+                } else {
+                    print("🟪⬜️ \(function) \((file as NSString).lastPathComponent):\(line) saw changed value: \(newValue)")
+                }
             }
             perform(newValue)
         })

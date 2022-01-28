@@ -11,7 +11,7 @@
 	<key>g</key>
 	<real>1</real>
 	<key>name</key>
-	<string>textColor</string>
+	<string>selectedMenuItemTextColor</string>
 	<key>r</key>
 	<real>1</real>
 	<key>space</key>

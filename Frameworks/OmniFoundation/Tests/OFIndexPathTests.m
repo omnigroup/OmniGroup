@@ -1,4 +1,4 @@
-// Copyright 2013-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2022 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -23,6 +23,10 @@ RCS_ID("$Id$");
     OFIndexPath *path = [OFIndexPath emptyIndexPath];
     XCTAssertEqual([path length], 0UL, @"should be have length of 0");
     XCTAssertEqualObjects([path description], @"", @"should have empty description");
+
+    [path enumerateRangesUsingBlock:^(NSRange range, BOOL *stop) {
+        XCTAssertFalse(YES, @"block shouldn't get called");
+    }];
 }
 
 - (void)testSingleIndex;
@@ -30,6 +34,11 @@ RCS_ID("$Id$");
     OFIndexPath *path = [OFIndexPath indexPathWithIndex:42];
     XCTAssertEqual([path length], 1UL, @"should be have length of 1");
     XCTAssertEqualObjects([path description], @"42", @"should have single component description");
+
+    [path enumerateRangesUsingBlock:^(NSRange range, BOOL *stop) {
+        XCTAssertEqual(range.location, 42, @"should have single range");
+        XCTAssertEqual(range.length, 1, @"should have single range");
+    }];
 }
 
 - (void)testMultipleIndexes;
@@ -40,6 +49,11 @@ RCS_ID("$Id$");
     
     XCTAssertEqual([path length], 3UL, @"should be have length of 3");
     XCTAssertEqualObjects([path description], @"1.2.3", @"should have multiple component description");
+
+    [path enumerateRangesUsingBlock:^(NSRange range, BOOL *stop) {
+        XCTAssertEqual(range.location, 1, @"should have single range");
+        XCTAssertEqual(range.length, 3, @"should have single range");
+    }];
 }
 
 - (void)testRemoveLastIndex;
@@ -51,6 +65,11 @@ RCS_ID("$Id$");
     
     XCTAssertEqual([path length], 2UL, @"should be have length of 2");
     XCTAssertEqualObjects([path description], @"1.2", @"should have multiple component description");
+
+    [path enumerateRangesUsingBlock:^(NSRange range, BOOL *stop) {
+        XCTAssertEqual(range.location, 1, @"should have single range");
+        XCTAssertEqual(range.length, 2, @"should have single range");
+    }];
 }
 
 - (void)testGetIndexes;

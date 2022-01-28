@@ -96,10 +96,11 @@ static OFPreference *showFileExtensionsPreference;
     } else {
         window = view.window;
     }
-    if (window == nil)
+    UIWindowScene *windowScene = window.windowScene;
+    if (!windowScene)
         return nil;
 
-    OUIDocumentSceneDelegate *delegate = OB_CHECKED_CAST(OUIDocumentSceneDelegate, window.windowScene.delegate);
+    OUIDocumentSceneDelegate *delegate = OB_CHECKED_CAST(OUIDocumentSceneDelegate, windowScene.delegate);
     assert(delegate != nil);
     assert([delegate isKindOfClass:[OUIDocumentSceneDelegate class]]);
     return delegate;

@@ -1,4 +1,4 @@
-// Copyright 2016-2017 Omni Development. Inc. All rights reserved.
+// Copyright 2016-2022 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -67,9 +67,9 @@ static BOOL validateStorage(CFDataRef keymaterial, NSString *keyLabel, NSData *a
     NSData *readData = readFromKeychain(keyLabel, applicationLabel, &readError);
     if (readData == nil) {
         if (outError != NULL) {
-            NSDictionary *userInfo = @{ NSLocalizedDescriptionKey : description,
-                                       NSUnderlyingErrorKey : readError,
-                                        };
+            NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithObject:description forKey:NSLocalizedDescriptionKey];
+            if (readError != nil)
+                [userInfo setObject:readError forKey:NSUnderlyingErrorKey];
             *outError = [NSError errorWithDomain:OFSErrorDomain code:OFSEncryptionStorageError userInfo:userInfo];
         }
         return NO;

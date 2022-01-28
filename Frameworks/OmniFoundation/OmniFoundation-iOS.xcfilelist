@@ -20,6 +20,7 @@ Crypto/OFRFC3211Wrap.m
 Crypto/OFSymmetricKeywrap.m
 Crypto/OF_CTR_CBCMAC_Util.c
 DataStructures.subproj/AnyObservableValue.swift
+DataStructures.subproj/ComputedObservableValue.swift
 DataStructures.subproj/Heap.swift
 DataStructures.subproj/KeyPathBox.swift
 DataStructures.subproj/OFBijection.m
@@ -84,6 +85,7 @@ OFCancelErrorRecovery.m
 OFCharacterScanner.m
 OFDiagnostics.swift
 OFErrorRecovery.m
+OFErrorRecoveryType.m
 OFErrors.m
 OFGeometry.m
 OFHTTPHeaderDictionary.m

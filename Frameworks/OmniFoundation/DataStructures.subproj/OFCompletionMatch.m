@@ -1,4 +1,4 @@
-// Copyright 2007-2021 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2022 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -314,8 +314,8 @@ const OFCompletionMatchComparator OFDefaultCompletionMatchComparator = ^(OFCompl
     
     NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc] initWithString:self.string attributes:textAttributes];
     
-    [_characterIndexPath enumerateIndexesUsingBlock:^(NSUInteger index, BOOL *stop) {
-        [attributedString addAttributes:matchAttributes range:NSMakeRange(index, 1)];
+    [_characterIndexPath enumerateRangesUsingBlock:^(NSRange range, BOOL *stop) {
+        [attributedString addAttributes:matchAttributes range:range];
     }];
     
     return [attributedString autorelease];

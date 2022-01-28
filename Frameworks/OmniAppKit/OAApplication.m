@@ -1,4 +1,4 @@
-// Copyright 1997-2021 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2022 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -27,10 +27,9 @@
 #import <OmniAppKit/OAPreferenceController.h>
 #import <OmniAppKit/OAWebPageViewer.h>
 
-RCS_ID("$Id$")
-
 NSString * const OAFlagsChangedNotification = @"OAFlagsChangedNotification";
 NSString * const OAFlagsChangedQueuedNotification = @"OAFlagsChangedNotification (Queued)";
+NSString * const OAFlagsChangedEventReceivedNotification = @"OAFlagsChangedEventReceivedNotification";
 
 static NSEventModifierFlags launchModifierFlags;
 static BOOL OATargetSelection;
@@ -108,94 +107,21 @@ static NSArray *overrideWindows = nil;
     return [super windows];
 }
 
-#ifdef CustomScrollWheelHandling
-
-#define MAXIMUM_LINE_FACTOR 12.0
-#define PAGE_FACTOR MAXIMUM_LINE_FACTOR * 2.0 * 2.0 * 2.0
-#define ACCELERATION 2.0
-#define MAX_SCALE_SETTINGS 12
-
-static struct {
-    float targetScrollFactor;
-    float timeSinceLastScroll;
-} mouseScaling[MAX_SCALE_SETTINGS] = {
-    {1.0, 0.0}
-};
-
-static void OATargetScrollFactorReadFromDefaults(void)
-{
-    NSArray *values;
-    unsigned int settingIndex, valueCount;
-    NSString *defaultsKey;
-
-    defaultsKey = @"OAScrollWheelTargetScrollFactor";
-    values = [[NSUserDefaults standardUserDefaults] arrayForKey:defaultsKey];
-    if (values == nil)
-        return;
-    valueCount = [values count];
-    for (settingIndex = 0; settingIndex < MAX_SCALE_SETTINGS; settingIndex++) {
-        unsigned int factorValueIndex;
-        float factor, cutoff;
-
-        factorValueIndex = settingIndex * 2;
-        factor = factorValueIndex < valueCount ? [[values objectAtIndex:factorValueIndex] floatValue] : 0.0;
-        cutoff = factorValueIndex + 1 < valueCount ? (1.0 / [[values objectAtIndex:factorValueIndex + 1] floatValue]) : 0.0;
-        mouseScaling[settingIndex].targetScrollFactor = factor;
-        mouseScaling[settingIndex].timeSinceLastScroll = cutoff;
-    }
-}
-
-static float OATargetScrollFactorForTimeInterval(NSTimeInterval timeSinceLastScroll)
-{
-    static BOOL alreadyInitialized = NO;
-    unsigned int mouseScalingIndex;
-
-    if (!alreadyInitialized) {
-        OATargetScrollFactorReadFromDefaults();
-        alreadyInitialized = YES;
-    }
-    for (mouseScalingIndex = 0;
-         mouseScalingIndex < MAX_SCALE_SETTINGS && MAX(0.0, timeSinceLastScroll) < mouseScaling[mouseScalingIndex].timeSinceLastScroll;
-         mouseScalingIndex++) {
-    }
-
-    return mouseScaling[mouseScalingIndex].targetScrollFactor;
-}
-
-static float OAScrollFactorForWheelEvent(NSEvent *event)
-{
-    static NSTimeInterval lastScrollWheelTimeInterval = 0.0;
-    static float scrollFactor = 100.0;
-    NSTimeInterval timestamp;
-    NSTimeInterval timeSinceLastScroll;
-    float targetScrollFactor;
-    
-    timestamp = [event timestamp];
-    timeSinceLastScroll = timestamp - lastScrollWheelTimeInterval;
-    targetScrollFactor = OATargetScrollFactorForTimeInterval(timeSinceLastScroll);
-    lastScrollWheelTimeInterval = timestamp;
-    if (scrollFactor == targetScrollFactor) {
-        // Do nothing
-    } else if (timeSinceLastScroll > 0.5) {
-        // If it's been more than half a second, just start over at the target factor
-        scrollFactor = targetScrollFactor;
-    } else if (scrollFactor * (1.0 / ACCELERATION) > targetScrollFactor) {
-        // Reduce our scroll factor
-        scrollFactor *= (1.0 / ACCELERATION);
-    } else if (scrollFactor * ACCELERATION < targetScrollFactor) {
-        // Increase our scroll factor
-        scrollFactor *= ACCELERATION;
-    } else {
-        // The target is near, just jump to it
-        scrollFactor = targetScrollFactor;
-    }
-    return scrollFactor;
-}
-#endif
-
 #define OASystemDefinedEvent_MouseButtonsChangedSubType 7
 
 static NSArray *flagsChangedRunLoopModes;
+
+- (NSEvent *)nextEventMatchingMask:(NSEventMask)mask untilDate:(NSDate *)expiration inMode:(NSRunLoopMode)mode dequeue:(BOOL)deqFlag;
+{
+    NSEvent *event = [super nextEventMatchingMask:mask untilDate:expiration inMode:mode dequeue:deqFlag];
+
+    if (event.type == NSEventTypeFlagsChanged) {
+        // This allows handling flags changed during tracking loops (like mousing through the menus).
+        [[NSNotificationCenter defaultCenter] postNotificationName:OAFlagsChangedEventReceivedNotification object:event];
+    }
+
+    return event;
+}
 
 - (void)sendEvent:(NSEvent *)event;
 {

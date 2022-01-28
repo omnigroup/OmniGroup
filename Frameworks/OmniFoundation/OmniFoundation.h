@@ -1,4 +1,4 @@
-// Copyright 1997-2020 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2022 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -35,6 +35,7 @@
 #import <OmniFoundation/OFEnumNameTable.h>
 #import <OmniFoundation/OFEnumNameTable-OFFlagMask.h>
 #import <OmniFoundation/OFErrorRecovery.h>
+#import <OmniFoundation/OFErrorRecoveryType.h>
 #import <OmniFoundation/OFErrors.h>
 #import <OmniFoundation/OFExtent.h>
 #import <OmniFoundation/OFFileEdit.h>

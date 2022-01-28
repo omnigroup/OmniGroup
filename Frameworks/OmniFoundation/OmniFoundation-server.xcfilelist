@@ -118,6 +118,7 @@ OFController.m
 OFDiagnostics.swift
 OFDigestUtilities.m
 OFErrorRecovery.m
+OFErrorRecoveryType.m
 OFErrors.m
 OFFilterProcess.m
 OFGeometry.m

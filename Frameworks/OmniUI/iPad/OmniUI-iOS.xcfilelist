@@ -1,4 +1,5 @@
 $(SRCROOT)/OmniUI.xcodeproj/project.pbxproj
+../Common/EnvironmentValues.swift
 ../Common/ManualObjectWillChangeManagingObservableObject.swift
 ../Common/ViewDebugging.swift
 ../iOS/UINavigationController-OUIExtensions.m

@@ -2,26 +2,26 @@
     // Consult OUIKeyCommands for formatting options
 
     "text" = (
-        ("up","moveUpAtTop:"),
-        ("^p","moveUpAtTop:"),
-        ("down","moveDownAtBottom:"),
-        ("^n","moveDownAtBottom:"),
-        ("right","moveRightAtEnd:"),
-        ("^f","moveRightAtEnd:"),
-        ("left","moveLeftAtBeginning:"),
-        ("^b","moveLeftAtBeginning:"),
+        ("up",true,"moveUpAtTop:"),
+        ("^p",false,"moveUpAtTop:"),
+        ("down",true,"moveDownAtBottom:"),
+        ("^n",false,"moveDownAtBottom:"),
+        ("right",true,"moveRightAtEnd:"),
+        ("^f",false,"moveRightAtEnd:"),
+        ("left",true,"moveLeftAtBeginning:"),
+        ("^b",false,"moveLeftAtBeginning:"),
         
         // 14357300: TextKit: Emacs key bindings only half implemented and sometimes buggy
-        ("^a","moveToBeginningOfParagraph:"),
-        ("$^a","moveToBeginningOfParagraphAndModifySelection:"),
-        ("^e","moveToEndOfParagraph:"),
-        ("$^e","moveToEndOfParagraphAndModifySelection:"),
+        ("^a",false,"moveToBeginningOfParagraph:"),
+        ("$^a",false,"moveToBeginningOfParagraphAndModifySelection:"),
+        ("^e",false,"moveToEndOfParagraph:"),
+        ("$^e",false,"moveToEndOfParagraphAndModifySelection:"),
     );
 	
 	"webView" = (
-		("@r","reload:", "reload"),
-		("@[","goBack:", "goBack"),
-		("@]","goForward:", "goForward"),
-		("@.","stopLoading:", "stopLoading"),
+		("@r",false,"reload:", "reload"),
+		("@[",false,"goBack:", "goBack"),
+		("@]",false,"goForward:", "goForward"),
+		("@.",false,"stopLoading:", "stopLoading"),
 	);
 }

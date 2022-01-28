@@ -213,7 +213,7 @@ static inline BOOL _ODOIsEqual(_Nullable id value1, _Nullable id value2)
 @class ODORelationship;
 @class NSMapTable<KeyType, ObjectType>;
 
-void ODOObjectPrepareObjectsForAwakeFromFetch(ODOEntity *entity, NSArray <ODOObject *> *objects, NSMapTable<ODOEntity *, NSMutableArray <ODOObject *> *> *entityToPrefetchObjects) OB_HIDDEN;
+void ODOObjectPrepareObjectsForAwakeFromFetch(ODOEntity *entity, NSArray <ODOObject *> *objects,  NSMapTable<ODOEntity *, NSMutableArray <ODOObject *> *> * _Nullable entityToPrefetchObjects) OB_HIDDEN;
 
 void ODOObjectPerformAwakeFromFetchWithoutRegisteringEdits(ODOObject *self) OB_HIDDEN;
 void ODOObjectFinalizeAwakeFromFetch(ODOObject *self) OB_HIDDEN;

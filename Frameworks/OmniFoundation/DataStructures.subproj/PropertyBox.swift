@@ -14,7 +14,10 @@ public class PropertyBox<ValueType> : AnyObservableValue<ValueType> {
     // Since this is sometimes used to lift a property out of a parent object to make it individually observable, the owner can no longer use willSet/didSet on the property itself.
     private let willSet: ((PropertyBox, ValueType) -> Void)?
     private let didSet: ((PropertyBox, ValueType) -> Void)?
+    private let _acceptsReentrantValueSets: Bool
 
+    override var acceptsReentrantValueSets: Bool { return _acceptsReentrantValueSets }
+    
     override func willSetValue(newValue: ValueType) {
         willSet?(self, newValue)
     }
@@ -23,9 +26,10 @@ public class PropertyBox<ValueType> : AnyObservableValue<ValueType> {
         didSet?(self, value)
     }
     
-    public required init(value: ValueType, willSet: ((PropertyBox, ValueType) -> Void)? = nil, didSet: ((PropertyBox, ValueType) -> Void)? = nil) {
+    public required init(value: ValueType, acceptsReentrantValueSets: Bool = false, willSet: ((PropertyBox, ValueType) -> Void)? = nil, didSet: ((PropertyBox, ValueType) -> Void)? = nil) {
         self.willSet = willSet
         self.didSet = didSet
+        self._acceptsReentrantValueSets = acceptsReentrantValueSets
         
         super.init(initialValue: value)        
     }

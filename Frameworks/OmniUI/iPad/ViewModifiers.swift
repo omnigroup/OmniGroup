@@ -8,28 +8,6 @@
 import Foundation
 import SwiftUI
 
-
-// Helpers to ensure that we don't put things in the environment that are non-comparable and generate spurious body evaluations of Views
-
-extension View {
-    @inlinable
-    public func equatableEnvironment<Value : Equatable>(_ keyPath: WritableKeyPath<EnvironmentValues, Value>, _ value: Value) -> some View {
-        self.environment(keyPath, value)
-    }
-    @inlinable
-    public func equatableEnvironment<Value : Equatable>(_ keyPath: WritableKeyPath<EnvironmentValues, Value?>, _ value: Value?) -> some View {
-        self.environment(keyPath, value)
-    }
-    @inlinable
-    public func objectEnvironment<Value : AnyObject>(_ keyPath: WritableKeyPath<EnvironmentValues, Value>, _ value: Value) -> some View {
-        self.environment(keyPath, value)
-    }
-    @inlinable
-    public func objectEnvironment<Value : AnyObject>(_ keyPath: WritableKeyPath<EnvironmentValues, Value?>, _ value: Value?) -> some View {
-        self.environment(keyPath, value)
-    }
-}
-
 /*
  Use these modifiers with caution! Wherever they are used, they are equivalent to an inline if-else. This means in a situation like this:
  

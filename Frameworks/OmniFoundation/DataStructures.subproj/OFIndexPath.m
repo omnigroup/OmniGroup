@@ -1,4 +1,4 @@
-// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2022 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -108,6 +108,41 @@ static void _getIndexes(OFIndexPath *indexPath, NSUInteger *indexes, NSUInteger 
         }
     }
 }
+
+static NSUInteger _getRanges(OFIndexPath *indexPath, NSRange *ranges, NSUInteger length) {
+    OBPRECONDITION(indexPath->_length == length);
+
+    NSUInteger slot = length;
+    NSRange previousRange = NSMakeRange(NSUIntegerMax, 0);
+
+    while (indexPath->_length) {
+        NSUInteger index = indexPath->_index;
+        if (previousRange.location == index + 1) {
+            previousRange = NSMakeRange(index, previousRange.length + 1);
+            ranges[slot] = previousRange;
+        } else {
+            previousRange = NSMakeRange(index, 1);
+            ranges[--slot] = previousRange;
+        }
+        indexPath = indexPath->_parent;
+    }
+    return slot;
+}
+
+- (void)enumerateRangesUsingBlock:(void (^)(NSRange range, BOOL *stop))block;
+{
+    NSRange ranges[_length];
+    NSUInteger i = _getRanges(self, ranges, _length);
+
+    for (; i < _length; i++) {
+        BOOL stop = NO;
+        block(ranges[i], &stop);
+        if (stop) {
+            break;
+        }
+    }
+}
+
 
 - (NSComparisonResult)_compare:(OFIndexPath *)otherObject orderParentsFirst:(BOOL)shouldOrderParentsFirst;
 {
