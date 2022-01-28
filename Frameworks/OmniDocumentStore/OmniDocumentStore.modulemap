@@ -1,9 +1,0 @@
-framework module OmniDocumentStore {
-    umbrella header "OmniDocumentStore.h"
-
-    // This should be imported only by subclasses
-    exclude header "ODSScope-Subclass.h"
-
-    export *
-    module * { export * }
-}
