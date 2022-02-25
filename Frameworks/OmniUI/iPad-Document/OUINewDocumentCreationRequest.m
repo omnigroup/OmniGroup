@@ -1,4 +1,4 @@
-// Copyright 2010-2021 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2022 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -80,7 +80,7 @@ static NSString *PathExtensionForFileType(NSString *fileType, BOOL *outIsPackage
         viewController.templateDelegate = self;
         viewController.wantsLanguageButton = [internalTemplateDelegate wantsLanguageButton];
         // TODO: fix to support animations
-        _navigationController = [[UINavigationController alloc] initWithRootViewController:viewController];
+        _navigationController = [[OUINavigationController alloc] initWithRootViewController:viewController];
         [_parentViewController presentViewController:_navigationController animated:YES completion:nil];
         
         return;

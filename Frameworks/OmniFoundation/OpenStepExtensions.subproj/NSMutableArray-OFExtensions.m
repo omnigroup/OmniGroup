@@ -1,4 +1,4 @@
-// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2022 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -238,6 +238,49 @@ static NSComparisonResult doCompareOnAttribute(id a, id b, void *ctxt)
     sortContext.compareAttributes = comparisonSelector;
 
     [self sortUsingFunction:doCompareOnAttribute context:&sortContext];
+}
+
+- (void)insertOrMoveObjectsFromArray:(NSArray *)anArray toIndex:(NSUInteger)index;
+{
+    if (index == 0) {
+            [self removeObjectsInArray:anArray];
+            [self insertObjectsFromArray:anArray atIndex:0];
+    } else if (index >= self.count) {
+        [self removeObjectsInArray:anArray];
+        [self addObjectsFromArray:anArray];
+    } else {
+        NSSet *movingSet = [NSSet setWithArray:anArray];
+        id stationaryReferenceObject = self[index];
+        
+        NSUInteger effectiveInsertionIndex = index;
+        BOOL needsInsertAfter = NO;
+        while ([movingSet containsObject:stationaryReferenceObject] && effectiveInsertionIndex > 0) {
+            needsInsertAfter = YES;
+            effectiveInsertionIndex--;
+            stationaryReferenceObject = self[effectiveInsertionIndex];
+        }
+        
+        if ([movingSet containsObject:stationaryReferenceObject]) {
+            needsInsertAfter = NO;
+            effectiveInsertionIndex = index + 1;
+            while ([movingSet containsObject:stationaryReferenceObject] && effectiveInsertionIndex <= self.count) {
+                effectiveInsertionIndex++;
+                stationaryReferenceObject = self[effectiveInsertionIndex];
+            }
+        }
+        
+        if ([movingSet containsObject:stationaryReferenceObject]) {
+            [self removeAllObjects];
+            [self addObjectsFromArray:anArray];
+        } else {
+            [self removeObjectsInArray:anArray];
+            NSUInteger insertionIndex = [self indexOfObject:stationaryReferenceObject];
+            if (needsInsertAfter) {
+                index++;
+            }
+            [self insertObjectsFromArray:anArray atIndex:insertionIndex];
+        }
+    }
 }
 
 @end

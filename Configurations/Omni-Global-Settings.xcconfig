@@ -4,6 +4,8 @@
 
 // Common settings
 
+OMNI_DEVELOPMENT_TEAM = 34YW5XSRB7
+
 OMNI_BUILD_STRINGS_INPUT_MISSING=warn
 
 // NS_BUILD_32_LIKE_64 makes CG and NS geometry types be the same. Mostly doesn't matter on iPhone, but this also makes NSInteger types be defined based on 'long' consistently, which avoids conflicting warnings from clang + llvm 2.7 about printf format checking

@@ -1,4 +1,4 @@
-// Copyright 2008-2021 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2022 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,6 +12,11 @@
 #import <OmniDataObjects/ODOObjectSnapshot.h>
 #import <OmniDataObjects/ODORelationship.h>
 #import <OmniDataObjects/NSPredicate-ODOExtensions.h>
+
+#ifdef DEBUG
+// Required for a helper method used for assertions.
+#import <OmniFoundation/NSPredicate-OFExtensions.h>
+#endif
 
 #import "ODODatabase-Internal.h"
 #import "ODOEntity-SQL.h"
@@ -823,8 +828,22 @@ NSMutableArray <__kindof ODOObject *> * _Nullable ODOFetchObjects(ODOEditingCont
     // Help make sure we don't have support for *fetching* a predicate that we'll evaluate differently in memory.
     // This won't detect the inverse case (SQL doesn't match but in memory doesn't).
     if (predicate != nil) {
-        for (ODOObject *object in ctx.results) {
-            OBPOSTCONDITION([predicate evaluateWithObject:object]); // Might have a predicate supplying a relationship's identifier where it should supply the actual object
+        NSMutableSet *keys = [NSMutableSet set];
+        [predicate addReferencedKeys:keys];
+        
+        BOOL canPerformPostconditionCheck = YES;
+        for (NSString *key in keys) {
+            ODOAttribute *attribute = [entity attributesByName][key];
+            if ([attribute valueClass] == [NSDate class] && attribute.type == ODOAttributeTypeXMLDateTime) {
+                // The attribute value is an NSDate, but it's stored as an XML string. The fetch query can't be applied to the resulting objects, because the fetch query expects a string value, but the object will supply a date value instead.
+                canPerformPostconditionCheck = NO;
+            }
+        }
+        
+        if (canPerformPostconditionCheck) {
+            for (ODOObject *object in ctx.results) {
+                OBPOSTCONDITION([predicate evaluateWithObject:object]); // Might have a predicate supplying a relationship's identifier where it should supply the actual object
+            }
         }
     }
 #endif

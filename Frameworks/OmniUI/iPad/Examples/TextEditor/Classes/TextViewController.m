@@ -1,4 +1,4 @@
-// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2022 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -63,13 +63,6 @@ RCS_ID("$Id$");
     }
     
     [_scalingTextStorage removeLayoutManager:_layoutManager];
-    
-    [_scalingTextStorage release];
-    [_textContainer release];
-    [_layoutManager release];
-    
-    [_documentNavigationItem release];
-    [super dealloc];
 }
 
 - (OUITextView *)textView;
@@ -94,7 +87,6 @@ RCS_ID("$Id$");
     _receivedDocumentDidClose = YES;
 
     // Break retain cycle.
-    [_documentNavigationItem release];
     _documentNavigationItem = nil;
 }
 
@@ -144,8 +136,7 @@ RCS_ID("$Id$");
     
     NSTextStorage *underlyingTextStorage = [[NSTextStorage alloc] initWithAttributedString:document.text];
     _scalingTextStorage = [[OUIScalingTextStorage alloc] initWithUnderlyingTextStorage:underlyingTextStorage scale:_scale];
-    [underlyingTextStorage release];
-    
+
     _layoutManager = [[NSLayoutManager alloc] init];
     [_scalingTextStorage addLayoutManager:_layoutManager];
     
@@ -160,8 +151,6 @@ RCS_ID("$Id$");
     
     self.view = textView;
     
-    [textView release];
-    
     document.undoManager = textView.undoManager;
 }
 
@@ -173,7 +162,7 @@ RCS_ID("$Id$");
         // Don't steal the toolbar items from any possibly open document
         if (!self.forPreviewGeneration) {
             OUIDocumentSceneDelegate *sceneDelegate = self.sceneDelegate;
-            OUIUndoBarButtonItem *undoItem = [[[OUIUndoBarButtonItem alloc] init] autorelease];
+            OUIUndoBarButtonItem *undoItem = [[OUIUndoBarButtonItem alloc] init];
             undoItem.undoBarButtonItemTarget = sceneDelegate;
 
             // Listed left to right.
@@ -186,10 +175,10 @@ RCS_ID("$Id$");
             
             // Listed right to left
             self.navigationItem.rightBarButtonItems = @[
-                                                        [[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCamera target:self action:@selector(attachImage:)] autorelease],
-                                                        sceneDelegate.infoBarButtonItem,
-                                                        [[[UIBarButtonItem alloc] initWithImage:[UIImage actionsImage] style:UIBarButtonItemStylePlain target:self action:@selector(_changeDocumentType:)] autorelease],
-                                                        ];
+                [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCamera target:self action:@selector(attachImage:)],
+                sceneDelegate.infoBarButtonItem,
+                [[UIBarButtonItem alloc] initWithImage:[UIImage actionsImage] style:UIBarButtonItemStylePlain target:self action:@selector(_changeDocumentType:)],
+            ];
             
         }
         
@@ -209,8 +198,7 @@ RCS_ID("$Id$");
     // TODO: Just queue an autosave here and make the document vend a text storage.
     NSAttributedString *text = [[NSAttributedString alloc] initWithAttributedString:[textView.textStorage underlyingTextStorage]];
     _weak_document.text = text;
-    [text release];
-    
+
     [self _scrollTextSelectionToVisibleWithAnimation:YES];
 }
 
@@ -232,7 +220,6 @@ RCS_ID("$Id$");
     presentation.permittedArrowDirections = UIPopoverArrowDirectionAny;
 
     [self presentViewController:picker animated:YES completion:nil];
-    [picker release];
 }
 
 #pragma mark - UIImagePickerControllerDelegate
@@ -250,7 +237,7 @@ RCS_ID("$Id$");
     if ([rep getBytes:[data mutableBytes] fromOffset:0 length:(NSUInteger)[rep size] error:&error] == 0) {
         NSLog(@"error getting asset data %@", [error toPropertyList]);
     } else {        
-        NSTextAttachment *attachment = [[[NSTextAttachment alloc] initWithData:data ofType:rep.UTI] autorelease];
+        NSTextAttachment *attachment = [[NSTextAttachment alloc] initWithData:data ofType:rep.UTI];
         
         OUITextView *textView = self.textView;
         NSRange selectedTextRange = textView.selectedRange;
@@ -263,8 +250,7 @@ RCS_ID("$Id$");
         attributes[NSAttachmentAttributeName] = attachment;
         
         NSAttributedString *attachmentAttributedString = [[NSAttributedString alloc] initWithString:[NSAttributedString attachmentString] attributes:attributes];
-        [attributes release];
-        
+
         // This will change the selection, possibly putting the old selection out of bounds. Don't depend on UITextView handling this...
         BOOL didChangeSelection = NO;
         if (selectedTextRange.length > 1/*[attachmentAttributedString length]*/) {
@@ -277,7 +263,6 @@ RCS_ID("$Id$");
         [textStorage beginEditing];
         [textStorage replaceCharactersInRange:selectedTextRange withAttributedString:attachmentAttributedString];
         [textStorage endEditing];
-        [attachmentAttributedString release];
         
         if (!didChangeSelection) {
             // Selection is growing, so we waited until now to change it.
@@ -291,7 +276,7 @@ RCS_ID("$Id$");
 
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info;
 {
-    ALAssetsLibrary *library = [[[ALAssetsLibrary alloc] init] autorelease];
+    ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
     [library assetForURL:[info objectForKey:UIImagePickerControllerReferenceURL]
              resultBlock:^(ALAsset *asset){
                  // This get called asynchronously (possibly after a permissions question to the user).

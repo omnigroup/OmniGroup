@@ -2,6 +2,7 @@ $(SRCROOT)/OmniAppKit.xcodeproj/project.pbxproj
 Appearance/OAColorCatalog.m
 Colors/OAColor-Archiving.m
 Colors/OAColor.m
+OAImage.m
 OAMoreInfoErrorRecovery.m
 OAStrings.m
 OpenStepExtensions.subproj/NSAttributedString-OAExtensions.m

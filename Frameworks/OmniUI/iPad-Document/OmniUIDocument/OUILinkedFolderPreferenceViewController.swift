@@ -1,4 +1,4 @@
-// Copyright 2020 Omni Development, Inc. All rights reserved.
+// Copyright 2020-2022 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -53,7 +53,7 @@ struct cachedFolder {
     }
 
     @IBAction func addLinkedFolder(_ sender: Any) {
-        let picker = UIDocumentPickerViewController(documentTypes: [kUTTypeFolder as String], in: .open)
+        let picker = UIDocumentPickerViewController(forOpeningContentTypes: [.folder])
         picker.allowsMultipleSelection = true // Without this, we don't get a "Open" option
         picker.delegate = self
 

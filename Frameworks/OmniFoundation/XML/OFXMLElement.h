@@ -1,4 +1,4 @@
-// Copyright 2003-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2022 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -31,17 +31,16 @@ typedef void (^OFXMLElementApplierBlock)(OFXMLElement *element);
 @property(nonatomic,readonly) NSString *name;
 
 // 1 NSString, or any number of OFXMLElements or OFXMLUnparsedElements
-@property(nullable,nonatomic,readonly) NSArray *children;
+@property(nullable,nonatomic,copy) NSArray *children;
 @property(nonatomic,readonly) NSUInteger childrenCount;
 - (id)childAtIndex:(NSUInteger)childIndex;
-@property(nonatomic,readonly) id lastChild;
+@property(nullable,nonatomic,readonly) id lastChild;
 - (NSUInteger)indexOfChildIdenticalTo:(id)child;
 - (void)insertChild:(id)child atIndex:(NSUInteger)childIndex;
 - (void)appendChild:(id) child;  // Either a OFXMLElement or an NSString
 - (void)removeChild:(id) child;
 - (void)removeChildAtIndex:(NSUInteger)childIndex;
 - (void)removeAllChildren;
-- (void)setChildren:(NSArray *)children;
 - (void)sortChildrenUsingFunction:(NSComparisonResult (*)(id, id, void *))comparator context:(void *)context;
 - (nullable OFXMLElement *)firstChildNamed:(NSString *)childName;
 - (OFXMLElement *)firstChildAtPath:(NSString *)path;

@@ -1,4 +1,4 @@
-// Copyright 2010-2021 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2022 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -339,7 +339,7 @@ NS_ASSUME_NONNULL_BEGIN
                 NSString *fileUTI = OFUTIForFileExtensionPreferringNative(fileURL.pathExtension, nil);
                 iconImage = [_exporter exportIconForUTI:fileUTI];
                 
-                label = [_exporter exportLabelForUTI:fileType];
+                label = [_exporter exportLabelForUTI:fileUTI];
                 if (label == nil) {
                     label = [_exporter exportLabelForUTI:fileUTI];
                 }

@@ -1,4 +1,4 @@
-// Copyright 2019-2021 Omni Development, Inc. All rights reserved.
+// Copyright 2019-2022 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -1023,7 +1023,12 @@ static OFPreference *showFileExtensionsPreference;
         [window setFrame:[[UIScreen mainScreen] bounds]];
     }
 
-    _documentBrowser = [[OUIDocumentBrowserViewController alloc] initForOpeningFilesWithContentTypes:appController.viewableFileTypes];
+    NSArray <UTType *> *viewableTypes = [appController.viewableFileTypes arrayByPerformingBlock:^id _Nonnull(NSString *identifier) {
+        UTType *fileType = [UTType typeWithIdentifier:identifier];
+        OBASSERT_NOTNULL(fileType, "No UTType for %@", identifier);
+        return fileType;
+    }];
+    _documentBrowser = [[OUIDocumentBrowserViewController alloc] initForOpeningContentTypes:viewableTypes];
     _documentBrowser.delegate = self;
     _documentBrowser.shouldShowFileExtensions = showFileExtensionsPreference.boolValue;
 

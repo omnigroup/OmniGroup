@@ -790,11 +790,11 @@ static BOOL _rangeIsInsertionPoint(OUITextView  *self, UITextRange *r)
     // Listen for the range that actually changed and perform the action
     __block BOOL notificationFired = NO;
     __block NSUInteger editedMask = 0;
-    __block NSRange editedRange = NSMakeRange(NSNotFound, 0);
+    //__block NSRange editedRange = NSMakeRange(NSNotFound, 0);
     __block NSInteger changeInLength = 0;
     id observer = [[NSNotificationCenter defaultCenter] addObserverForName:NSTextStorageDidProcessEditingNotification object:textStorage queue:nil/*synchronous*/ usingBlock:^(NSNotification *note){
         editedMask = textStorage.editedMask;
-        editedRange = textStorage.editedRange;
+        //editedRange = textStorage.editedRange;
         changeInLength = textStorage.changeInLength;
         notificationFired = YES;
     }];
@@ -811,7 +811,7 @@ static BOOL _rangeIsInsertionPoint(OUITextView  *self, UITextRange *r)
         return;
     }
 
-    OBASSERT(changeInLength == 0);
+    OBASSERT(changeInLength == 0); OB_UNUSED_VALUE(changeInLength);
     
     id <OUITextViewDelegate> delegate = self.delegate;
     if ([delegate respondsToSelector:@selector(textViewDidChange:)])

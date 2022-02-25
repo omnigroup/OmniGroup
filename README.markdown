@@ -28,6 +28,8 @@ We place our project-wide configuration options in xcconfig files, under `OmniGr
 Building
 --------
 
-The Workspaces directory contains a couple sample workspace that can be built from Xcode.
+- Edit `Configurations/Omni-Global-Settings.xcconfig` and set `OMNI_DEVELOPMENT_TEAM` to your team ID.
+
+- The Workspaces directory contains a workspace with a few targets, and `Frameworks/OmniUI/iPad/Examples/TextEditor/TextEditor.xcodeproj` has a sample app.
 
 Enjoy!

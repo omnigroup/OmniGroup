@@ -1,4 +1,4 @@
-// Copyright 2003-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2022 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,6 +10,7 @@
 #endif
 
 #import <OmniBase/assertions.h>
+#import <OmniFoundation/OFGeometry.h>
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 extern void OQSetPatternColorReferencePoint(CGPoint point, NSView * _Nonnull view);
@@ -109,9 +110,19 @@ static inline void OQFlipVerticallyInRect(CGContextRef ctx, CGRect rect)
     CGContextConcatCTM(ctx, (CGAffineTransform){ 1, 0, 0, -1, 0, 2 * rect.origin.y + rect.size.height });
 }
 
-extern CGRect OQCenteredIntegralRectInRect(CGRect enclosingRect, CGSize toCenter);
-extern CGRect OQLargestCenteredIntegralRectInRectWithAspectRatioAsSize(CGRect enclosingRect, CGSize toCenter);
-extern CGRect OQCenterAndFitIntegralRectInRectWithSameAspectRatioAsSize(CGRect enclosingRect, CGSize toCenter);
+// Moved to OFGeometry
+static inline CGRect OQCenteredIntegralRectInRect(CGRect enclosingRect, CGSize toCenter)
+{
+    return OFCenteredIntegralRectInRect(enclosingRect, toCenter);
+}
+static inline CGRect OQLargestCenteredIntegralRectInRectWithAspectRatioAsSize(CGRect enclosingRect, CGSize toCenter)
+{
+    return OFLargestCenteredIntegralRectInRectWithAspectRatioAsSize(enclosingRect, toCenter);
+}
+static inline CGRect OQCenterAndFitIntegralRectInRectWithSameAspectRatioAsSize(CGRect enclosingRect, CGSize toCenter)
+{
+    return OFCenterAndFitIntegralRectInRectWithSameAspectRatioAsSize(enclosingRect, toCenter);
+}
 
 #if TARGET_OS_IPHONE
 extern void OQDrawImageCenteredInRect(CGContextRef ctx, UIImage *image, CGRect rect);

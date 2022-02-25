@@ -1,4 +1,4 @@
-// Copyright 2008-2020 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2022 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,8 +12,7 @@
 #include <execinfo.h>  // For backtrace()
 #include <sys/time.h>
 #include <assert.h>
-
-RCS_ID("$Id$")
+#include <os/lock.h>
 
 #if !defined(OB_BUILTIN_ATOMICS_AVAILABLE)
     #import <libkern/OSAtomic.h>
@@ -73,6 +72,10 @@ static void OBFillBacktraceBuffer(struct OBBacktraceBuffer *buf, const char *mes
     buf->type = optype;
 }
 
+static os_unfair_lock StringTableLock = OS_UNFAIR_LOCK_INIT;
+static NSMutableArray *OldTemporaryStrings = nil;
+static NSMutableArray *CurrentTemporaryStrings = nil;
+
 static struct OBBacktraceBuffer *OBAcquireBacktraceBuffer(void)
 {
     // This only works correctly under light contention.
@@ -90,11 +93,38 @@ static struct OBBacktraceBuffer *OBAcquireBacktraceBuffer(void)
         if (__builtin_expect(did_swap, 1))
             break;
     }
-    
+
+    if (slot == 0) {
+        // We've wrapped around, so clear the older generation of strings and move the current generation to be the old.
+        os_unfair_lock_lock(&StringTableLock);
+        OldTemporaryStrings = CurrentTemporaryStrings;
+        CurrentTemporaryStrings = nil;
+        os_unfair_lock_unlock(&StringTableLock);
+    }
+
     struct OBBacktraceBuffer *buf = &(backtraces[slot]);
     buf->type = OBBacktraceBuffer_Allocated;
     
     return buf;
+}
+
+const char *OBAddCopiedTemporaryString(NSString *original)
+{
+    original = [original copy];
+
+    os_unfair_lock_lock(&StringTableLock);
+    if (CurrentTemporaryStrings == nil) {
+        CurrentTemporaryStrings = [[NSMutableArray alloc] init];
+    }
+    [CurrentTemporaryStrings addObject:original];
+    os_unfair_lock_unlock(&StringTableLock);
+
+    const char *result = [original UTF8String];
+    if (result == NULL) {
+        OBASSERT_NOT_REACHED("Unable to generate UTF8String");
+        return "???";
+    }
+    return result;
 }
 
 struct OBBacktraceBuffer *OBCreateBacktraceBuffer(const char *message, OBBacktraceBufferType optype, const void *context)

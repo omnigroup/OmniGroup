@@ -1,4 +1,4 @@
-// Copyright 2021 Omni Development, Inc. All rights reserved.
+// Copyright 2021-2022 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -77,6 +77,7 @@ public extension ContentSizeCategory {
     }
 }
 
+#if os(iOS)
 public extension UIContentSizeCategory {
     @available(iOSApplicationExtension 14.0, *)
     func adjustedSize(for baselineSize: UIContentSizeCategory) -> UIContentSizeCategory {
@@ -121,3 +122,4 @@ public extension UIContentSizeCategory {
         }
     }
 }
+#endif

@@ -1,4 +1,4 @@
-// Copyright 2015-2021 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2022 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -37,6 +37,13 @@
     _fontFacesPane.title = OUIDisplayNameForFont(font, YES/*useFamilyName*/);
 
     [self.inspector pushPane:_fontFacesPane];
+}
+
+- (UIFontPickerViewControllerConfiguration *)fontPickerConfiguration;
+{
+    UIFontPickerViewControllerConfiguration *fontConfig = [[UIFontPickerViewControllerConfiguration alloc] init];
+    fontConfig.includeFaces = YES;
+    return fontConfig;
 }
 
 #pragma mark - OUIActionInspectorSlice subclass
@@ -121,9 +128,7 @@ static void _configureTextWellDisplay(OUIInspectorTextWell *textWell, OUIAbstrac
         familyPane.showFacesOfFont = nil; // shows families
         [self.inspector pushPane:familyPane];
     } else {
-        UIFontPickerViewControllerConfiguration *fontConfig = [[UIFontPickerViewControllerConfiguration alloc] init];
-        fontConfig.includeFaces = YES;
-        UIFontPickerViewController *fontPicker = [[UIFontPickerViewController alloc] initWithConfiguration:fontConfig];
+        UIFontPickerViewController *fontPicker = [[UIFontPickerViewController alloc] initWithConfiguration:self.fontPickerConfiguration];
         fontPicker.title = title;
         fontPicker.delegate = self;
         OUIFontSelection *selection = OUICollectFontSelection(self, self.appropriateObjectsForInspection);

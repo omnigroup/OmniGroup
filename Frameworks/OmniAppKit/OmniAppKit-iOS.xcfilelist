@@ -9,6 +9,7 @@ NSTextStorage-OAFixes.m
 OAColorPalette.m
 OADocumentFileTypes.swift
 OAFindPattern.m
+OAImage.m
 OAMoreInfoErrorRecovery.m
 OAStrings.m
 OpenStepExtensions.subproj/NSAttributedString-OAExtensions.m

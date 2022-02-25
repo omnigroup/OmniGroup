@@ -1,4 +1,4 @@
-// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2022 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -39,20 +39,12 @@ RCS_ID("$Id$");
     return self;
 }
 
-- (void)dealloc;
-{
-    [_text release];
-    [_viewControllerToPresent release];
-    [super dealloc];
-}
-
 @synthesize text = _text;
 - (void)setText:(NSAttributedString *)text;
 {
     if (OFISEQUAL(_text, text))
         return;
     
-    [_text release];
     _text = [text copy];
     
     // We don't support undo right now, but at least poke the UIDocument autosave timer.
@@ -71,7 +63,7 @@ RCS_ID("$Id$");
 
 - (UIViewController *)makeViewController;
 {
-    TextViewController *vc = [[[TextViewController alloc] init] autorelease];
+    TextViewController *vc = [[TextViewController alloc] init];
     vc.scale = _scale;
     return vc;
 }
@@ -100,7 +92,6 @@ RCS_ID("$Id$");
     TextViewController *vc = (TextViewController *)self.documentViewController;
     [vc documentDidClose];
 
-    [_viewControllerToPresent release];
     _viewControllerToPresent = nil;
     
     [super didClose];
@@ -108,7 +99,7 @@ RCS_ID("$Id$");
 
 + (OUIImageLocation *)placeholderPreviewImageForFileURL:(NSURL *)fileURL area:(OUIDocumentPreviewArea)area;
 {
-    return [[[OUIImageLocation alloc] initWithName:@"DocumentPreviewPlaceholder.png" bundle:[NSBundle mainBundle]] autorelease];
+    return [[OUIImageLocation alloc] initWithName:@"DocumentPreviewPlaceholder.png" bundle:[NSBundle mainBundle]];
 }
 
 #pragma mark -
@@ -131,9 +122,7 @@ RCS_ID("$Id$");
     // TODO: Make this all less RTF specific (now that NSAttributedString can do plain text, HTML, etc).
     NSLog(@"document attributes = %@", documentAttributes);
     
-    [_text release];
     _text = [attributedString copy];
-    [attributedString release];
     
     return YES;
 }

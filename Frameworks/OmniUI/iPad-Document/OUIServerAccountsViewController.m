@@ -1,4 +1,4 @@
-// Copyright 2013-2020 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2022 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,7 +15,7 @@
 #import "OUIAddCloudAccountViewController.h"
 #import "OUIDocumentSyncActivityObserver.h"
 
-RCS_ID("$Id$")
+@import UniformTypeIdentifiers;
 
 #pragma mark - Table view sections
 
@@ -472,7 +472,7 @@ static NSMutableArray *activeInstances;
     delegate.completionBlock = completionBlock;
     [activeInstances addObject:delegate];
 
-    UIDocumentPickerViewController *picker = [[UIDocumentPickerViewController alloc] initWithDocumentTypes:@[(NSString *)kUTTypeFolder] inMode:UIDocumentPickerModeOpen];
+    UIDocumentPickerViewController *picker = [[UIDocumentPickerViewController alloc] initForOpeningContentTypes:@[UTTypeFolder]];
     picker.delegate = delegate;
     picker.directoryURL = OFUserDocumentsDirectoryURL();
     picker.modalPresentationStyle = UIModalPresentationOverCurrentContext;

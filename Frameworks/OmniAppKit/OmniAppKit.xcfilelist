@@ -29,6 +29,7 @@ OADocumentFileTypes.swift
 OAFindController.m
 OAFindPattern.m
 OAFontCache.m
+OAImage.m
 OAImages.m
 OAMoreInfoErrorRecovery.m
 OAPasteboardHelper.m

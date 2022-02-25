@@ -100,6 +100,18 @@
 		1EEA8E2C1D35C93D002EF965 /* GeneratedOIDs.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EEA8E281D35C93D002EF965 /* GeneratedOIDs.m */; };
 		273257D61448B56000A26568 /* OFUTI.h in Headers */ = {isa = PBXBuildFile; fileRef = 273257D51448B56000A26568 /* OFUTI.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		273257D91448B98B00A26568 /* OFUTI.m in Sources */ = {isa = PBXBuildFile; fileRef = 273257D81448B98B00A26568 /* OFUTI.m */; };
+		2B2801F827C5646400AB0034 /* NSExpression-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B2801F227C5646300AB0034 /* NSExpression-OFExtensions.m */; };
+		2B2801F927C5646400AB0034 /* NSExpression-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B2801F227C5646300AB0034 /* NSExpression-OFExtensions.m */; };
+		2B2801FA27C5646400AB0034 /* NSExpression-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B2801F227C5646300AB0034 /* NSExpression-OFExtensions.m */; };
+		2B2801FB27C5646400AB0034 /* NSExpression-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 2B2801F727C5646400AB0034 /* NSExpression-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		2B2801FC27C5646400AB0034 /* NSExpression-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 2B2801F727C5646400AB0034 /* NSExpression-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		2B2801FD27C5646400AB0034 /* NSExpression-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 2B2801F727C5646400AB0034 /* NSExpression-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		2B28021227C5653E00AB0034 /* NSPredicate-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B28021027C5653D00AB0034 /* NSPredicate-OFExtensions.m */; };
+		2B28021327C5653E00AB0034 /* NSPredicate-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B28021027C5653D00AB0034 /* NSPredicate-OFExtensions.m */; };
+		2B28021427C5653E00AB0034 /* NSPredicate-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B28021027C5653D00AB0034 /* NSPredicate-OFExtensions.m */; };
+		2B28021527C5653E00AB0034 /* NSPredicate-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 2B28021127C5653E00AB0034 /* NSPredicate-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		2B28021627C5653E00AB0034 /* NSPredicate-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 2B28021127C5653E00AB0034 /* NSPredicate-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		2B28021727C5653E00AB0034 /* NSPredicate-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 2B28021127C5653E00AB0034 /* NSPredicate-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2BADC1F82745B1A10047DE89 /* ComputedObservableValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BADC1F72745B1A10047DE89 /* ComputedObservableValue.swift */; };
 		2BADC1F92745B1A10047DE89 /* ComputedObservableValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BADC1F72745B1A10047DE89 /* ComputedObservableValue.swift */; };
 		2BC577B82719FE0100FB2A72 /* ObservablePropertyCollator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BC577B72719FE0100FB2A72 /* ObservablePropertyCollator.swift */; };
@@ -2061,6 +2073,10 @@
 		273257D81448B98B00A26568 /* OFUTI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFUTI.m; sourceTree = "<group>"; };
 		28C3E2D1FEF0F1AAC697A12D /* OFTimeSpanFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFTimeSpanFormatter.m; sourceTree = "<group>"; };
 		28C3E2D2FEF0F1AAC697A12D /* OFTimeSpanFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFTimeSpanFormatter.h; sourceTree = "<group>"; };
+		2B2801F227C5646300AB0034 /* NSExpression-OFExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSExpression-OFExtensions.m"; sourceTree = "<group>"; };
+		2B2801F727C5646400AB0034 /* NSExpression-OFExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSExpression-OFExtensions.h"; sourceTree = "<group>"; };
+		2B28021027C5653D00AB0034 /* NSPredicate-OFExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSPredicate-OFExtensions.m"; sourceTree = "<group>"; };
+		2B28021127C5653E00AB0034 /* NSPredicate-OFExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSPredicate-OFExtensions.h"; sourceTree = "<group>"; };
 		2BADC1F72745B1A10047DE89 /* ComputedObservableValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComputedObservableValue.swift; sourceTree = "<group>"; };
 		2BC577B72719FE0100FB2A72 /* ObservablePropertyCollator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservablePropertyCollator.swift; sourceTree = "<group>"; };
 		2BC577BE271DF00200FB2A72 /* ObservableValueTransform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservableValueTransform.swift; sourceTree = "<group>"; };
@@ -3053,6 +3069,8 @@
 				00E51D12FE8AAEA611C9CC38 /* NSDictionary-OFExtensions.m */,
 				00E51D30FE8AAEA611C9CC38 /* NSException-OFExtensions.h */,
 				00E51D13FE8AAEA611C9CC38 /* NSException-OFExtensions.m */,
+				2B2801F727C5646400AB0034 /* NSExpression-OFExtensions.h */,
+				2B2801F227C5646300AB0034 /* NSExpression-OFExtensions.m */,
 				34BED7D116E124C300FCE296 /* NSFileCoordinator-OFExtensions.h */,
 				34BED7D216E124C300FCE296 /* NSFileCoordinator-OFExtensions.m */,
 				A2FF79631F71ECE20054DA38 /* NSFileHandle-OFExtensions.h */,
@@ -3092,6 +3110,8 @@
 				00E51D1DFE8AAEA611C9CC38 /* NSNumber-OFExtensions.m */,
 				00E51D3BFE8AAEA611C9CC38 /* NSObject-OFExtensions.h */,
 				00E51D1EFE8AAEA611C9CC38 /* NSObject-OFExtensions.m */,
+				2B28021127C5653E00AB0034 /* NSPredicate-OFExtensions.h */,
+				2B28021027C5653D00AB0034 /* NSPredicate-OFExtensions.m */,
 				00E51D3CFE8AAEA611C9CC38 /* NSProcessInfo-OFExtensions.h */,
 				00E51D1FFE8AAEA611C9CC38 /* NSProcessInfo-OFExtensions.m */,
 				3486599F183A9D1D00BA9994 /* NSRange-OFExtensions.h */,
@@ -4132,6 +4152,7 @@
 				34A061311EC110A60099028D /* CFPropertyList-OFExtensions.h in Headers */,
 				34A061321EC110A60099028D /* CFSet-OFExtensions.h in Headers */,
 				34A061331EC110A60099028D /* CFString-OFExtensions.h in Headers */,
+				2B28021727C5653E00AB0034 /* NSPredicate-OFExtensions.h in Headers */,
 				34A061341EC110A60099028D /* OFCFCallbacks.h in Headers */,
 				34A061351EC110A60099028D /* OFBTree.h in Headers */,
 				34A061361EC110A60099028D /* OFBundleRegistryTarget.h in Headers */,
@@ -4237,6 +4258,7 @@
 				34A0619D1EC110A60099028D /* OFMessageQueueDelegateProtocol.h in Headers */,
 				34A0619E1EC110A60099028D /* OFMessageQueuePriorityProtocol.h in Headers */,
 				34A0619F1EC110A60099028D /* OFByteProviderProtocol.h in Headers */,
+				2B2801FD27C5646400AB0034 /* NSExpression-OFExtensions.h in Headers */,
 				34A061A01EC110A60099028D /* OFObject-Queue.h in Headers */,
 				34A061A11EC110A60099028D /* OFQueueProcessor.h in Headers */,
 				34A061A21EC110A60099028D /* OFResultHolder.h in Headers */,
@@ -4437,6 +4459,7 @@
 				34F16C08194F774A00AD9C4D /* NSString-OFSimpleMatching.h in Headers */,
 				34F16B68194F6E8600AD9C4D /* OFCharacterScanner.h in Headers */,
 				34F16C02194F773800AD9C4D /* NSString-OFExtensions.h in Headers */,
+				2B28021627C5653E00AB0034 /* NSPredicate-OFExtensions.h in Headers */,
 				34F16BC9194F765600AD9C4D /* OFDateFormatConversion.h in Headers */,
 				1E498A9F1D6BC77200996D7D /* OFAEADCryptor.h in Headers */,
 				34F16C2F194F797700AD9C4D /* OFXMLString.h in Headers */,
@@ -4510,6 +4533,7 @@
 				34F16B47194F6DF000AD9C4D /* OmniFoundation.h in Headers */,
 				1E6A669F1CB47D66001CB11B /* OFCredentialChallengeDispositionProtocol.h in Headers */,
 				34F16C21194F77C400AD9C4D /* OFXMLDocument.h in Headers */,
+				2B2801FC27C5646400AB0034 /* NSExpression-OFExtensions.h in Headers */,
 				34F16BAD194F751A00AD9C4D /* OFAlias.h in Headers */,
 				34F16C04194F773D00AD9C4D /* NSString-OFPathExtensions.h in Headers */,
 				4A8D11E81F2FB83400030070 /* OFDataCursor.h in Headers */,
@@ -4536,6 +4560,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3E4628B5174D38370032001F /* OFBijection.h in Headers */,
+				2B2801FB27C5646400AB0034 /* NSExpression-OFExtensions.h in Headers */,
 				347F090B1A9D2C8100B05908 /* OFFileEdit.h in Headers */,
 				3E4628BE174D662A0032001F /* OFMutableBijection.h in Headers */,
 				4ADA019A093F3EEE00F5F615 /* OFVersionNumber.h in Headers */,
@@ -4697,6 +4722,7 @@
 				34DFC147190EDE0D0080AB09 /* OFTransientObjectsTracker.h in Headers */,
 				3431F4F40CD24BBE000D6E70 /* NSScriptObjectSpecifier-OFExtensions.h in Headers */,
 				1EBFA4201D344A3500771F02 /* OF_CTR_CBCMAC_Util.h in Headers */,
+				2B28021527C5653E00AB0034 /* NSPredicate-OFExtensions.h in Headers */,
 				A2C67D830D91A4BB00BD7911 /* NSIndexSet-OFExtensions.h in Headers */,
 				343301940D85ED6100C82A0B /* NSString-OFUnicodeCharacters.h in Headers */,
 				343301A50D85EEBF00C82A0B /* NSString-OFSimpleMatching.h in Headers */,
@@ -5490,6 +5516,7 @@
 				34A0623D1EC110A60099028D /* OFDatedMutableDictionary.m in Sources */,
 				34A0623E1EC110A60099028D /* OFEnumNameTable.m in Sources */,
 				34A0623F1EC110A60099028D /* OFHeap.m in Sources */,
+				2B2801FA27C5646400AB0034 /* NSExpression-OFExtensions.m in Sources */,
 				34A062401EC110A60099028D /* OFASN1Utilities.m in Sources */,
 				A2FF79681F71ECE20054DA38 /* NSFileHandle-OFExtensions.m in Sources */,
 				34A062411EC110A60099028D /* OFKnownKeyDictionaryTemplate.m in Sources */,
@@ -5562,6 +5589,7 @@
 				34A062801EC110A60099028D /* NSNotificationQueue-OFExtensions.m in Sources */,
 				34A062811EC110A60099028D /* NSNumber-OFExtensions.m in Sources */,
 				34A062821EC110A60099028D /* NSNumber-OFExtensions-CGTypes.m in Sources */,
+				2B28021427C5653E00AB0034 /* NSPredicate-OFExtensions.m in Sources */,
 				34A062831EC110A60099028D /* GeneratedOIDs.m in Sources */,
 				34A062841EC110A60099028D /* NSObject-OFExtensions.m in Sources */,
 				34A062851EC110A60099028D /* NSProcessInfo-OFExtensions.m in Sources */,
@@ -5810,6 +5838,7 @@
 				34F16C05194F774000AD9C4D /* NSString-OFPathExtensions.m in Sources */,
 				34F16B8B194F6F2D00AD9C4D /* OFDataBuffer.m in Sources */,
 				34F16BD4194F769400AD9C4D /* NSAttributedString-OFExtensions.m in Sources */,
+				2B28021327C5653E00AB0034 /* NSPredicate-OFExtensions.m in Sources */,
 				34F16B7B194F6EDA00AD9C4D /* OFUtilities.m in Sources */,
 				4A8CA6FD2381D5CE0095A6A1 /* OFASCIIPropertyListSerialization.m in Sources */,
 				34F16C26194F77D200AD9C4D /* OFXMLCursor.m in Sources */,
@@ -5831,6 +5860,7 @@
 				34F16BA4194F74EF00AD9C4D /* OFPoint.m in Sources */,
 				34F16C39194F799C00AD9C4D /* OFXMLError.m in Sources */,
 				3E378DE61DDCB78E007F6BC4 /* OFSymmetricKeywrap.m in Sources */,
+				2B2801F927C5646400AB0034 /* NSExpression-OFExtensions.m in Sources */,
 				343373D726C6D5F100098144 /* KeyPathBox.swift in Sources */,
 				1E21E6261D233E5100A04AE4 /* OFCMSContentTypes.m in Sources */,
 				34BDEA381DA45C70006389CF /* NSLocking-OFExtensions.swift in Sources */,
@@ -5991,6 +6021,7 @@
 				4A4E06C908AA72B10098FF0F /* OFMatrix.m in Sources */,
 				4A4E06CA08AA72B10098FF0F /* OFMultiValueDictionary.m in Sources */,
 				4A4E06CB08AA72B10098FF0F /* OFMutableKnownKeyDictionary.m in Sources */,
+				2B2801F827C5646400AB0034 /* NSExpression-OFExtensions.m in Sources */,
 				4A4E06CC08AA72B10098FF0F /* OFNull.m in Sources */,
 				4A4E06CE08AA72B10098FF0F /* OFPoint.m in Sources */,
 				1E3274CE1D500E2800F0827C /* OFDocumentEncryption.swift in Sources */,
@@ -6058,6 +6089,7 @@
 				4A4E071908AA72B10098FF0F /* NSNotificationQueue-OFExtensions.m in Sources */,
 				4A4E071A08AA72B10098FF0F /* NSNumber-OFExtensions.m in Sources */,
 				343373D626C6D5F100098144 /* KeyPathBox.swift in Sources */,
+				2B28021227C5653E00AB0034 /* NSPredicate-OFExtensions.m in Sources */,
 				A25B32550E3519AC00072E39 /* NSNumber-OFExtensions-CGTypes.m in Sources */,
 				1EEA8E2B1D35C93D002EF965 /* GeneratedOIDs.m in Sources */,
 				4A8CA6FC2381D5CE0095A6A1 /* OFASCIIPropertyListSerialization.m in Sources */,

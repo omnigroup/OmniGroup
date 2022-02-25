@@ -1,4 +1,4 @@
-// Copyright 2020-2021 Omni Development, Inc. All rights reserved.
+// Copyright 2020-2022 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -83,6 +83,7 @@ extension View {
 
  */
 
+#if os(iOS)
 extension UIViewRepresentable {
 
     @ViewBuilder
@@ -94,3 +95,4 @@ extension UIViewRepresentable {
         }
     }
 }
+#endif

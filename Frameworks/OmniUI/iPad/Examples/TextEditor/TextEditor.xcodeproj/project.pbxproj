@@ -866,7 +866,7 @@
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1310;
+				LastUpgradeCheck = 1320;
 				TargetAttributes = {
 					1D6058900D05DD3D006BFB54 = {
 						DevelopmentTeam = 34YW5XSRB7;
@@ -1352,6 +1352,7 @@
 			baseConfigurationReference = 342721491194802E00B39788 /* Touch-Application-Debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_ENTITLEMENTS = TextEditor.entitlements;
 				DEVELOPMENT_TEAM = 34YW5XSRB7;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1375,6 +1376,7 @@
 			baseConfigurationReference = 3427214A1194802E00B39788 /* Touch-Application-Release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_ENTITLEMENTS = TextEditor.entitlements;
 				DEVELOPMENT_TEAM = 34YW5XSRB7;
 				FRAMEWORK_SEARCH_PATHS = (

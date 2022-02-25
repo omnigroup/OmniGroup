@@ -175,6 +175,7 @@
 #import <OmniFoundation/NSDecimalNumber-OFExtensions.h>
 #import <OmniFoundation/NSDictionary-OFExtensions.h>
 #import <OmniFoundation/NSError-OFExtensions.h>
+#import <OmniFoundation/NSExpression-OFExtensions.h>
 #import <OmniFoundation/NSFileCoordinator-OFExtensions.h>
 #import <OmniFoundation/NSFileManager-OFExtendedAttributes.h>
 #import <OmniFoundation/NSFileManager-OFSimpleExtensions.h>
@@ -189,6 +190,7 @@
 #import <OmniFoundation/NSNumber-OFExtensions-CGTypes.h>
 #import <OmniFoundation/NSNumber-OFExtensions.h>
 #import <OmniFoundation/NSObject-OFExtensions.h>
+#import <OmniFoundation/NSPredicate-OFExtensions.h>
 #import <OmniFoundation/NSProcessInfo-OFExtensions.h>
 #import <OmniFoundation/NSRange-OFExtensions.h>
 #import <OmniFoundation/NSRegularExpression-OFExtensions.h>

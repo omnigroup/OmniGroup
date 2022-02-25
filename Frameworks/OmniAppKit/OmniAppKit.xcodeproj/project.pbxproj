@@ -603,6 +603,12 @@
 		A2C0C3AF0E3596E600773D47 /* WhiteAlpha-string-full.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C37C0E3596E600773D47 /* WhiteAlpha-string-full.plist */; };
 		A2C0C3B00E3596E600773D47 /* WhiteAlpha-string-partial.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C37D0E3596E600773D47 /* WhiteAlpha-string-partial.plist */; };
 		A2C0C3B10E3596E600773D47 /* WhiteAlpha.xml in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C37E0E3596E600773D47 /* WhiteAlpha.xml */; };
+		D965992427BADE5600B406F2 /* OAImage.h in Headers */ = {isa = PBXBuildFile; fileRef = D965992327BADE5600B406F2 /* OAImage.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D965992527BADE5600B406F2 /* OAImage.h in Headers */ = {isa = PBXBuildFile; fileRef = D965992327BADE5600B406F2 /* OAImage.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D965992627BADE5700B406F2 /* OAImage.h in Headers */ = {isa = PBXBuildFile; fileRef = D965992327BADE5600B406F2 /* OAImage.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D965998627BAEB1000B406F2 /* OAImage.m in Sources */ = {isa = PBXBuildFile; fileRef = D965998527BAEB1000B406F2 /* OAImage.m */; };
+		D965998727BAEB1000B406F2 /* OAImage.m in Sources */ = {isa = PBXBuildFile; fileRef = D965998527BAEB1000B406F2 /* OAImage.m */; };
+		D965998827BAEB1000B406F2 /* OAImage.m in Sources */ = {isa = PBXBuildFile; fileRef = D965998527BAEB1000B406F2 /* OAImage.m */; };
 		E228439B115D622F00948C13 /* OAStepperTextField.m in Sources */ = {isa = PBXBuildFile; fileRef = E228439A115D622F00948C13 /* OAStepperTextField.m */; };
 		E228439E115D623700948C13 /* OAStepperTextField.h in Headers */ = {isa = PBXBuildFile; fileRef = E228439D115D623700948C13 /* OAStepperTextField.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E235B46415CC771600E162D6 /* OATrackingLoop.h in Headers */ = {isa = PBXBuildFile; fileRef = E235B46215CC771600E162D6 /* OATrackingLoop.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -1513,6 +1519,8 @@
 		B5FEDACF055862C20097A10E /* OABackgroundImageControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OABackgroundImageControl.h; sourceTree = "<group>"; };
 		B5FEDAD0055862C20097A10E /* OABackgroundImageControl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OABackgroundImageControl.m; sourceTree = "<group>"; };
 		BF94281F062222D400B83989 /* Info.plist */ = {isa = PBXFileReference; explicitFileType = text.xml; fileEncoding = 4; path = Info.plist; sourceTree = "<group>"; };
+		D965992327BADE5600B406F2 /* OAImage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OAImage.h; sourceTree = "<group>"; };
+		D965998527BAEB1000B406F2 /* OAImage.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = OAImage.m; sourceTree = "<group>"; };
 		E228439A115D622F00948C13 /* OAStepperTextField.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAStepperTextField.m; sourceTree = "<group>"; };
 		E228439D115D623700948C13 /* OAStepperTextField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAStepperTextField.h; sourceTree = "<group>"; };
 		E235B46215CC771600E162D6 /* OATrackingLoop.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OATrackingLoop.h; sourceTree = "<group>"; };
@@ -2687,6 +2695,8 @@
 				34D04A38110E0270007399B9 /* OAUtilities.m */,
 				3435EF861DEE4CFE002CB3F9 /* OAStrings.h */,
 				3435EF871DEE4CFE002CB3F9 /* OAStrings.m */,
+				D965992327BADE5600B406F2 /* OAImage.h */,
+				D965998527BAEB1000B406F2 /* OAImage.m */,
 				E25C4434207535C800660AE6 /* OAImages.h */,
 				E25C440B2075359300660AE6 /* OAImages.m */,
 				34DAF8660556CA0D0097A113 /* OAVersion.h */,
@@ -3040,6 +3050,7 @@
 				340D87031EC1303100261434 /* OAColor.h in Headers */,
 				5F7F1C4322963DBB007B8B29 /* OAColorCatalog.h in Headers */,
 				34BF52CC1EC136EE0028AE7E /* OmniAppKit.h in Headers */,
+				D965992627BADE5700B406F2 /* OAImage.h in Headers */,
 				341876E61EC2578B00954EF3 /* OATextStorage.h in Headers */,
 				341877161EC260DD00954EF3 /* OATextAttributes.h in Headers */,
 				34A896661EC28257003260FC /* OAParagraphStyle.h in Headers */,
@@ -3070,6 +3081,7 @@
 				3484DD9C194FFCC800D83731 /* OAFontDescriptor.h in Headers */,
 				349BB4B31B604DA2002B88C6 /* OmniAppKit.h in Headers */,
 				342F05191B69795300C7BB34 /* OAAppearance.h in Headers */,
+				D965992527BADE5600B406F2 /* OAImage.h in Headers */,
 				3484DD93194FFC7700D83731 /* OATextAttributes.h in Headers */,
 				3484DD8D194FFC4400D83731 /* NSLayoutManager-OAExtensions.h in Headers */,
 				3484DD95194FFC7F00D83731 /* OATextAttachment.h in Headers */,
@@ -3228,6 +3240,7 @@
 				342B41170A4C6B62002BFC4B /* NSWindowController-OAExtensions.h in Headers */,
 				A216D1350AB61E9C00CEC8C0 /* NSBezierPath-OAInternal.h in Headers */,
 				A25653B80ADDBFB400A2A25B /* OAControlTextColorTransformer.h in Headers */,
+				D965992427BADE5600B406F2 /* OAImage.h in Headers */,
 				4A785F590B040C3A00B513F3 /* OAPopupDatePicker.h in Headers */,
 				4A785F630B040CF500B513F3 /* OADatePickerTextField.h in Headers */,
 				4A785F670B040D2E00B513F3 /* OASteppableTextField.h in Headers */,
@@ -4013,6 +4026,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3450E6CB221CD55000D888E3 /* OAStrings.m in Sources */,
+				D965998827BAEB1000B406F2 /* OAImage.m in Sources */,
 				3E060932221C5FAA00C1612A /* OAMoreInfoErrorRecovery.m in Sources */,
 				341876E51EC24F8700954EF3 /* OATextStorage.m in Sources */,
 				2BF68C9625269F520066CF28 /* NSString-OAExtensions.m in Sources */,
@@ -4047,6 +4061,7 @@
 				3435EF8B1DEE4CFE002CB3F9 /* OAStrings.m in Sources */,
 				348293ED1B1F842C00812D27 /* NSTextStorage-OAFixes.m in Sources */,
 				5F85EA062296304800EF91F3 /* OAColorCatalog.m in Sources */,
+				D965998727BAEB1000B406F2 /* OAImage.m in Sources */,
 				3484DD8E194FFC4800D83731 /* NSLayoutManager-OAExtensions.m in Sources */,
 				3484DD9D194FFCCD00D83731 /* OAFontDescriptor.m in Sources */,
 				342F05311B697A6100C7BB34 /* OAAppearanceColors.m in Sources */,
@@ -4078,6 +4093,7 @@
 				4AA1E76908AA764600E2FF6B /* OAInternetConfig.m in Sources */,
 				4AA1E76B08AA764600E2FF6B /* NSColor-ColorSyncExtensions.m in Sources */,
 				4AA1E76C08AA764600E2FF6B /* NSImage-ColorSyncExtensions.m in Sources */,
+				D965998627BAEB1000B406F2 /* OAImage.m in Sources */,
 				4AA1E76D08AA764600E2FF6B /* OAColorProfile.m in Sources */,
 				4AA1E76E08AA764600E2FF6B /* OACompositeColorProfile.m in Sources */,
 				3459EE371B694A8400D4F085 /* OAColor-Archiving.m in Sources */,

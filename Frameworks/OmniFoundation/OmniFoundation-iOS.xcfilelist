@@ -122,6 +122,7 @@ OpenStepExtensions.subproj/NSDate-OFExtensions.m
 OpenStepExtensions.subproj/NSDecimalNumber-OFExtensions.m
 OpenStepExtensions.subproj/NSDictionary-OFExtensions.m
 OpenStepExtensions.subproj/NSError-OFExtensions.m
+OpenStepExtensions.subproj/NSExpression-OFExtensions.m
 OpenStepExtensions.subproj/NSFileCoordinator-OFExtensions.m
 OpenStepExtensions.subproj/NSFileManager-OFExtendedAttributes.m
 OpenStepExtensions.subproj/NSFileManager-OFSimpleExtensions.m
@@ -137,6 +138,7 @@ OpenStepExtensions.subproj/NSMutableString-OFExtensions.m
 OpenStepExtensions.subproj/NSNumber-OFExtensions-CGTypes.m
 OpenStepExtensions.subproj/NSNumber-OFExtensions.m
 OpenStepExtensions.subproj/NSObject-OFExtensions.m
+OpenStepExtensions.subproj/NSPredicate-OFExtensions.m
 OpenStepExtensions.subproj/NSProcessInfo-OFExtensions.m
 OpenStepExtensions.subproj/NSProcessInfo-OFExtensions.swift
 OpenStepExtensions.subproj/NSRange-OFExtensions.m

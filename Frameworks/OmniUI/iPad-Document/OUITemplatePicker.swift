@@ -577,7 +577,6 @@ extension OUITemplatePicker: UICollectionViewDataSource {
         } else {
             return linkedFolderCache[section].files.count
         }
-        return 0
     }
 
     public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {

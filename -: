@@ -1,0 +1,228 @@
+[Dict]
+	[Key] com.apple.security.print
+	[Value]
+		[Bool] true
+	[Key] com.apple.security.app-sandbox
+	[Value]
+		[Bool] true
+	[Key] com.apple.security.cs.allow-jit
+	[Value]
+		[Bool] true
+	[Key] com.apple.security.network.client
+	[Value]
+		[Bool] true
+	[Key] com.apple.security.network.server
+	[Value]
+		[Bool] true
+	[Key] com.apple.developer.applesignin
+	[Value]
+		[Array]
+			[String] Default
+	[Key] com.apple.security.automation.apple-events
+	[Value]
+		[Bool] true
+	[Key] com.apple.developer.aps-environment
+	[Value]
+		[String] production
+	[Key] com.apple.developer.team-identifier
+	[Value]
+		[String] 34YW5XSRB7
+	[Key] com.apple.security.files.bookmarks.app-scope
+	[Value]
+		[Bool] true
+	[Key] com.apple.security.files.user-selected.read-write
+	[Value]
+		[Bool] true
+	[Key] com.apple.security.personal-information.calendars
+	[Value]
+		[Bool] true
+	[Key] com.apple.developer.icloud-services
+	[Value]
+		[Array]
+			[String] CloudDocuments
+	[Key] com.apple.developer.icloud-container-environment
+	[Value]
+		[String] Production
+	[Key] keychain-access-groups
+	[Value]
+		[Array]
+			[String] 34YW5XSRB7.com.omnigroup.OmniSoftwareUpdate
+	[Key] com.apple.application-identifier
+	[Value]
+		[String] 34YW5XSRB7.com.omnigroup.OmniFocus3.enterprise
+	[Key] com.apple.developer.icloud-container-identifiers
+	[Value]
+		[Array]
+			[String] iCloud.com.omnigroup.OmniFocus
+	[Key] com.apple.developer.ubiquity-container-identifiers
+	[Value]
+		[Array]
+			[String] iCloud.com.omnigroup.OmniFocus
+	[Key] com.apple.security.temporary-exception.shared-preference.read-only
+	[Value]
+		[Array]
+			[String] com.omnigroup.OmniSoftwareUpdate
+	[Key] com.apple.security.temporary-exception.mach-lookup.global-name
+	[Value]
+		[Array]
+			[String] com.omnigroup.OmniCrashCatcher.CrashingApplicationTaskPort
+	[Key] com.apple.security.scripting-targets
+	[Value]
+		[Dict]
+			[Key] com.apple.mail
+			[Value]
+				[Array]
+					[String] com.apple.mail.compose
+			[Key] com.apple.systempreferences
+			[Value]
+				[Array]
+					[String] preferencepane.reveal
+	[Key] com.apple.security.application-groups
+	[Value]
+		[Array]
+			[String] 34YW5XSRB7.com.omnigroup.OmniSoftwareUpdate
+			[String] 34YW5XSRB7.com.omnigroup.OmniFocus
+			[String] 34YW5XSRB7.com.omnigroup.OmniFocus3.enterprise
+	[Key] com.apple.security.temporary-exception.files.home-relative-path.read-write
+	[Value]
+		[Array]
+			[String] /Library/Application Scripts/com.omnigroup.OmniFocus3.enterprise
+			[String] /Library/Caches/Metadata/com.omnigroup.OmniFocus3.enterprise/
+	[Key] com.apple.security.temporary-exception.files.home-relative-path.read-only
+	[Value]
+		[Array]
+			[String] /Library/Containers/com.omnigroup.OmniFocus2/Data/Library/Application Support/OmniFocus/
+			[String] /Library/Containers/com.omnigroup.OmniFocus2.MacAppStore/Data/Library/Application Support/OmniFocus/
+	[Key] com.apple.security.temporary-exception.apple-events
+	[Value]
+		[Array]
+			[String] com.barebones.mailsmith
+			[String] com.microsoft.entourage
+			[String] com.apple.ical
+			[String] com.apple.mail
+			[String] com.apple.safari
+			[String] com.google.chrome
+			[String] com.omnigroup.omniplan
+			[String] com.omnigroup.omniplan.macappstore
+			[String] com.omnigroup.omniplan2
+			[String] com.omnigroup.OmniPlan3
+			[String] com.omnigroup.OmniPlan3.MacAppStore
+			[String] com.omnigroup.OmniPlan4
+			[String] com.omnigroup.OmniPlan4.MacAppStore
+			[String] com.omnigroup.OmniPlan4.Enterprise
+			[String] com.omnigroup.omniweb5
+			[String] com.ranchero.netnewswire
+[Dict]
+	[Key] com.apple.security.print
+	[Value]
+		[Bool] true
+	[Key] com.apple.security.app-sandbox
+	[Value]
+		[Bool] true
+	[Key] com.apple.security.cs.allow-jit
+	[Value]
+		[Bool] true
+	[Key] com.apple.security.network.client
+	[Value]
+		[Bool] true
+	[Key] com.apple.security.network.server
+	[Value]
+		[Bool] true
+	[Key] com.apple.developer.applesignin
+	[Value]
+		[Array]
+			[String] Default
+	[Key] com.apple.security.automation.apple-events
+	[Value]
+		[Bool] true
+	[Key] com.apple.developer.aps-environment
+	[Value]
+		[String] production
+	[Key] com.apple.developer.team-identifier
+	[Value]
+		[String] 34YW5XSRB7
+	[Key] com.apple.security.files.bookmarks.app-scope
+	[Value]
+		[Bool] true
+	[Key] com.apple.security.files.user-selected.read-write
+	[Value]
+		[Bool] true
+	[Key] com.apple.security.personal-information.calendars
+	[Value]
+		[Bool] true
+	[Key] com.apple.developer.icloud-services
+	[Value]
+		[Array]
+			[String] CloudDocuments
+	[Key] com.apple.developer.icloud-container-environment
+	[Value]
+		[String] Production
+	[Key] keychain-access-groups
+	[Value]
+		[Array]
+			[String] 34YW5XSRB7.com.omnigroup.OmniSoftwareUpdate
+	[Key] com.apple.application-identifier
+	[Value]
+		[String] 34YW5XSRB7.com.omnigroup.OmniFocus3.enterprise
+	[Key] com.apple.developer.icloud-container-identifiers
+	[Value]
+		[Array]
+			[String] iCloud.com.omnigroup.OmniFocus
+	[Key] com.apple.developer.ubiquity-container-identifiers
+	[Value]
+		[Array]
+			[String] iCloud.com.omnigroup.OmniFocus
+	[Key] com.apple.security.temporary-exception.shared-preference.read-only
+	[Value]
+		[Array]
+			[String] com.omnigroup.OmniSoftwareUpdate
+	[Key] com.apple.security.temporary-exception.mach-lookup.global-name
+	[Value]
+		[Array]
+			[String] com.omnigroup.OmniCrashCatcher.CrashingApplicationTaskPort
+	[Key] com.apple.security.scripting-targets
+	[Value]
+		[Dict]
+			[Key] com.apple.mail
+			[Value]
+				[Array]
+					[String] com.apple.mail.compose
+			[Key] com.apple.systempreferences
+			[Value]
+				[Array]
+					[String] preferencepane.reveal
+	[Key] com.apple.security.application-groups
+	[Value]
+		[Array]
+			[String] 34YW5XSRB7.com.omnigroup.OmniSoftwareUpdate
+			[String] 34YW5XSRB7.com.omnigroup.OmniFocus
+			[String] 34YW5XSRB7.com.omnigroup.OmniFocus3.enterprise
+	[Key] com.apple.security.temporary-exception.files.home-relative-path.read-write
+	[Value]
+		[Array]
+			[String] /Library/Application Scripts/com.omnigroup.OmniFocus3.enterprise
+			[String] /Library/Caches/Metadata/com.omnigroup.OmniFocus3.enterprise/
+	[Key] com.apple.security.temporary-exception.files.home-relative-path.read-only
+	[Value]
+		[Array]
+			[String] /Library/Containers/com.omnigroup.OmniFocus2/Data/Library/Application Support/OmniFocus/
+			[String] /Library/Containers/com.omnigroup.OmniFocus2.MacAppStore/Data/Library/Application Support/OmniFocus/
+	[Key] com.apple.security.temporary-exception.apple-events
+	[Value]
+		[Array]
+			[String] com.barebones.mailsmith
+			[String] com.microsoft.entourage
+			[String] com.apple.ical
+			[String] com.apple.mail
+			[String] com.apple.safari
+			[String] com.google.chrome
+			[String] com.omnigroup.omniplan
+			[String] com.omnigroup.omniplan.macappstore
+			[String] com.omnigroup.omniplan2
+			[String] com.omnigroup.OmniPlan3
+			[String] com.omnigroup.OmniPlan3.MacAppStore
+			[String] com.omnigroup.OmniPlan4
+			[String] com.omnigroup.OmniPlan4.MacAppStore
+			[String] com.omnigroup.OmniPlan4.Enterprise
+			[String] com.omnigroup.omniweb5
+			[String] com.ranchero.netnewswire

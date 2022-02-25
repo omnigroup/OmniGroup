@@ -1,4 +1,4 @@
-// Copyright 2003-2020 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2022 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,7 +11,7 @@
 #import <OmniBase/rcsid.h>
 #import <OmniBase/assertions.h>
 
-RCS_ID("$Id$");
+NS_ASSUME_NONNULL_BEGIN
 
 @implementation OFXMLWhitespaceBehavior
 
@@ -90,3 +90,5 @@ RCS_ID("$Id$");
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

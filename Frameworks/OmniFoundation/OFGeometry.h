@@ -1,4 +1,4 @@
-// Copyright 2002-2019 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2022 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -127,3 +127,8 @@ static inline BOOL OFFloatEqualToFloatWithAccuracy(CGFloat f1, CGFloat f2, CGFlo
 {
     return fabs(f1 - f2) <= accuracy;
 }
+
+extern CGRect OFCenteredIntegralRectInRect(CGRect enclosingRect, CGSize toCenter);
+extern CGRect OFLargestCenteredIntegralRectInRectWithAspectRatioAsSize(CGRect enclosingRect, CGSize toCenter);
+extern CGRect OFCenterAndFitIntegralRectInRectWithSameAspectRatioAsSize(CGRect enclosingRect, CGSize toCenter);
+

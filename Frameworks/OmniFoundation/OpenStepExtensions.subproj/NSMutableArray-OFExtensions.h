@@ -1,4 +1,4 @@
-// Copyright 1997-2019 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2022 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -41,5 +41,8 @@
 
 // Sorting on an object's attribute
 - (void)sortOnAttribute:(SEL)fetchAttributeSelector usingSelector:(SEL)comparisonSelector;
+
+// If the members of anArray are already present in the receiver, they are removed from their current location and moved to the destination index.
+- (void)insertOrMoveObjectsFromArray:(NSArray<ObjectType> *)anArray toIndex:(NSUInteger)index;
 
 @end

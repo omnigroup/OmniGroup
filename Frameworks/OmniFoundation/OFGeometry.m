@@ -1,4 +1,4 @@
-// Copyright 2002-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2022 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,11 +9,10 @@
 
 #import <OmniBase/rcsid.h>
 #import <OmniBase/assertions.h>
+#import <OmniFoundation/OFExtent.h>
 
 // avoids warning from -Wshadow.  We never use the bessel functions here...
 #define y1 _y1
-
-RCS_ID("$Id$");
 
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
@@ -320,3 +319,68 @@ CGRect OFLargestRectAvoidingRectAndFitSize(CGRect parentRect, CGRect childRect, 
 
     return bestRect;
 }
+
+// No size change -- might even overflow
+CGRect OFCenteredIntegralRectInRect(CGRect enclosingRect, CGSize toCenter)
+{
+    CGPoint pt;
+
+    pt.x = CGRectGetMinX(enclosingRect) + (enclosingRect.size.width - toCenter.width)/2;
+    pt.y = CGRectGetMinY(enclosingRect) + (enclosingRect.size.height - toCenter.height)/2;
+
+    // TODO: Assuming 1-1 mapping between user and device space
+    pt.x = ceil(pt.x);
+    pt.y = ceil(pt.y);
+
+    return CGRectMake(pt.x, pt.y, toCenter.width, toCenter.height);
+}
+
+CGRect OFLargestCenteredIntegralRectInRectWithAspectRatioAsSize(CGRect enclosingRect, CGSize toCenter)
+{
+    CGFloat xRatio = enclosingRect.size.width / toCenter.width;
+    CGFloat yRatio = enclosingRect.size.height / toCenter.height;
+
+    // Make sure we have an exact match on the min/max edge on the fitting axis
+    if (xRatio == yRatio)
+        return enclosingRect; // same size already
+
+    CGRect result;
+    if (xRatio < yRatio) {
+        CGFloat x = enclosingRect.origin.x;
+        CGFloat width = enclosingRect.size.width;
+
+        CGFloat height = floor(toCenter.height * xRatio);
+        CGFloat y = round(enclosingRect.origin.y + 0.5f * (enclosingRect.size.height - height));
+
+        result = CGRectMake(x, y, width, height);
+    } else {
+        CGFloat y = enclosingRect.origin.y;
+        CGFloat height = enclosingRect.size.height;
+
+        CGFloat width = floor(toCenter.width * yRatio);
+        CGFloat x = round(enclosingRect.origin.x + 0.5f * (enclosingRect.size.width - width));
+
+        result = CGRectMake(x, y, width, height);
+    }
+
+    // Make sure we really did snap exactly to one pair of sides
+    OBASSERT(OFExtentsEqual(OFExtentFromRectXRange(enclosingRect), OFExtentFromRectXRange(result)) ||
+             OFExtentsEqual(OFExtentFromRectYRange(enclosingRect), OFExtentFromRectYRange(result)));
+
+    // Make sure we don't overflow on nearly identical rects or whatever
+    OBASSERT(CGRectContainsRect(enclosingRect, result));
+
+    // If we use this in a hi dpi context, we'll want to perform this operation in device space, or pass in a context and do the conversion here
+    OBASSERT(CGRectEqualToRect(result, CGRectIntegral(result)));
+
+    return result;
+}
+
+// Shinks if necessary
+CGRect OFCenterAndFitIntegralRectInRectWithSameAspectRatioAsSize(CGRect enclosingRect, CGSize toCenter)
+{
+    if (toCenter.width <= enclosingRect.size.width && toCenter.height <= enclosingRect.size.height)
+        return OFCenteredIntegralRectInRect(enclosingRect, toCenter);
+    return OFLargestCenteredIntegralRectInRectWithAspectRatioAsSize(enclosingRect, toCenter);
+}
+

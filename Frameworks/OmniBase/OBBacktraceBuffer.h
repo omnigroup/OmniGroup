@@ -1,4 +1,4 @@
-// Copyright 1997-2021 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2022 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -40,6 +40,9 @@ static inline void OBRecordBacktraceWithSelector(SEL selector) {
 static inline void  OBRecordBacktraceWithSelectorAndContext(SEL selector, const void *context) {
     OBRecordBacktraceWithContext(sel_getName(selector), OBBacktraceBuffer_PerformSelector, context);
 }
+
+// Make a copy of the original non-constant string that will live long enough to be used as the message for a backtrace buffer. Should only be used for non-constant strings.
+extern const char *OBAddCopiedTemporaryString(NSString *original);
 
 // Support for copying standalone backtrace buffers, which won't be reported unless later added.
 extern struct OBBacktraceBuffer *OBCreateBacktraceBuffer(const char *message, OBBacktraceBufferType optype, const void *context);

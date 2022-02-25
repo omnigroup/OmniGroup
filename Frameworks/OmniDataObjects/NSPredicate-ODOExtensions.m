@@ -1,4 +1,4 @@
-// Copyright 2008-2021 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2022 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,7 +19,8 @@ OB_REQUIRE_ARC
 
 NS_ASSUME_NONNULL_BEGIN
 
-#ifdef DEBUG
+// Detect when a compound predicate is created with a single subpredicate. This is useful sometimes, but sadly system frameworks often hit this.
+#if 0 && defined(DEBUG)
 
 static id (*original_initWithTypeSubpredicates)(NSCompoundPredicate *self, SEL _cmd, NSCompoundPredicateType type, NSArray<NSPredicate *> *subpredicates)  = NULL;
 

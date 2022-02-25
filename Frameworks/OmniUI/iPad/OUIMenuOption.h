@@ -1,4 +1,4 @@
-// Copyright 2010-2020 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2022 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -36,7 +36,7 @@ typedef BOOL (^OUIMenuOptionValidatorAction)(OUIMenuOption *option);
 + (instancetype)separator;
 + (instancetype)separatorWithTitle:(NSString *)title;
 
-- initWithTitle:(NSString *)title image:(nullable UIImage *)image options:(nullable NSArray <OUIMenuOption *> *)options destructive:(BOOL)destructive action:(nullable OUIMenuOptionAction)action validator:(nullable OUIMenuOptionValidatorAction)validator;
+- initWithTitle:(NSString *)title image:(nullable UIImage *)image options:(nullable NSArray <OUIMenuOption *> *)options destructive:(BOOL)destructive action:(nullable OUIMenuOptionAction)action validator:(nullable OUIMenuOptionValidatorAction)validator NS_DESIGNATED_INITIALIZER;
 - initWithTitle:(NSString *)title image:(nullable UIImage *)image options:(nullable NSArray <OUIMenuOption *> *)options destructive:(BOOL)destructive action:(nullable OUIMenuOptionAction)action;
 - initWithTitle:(NSString *)title image:(nullable UIImage *)image action:(nullable OUIMenuOptionAction)action;
 

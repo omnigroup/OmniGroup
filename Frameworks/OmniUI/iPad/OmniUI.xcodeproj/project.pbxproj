@@ -1325,8 +1325,8 @@
 				D987C67927471F2E0038A712 /* EnvironmentValues.swift */,
 				2BAF3C64250994ED003606FC /* ImageSwappingButton.swift */,
 				2BEA0071252BD89500AA82FD /* ViewModifiers.swift */,
-				34A22D4D261299B1004881E4 /* ViewDebugging.swift */,
 				2B98A6AC25F0433B007F9EE9 /* BaselineSizeCategoryModifier.swift */,
+				34A22D4D261299B1004881E4 /* ViewDebugging.swift */,
 				2B1F275E25FA987700D64343 /* ManualObjectWillChangeManagingObservableObject.swift */,
 				2BCD3D2726E007B2007DD7F6 /* ButtonShapesSettingRespectingButton.swift */,
 			);

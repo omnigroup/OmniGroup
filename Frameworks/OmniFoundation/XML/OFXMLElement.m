@@ -1,4 +1,4 @@
-// Copyright 2003-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2022 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -297,7 +297,7 @@ static NSUInteger ChildrenCount(OFXMLElement *self)
     return nil;
 }
 
-static id LastChild(OFXMLElement *self)
+static id _Nullable LastChild(OFXMLElement *self)
 {
     if (self->_multipleChildren) {
         return [self->_child.multiple lastObject];
@@ -305,7 +305,7 @@ static id LastChild(OFXMLElement *self)
     return self->_child.single;
 }
 
-- (id)lastChild;
+- (nullable id)lastChild;
 {
     return LastChild(self);
 }
@@ -418,7 +418,7 @@ static id LastChild(OFXMLElement *self)
     _child.single = nil;
 }
 
-- (void)setChildren:(NSArray *)children;
+- (void)setChildren:(nullable NSArray *)children;
 {
 #ifdef OMNI_ASSERTIONS_ON
     {
