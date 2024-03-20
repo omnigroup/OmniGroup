@@ -262,6 +262,8 @@ static struct pointInfo getLinePoint(const NSPoint *a, CGFloat position) {
                 currentPoint = points[2];
                 break;
             }
+			default:
+				break;
         }
         if (currentSegmentString != nil)
             [countedSetOfEncodedStrokeSegments addObject:currentSegmentString];
@@ -328,6 +330,8 @@ static struct pointInfo getLinePoint(const NSPoint *a, CGFloat position) {
                 currentPoint = points[2];
                 break;
             }
+			default:
+				break;
         }
     }
 
@@ -724,6 +728,8 @@ static BOOL subsequent(struct OABezierPathIntersectionHalf *one, struct OABezier
                 }
                 currentPoint = points[2];
                 break;
+			default:
+				break;
         }
     }
 
@@ -829,6 +835,8 @@ void OASplitBezierCurveTo(const NSPoint *c, CGFloat t, NSPoint *l, NSPoint *r)
                 }
                 currentPoint = points[2];
                 break;
+			default:
+				break;
         }
         
         if (elementDistance < distance && elementSegmentHit > 0) {
@@ -1093,6 +1101,8 @@ void OASplitBezierCurveTo(const NSPoint *c, CGFloat t, NSPoint *l, NSPoint *r)
             _OAParameterizeCurve(coefficients, startPoint, points[2], points[0], points[1]);
             return getCurvePoint(coefficients, segmentPosition);
         }
+		default:
+			break;
     }
     return (struct pointInfo){ startPoint, 0, 0 }; // ack
 }
@@ -1144,6 +1154,8 @@ void OASplitBezierCurveTo(const NSPoint *c, CGFloat t, NSPoint *l, NSPoint *r)
             _OAParameterizeCurve(coefficients, startPoint, points[2], points[0], points[1]);
             return getCurvePoint(coefficients, (CGFloat)pos.parameter).pt;
         }
+		default:
+			break;
     }
 
     [NSException raise:NSInternalInconsistencyException format:@"Segment %ld has unexpected element type %ld", pos.segment, element];
@@ -1574,6 +1586,8 @@ static BOOL chooseProbeLocation(NSBezierPath *self, CGFloat **minXInfoOut, doubl
                 [segment setObject:NSStringFromPoint(points[1]) forKey:@"control2"];
                 [segment setObject:@"CURVETO" forKey:@"element"];
                 break;
+			default:
+				break;
         }
         [segments addObject:segment];
     }
@@ -1654,6 +1668,8 @@ static BOOL chooseProbeLocation(NSBezierPath *self, CGFloat **minXInfoOut, doubl
                 break;
             case NSBezierPathElementClosePath:
                 break;
+			default:
+				break;
         }
     }
 
@@ -1709,6 +1725,8 @@ static inline NSUInteger _threeBitsForPoint(NSPoint point)
                 hashValue = _spinLeft(hashValue, 2);
                 hashValue ^= 3;
                 break;
+			default:
+				break;
         }
     }
     return hashValue;
@@ -3732,6 +3750,8 @@ static BOOL _curvedLineIntersectsRect(const NSPoint *c, NSRect rect, CGFloat tol
         case NSBezierPathElementMoveTo:
         case NSBezierPathElementLineTo:
             return points[0];
+		default:
+			break;
     }
     return NSZeroPoint;
 }

@@ -49,14 +49,14 @@ extern CGRect OFConstrainRect(CGRect rect, CGRect boundary);
 /*" Returns a minimum rectangle containing the specified points. "*/
 static inline CGRect OFRectFromPoints(CGPoint point1, CGPoint point2)
 {
-    return CGRectMake(MIN(point1.x, point2.x), MIN(point1.y, point2.y),
+    return NSMakeRect(MIN(point1.x, point2.x), MIN(point1.y, point2.y),
                       (CGFloat)fabs(point1.x - point2.x), (CGFloat)fabs(point1.y - point2.y));
 }
 
 /*" Returns a rectangle centered on the specified point, large enough to contain the other point. "*/
 static inline CGRect OFRectFromCenterAndPoint(CGPoint center, CGPoint corner)
 {
-    return CGRectMake((CGFloat)(center.x - fabs( corner.x - center.x )),
+    return NSMakeRect((CGFloat)(center.x - fabs( corner.x - center.x )),
                       (CGFloat)(center.y - fabs( corner.y - center.y )),
                       (CGFloat)(2 * fabs( corner.x - center.x )),
                       (CGFloat)(2 * fabs( corner.y - center.y )));
@@ -65,13 +65,13 @@ static inline CGRect OFRectFromCenterAndPoint(CGPoint center, CGPoint corner)
 
 /*" Returns a rectangle centered on the specified point, and with the specified size. "*/
 static inline CGRect OFRectFromCenterAndSize(CGPoint center, CGSize size) {
-    return CGRectMake(center.x - (size.width/2), center.y - (size.height/2),
+    return NSMakeRect(center.x - (size.width/2), center.y - (size.height/2),
                       size.width, size.height);
 }
 
 static inline CGPoint OFRectCenterPoint(CGRect rect)
 {
-    return CGPointMake(CGRectGetMidX(rect), CGRectGetMidY(rect));
+    return NSMakePoint(NSMidX(rect), NSMidY(rect));
 }
 
 extern CGFloat OFSquaredDistanceToFitRectInRect(CGRect sourceRect, CGRect destinationRect);
@@ -91,8 +91,8 @@ extern CGRect OFRectIncludingPoint(CGRect inRect, CGPoint p);
 
 static inline CGFloat OFSquareOfDistanceFromPointToCenterOfRect(CGPoint pt, CGRect rect)
 {
-    CGFloat dX = CGRectGetMidX(rect) - pt.x;
-    CGFloat dY = CGRectGetMidY(rect) - pt.y;
+    CGFloat dX = NSMidX(rect) - pt.x;
+    CGFloat dY = NSMidY(rect) - pt.y;
     return dX*dX + dY*dY;
 }
 

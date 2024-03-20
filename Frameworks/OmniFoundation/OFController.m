@@ -227,7 +227,7 @@ static void _replacement_userNotificationCenterSetDelegate(id self, SEL _cmd, id
     OBASSERT([NSUserNotificationCenter defaultUserNotificationCenter].delegate == nil, "NSUserNotificationCenter delegate was already set to %@, but will be clobbered by %@", [NSUserNotificationCenter defaultUserNotificationCenter].delegate, self);
     
     NSUserNotificationCenter *center = [NSUserNotificationCenter defaultUserNotificationCenter];
-    center.delegate = self;
+    center.delegate = (id) self;
     
     // Once we've set the delegate to us, replace the method with one that will assert if other code tries to mess it up.
 #ifdef OMNI_ASSERTIONS_ON

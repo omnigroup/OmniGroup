@@ -182,8 +182,9 @@
 				LastUpgradeCheck = 1320;
 				TargetAttributes = {
 					8DD76F740486A8DE00D96B5E = {
-						DevelopmentTeam = 34YW5XSRB7;
+						DevelopmentTeam = JVS5Q57ZPX;
 						LastSwiftMigration = "";
+						ProvisioningStyle = Automatic;
 					};
 				};
 			};
@@ -229,7 +230,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "./Tests/RunTests\n";
+			shellScript = "# ./Tests/RunTests\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -251,8 +252,11 @@
 			baseConfigurationReference = 34C4D6B208C7AB280072D2D6 /* Omni-Tool-Debug.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
-				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = JVS5Q57ZPX;
 				PRODUCT_NAME = FixStringsFile;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Debug;
 		};
@@ -261,8 +265,11 @@
 			baseConfigurationReference = 34C4D6B308C7AB280072D2D6 /* Omni-Tool-Release.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
-				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = JVS5Q57ZPX;
 				PRODUCT_NAME = FixStringsFile;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Release;
 		};

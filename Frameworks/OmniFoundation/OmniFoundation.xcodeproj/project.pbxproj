@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 51;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXAggregateTarget section */
@@ -6575,6 +6575,7 @@
 					"@loader_path/Frameworks",
 				);
 				MODULEMAP_FILE = OmniFoundation.modulemap;
+				OMNI_DEVELOPMENT_TEAM = "$(OMNI_DEVELOPMENT_TEAM)";
 				OTHER_LDFLAGS = (
 					"$(value)",
 					"$(BZ2_LDFLAGS)",
@@ -6602,6 +6603,7 @@
 					"@loader_path/Frameworks",
 				);
 				MODULEMAP_FILE = OmniFoundation.modulemap;
+				OMNI_DEVELOPMENT_TEAM = "$(OMNI_DEVELOPMENT_TEAM)";
 				OTHER_LDFLAGS = (
 					"$(value)",
 					"$(BZ2_LDFLAGS)",
@@ -6642,6 +6644,7 @@
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				INFOPLIST_FILE = Info.plist;
 				MODULEMAP_FILE = OmniFoundation.modulemap;
+				OMNI_DEVELOPMENT_TEAM = "$(OMNI_DEVELOPMENT_TEAM)";
 				OTHER_LDFLAGS = (
 					"$(value)",
 					"$(BZ2_LDFLAGS)",
@@ -6658,6 +6661,7 @@
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				INFOPLIST_FILE = Info.plist;
 				MODULEMAP_FILE = OmniFoundation.modulemap;
+				OMNI_DEVELOPMENT_TEAM = "$(OMNI_DEVELOPMENT_TEAM)";
 				OTHER_LDFLAGS = (
 					"$(value)",
 					"$(BZ2_LDFLAGS)",
@@ -6712,6 +6716,7 @@
 					"@loader_path/Frameworks",
 				);
 				MODULEMAP_FILE = OmniFoundation.modulemap;
+				OMNI_DEVELOPMENT_TEAM = "$(OMNI_DEVELOPMENT_TEAM)";
 				OTHER_LDFLAGS = (
 					"$(value)",
 					"$(BZ2_LDFLAGS)",
@@ -6738,6 +6743,7 @@
 					"@loader_path/Frameworks",
 				);
 				MODULEMAP_FILE = OmniFoundation.modulemap;
+				OMNI_DEVELOPMENT_TEAM = "$(OMNI_DEVELOPMENT_TEAM)";
 				OTHER_LDFLAGS = (
 					"$(value)",
 					"$(BZ2_LDFLAGS)",
@@ -6895,6 +6901,7 @@
 					"$(value)",
 					/usr/include/libxml2,
 				);
+				OMNI_DEVELOPMENT_TEAM = "$(OMNI_DEVELOPMENT_TEAM)";
 			};
 			name = Debug;
 		};
@@ -6906,6 +6913,7 @@
 					"$(value)",
 					/usr/include/libxml2,
 				);
+				OMNI_DEVELOPMENT_TEAM = "$(OMNI_DEVELOPMENT_TEAM)";
 			};
 			name = Release;
 		};

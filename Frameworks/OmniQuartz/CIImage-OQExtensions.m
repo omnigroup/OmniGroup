@@ -8,6 +8,7 @@
 #import <OmniQuartz/CIImage-OQExtensions.h>
 
 #import <OmniFoundation/NSNumber-OFExtensions-CGTypes.h>
+#import <CoreImage/CIFilter.h>
 
 RCS_ID("$Id$");
 
