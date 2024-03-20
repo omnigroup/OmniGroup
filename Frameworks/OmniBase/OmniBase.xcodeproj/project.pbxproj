@@ -1128,7 +1128,7 @@
 						TestTargetID = 4A33D40608A0191B003A3FA5;
 					};
 					4A33D40608A0191B003A3FA5 = {
-						DevelopmentTeam = 34YW5XSRB7;
+						DevelopmentTeam = JVS5Q57ZPX;
 						LastSwiftMigration = 0920;
 					};
 					5FE81E161B62AE980056756C = {
@@ -1659,6 +1659,7 @@
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				"DEVELOPMENT_TEAM[sdk=macosx*]" = JVS5Q57ZPX;
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "";
 				MODULEMAP_FILE = OmniBase.modulemap;
@@ -1679,6 +1680,7 @@
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				"DEVELOPMENT_TEAM[sdk=macosx*]" = JVS5Q57ZPX;
 				INFOPLIST_FILE = Info.plist;
 				MODULEMAP_FILE = OmniBase.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniBase;

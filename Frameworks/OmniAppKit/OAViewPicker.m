@@ -90,7 +90,7 @@ static OAViewPicker *ActivePicker;
     [self _updatePickedView:[self mouseLocationOutsideOfEventStream]];
 }
 
-static void EndActivePicker()
+static void EndActivePicker(void)
 {
     // This is in its own function to ensure we don't try to access self in the middle of releasing the last reference to it
     [ActivePicker release];

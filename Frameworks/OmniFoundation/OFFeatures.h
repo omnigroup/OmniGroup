@@ -7,6 +7,10 @@
 
 #import <Availability.h>
 
+#ifndef OMNI_BUILDING_FOR_MAC
+#define OMNI_BUILDING_FOR_MAC 1
+#endif
+
 /* In 10.7, Apple deprecated all existing crypto APIs and replaced them with new, completely different APIs which aren't available on previous versions (and which aren't as functional). */
 #if !defined(OF_ENABLE_CDSA) // OFCDSAUtilities.m overrides this
     #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE

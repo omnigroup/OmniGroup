@@ -10,6 +10,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+#define USE_NOTIFICATION_CENTER 1
+
 @class OFInvocation, OFMessageQueue;
 @class NSBundle, NSException, NSExceptionHandler, NSLock, NSMutableArray, NSMutableSet, NSNotification;
 

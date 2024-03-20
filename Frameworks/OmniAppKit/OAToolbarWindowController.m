@@ -429,8 +429,8 @@ static void copyProperty(NSToolbarItem *anItem,
         } else {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-            newItem.minSize = buttonSize;
-            newItem.maxSize = buttonSize;
+//            newItem.minSize = buttonSize;
+//            newItem.maxSize = buttonSize;
 #pragma clang diagnostic pop
         }
     }

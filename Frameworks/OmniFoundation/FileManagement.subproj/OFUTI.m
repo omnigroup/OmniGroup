@@ -227,7 +227,7 @@ static void AddTypeDefinitions(NSMutableDictionary <NSString *, NSDictionary *> 
     }
 }
 
-static void InitializeKnownTypeDictionaries()
+static void InitializeKnownTypeDictionaries(void)
 {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{

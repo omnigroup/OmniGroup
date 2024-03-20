@@ -141,15 +141,16 @@ static inline OFExtent OFExtentAdjustMax(OFExtent a, CGFloat delta)
 // CGRect to OFExtent
 static inline OFExtent OFExtentFromRectXRange(CGRect r)
 {
-    return OFExtentMake(CGRectGetMinX(r), CGRectGetWidth(r));
+	return OFExtentMake(NSMinX(r), NSWidth(r));
+//    return OFExtentMake(CGRectGetMinX(r), CGRectGetWidth(r));
 }
 static inline OFExtent OFExtentFromRectYRange(CGRect r)
 {
-    return OFExtentMake(CGRectGetMinY(r), CGRectGetHeight(r));
+    return OFExtentMake(NSMinY(r), NSHeight(r));
 }
 static inline CGRect OFExtentsToRect(OFExtent xExtent, OFExtent yExtent)
 {
-    return CGRectMake(OFExtentMin(xExtent), OFExtentMin(yExtent),
+    return NSMakeRect(OFExtentMin(xExtent), OFExtentMin(yExtent),
                       OFExtentLength(xExtent), OFExtentLength(yExtent));
 }
 
